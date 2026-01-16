@@ -679,6 +679,38 @@ class Scratch3Text2SpeechBlocks {
         this._soundPlayers.forEach(player => {
             player.stop();
         });
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+    }
+
+    /**
+     * Use the browser's speech synthesis to speak the words.
+     * @param {string} words - The words to speak
+     * @param {string} locale - The locale to use
+     * @param {number} playbackRate - The playback rate to use
+     * @returns {Promise} A promise that resolves when speech is finished
+     */
+    _speakOffline (words, locale, playbackRate) {
+        if (typeof window === 'undefined' || !window.speechSynthesis) {
+            return Promise.resolve();
+        }
+
+        const utterance = new SpeechSynthesisUtterance(words);
+        utterance.lang = locale;
+        utterance.pitch = playbackRate;
+        utterance.rate = playbackRate;
+
+        return new Promise(resolve => {
+            utterance.onend = () => {
+                resolve();
+            };
+            utterance.onerror = e => {
+                log.warn(`Speech synthesis error: ${e.error}`);
+                resolve();
+            };
+            window.speechSynthesis.speak(utterance);
+        });
     }
 
     /**
@@ -760,6 +792,7 @@ class Scratch3Text2SpeechBlocks {
             })
             .catch(err => {
                 log.warn(err);
+                return this._speakOffline(words, locale, playbackRate);
             });
     }
 }
