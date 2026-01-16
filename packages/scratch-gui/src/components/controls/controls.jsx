@@ -8,6 +8,7 @@ import StopAll from '../stop-all/stop-all.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
 
 import styles from './controls.css';
+import aiSpinnerIcon from './icon--ai-spinner.svg';
 
 const messages = defineMessages({
     goTitle: {
@@ -26,6 +27,7 @@ const Controls = function (props) {
     const {
         active,
         className,
+        isAiThinking,
         onGreenFlagClick,
         onStopAllClick,
         turbo,
@@ -47,6 +49,12 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.stopTitle)}
                 onClick={onStopAllClick}
             />
+            {isAiThinking && (
+                <img
+                    className={styles.aiSpinner}
+                    src={aiSpinnerIcon}
+                />
+            )}
             {turbo ? (
                 <TurboMode />
             ) : null}

@@ -11,8 +11,25 @@ class Controls extends React.Component {
         super(props);
         bindAll(this, [
             'handleGreenFlagClick',
-            'handleStopAllClick'
+            'handleStopAllClick',
+            'onAiThinking'
         ]);
+        this.state = {
+            isAiThinking: false
+        };
+    }
+    componentDidMount () {
+        if (this.props.vm.runtime) {
+            this.props.vm.runtime.on('EXT_ON_DEVICE_AI_THINKING', this.onAiThinking);
+        }
+    }
+    componentWillUnmount () {
+        if (this.props.vm.runtime) {
+            this.props.vm.runtime.removeListener('EXT_ON_DEVICE_AI_THINKING', this.onAiThinking);
+        }
+    }
+    onAiThinking (isThinking) {
+        this.setState({isAiThinking: isThinking});
     }
     handleGreenFlagClick (e) {
         e.preventDefault();
@@ -42,6 +59,7 @@ class Controls extends React.Component {
                 {...props}
                 active={projectRunning}
                 turbo={turbo}
+                isAiThinking={this.state.isAiThinking}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onStopAllClick={this.handleStopAllClick}
             />

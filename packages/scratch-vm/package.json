@@ -52,6 +52,7 @@
     "allow-incomplete-coverage": true
   },
   "dependencies": {
+    "@mediapipe/tasks-genai": "^0.10.26",
     "@scratch/scratch-render": "12.3.1",
     "@scratch/scratch-svg-renderer": "12.3.1",
     "@vernier/godirect": "1.8.3",

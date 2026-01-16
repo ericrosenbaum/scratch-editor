@@ -40,5 +40,8 @@
     "husky": "8.0.3",
     "npm": "10.9.4",
     "ts-node": "10.9.2"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-genai": "^0.10.26"
   }
 }

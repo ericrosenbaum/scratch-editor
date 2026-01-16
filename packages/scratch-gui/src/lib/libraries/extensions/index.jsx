@@ -51,6 +51,20 @@ import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
 export default [
     {
+        name: 'On-Device AI',
+        extensionId: 'AIBlocks',
+        iconURL: text2speechIconURL,
+        insetIconURL: text2speechInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Q&A with a local LLM."
+                description="Description for Constrained AI extension"
+                id="gui.extension.constrainedai.description"
+            />
+        ),
+        featured: true
+    },
+    {
         name: (
             <FormattedMessage
                 defaultMessage="Music"
