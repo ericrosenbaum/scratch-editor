@@ -31,6 +31,9 @@ class SpriteLibrary extends React.PureComponent {
         randomizeSpritePosition(item);
         this.props.vm.addSprite(JSON.stringify(item)).then(() => {
             this.props.onActivateBlocksTab();
+        }).catch(e => {
+            // eslint-disable-next-line no-alert
+            alert(`Error adding sprite: ${e}`);
         });
     }
     render () {

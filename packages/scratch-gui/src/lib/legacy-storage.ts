@@ -6,10 +6,10 @@ import {GUIStorage, TranslatorFunction} from '../gui-config';
 import saveProjectToServer from '../lib/save-project-to-server';
 
 export class LegacyStorage implements GUIStorage {
-    private projectHost?: string;
+    private projectHost: string = 'https://projects.scratch.mit.edu';
     private projectToken?: string;
-    private assetHost?: string;
-    private backpackHost?: string;
+    private assetHost: string = 'https://assets.scratch.mit.edu';
+    private backpackHost: string = 'https://backpack.scratch.mit.edu';
     private translator?: TranslatorFunction;
 
     readonly scratchStorage = new ScratchStorage();
