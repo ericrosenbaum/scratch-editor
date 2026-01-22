@@ -27,16 +27,23 @@ class SpriteLibrary extends React.PureComponent {
         ]);
     }
     handleItemSelect (item) {
-        console.log(`[SpriteLibrary] Selecting item: ${JSON.stringify(item)}`);
-        // Randomize position of library sprite
-        randomizeSpritePosition(item);
-        this.props.vm.addSprite(JSON.stringify(item)).then(() => {
-            console.log('[SpriteLibrary] Successfully added sprite');
-            this.props.onActivateBlocksTab();
-        }).catch(e => {
-            // eslint-disable-next-line no-alert
-            alert(`Error adding sprite: ${JSON.stringify(e)}`);
-        });
+        try {
+            console.log(`[SpriteLibrary] Selecting item: ${JSON.stringify(item)}`);
+            // Randomize position of library sprite
+            randomizeSpritePosition(item);
+            this.props.vm.addSprite(JSON.stringify(item)).then(() => {
+                console.log('[SpriteLibrary] Successfully added sprite');
+                this.props.onActivateBlocksTab();
+            }).catch(e => {
+                const errorStr = typeof e === 'object' ? JSON.stringify(e, null, 2) : String(e);
+                console.error(`[SpriteLibrary] Error adding sprite: ${errorStr}`);
+                // eslint-disable-next-line no-alert
+                alert(`Error adding sprite: ${errorStr}`);
+            });
+        } catch (err) {
+            console.error(`[SpriteLibrary] Synchronous error in handleItemSelect: ${err.message}`);
+            alert(`Synchronous error in handleItemSelect: ${err.message}`);
+        }
     }
     render () {
         return (
