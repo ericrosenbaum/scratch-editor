@@ -39,10 +39,10 @@ const ProjectFetcherHOC = function (WrappedComponent) {
 
             const storage = this.props.storage;
 
-            console.log(`[ProjectFetcherHOC] constructor setting hosts. AssetHost: ${props.assetHost}`);
+            console.log(`[ProjectFetcherHOC] constructor setting hosts. AssetHost (IGNORED): ${props.assetHost}`);
             storage.setProjectHost?.(props.projectHost);
             storage.setProjectToken?.(props.projectToken);
-            storage.setAssetHost?.(props.assetHost);
+            // storage.setAssetHost?.(props.assetHost); // Force using the default CDN defined in LegacyStorage
             storage.setTranslatorFunction?.(props.intl.formatMessage);
 
             // props.projectId might be unset, in which case we use our default;
@@ -67,8 +67,8 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 storage.setProjectToken?.(this.props.projectToken);
             }
             if (prevProps.assetHost !== this.props.assetHost) {
-                console.log(`[ProjectFetcherHOC] updating AssetHost: ${this.props.assetHost}`);
-                storage.setAssetHost?.(this.props.assetHost);
+                console.log(`[ProjectFetcherHOC] updating AssetHost (IGNORED): ${this.props.assetHost}`);
+                // storage.setAssetHost?.(this.props.assetHost);
             }
             if (this.props.isFetchingWithId && !prevProps.isFetchingWithId) {
                 this.fetchProject(this.props.reduxProjectId, this.props.loadingState);
