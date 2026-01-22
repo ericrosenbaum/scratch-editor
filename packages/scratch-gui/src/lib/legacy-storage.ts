@@ -134,7 +134,10 @@ export class LegacyStorage implements GUIStorage {
     private getAssetGetConfig (asset: Asset) {
         const url = `${this.assetHost}/internalapi/asset/${asset.assetId}.${asset.dataFormat}/get/`;
         console.log(`[LegacyStorage] fetching asset: ${url}`);
-        return url;
+        return {
+            url,
+            // crossOrigin: 'anonymous' // Attempt to fix CORS issues if that is the cause
+        };
     }
 
     private getAssetCreateConfig (asset: Asset) {

@@ -35,9 +35,12 @@ class SpriteLibrary extends React.PureComponent {
                 console.log('[SpriteLibrary] Successfully added sprite');
                 this.props.onActivateBlocksTab();
             }).catch(e => {
-                const errorStr = typeof e === 'object' ? JSON.stringify(e, null, 2) : String(e);
+                // Try to extract useful info even if it's a FetchError or similar
+                let errorStr = String(e);
+                if (typeof e === 'object') {
+                    errorStr = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
+                }
                 console.error(`[SpriteLibrary] Error adding sprite: ${errorStr}`);
-                // eslint-disable-next-line no-alert
                 alert(`Error adding sprite: ${errorStr}`);
             });
         } catch (err) {
