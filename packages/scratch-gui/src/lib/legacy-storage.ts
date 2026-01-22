@@ -20,11 +20,11 @@ export class LegacyStorage implements GUIStorage {
     }
 
     setProjectHost (host: string): void {
-        this.projectHost = host;
+        if (host != null) this.projectHost = host;
     }
 
     setProjectToken (token: string): void {
-        this.projectToken = token;
+        if (token != null) this.projectToken = token;
     }
 
     setProjectMetadata (projectId: string | null | undefined): void {
@@ -40,7 +40,8 @@ export class LegacyStorage implements GUIStorage {
     }
 
     setAssetHost (host: string): void {
-        this.assetHost = host;
+        console.log(`[LegacyStorage] setAssetHost called with: ${host}`);
+        if (host != null) this.assetHost = host;
     }
 
     setTranslatorFunction (translator: TranslatorFunction): void {
@@ -131,10 +132,14 @@ export class LegacyStorage implements GUIStorage {
     }
 
     private getAssetGetConfig (asset: Asset) {
-        return `${this.assetHost}/internalapi/asset/${asset.assetId}.${asset.dataFormat}/get/`;
+        const url = `${this.assetHost}/internalapi/asset/${asset.assetId}.${asset.dataFormat}/get/`;
+        console.log(`[LegacyStorage] fetching asset: ${url}`);
+        return url;
     }
 
     private getAssetCreateConfig (asset: Asset) {
+        const url = `${this.assetHost}/${asset.assetId}.${asset.dataFormat}`;
+        console.log(`[LegacyStorage] creating/updating asset: ${url}`);
         return {
             // There is no such thing as updating assets, but storage assumes it
             // should update if there is an assetId, and the asset store uses the

@@ -39,6 +39,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
 
             const storage = this.props.storage;
 
+            console.log(`[ProjectFetcherHOC] constructor setting hosts. AssetHost: ${props.assetHost}`);
             storage.setProjectHost?.(props.projectHost);
             storage.setProjectToken?.(props.projectToken);
             storage.setAssetHost?.(props.assetHost);
@@ -66,6 +67,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 storage.setProjectToken?.(this.props.projectToken);
             }
             if (prevProps.assetHost !== this.props.assetHost) {
+                console.log(`[ProjectFetcherHOC] updating AssetHost: ${this.props.assetHost}`);
                 storage.setAssetHost?.(this.props.assetHost);
             }
             if (this.props.isFetchingWithId && !prevProps.isFetchingWithId) {

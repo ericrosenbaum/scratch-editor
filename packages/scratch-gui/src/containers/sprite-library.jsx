@@ -27,13 +27,15 @@ class SpriteLibrary extends React.PureComponent {
         ]);
     }
     handleItemSelect (item) {
+        console.log(`[SpriteLibrary] Selecting item: ${JSON.stringify(item)}`);
         // Randomize position of library sprite
         randomizeSpritePosition(item);
         this.props.vm.addSprite(JSON.stringify(item)).then(() => {
+            console.log('[SpriteLibrary] Successfully added sprite');
             this.props.onActivateBlocksTab();
         }).catch(e => {
             // eslint-disable-next-line no-alert
-            alert(`Error adding sprite: ${e}`);
+            alert(`Error adding sprite: ${JSON.stringify(e)}`);
         });
     }
     render () {
