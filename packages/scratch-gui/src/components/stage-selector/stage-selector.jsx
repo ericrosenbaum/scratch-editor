@@ -7,6 +7,9 @@ import Box from '../box/box.jsx';
 import ActionMenu from '../action-menu/action-menu.jsx';
 import styles from './stage-selector.css';
 import {isRtl} from 'scratch-l10n';
+import contextMenuStyles from '../context-menu/context-menu.css';
+import {MenuItem} from '../context-menu/context-menu.jsx';
+import ContextMenu from '../../lib/radix-ui-context-menu.js';
 
 import backdropIcon from '../action-menu/icon--backdrop.svg';
 import fileUploadIcon from '../action-menu/icon--file-upload.svg';
@@ -55,77 +58,99 @@ const StageSelector = props => {
         onNewBackdropClick,
         onSurpriseBackdropClick,
         onEmptyBackdropClick,
+        onExplainButtonClick,
         ...componentProps
     } = props;
     const intl = useIntl();
     return (
-        <Box
-            className={classNames(styles.stageSelector, {
-                [styles.isSelected]: selected,
-                [styles.raised]: raised || dragOver,
-                [styles.receivedBlocks]: receivedBlocks
-            })}
-            componentRef={containerRef}
-            onClick={onClick}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-            {...componentProps}
-        >
-            <div className={styles.header}>
-                <div className={styles.headerTitle}>
-                    <FormattedMessage
-                        defaultMessage="Stage"
-                        description="Label for the stage in the stage selector"
-                        id="gui.stageSelector.stage"
-                    />
-                </div>
-            </div>
-            {url ? (
-                <img
-                    className={styles.costumeCanvas}
-                    src={url}
-                />
-            ) : null}
-            <div className={styles.label}>
-                <FormattedMessage
-                    defaultMessage="Backdrops"
-                    description="Label for the backdrops in the stage selector"
-                    id="gui.stageSelector.backdrops"
-                />
-            </div>
-            <div className={styles.count}>{backdropCount}</div>
-            <ActionMenu
-                className={styles.addButton}
-                img={backdropIcon}
-                moreButtons={[
-                    {
-                        title: intl.formatMessage(messages.addBackdropFromFile),
-                        img: fileUploadIcon,
-                        onClick: onBackdropFileUploadClick,
-                        fileAccept: '.svg, .png, .bmp, .jpg, .jpeg, .gif',
-                        fileChange: onBackdropFileUpload,
-                        fileInput: fileInputRef,
-                        fileMultiple: true
-                    }, {
-                        title: intl.formatMessage(messages.addBackdropFromSurprise),
-                        img: surpriseIcon,
-                        onClick: onSurpriseBackdropClick
+        <ContextMenu.Root modal={false}>
+            <ContextMenu.Trigger asChild>
+                <Box
+                    className={classNames(styles.stageSelector, {
+                        [styles.isSelected]: selected,
+                        [styles.raised]: raised || dragOver,
+                        [styles.receivedBlocks]: receivedBlocks
+                    })}
+                    componentRef={containerRef}
+                    onClick={onClick}
+                    onMouseEnter={onMouseEnter}
+                    onMouseLeave={onMouseLeave}
+                    {...componentProps}
+                >
+                    <div className={styles.header}>
+                        <div className={styles.headerTitle}>
+                            <FormattedMessage
+                                defaultMessage="Stage"
+                                description="Label for the stage in the stage selector"
+                                id="gui.stageSelector.stage"
+                            />
+                        </div>
+                    </div>
+                    {url ? (
+                        <img
+                            className={styles.costumeCanvas}
+                            src={url}
+                        />
+                    ) : null}
+                    <div className={styles.label}>
+                        <FormattedMessage
+                            defaultMessage="Backdrops"
+                            description="Label for the backdrops in the stage selector"
+                            id="gui.stageSelector.backdrops"
+                        />
+                    </div>
+                    <div className={styles.count}>{backdropCount}</div>
+                    <ActionMenu
+                        className={styles.addButton}
+                        img={backdropIcon}
+                        moreButtons={[
+                            {
+                                title: intl.formatMessage(messages.addBackdropFromFile),
+                                img: fileUploadIcon,
+                                onClick: onBackdropFileUploadClick,
+                                fileAccept: '.svg, .png, .bmp, .jpg, .jpeg, .gif',
+                                fileChange: onBackdropFileUpload,
+                                fileInput: fileInputRef,
+                                fileMultiple: true
+                            }, {
+                                title: intl.formatMessage(messages.addBackdropFromSurprise),
+                                img: surpriseIcon,
+                                onClick: onSurpriseBackdropClick
 
-                    }, {
-                        title: intl.formatMessage(messages.addBackdropFromPaint),
-                        img: paintIcon,
-                        onClick: onEmptyBackdropClick
-                    }, {
-                        title: intl.formatMessage(messages.addBackdropFromLibrary),
-                        img: searchIcon,
-                        onClick: onNewBackdropClick
-                    }
-                ]}
-                title={intl.formatMessage(messages.addBackdropFromLibrary)}
-                tooltipPlace={isRtl(intl.locale) ? 'right' : 'left'}
-                onClick={onNewBackdropClick}
-            />
-        </Box>
+                            }, {
+                                title: intl.formatMessage(messages.addBackdropFromPaint),
+                                img: paintIcon,
+                                onClick: onEmptyBackdropClick
+                            }, {
+                                title: intl.formatMessage(messages.addBackdropFromLibrary),
+                                img: searchIcon,
+                                onClick: onNewBackdropClick
+                            }
+                        ]}
+                        title={intl.formatMessage(messages.addBackdropFromLibrary)}
+                        tooltipPlace={isRtl(intl.locale) ? 'right' : 'left'}
+                        onClick={onNewBackdropClick}
+                    />
+                </Box>
+            </ContextMenu.Trigger>
+            {onExplainButtonClick && (
+                <ContextMenu.Portal>
+                    <ContextMenu.Content
+                        className={contextMenuStyles.contextMenuContent}
+                        collisionPadding={10}
+                        sticky="always"
+                    >
+                        <MenuItem onClick={onExplainButtonClick}>
+                            <FormattedMessage
+                                defaultMessage="explain code"
+                                description="Menu item to explain the stage's code using AI"
+                                id="gui.stageSelector.contextMenuExplainCode"
+                            />
+                        </MenuItem>
+                    </ContextMenu.Content>
+                </ContextMenu.Portal>
+            )}
+        </ContextMenu.Root>
     );
 };
 
@@ -138,6 +163,7 @@ StageSelector.propTypes = {
     onBackdropFileUploadClick: PropTypes.func,
     onClick: PropTypes.func,
     onEmptyBackdropClick: PropTypes.func,
+    onExplainButtonClick: PropTypes.func,
     onMouseEnter: PropTypes.func,
     onMouseLeave: PropTypes.func,
     onNewBackdropClick: PropTypes.func,

@@ -26,6 +26,7 @@ import {
     openExtensionLibrary,
     closeDebugModal
 } from '../reducers/modals';
+import {closeCodeExplanation} from '../reducers/code-explanation';
 
 import {setPlatform} from '../reducers/platform';
 
@@ -167,6 +168,10 @@ const mapStateToProps = (state, ownProps) => {
         connectionModalVisible: state.scratchGui.modals.connectionModal,
         costumeLibraryVisible: state.scratchGui.modals.costumeLibrary,
         costumesTabVisible: state.scratchGui.editorTab.activeTabIndex === COSTUMES_TAB_INDEX,
+        codeExplanationVisible: state.scratchGui.codeExplanation.isOpen,
+        codeExplanationSpriteName: state.scratchGui.codeExplanation.spriteName,
+        codeExplanationStatus: state.scratchGui.codeExplanation.status,
+        codeExplanationText: state.scratchGui.codeExplanation.text,
         debugModalVisible: state.scratchGui.modals.debugModal,
         error: state.scratchGui.projectState.error,
         isError: getIsError(loadingState),
@@ -197,7 +202,8 @@ const mapDispatchToProps = dispatch => ({
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
     onRequestCloseDebugModal: () => dispatch(closeDebugModal()),
-    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal())
+    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal()),
+    onRequestCloseCodeExplanation: () => dispatch(closeCodeExplanation())
 });
 
 const ConnectedGUI = injectIntl(connect(

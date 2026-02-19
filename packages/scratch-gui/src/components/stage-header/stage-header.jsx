@@ -1,6 +1,6 @@
 import {FormattedMessage, defineMessages, useIntl} from 'react-intl';
 import PropTypes from 'prop-types';
-import React, {useCallback} from 'react';
+import React, {useCallback, useState, useRef, useEffect} from 'react';
 import {connect} from 'react-redux';
 import VM from '@scratch/scratch-vm';
 
@@ -19,6 +19,7 @@ import unFullScreenIcon from './icon--unfullscreen.svg';
 import scratchLogo from '../menu-bar/scratch-logo.svg';
 import styles from './stage-header.css';
 import {storeProjectThumbnail} from '../../lib/store-project-thumbnail.js';
+import {describeStage} from '../../lib/describe-stage';
 import dataURItoBlob from '../../lib/data-uri-to-blob.js';
 import throttle from 'lodash.throttle';
 
@@ -72,6 +73,93 @@ const StageHeaderComponent = function (props) {
         vm
     } = props;
     const intl = useIntl();
+
+    // --- Describe Stage state ---
+    const [calloutOpen, setCalloutOpen] = useState(false);
+    const [describeStatus, setDescribeStatus] = useState('idle'); // idle | loading | done | error
+    const [description, setDescription] = useState('');
+    const [ttsStatus, setTtsStatus] = useState('idle'); // idle | loading | playing
+    const ttsSourceRef = useRef(null);
+    const calloutRef = useRef(null);
+
+    const stopTts = useCallback(() => {
+        if (ttsSourceRef.current) {
+            try { ttsSourceRef.current.stop(); } catch (_) {} // eslint-disable-line no-empty
+            ttsSourceRef.current = null;
+        }
+        setTtsStatus('idle');
+    }, []);
+
+    // Close callout when clicking outside
+    useEffect(() => {
+        if (!calloutOpen) return;
+        const onClickOutside = e => {
+            if (calloutRef.current && !calloutRef.current.contains(e.target)) {
+                setCalloutOpen(false);
+                stopTts();
+            }
+        };
+        document.addEventListener('mousedown', onClickOutside);
+        return () => document.removeEventListener('mousedown', onClickOutside);
+    }, [calloutOpen, stopTts]);
+
+    const handleDescribeClick = useCallback(async () => {
+        if (calloutOpen) {
+            setCalloutOpen(false);
+            stopTts();
+            return;
+        }
+        setCalloutOpen(true);
+        setDescribeStatus('loading');
+        setDescription('');
+        try {
+            const text = await describeStage(vm);
+            setDescription(text);
+            setDescribeStatus('done');
+        } catch (e) {
+            setDescribeStatus('error');
+            setDescription(e.message || 'Error describing stage');
+        }
+    }, [vm, calloutOpen, stopTts]);
+
+    const handleTtsPlay = useCallback(async () => {
+        if (ttsStatus === 'playing') {
+            stopTts();
+            return;
+        }
+        setTtsStatus('loading');
+        try {
+            const text = description.substring(0, 128);
+            const url = `https://synthesis-service.scratch.mit.edu/synth?locale=en-US&gender=female&text=${encodeURIComponent(text)}`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const buffer = await res.arrayBuffer();
+            const audioCtx = new AudioContext();
+            const audioBuffer = await audioCtx.decodeAudioData(buffer);
+            const source = audioCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioCtx.destination);
+            ttsSourceRef.current = source;
+            setTtsStatus('playing');
+            source.onended = () => {
+                ttsSourceRef.current = null;
+                setTtsStatus('idle');
+            };
+            source.start();
+        } catch (_e) {
+            // Fallback to browser speech synthesis
+            if (window.speechSynthesis) {
+                const utterance = new SpeechSynthesisUtterance(description);
+                utterance.lang = 'en-US';
+                setTtsStatus('playing');
+                utterance.onend = () => setTtsStatus('idle');
+                ttsSourceRef.current = {stop: () => window.speechSynthesis.cancel()};
+                window.speechSynthesis.speak(utterance);
+            } else {
+                setTtsStatus('idle');
+            }
+        }
+    }, [description, ttsStatus, stopTts]);
 
     let header = null;
 
@@ -165,6 +253,71 @@ const StageHeaderComponent = function (props) {
                 <Box className={styles.stageMenuWrapper}>
                     <Controls vm={vm} />
                     <div className={styles.stageSizeRow}>
+                        {!isPlayerOnly && (
+                            <div
+                                className={styles.describeWrapper}
+                                ref={calloutRef}
+                            >
+                                <Button
+                                    className={styles.stageButton}
+                                    title="Describe stage with AI"
+                                    onClick={handleDescribeClick}
+                                >
+                                    <svg
+                                        className={styles.stageButtonIcon}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <circle
+                                            cx="12"
+                                            cy="12"
+                                            r="3"
+                                        />
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <path
+                                            d="M18 4l2-2M6 4L4 2M18 20l2 2M6 20l-2 2"
+                                            strokeWidth="1.5"
+                                        />
+                                    </svg>
+                                </Button>
+                                {calloutOpen && (
+                                    <div className={styles.describeCallout}>
+                                        <button
+                                            className={styles.describeCalloutClose}
+                                            onClick={() => {
+                                                setCalloutOpen(false);
+                                                stopTts();
+                                            }}
+                                        >
+                                            {'✕'}
+                                        </button>
+                                        {describeStatus === 'loading' && (
+                                            <div className={styles.describeCalloutLoading}>
+                                                <span className={styles.describeSpinner} />
+                                                {'Gemma is looking\u2026'}
+                                            </div>
+                                        )}
+                                        {(describeStatus === 'done' || describeStatus === 'error') && (
+                                            <React.Fragment>
+                                                <p className={styles.describeCalloutText}>{description}</p>
+                                                {describeStatus === 'done' && (
+                                                    <button
+                                                        className={styles.describeTtsButton}
+                                                        disabled={ttsStatus === 'loading'}
+                                                        onClick={handleTtsPlay}
+                                                    >
+                                                        {ttsStatus === 'playing' ? '\u23f9 Stop' : ttsStatus === 'loading' ? '\u2026' : '\u25b6 Play'}
+                                                    </button>
+                                                )}
+                                            </React.Fragment>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         {stageControls}
                         <div className={styles.rightSection}>
                             {manuallySaveThumbnails && (

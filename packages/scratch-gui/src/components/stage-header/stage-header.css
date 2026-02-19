@@ -79,6 +79,110 @@
     transform: scaleX(-1);
 }
 
+.describeWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-right: 0.2rem;
+}
+
+.describeCallout {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 220px;
+    background: $ui-white;
+    border: 1px solid $ui-black-transparent;
+    border-radius: $form-radius;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    z-index: 1000;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: $text-primary;
+}
+
+.describeCallout::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 10px;
+    width: 10px;
+    height: 10px;
+    background: $ui-white;
+    border-left: 1px solid $ui-black-transparent;
+    border-top: 1px solid $ui-black-transparent;
+    transform: rotate(45deg);
+}
+
+.describeCalloutClose {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: none;
+    border: none;
+    font-size: 13px;
+    cursor: pointer;
+    color: #aaa;
+    padding: 0;
+    line-height: 1;
+}
+
+.describeCalloutLoading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #888;
+    font-style: italic;
+    padding-right: 20px;
+}
+
+.describeSpinner {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid $motion-primary;
+    border-radius: 50%;
+    animation: describe-spin 0.8s linear infinite;
+}
+
+@keyframes describe-spin {
+    to { transform: rotate(360deg); }
+}
+
+.describeCalloutText {
+    margin: 0 16px 10px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #333;
+}
+
+.describeTtsButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: $motion-primary;
+    color: $ui-white;
+    border: none;
+    border-radius: 12px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.describeTtsButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.describeTtsButton:not(:disabled):hover {
+    filter: brightness(90%);
+}
+
 .rightSection {
     display: flex;
     flex-direction: row;

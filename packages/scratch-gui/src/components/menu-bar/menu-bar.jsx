@@ -75,6 +75,7 @@ import {
 
 import collectMetadata from '../../lib/collect-metadata';
 import {PLATFORM} from '../../lib/platform';
+import {askAboutGui} from '../../lib/ask-about-gui';
 
 import styles from './menu-bar.css';
 
@@ -738,6 +739,14 @@ class MenuBar extends React.Component {
                             <span className={styles.debugLabel}>
                                 <FormattedMessage {...ariaMessages.debug} />
                             </span>
+                        </div>
+                        <div
+                            className={classNames(styles.menuBarItem, styles.noOffset, styles.hoverable)}
+                            /* eslint-disable-next-line react/jsx-no-bind */
+                            onClick={() => askAboutGui(this.props.vm)}
+                        >
+                            <span style={{fontSize: '16px'}}>{'🤖'}</span>
+                            <span className={styles.tutorialsLabel}>{'Ask AI'}</span>
                         </div>
                     </div>
                 </div>

@@ -43,6 +43,7 @@ import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
 import DebugModal from '../debug-modal/debug-modal.jsx';
+import CodeExplanationModal from '../code-explanation-modal/code-explanation-modal.jsx';
 import {setPlatform} from '../../reducers/platform.js';
 import {setTheme} from '../../reducers/settings.js';
 import {PLATFORM} from '../../lib/platform.js';
@@ -142,6 +143,11 @@ const GUIComponent = props => {
         connectionModalVisible,
         costumeLibraryVisible,
         costumesTabVisible,
+        codeExplanationVisible,
+        codeExplanationSpriteName,
+        codeExplanationStatus,
+        codeExplanationText,
+        onRequestCloseCodeExplanation,
         debugModalVisible,
         onDebugModalClose,
         onTutorialSelect,
@@ -324,6 +330,15 @@ const GUIComponent = props => {
                     isOpen={debugModalVisible}
                     onClose={onCloseDebugModal}
                 />}
+                {codeExplanationVisible ? (
+                    <CodeExplanationModal
+                        isOpen={codeExplanationVisible}
+                        spriteName={codeExplanationSpriteName}
+                        status={codeExplanationStatus}
+                        text={codeExplanationText}
+                        onClose={onRequestCloseCodeExplanation}
+                    />
+                ) : null}
                 {backdropLibraryVisible ? (
                     <BackdropLibrary
                         vm={vm}
@@ -598,6 +613,11 @@ GUIComponent.propTypes = {
     children: PropTypes.node,
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
+    codeExplanationVisible: PropTypes.bool,
+    codeExplanationSpriteName: PropTypes.string,
+    codeExplanationStatus: PropTypes.string,
+    codeExplanationText: PropTypes.string,
+    onRequestCloseCodeExplanation: PropTypes.func,
     debugModalVisible: PropTypes.bool,
     hasActiveMembership: PropTypes.bool,
     onDebugModalClose: PropTypes.func,

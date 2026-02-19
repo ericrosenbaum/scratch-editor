@@ -11,6 +11,7 @@ import {openBackdropLibrary} from '../reducers/modals';
 import {activateTab, COSTUMES_TAB_INDEX} from '../reducers/editor-tab';
 import {showStandardAlert, closeAlertWithId} from '../reducers/alerts';
 import {setHoveredSprite} from '../reducers/hovered-target';
+import {explainCode} from '../lib/explain-code';
 import DragConstants from '../lib/drag-constants';
 import DropAreaHOC from '../lib/drop-area-hoc.jsx';
 import ThrottledPropertyHOC from '../lib/throttled-property-hoc.jsx';
@@ -52,6 +53,7 @@ class StageSelector extends React.Component {
             'handleMouseLeave',
             'handleTouchEnd',
             'handleDrop',
+            'handleExplainCode',
             'setFileInput',
             'setRef'
         ]);
@@ -162,13 +164,22 @@ class StageSelector extends React.Component {
     setFileInput (input) {
         this.fileInput = input;
     }
+    handleExplainCode () {
+        explainCode(
+            this.props.vm,
+            'Stage',
+            true,
+            this.props.targets,
+            this.props.dispatch
+        );
+    }
     setRef (ref) {
         this.ref = ref;
     }
     render () {
         const componentProps = omit(this.props, [
-            'asset', 'dispatchSetHoveredSprite', 'id', 'intl', 'onNewBackdropClick',
-            'onActivateTab', 'onSelect', 'onShowImporting', 'onCloseImporting']);
+            'asset', 'dispatch', 'dispatchSetHoveredSprite', 'id', 'intl', 'onNewBackdropClick',
+            'onActivateTab', 'onSelect', 'onShowImporting', 'onCloseImporting', 'targets']);
         return (
             <DroppableThrottledStage
                 componentRef={this.setRef}
@@ -178,6 +189,7 @@ class StageSelector extends React.Component {
                 onClick={this.handleClick}
                 onDrop={this.handleDrop}
                 onEmptyBackdropClick={this.handleEmptyBackdrop}
+                onExplainButtonClick={this.handleExplainCode}
                 onMouseEnter={this.handleMouseEnter}
                 onMouseLeave={this.handleMouseLeave}
                 onSurpriseBackdropClick={this.handleSurpriseBackdrop}
@@ -199,6 +211,7 @@ StageSelector.propTypes = {
 const mapStateToProps = (state, {asset, id}) => ({
     url: asset && asset.encodeDataURI(),
     vm: state.scratchGui.vm,
+    targets: state.scratchGui.targets,
     receivedBlocks: state.scratchGui.hoveredTarget.receivedBlocks &&
             state.scratchGui.hoveredTarget.sprite === id,
     raised: state.scratchGui.blockDrag
@@ -215,7 +228,8 @@ const mapDispatchToProps = dispatch => ({
         dispatch(setHoveredSprite(spriteId));
     },
     onCloseImporting: () => dispatch(closeAlertWithId('importingAsset')),
-    onShowImporting: () => dispatch(showStandardAlert('importingAsset'))
+    onShowImporting: () => dispatch(showStandardAlert('importingAsset')),
+    dispatch
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => defaultsDeep(

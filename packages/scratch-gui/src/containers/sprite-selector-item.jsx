@@ -12,6 +12,7 @@ import DragRecognizer from '../lib/drag-recognizer';
 import {getEventXY} from '../lib/touch-utils';
 import {GUIStoragePropType} from '../gui-config';
 import DeleteConfirmationPrompt from '../components/delete-confirmation-prompt/delete-confirmation-prompt.jsx';
+import {explainCode} from '../lib/explain-code';
 
 import SpriteSelectorItemComponent from '../components/sprite-selector-item/sprite-selector-item.jsx';
 
@@ -25,6 +26,7 @@ class SpriteSelectorItem extends React.PureComponent {
             'handleClick',
             'handleDuplicate',
             'handleExport',
+            'handleExplainCode',
             'handleMouseEnter',
             'handleMouseLeave',
             'handleMouseDown',
@@ -113,6 +115,16 @@ class SpriteSelectorItem extends React.PureComponent {
         e.stopPropagation();
         this.props.onExportButtonClick(this.props.id);
     }
+    handleExplainCode (e) {
+        e.stopPropagation();
+        explainCode(
+            this.props.vm,
+            this.props.name,
+            false,
+            this.props.targets,
+            this.props.dispatch
+        );
+    }
     handleMouseLeave () {
         this.props.dispatchSetHoveredSprite(null);
     }
@@ -140,7 +152,7 @@ class SpriteSelectorItem extends React.PureComponent {
     }
     render () {
         const {
-             
+
             asset,
             id,
             index,
@@ -152,8 +164,10 @@ class SpriteSelectorItem extends React.PureComponent {
             receivedBlocks,
             costumeURL,
             vm,
+            targets, // eslint-disable-line no-unused-vars
+            dispatch, // eslint-disable-line no-unused-vars
             deleteConfirmationModalPosition,
-             
+
             ...props
         } = this.props;
         return (<>
@@ -172,6 +186,7 @@ class SpriteSelectorItem extends React.PureComponent {
                 onDeleteButtonClick={onDeleteButtonClick ? this.handleDeleteButtonClick : null}
                 onDuplicateButtonClick={onDuplicateButtonClick ? this.handleDuplicate : null}
                 onExportButtonClick={onExportButtonClick ? this.handleExport : null}
+                onExplainButtonClick={this.handleExplainCode}
                 onMouseDown={this.handleMouseDown}
                 onMouseEnter={this.handleMouseEnter}
                 onMouseLeave={this.handleMouseLeave}
@@ -186,6 +201,7 @@ SpriteSelectorItem.propTypes = {
     storage: GUIStoragePropType,
     asset: PropTypes.object,
     costumeURL: PropTypes.string,
+    dispatch: PropTypes.func.isRequired,
     dispatchSetHoveredSprite: PropTypes.func.isRequired,
     dragPayload: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     dragType: PropTypes.string,
@@ -200,6 +216,7 @@ SpriteSelectorItem.propTypes = {
     onExportButtonClick: PropTypes.func,
     receivedBlocks: PropTypes.bool.isRequired,
     selected: PropTypes.bool,
+    targets: PropTypes.object.isRequired,
     withDeleteConfirmation: PropTypes.bool,
     deleteConfirmationModalPosition: PropTypes.string,
     vm: PropTypes.instanceOf(VM).isRequired
@@ -210,13 +227,15 @@ const mapStateToProps = (state, {id}) => ({
     dragging: state.scratchGui.assetDrag.dragging,
     receivedBlocks: state.scratchGui.hoveredTarget.receivedBlocks &&
             state.scratchGui.hoveredTarget.sprite === id,
-    vm: state.scratchGui.vm
+    vm: state.scratchGui.vm,
+    targets: state.scratchGui.targets
 });
 const mapDispatchToProps = dispatch => ({
     dispatchSetHoveredSprite: spriteId => {
         dispatch(setHoveredSprite(spriteId));
     },
-    onDrag: data => dispatch(updateAssetDrag(data))
+    onDrag: data => dispatch(updateAssetDrag(data)),
+    dispatch
 });
 
 const ConnectedComponent = connect(

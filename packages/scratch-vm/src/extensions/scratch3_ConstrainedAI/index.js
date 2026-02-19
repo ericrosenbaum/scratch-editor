@@ -13,6 +13,7 @@ const log = require('../../util/log');
 class Scratch3ConstrainedAIBlocks {
     constructor(runtime) {
         this.runtime = runtime;
+        runtime._AIBlocksExtension = this;
 
         this.generalAnswer = '';
         this.constrainedAnswer = '';

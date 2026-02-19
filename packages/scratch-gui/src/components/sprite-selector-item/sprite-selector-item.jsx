@@ -70,7 +70,7 @@ const SpriteSelectorItem = props => {
                     ) : null}
                 </div>
             </ContextMenu.Trigger>
-            {(props.onDuplicateButtonClick || props.onDeleteButtonClick || props.onExportButtonClick) && (
+            {(props.onDuplicateButtonClick || props.onDeleteButtonClick || props.onExportButtonClick || props.onExplainButtonClick) && (
                 <ContextMenu.Portal>
                     <ContextMenu.Content
                         className={contextMenuStyles.contextMenuContent}
@@ -92,6 +92,15 @@ const SpriteSelectorItem = props => {
                                     defaultMessage="export"
                                     description="Menu item to export the selected item"
                                     id="gui.spriteSelectorItem.contextMenuExport"
+                                />
+                            </MenuItem>
+                        )}
+                        {props.onExplainButtonClick && (
+                            <MenuItem onClick={props.onExplainButtonClick}>
+                                <FormattedMessage
+                                    defaultMessage="explain code"
+                                    description="Menu item to explain the sprite's code using AI"
+                                    id="gui.spriteSelectorItem.contextMenuExplainCode"
                                 />
                             </MenuItem>
                         )}
@@ -122,6 +131,7 @@ SpriteSelectorItem.propTypes = {
     onDeleteButtonClick: PropTypes.func,
     onDuplicateButtonClick: PropTypes.func,
     onExportButtonClick: PropTypes.func,
+    onExplainButtonClick: PropTypes.func,
     onMouseDown: PropTypes.func,
     onMouseEnter: PropTypes.func,
     onMouseLeave: PropTypes.func,
