@@ -1,7 +1,24 @@
 /**
  * Singleton AI model manager for the Gemma on-device model.
  * Works independently of the On-Device AI extension.
+ *
+ * Supports:
+ *  - OPFS caching: model is saved to the browser's Origin Private File System
+ *    after the first load, so subsequent sessions load automatically.
+ *  - Auto-download: if MODEL_URL is set, the modal offers a one-click download
+ *    with a streaming progress bar (no RAM spike from buffering the whole file).
  */
+
+/**
+ * URL of the hosted model file.
+ * Set this to your Cloudflare R2 (or other public CDN) URL once you have uploaded
+ * the Gemma 3n model file.  If null, the auto-download button will not appear
+ * and users must load the file from their computer.
+ * Example: 'https://pub-xxxxxxxxxxxx.r2.dev/gemma-3n-E2B-it-litert-preview.bin'
+ */
+const MODEL_URL = 'https://storage.googleapis.com/gemma-3n/gemma-3n-E2B-it-int4-Web.litertlm';
+
+const OPFS_FILENAME = 'gemma-model.bin';
 
 let _llmInference = null;
 let _modelLoaded = false;
@@ -37,17 +54,139 @@ const generate = async prompt => {
     return _llmInference.generateResponse(prompt);
 };
 
+// ---------------------------------------------------------------------------
+// OPFS helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns a blob URL for the cached model, or null if not cached.
+ */
+const checkOpfsCache = async () => {
+    try {
+        const root = await navigator.storage.getDirectory();
+        const fh = await root.getFileHandle(OPFS_FILENAME);
+        const file = await fh.getFile();
+        if (file.size === 0) return null;
+        return URL.createObjectURL(file);
+    } catch {
+        return null; // file doesn't exist yet
+    }
+};
+
+/**
+ * Streams the model from url directly into OPFS (no full-file RAM buffering).
+ * Calls onProgress(bytesReceived, totalBytes) as chunks arrive.
+ * Returns a blob URL pointing to the cached file.
+ */
+const downloadModelToOpfs = async (url, onProgress) => {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status} — ${response.statusText}`);
+    const total = parseInt(response.headers.get('content-length') || '0', 10);
+
+    const root = await navigator.storage.getDirectory();
+    const fh = await root.getFileHandle(OPFS_FILENAME, {create: true});
+    const writable = await fh.createWritable();
+    const reader = response.body.getReader();
+
+    let received = 0;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        await writable.write(value);
+        received += value.length;
+        onProgress(received, total);
+    }
+    await writable.close();
+
+    const cached = await (await root.getFileHandle(OPFS_FILENAME)).getFile();
+    return URL.createObjectURL(cached);
+};
+
+// ---------------------------------------------------------------------------
+// Toast (non-blocking status message for silent cache loads)
+// ---------------------------------------------------------------------------
+
+const showToast = text => {
+    const toast = document.createElement('div');
+    Object.assign(toast.style, {
+        position: 'fixed',
+        bottom: '24px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: 'rgba(76,151,255,0.95)',
+        color: 'white',
+        padding: '10px 22px',
+        borderRadius: '20px',
+        fontSize: '14px',
+        fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+        zIndex: '20001',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+        transition: 'opacity 0.5s',
+        opacity: '1'
+    });
+    toast.innerText = text;
+    document.body.appendChild(toast);
+    return {
+        setText: t => {
+            toast.innerText = t;
+        },
+        dismiss: () => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                if (document.body.contains(toast)) document.body.removeChild(toast);
+            }, 500);
+        }
+    };
+};
+
+// ---------------------------------------------------------------------------
+// Modal
+// ---------------------------------------------------------------------------
+
 /**
  * Show the model-loading modal.
- * Returns a Promise that resolves when the model is loaded, or rejects if
- * the user dismisses the modal.  If the modal is already open, the same
- * Promise is returned so concurrent callers share one modal.
+ *
+ * Behaviour:
+ *  1. If model is already loaded — resolves immediately.
+ *  2. If a cached model exists in OPFS — loads it silently via a toast toast.
+ *  3. If MODEL_URL is set — modal offers a one-click download with progress bar.
+ *  4. Always offers a file-picker fallback; on success the file is saved to OPFS.
+ *
+ * If the modal is already open, the same Promise is returned so concurrent
+ * callers share one modal.
  */
 const showLoadModal = () => {
     if (_modelLoaded) return Promise.resolve();
     if (_modalPromise) return _modalPromise;
 
-    _modalPromise = new Promise((resolve, reject) => {
+    _modalPromise = _doShowLoadModal().finally(() => {
+        _modalPromise = null;
+    });
+
+    return _modalPromise;
+};
+
+const _doShowLoadModal = async () => {
+    // 1. Try OPFS cache first
+    const cachedUrl = await checkOpfsCache();
+    if (cachedUrl) {
+        const toast = showToast('Loading cached AI model…');
+        try {
+            await loadModel(cachedUrl);
+            toast.setText('AI model ready!');
+            setTimeout(() => toast.dismiss(), 2000);
+            return; // success — skip the modal entirely
+        } catch (err) {
+            toast.dismiss();
+            console.warn('Cached model failed to load, showing modal:', err);
+            // Fall through to the download modal
+        }
+    }
+
+    // 2. Show download-progress modal and auto-start the download
+    return new Promise((resolve, reject) => {
+        // ---- Overlay ----
         const overlay = document.createElement('div');
         overlay.id = 'llm-load-modal';
         Object.assign(overlay.style, {
@@ -76,10 +215,9 @@ const showLoadModal = () => {
 
         const removeModal = () => {
             if (document.body.contains(overlay)) document.body.removeChild(overlay);
-            _modalPromise = null;
         };
 
-        // Close / cancel button
+        // ---- Close button ----
         const closeBtn = document.createElement('button');
         closeBtn.innerText = '✕';
         Object.assign(closeBtn.style, {
@@ -97,61 +235,23 @@ const showLoadModal = () => {
         };
         content.appendChild(closeBtn);
 
+        // ---- Heading ----
         const heading = document.createElement('h2');
-        heading.innerText = 'Setup Gemma AI';
+        heading.innerText = 'Setting up Gemma AI';
         heading.style.marginTop = '0';
         heading.style.color = '#4c97ff';
         content.appendChild(heading);
 
-        const text = document.createElement('p');
-        text.style.lineHeight = '1.5';
-        text.style.color = '#575e75';
-        text.innerHTML = `
-            This feature uses Google's <b>Gemma 3n</b> AI model, running directly on your computer.<br><br>
-            To use it, you must first download the model file (approx 1.7GB) from the official website.
-        `;
-        content.appendChild(text);
+        // ---- Description ----
+        const descText = document.createElement('p');
+        descText.style.lineHeight = '1.5';
+        descText.style.color = '#575e75';
+        descText.innerHTML =
+            `Downloading Google's <b>Gemma 3n</b> AI model (~3 GB).<br>
+             This only happens once — it will be cached for future sessions.`;
+        content.appendChild(descText);
 
-        const linkBtn = document.createElement('a');
-        linkBtn.href = 'https://deepmind.google/models/gemma/gemma-3n/';
-        linkBtn.target = '_blank';
-        linkBtn.innerText = 'Open Gemma Download Page ↗';
-        Object.assign(linkBtn.style, {
-            display: 'inline-block',
-            margin: '10px 0 20px 0',
-            color: '#4c97ff',
-            textDecoration: 'none',
-            fontWeight: 'bold'
-        });
-        content.appendChild(linkBtn);
-        content.appendChild(document.createElement('br'));
-
-        const loadBtn = document.createElement('button');
-        loadBtn.innerText = 'Load model file from my computer';
-        Object.assign(loadBtn.style, {
-            backgroundColor: '#4c97ff',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            fontSize: '16px',
-            borderRadius: '25px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            transition: '0.2s'
-        });
-        loadBtn.onmouseover = () => { loadBtn.style.transform = 'scale(1.05)'; };
-        loadBtn.onmouseout = () => { loadBtn.style.transform = 'scale(1.0)'; };
-        content.appendChild(loadBtn);
-
-        const statusDiv = document.createElement('div');
-        Object.assign(statusDiv.style, {
-            marginTop: '20px',
-            minHeight: '30px',
-            color: '#855cd6',
-            fontSize: '14px'
-        });
-        content.appendChild(statusDiv);
-
+        // ---- Spinner ----
         const spinner = document.createElement('div');
         spinner.className = 'llm-spinner';
         Object.assign(spinner.style, {
@@ -171,46 +271,89 @@ const showLoadModal = () => {
                 '.llm-spinner{animation:spin 1s linear infinite}';
             document.head.appendChild(styleEl);
         }
+
+        // ---- Progress bar ----
+        const progressWrap = document.createElement('div');
+        Object.assign(progressWrap.style, {
+            width: '100%',
+            backgroundColor: '#eee',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            margin: '16px 0 4px 0'
+        });
+        const progressBar = document.createElement('div');
+        Object.assign(progressBar.style, {
+            height: '10px',
+            width: '0%',
+            backgroundColor: '#4c97ff',
+            transition: 'width 0.2s'
+        });
+        progressWrap.appendChild(progressBar);
+        content.appendChild(progressWrap);
+
+        // ---- Status text ----
+        const statusDiv = document.createElement('div');
+        Object.assign(statusDiv.style, {
+            marginTop: '8px',
+            minHeight: '30px',
+            color: '#855cd6',
+            fontSize: '14px'
+        });
+        statusDiv.innerText = 'Starting download…';
+        content.appendChild(statusDiv);
         content.appendChild(spinner);
 
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = '.bin,.task,.litertlm';
-        fileInput.style.display = 'none';
-        loadBtn.onclick = () => fileInput.click();
+        overlay.appendChild(content);
+        document.body.appendChild(overlay);
 
-        fileInput.onchange = async e => {
-            const file = e.target.files[0];
-            if (!file) return;
+        const setProgress = (received, total) => {
+            const mb = n => `${(n / 1e6).toFixed(0)} MB`;
+            if (total > 0) {
+                const pct = Math.round((received / total) * 100);
+                progressBar.style.width = `${pct}%`;
+                statusDiv.innerText = `Downloading… ${mb(received)} / ${mb(total)} (${pct}%)`;
+            } else {
+                statusDiv.innerText = `Downloading… ${mb(received)} received`;
+            }
+        };
 
-            loadBtn.disabled = true;
-            loadBtn.style.opacity = '0.5';
-            loadBtn.innerText = 'Loading...';
-            spinner.style.display = 'block';
-            statusDiv.innerText = `Loading ${file.name}… (This may take a moment)`;
-
+        // ---- Auto-start download ----
+        const startDownload = async () => {
             try {
-                await loadModel(URL.createObjectURL(file));
+                const url = await downloadModelToOpfs(MODEL_URL, setProgress);
+                statusDiv.innerText = 'Loading model into memory…';
+                spinner.style.display = 'block';
+                await loadModel(url);
                 spinner.style.display = 'none';
                 statusDiv.style.color = 'green';
-                statusDiv.innerText = 'Model loaded!';
+                statusDiv.innerText = 'Model ready!';
                 setTimeout(() => { removeModal(); resolve(); }, 1500);
             } catch (err) {
                 spinner.style.display = 'none';
                 statusDiv.style.color = 'red';
-                statusDiv.innerText = `Error loading model: ${err.message}`;
-                loadBtn.disabled = false;
-                loadBtn.style.opacity = '1';
-                loadBtn.innerText = 'Try again';
+                statusDiv.innerText = `Download failed: ${err.message}`;
+                const retryBtn = document.createElement('button');
+                retryBtn.innerText = 'Retry';
+                Object.assign(retryBtn.style, {
+                    marginTop: '12px',
+                    backgroundColor: '#4c97ff', color: 'white',
+                    border: 'none', padding: '10px 24px',
+                    fontSize: '15px', borderRadius: '20px',
+                    cursor: 'pointer', fontWeight: 'bold'
+                });
+                retryBtn.onclick = () => {
+                    content.removeChild(retryBtn);
+                    progressBar.style.width = '0%';
+                    statusDiv.style.color = '#855cd6';
+                    statusDiv.innerText = 'Starting download…';
+                    startDownload();
+                };
+                content.appendChild(retryBtn);
             }
         };
 
-        content.appendChild(fileInput);
-        overlay.appendChild(content);
-        document.body.appendChild(overlay);
+        startDownload();
     });
-
-    return _modalPromise;
 };
 
 export {isLoaded, getLlmInference, loadModel, generate, showLoadModal};

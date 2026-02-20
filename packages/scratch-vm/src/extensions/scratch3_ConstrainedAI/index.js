@@ -10,6 +10,19 @@ const defaultLists = require("./default-lists");
 
 const log = require('../../util/log');
 
+/**
+ * URL of the hosted model file.  Set to match the value in ai-model-manager.js
+ * once you have uploaded the Gemma 3n model to a public CDN (e.g. Cloudflare R2).
+ * When null the auto-download button is hidden and users must load from a file.
+ */
+const MODEL_URL = null;
+
+/**
+ * OPFS filename — must match the value used in ai-model-manager.js so both
+ * the extension and the GUI model manager share the same on-disk cache.
+ */
+const OPFS_FILENAME = 'gemma-model.bin';
+
 class Scratch3ConstrainedAIBlocks {
     constructor(runtime) {
         this.runtime = runtime;
@@ -39,9 +52,9 @@ class Scratch3ConstrainedAIBlocks {
         this.ensureDefaultLists();
         this.runtime.on('PROJECT_LOADED', this.ensureDefaultLists.bind(this));
 
-        // Show the startup modal to load the model
+        // Show the startup modal to load the model (or silently load from OPFS cache)
         if (typeof document !== 'undefined') {
-            this.showLoadModal();
+            this.showLoadModal().catch(() => {}); // catch handles user cancellation
         }
     }
 
@@ -216,12 +229,12 @@ class Scratch3ConstrainedAIBlocks {
     async loadModel(args) {
         if (this.modelLoaded || this.isLoading) return Promise.resolve();
         this.isLoading = true;
-        
+
         try {
             const genai = require('@mediapipe/tasks-genai');
             const FilesetResolver = genai.FilesetResolver;
             const LlmInference = genai.LlmInference;
-            
+
             const filesetResolver = await FilesetResolver.forGenAiTasks(
                 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai@0.10.26/wasm'
             );
@@ -242,159 +255,374 @@ class Scratch3ConstrainedAIBlocks {
         }
     }
 
-    showLoadModal() {
-        // Create modal overlay
-        const overlay = document.createElement('div');
-        overlay.style.position = 'fixed';
-        overlay.style.top = '0';
-        overlay.style.left = '0';
-        overlay.style.width = '100%';
-        overlay.style.height = '100%';
-        overlay.style.backgroundColor = 'rgba(0,0,0,0.6)';
-        overlay.style.display = 'flex';
-        overlay.style.justifyContent = 'center';
-        overlay.style.alignItems = 'center';
-        overlay.style.zIndex = '20000'; // Make sure it's on top of Scratch GUI
-        overlay.id = 'llm-load-modal';
+    // -------------------------------------------------------------------------
+    // OPFS helpers (mirrors ai-model-manager.js — same OPFS_FILENAME means the
+    // extension and the GUI model manager share the same on-disk cache)
+    // -------------------------------------------------------------------------
 
-        // Create modal content box
-        const content = document.createElement('div');
-        content.style.backgroundColor = 'white';
-        content.style.padding = '30px';
-        content.style.borderRadius = '15px';
-        content.style.width = '550px';
-        content.style.maxWidth = '90%';
-        content.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
-        content.style.textAlign = 'center';
-        content.style.fontFamily = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+    async _checkOpfsCache() {
+        try {
+            const root = await navigator.storage.getDirectory();
+            const fh = await root.getFileHandle(OPFS_FILENAME);
+            const file = await fh.getFile();
+            if (file.size === 0) return null;
+            return URL.createObjectURL(file);
+        } catch {
+            return null;
+        }
+    }
 
-        // Heading
-        const heading = document.createElement('h2');
-        heading.innerText = 'Setup Gemma AI';
-        heading.style.marginTop = '0';
-        heading.style.color = '#4c97ff'; // Scratch blue
-        content.appendChild(heading);
+    async _saveFileToOpfsCache(file) {
+        try {
+            const root = await navigator.storage.getDirectory();
+            const fh = await root.getFileHandle(OPFS_FILENAME, {create: true});
+            const writable = await fh.createWritable();
+            await writable.write(file);
+            await writable.close();
+        } catch (err) {
+            console.warn('Failed to cache model to OPFS:', err);
+        }
+    }
 
-        // Explanation text
-        const text = document.createElement('p');
-        text.style.lineHeight = '1.5';
-        text.style.color = '#575e75';
-        text.innerHTML = `
-            This extension runs Google's <b>Gemma 3n</b> AI model directly on your computer.<br><br>
-            To use it, you must first download the model file (approx 1.7GB) from the official website.
-        `;
-        content.appendChild(text);
+    async _downloadModelToOpfs(url, onProgress) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status} — ${response.statusText}`);
+        const total = parseInt(response.headers.get('content-length') || '0', 10);
 
-        // Link button
-        const linkBtn = document.createElement('a');
-        linkBtn.href = 'https://deepmind.google/models/gemma/gemma-3n/';
-        linkBtn.target = '_blank';
-        linkBtn.innerText = 'Open Gemma Download Page ↗';
-        linkBtn.style.display = 'inline-block';
-        linkBtn.style.margin = '10px 0 20px 0';
-        linkBtn.style.color = '#4c97ff';
-        linkBtn.style.textDecoration = 'none';
-        linkBtn.style.fontWeight = 'bold';
-        content.appendChild(linkBtn);
-        
-        content.appendChild(document.createElement('br'));
+        const root = await navigator.storage.getDirectory();
+        const fh = await root.getFileHandle(OPFS_FILENAME, {create: true});
+        const writable = await fh.createWritable();
+        const reader = response.body.getReader();
 
-        // Load button
-        const loadBtn = document.createElement('button');
-        loadBtn.innerText = 'Load model file from my computer';
-        loadBtn.style.backgroundColor = '#4c97ff';
-        loadBtn.style.color = 'white';
-        loadBtn.style.border = 'none';
-        loadBtn.style.padding = '12px 24px';
-        loadBtn.style.fontSize = '16px';
-        loadBtn.style.borderRadius = '25px';
-        loadBtn.style.cursor = 'pointer';
-        loadBtn.style.fontWeight = 'bold';
-        loadBtn.style.transition = '0.2s';
-        
-        loadBtn.onmouseover = () => loadBtn.style.transform = 'scale(1.05)';
-        loadBtn.onmouseout = () => loadBtn.style.transform = 'scale(1.0)';
-        
-        content.appendChild(loadBtn);
+        let received = 0;
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            await writable.write(value);
+            received += value.length;
+            onProgress(received, total);
+        }
+        await writable.close();
 
-        // Status area
-        const statusDiv = document.createElement('div');
-        statusDiv.style.marginTop = '20px';
-        statusDiv.style.minHeight = '30px';
-        statusDiv.style.color = '#855cd6';
-        statusDiv.style.fontSize = '14px';
-        content.appendChild(statusDiv);
+        const cached = await (await root.getFileHandle(OPFS_FILENAME)).getFile();
+        return URL.createObjectURL(cached);
+    }
 
-        // Spinner (hidden by default)
-        const spinner = document.createElement('div');
-        spinner.className = 'llm-spinner';
-        spinner.style.display = 'none';
-        spinner.style.margin = '10px auto';
-        spinner.style.border = '4px solid #f3f3f3';
-        spinner.style.borderTop = '4px solid #4c97ff';
-        spinner.style.borderRadius = '50%';
-        spinner.style.width = '30px';
-        spinner.style.height = '30px';
-        
-        // Add spinner animation style
-        const styleSheet = document.createElement("style");
-        styleSheet.innerText = `
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-            .llm-spinner { animation: spin 1s linear infinite; }
-        `;
-        document.head.appendChild(styleSheet);
-        content.appendChild(spinner);
-
-        // File input (hidden)
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = '.bin,.task,.litertlm';
-        fileInput.style.display = 'none';
-        
-        // Connect button to file input
-        loadBtn.onclick = () => fileInput.click();
-
-        // Handle file selection
-        fileInput.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // UI Updates
-            loadBtn.disabled = true;
-            loadBtn.style.opacity = '0.5';
-            loadBtn.innerText = 'Loading...';
-            spinner.style.display = 'block';
-            statusDiv.innerText = `Loading ${file.name}... (This may take a moment)`;
-
-            try {
-                const objectUrl = URL.createObjectURL(file);
-                await this.loadModel({ URL: objectUrl });
-                
-                // Success
-                spinner.style.display = 'none';
-                statusDiv.style.color = 'green';
-                statusDiv.innerText = 'Success! Model loaded.';
-                
+    _showToast(text) {
+        const toast = document.createElement('div');
+        Object.assign(toast.style, {
+            position: 'fixed',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'rgba(76,151,255,0.95)',
+            color: 'white',
+            padding: '10px 22px',
+            borderRadius: '20px',
+            fontSize: '14px',
+            fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+            zIndex: '20001',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            transition: 'opacity 0.5s',
+            opacity: '1'
+        });
+        toast.innerText = text;
+        document.body.appendChild(toast);
+        return {
+            setText: t => { toast.innerText = t; },
+            dismiss: () => {
+                toast.style.opacity = '0';
                 setTimeout(() => {
-                    document.body.removeChild(overlay);
-                }, 1500);
-
-            } catch (err) {
-                console.error(err);
-                spinner.style.display = 'none';
-                statusDiv.style.color = 'red';
-                statusDiv.innerText = 'Error loading model: ' + err.message;
-                
-                // Reset button
-                loadBtn.disabled = false;
-                loadBtn.style.opacity = '1';
-                loadBtn.innerText = 'Try again';
+                    if (document.body.contains(toast)) document.body.removeChild(toast);
+                }, 500);
             }
         };
+    }
 
-        content.appendChild(fileInput);
-        overlay.appendChild(content);
-        document.body.appendChild(overlay);
+    // -------------------------------------------------------------------------
+    // Modal
+    // -------------------------------------------------------------------------
+
+    async showLoadModal() {
+        // 1. Check OPFS cache — load silently if found
+        const cachedUrl = await this._checkOpfsCache();
+        if (cachedUrl) {
+            const toast = this._showToast('Loading cached AI model…');
+            try {
+                await this.loadModel({URL: cachedUrl});
+                toast.setText('AI model ready!');
+                setTimeout(() => toast.dismiss(), 2000);
+                return;
+            } catch (err) {
+                toast.dismiss();
+                console.warn('Cached model failed to load, showing modal:', err);
+                // Fall through to interactive modal
+            }
+        }
+
+        // 2. Show interactive modal
+        return new Promise((resolve, reject) => {
+            // ---- Overlay ----
+            const overlay = document.createElement('div');
+            overlay.id = 'llm-load-modal';
+            Object.assign(overlay.style, {
+                position: 'fixed',
+                top: '0', left: '0',
+                width: '100%', height: '100%',
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: '20000'
+            });
+
+            const content = document.createElement('div');
+            Object.assign(content.style, {
+                backgroundColor: 'white',
+                padding: '30px',
+                borderRadius: '15px',
+                width: '550px',
+                maxWidth: '90%',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                textAlign: 'center',
+                fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+                position: 'relative'
+            });
+
+            const removeModal = () => {
+                if (document.body.contains(overlay)) document.body.removeChild(overlay);
+            };
+
+            // ---- Close button ----
+            const closeBtn = document.createElement('button');
+            closeBtn.innerText = '✕';
+            Object.assign(closeBtn.style, {
+                position: 'absolute',
+                top: '12px', right: '16px',
+                background: 'none',
+                border: 'none',
+                fontSize: '18px',
+                cursor: 'pointer',
+                color: '#999'
+            });
+            closeBtn.onclick = () => { removeModal(); reject(new Error('cancelled')); };
+            content.appendChild(closeBtn);
+
+            // ---- Heading ----
+            const heading = document.createElement('h2');
+            heading.innerText = 'Setup Gemma AI';
+            heading.style.marginTop = '0';
+            heading.style.color = '#4c97ff';
+            content.appendChild(heading);
+
+            // ---- Description ----
+            const text = document.createElement('p');
+            text.style.lineHeight = '1.5';
+            text.style.color = '#575e75';
+            text.innerHTML = MODEL_URL
+                ? `This extension runs Google's <b>Gemma 3n</b> AI model directly on your computer.<br><br>
+                   You can download it automatically below (~1.7 GB), or load a file you've already downloaded.`
+                : `This extension runs Google's <b>Gemma 3n</b> AI model directly on your computer.<br><br>
+                   To use it, you must first download the model file (approx 1.7 GB) from the official website.`;
+            content.appendChild(text);
+
+            if (!MODEL_URL) {
+                const linkBtn = document.createElement('a');
+                linkBtn.href = 'https://deepmind.google/models/gemma/gemma-3n/';
+                linkBtn.target = '_blank';
+                linkBtn.innerText = 'Open Gemma Download Page ↗';
+                Object.assign(linkBtn.style, {
+                    display: 'inline-block',
+                    margin: '10px 0 20px 0',
+                    color: '#4c97ff',
+                    textDecoration: 'none',
+                    fontWeight: 'bold'
+                });
+                content.appendChild(linkBtn);
+                content.appendChild(document.createElement('br'));
+            }
+
+            // ---- Spinner ----
+            const spinner = document.createElement('div');
+            spinner.className = 'llm-spinner';
+            Object.assign(spinner.style, {
+                display: 'none',
+                margin: '10px auto',
+                border: '4px solid #f3f3f3',
+                borderTop: '4px solid #4c97ff',
+                borderRadius: '50%',
+                width: '30px',
+                height: '30px'
+            });
+            if (!document.getElementById('llm-spinner-style')) {
+                const styleEl = document.createElement('style');
+                styleEl.id = 'llm-spinner-style';
+                styleEl.innerText =
+                    '@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}' +
+                    '.llm-spinner{animation:spin 1s linear infinite}';
+                document.head.appendChild(styleEl);
+            }
+
+            // ---- Progress bar (download only) ----
+            const progressWrap = document.createElement('div');
+            Object.assign(progressWrap.style, {
+                display: 'none',
+                width: '100%',
+                backgroundColor: '#eee',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                margin: '10px 0 4px 0'
+            });
+            const progressBar = document.createElement('div');
+            Object.assign(progressBar.style, {
+                height: '10px',
+                width: '0%',
+                backgroundColor: '#4c97ff',
+                transition: 'width 0.2s'
+            });
+            progressWrap.appendChild(progressBar);
+
+            // ---- Status text ----
+            const statusDiv = document.createElement('div');
+            Object.assign(statusDiv.style, {
+                marginTop: '16px',
+                minHeight: '30px',
+                color: '#855cd6',
+                fontSize: '14px'
+            });
+
+            const setProgress = (received, total) => {
+                const mb = n => `${(n / 1e6).toFixed(0)} MB`;
+                if (total > 0) {
+                    const pct = Math.round((received / total) * 100);
+                    progressBar.style.width = `${pct}%`;
+                    statusDiv.innerText = `Downloading… ${mb(received)} / ${mb(total)} (${pct}%)`;
+                } else {
+                    statusDiv.innerText = `Downloading… ${(received / 1e6).toFixed(0)} MB received`;
+                }
+            };
+
+            const setButtonsDisabled = disabled => {
+                if (downloadBtn) {
+                    downloadBtn.disabled = disabled;
+                    downloadBtn.style.opacity = disabled ? '0.5' : '1';
+                }
+                fileBtn.disabled = disabled;
+                fileBtn.style.opacity = disabled ? '0.5' : '1';
+            };
+
+            // ---- Auto-download button ----
+            // eslint-disable-next-line no-var
+            var downloadBtn = null;
+            if (MODEL_URL) {
+                downloadBtn = document.createElement('button');
+                downloadBtn.innerText = 'Download automatically (~1.7 GB)';
+                Object.assign(downloadBtn.style, {
+                    backgroundColor: '#4c97ff',
+                    color: 'white',
+                    border: 'none',
+                    padding: '12px 24px',
+                    fontSize: '16px',
+                    borderRadius: '25px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    display: 'block',
+                    margin: '10px auto 10px auto',
+                    transition: '0.2s'
+                });
+                downloadBtn.onmouseover = () => { downloadBtn.style.transform = 'scale(1.05)'; };
+                downloadBtn.onmouseout = () => { downloadBtn.style.transform = 'scale(1.0)'; };
+                downloadBtn.onclick = async () => {
+                    setButtonsDisabled(true);
+                    progressWrap.style.display = 'block';
+                    statusDiv.style.color = '#855cd6';
+                    statusDiv.innerText = 'Starting download…';
+                    try {
+                        const url = await this._downloadModelToOpfs(MODEL_URL, setProgress);
+                        statusDiv.innerText = 'Loading model into memory…';
+                        spinner.style.display = 'block';
+                        await this.loadModel({URL: url});
+                        spinner.style.display = 'none';
+                        statusDiv.style.color = 'green';
+                        statusDiv.innerText = 'Model downloaded and ready!';
+                        setTimeout(() => { removeModal(); resolve(); }, 1500);
+                    } catch (err) {
+                        spinner.style.display = 'none';
+                        progressWrap.style.display = 'none';
+                        statusDiv.style.color = 'red';
+                        statusDiv.innerText = `Download failed: ${err.message}`;
+                        setButtonsDisabled(false);
+                    }
+                };
+                content.appendChild(downloadBtn);
+
+                const orDiv = document.createElement('div');
+                orDiv.style.color = '#bbb';
+                orDiv.style.margin = '4px 0';
+                orDiv.style.fontSize = '13px';
+                orDiv.innerText = 'or';
+                content.appendChild(orDiv);
+            }
+
+            // ---- File-picker button ----
+            // eslint-disable-next-line no-var
+            var fileBtn = document.createElement('button');
+            const fileBtnIsPrimary = !MODEL_URL;
+            fileBtn.innerText = MODEL_URL ? 'Load from my computer' : 'Load model file from my computer';
+            Object.assign(fileBtn.style, {
+                backgroundColor: fileBtnIsPrimary ? '#4c97ff' : 'transparent',
+                color: fileBtnIsPrimary ? 'white' : '#4c97ff',
+                border: fileBtnIsPrimary ? 'none' : '2px solid #4c97ff',
+                padding: fileBtnIsPrimary ? '12px 24px' : '8px 18px',
+                fontSize: fileBtnIsPrimary ? '16px' : '14px',
+                borderRadius: '25px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                transition: '0.2s'
+            });
+            fileBtn.onmouseover = () => { fileBtn.style.transform = 'scale(1.05)'; };
+            fileBtn.onmouseout = () => { fileBtn.style.transform = 'scale(1.0)'; };
+            content.appendChild(fileBtn);
+
+            content.appendChild(progressWrap);
+            content.appendChild(statusDiv);
+            content.appendChild(spinner);
+
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.bin,.task,.litertlm';
+            fileInput.style.display = 'none';
+            fileBtn.onclick = () => fileInput.click();
+
+            fileInput.onchange = async e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                setButtonsDisabled(true);
+                spinner.style.display = 'block';
+                statusDiv.style.color = '#855cd6';
+                statusDiv.innerText = `Loading ${file.name}… (This may take a moment)`;
+                try {
+                    await this.loadModel({URL: URL.createObjectURL(file)});
+                    // Cache in background — don't block resolve
+                    this._saveFileToOpfsCache(file);
+                    spinner.style.display = 'none';
+                    statusDiv.style.color = 'green';
+                    statusDiv.innerText = 'Model loaded! Saving to cache for next time…';
+                    setTimeout(() => { removeModal(); resolve(); }, 1500);
+                } catch (err) {
+                    spinner.style.display = 'none';
+                    statusDiv.style.color = 'red';
+                    statusDiv.innerText = `Error loading model: ${err.message}`;
+                    setButtonsDisabled(false);
+                    fileBtn.innerText = 'Try again';
+                }
+            };
+
+            content.appendChild(fileInput);
+            overlay.appendChild(content);
+            document.body.appendChild(overlay);
+        });
     }
 
     askAIAndWait(args, util) {

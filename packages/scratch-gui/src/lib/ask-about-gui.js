@@ -100,6 +100,31 @@ const askAboutGui = vm => {
     Object.assign(sub.style, {color: '#575e75', lineHeight: '1.5', marginBottom: '16px'});
     content.appendChild(sub);
 
+    const suggestedPrompts = ['What does this do?', 'Explain the code'];
+    const suggestionsRow = document.createElement('div');
+    Object.assign(suggestionsRow.style, {
+        display: 'flex', gap: '8px', justifyContent: 'center',
+        flexWrap: 'wrap', marginBottom: '14px'
+    });
+    suggestedPrompts.forEach(prompt => {
+        const btn = document.createElement('button');
+        btn.innerText = prompt;
+        Object.assign(btn.style, {
+            backgroundColor: 'white', color: '#4c97ff',
+            border: '2px solid #4c97ff', padding: '6px 16px',
+            fontSize: '13px', borderRadius: '20px',
+            cursor: 'pointer', fontWeight: '600'
+        });
+        btn.onmouseenter = () => { btn.style.backgroundColor = '#eef4ff'; };
+        btn.onmouseleave = () => { btn.style.backgroundColor = 'white'; };
+        btn.onclick = () => {
+            input.value = prompt;
+            handleAsk();
+        };
+        suggestionsRow.appendChild(btn);
+    });
+    content.appendChild(suggestionsRow);
+
     const input = document.createElement('input');
     input.type = 'text';
     input.placeholder = 'e.g. What does this project do?';
@@ -173,10 +198,19 @@ const askAboutGui = vm => {
     document.body.appendChild(overlay);
     input.focus();
 
+    const setSuggestionButtonsDisabled = disabled => {
+        suggestionsRow.querySelectorAll('button').forEach(btn => {
+            btn.disabled = disabled;
+            btn.style.opacity = disabled ? '0.5' : '1';
+            btn.style.cursor = disabled ? 'default' : 'pointer';
+        });
+    };
+
     const setLoading = msg => {
         input.disabled = true;
         askBtn.disabled = true;
         askBtn.style.opacity = '0.5';
+        setSuggestionButtonsDisabled(true);
         spinner.style.display = 'block';
         answerDiv.style.display = 'none';
         statusDiv.style.color = '#575e75';
@@ -203,6 +237,7 @@ const askAboutGui = vm => {
         input.disabled = false;
         askBtn.disabled = false;
         askBtn.style.opacity = '1';
+        setSuggestionButtonsDisabled(false);
     };
 
     const handleAsk = async () => {
