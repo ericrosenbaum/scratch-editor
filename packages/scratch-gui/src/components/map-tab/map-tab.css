@@ -1,0 +1,227 @@
+@import "../../css/colors.css";
+
+.map-tab {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    background-color: $ui-white;
+    padding: 1.25rem 1.5rem;
+    box-sizing: border-box;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: $text-primary;
+}
+
+/* Project Header */
+
+.project-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid $ui-tertiary;
+}
+
+.project-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 0.25rem;
+}
+
+.project-description {
+    font-size: 0.875rem;
+    color: $text-primary-transparent;
+    font-style: italic;
+}
+
+/* Sprite Sections */
+
+.sprite-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sprite-section {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 2px solid $ui-tertiary;
+    transition: border-color 0.1s, box-shadow 0.1s;
+}
+
+.sprite-section.is-selected {
+    border-color: $looks-secondary;
+    box-shadow: 0 0 0 3px $looks-transparent;
+}
+
+.sprite-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    background-color: $ui-secondary;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.1s;
+}
+
+.sprite-header:hover {
+    background-color: $ui-tertiary;
+}
+
+.sprite-thumbnail-container {
+    width: 3.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sprite-thumbnail {
+    max-height: 2.5rem;
+    max-width: 3.5rem;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.sprite-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.sprite-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: $text-primary;
+}
+
+.sprite-description {
+    font-size: 0.78rem;
+    color: $text-primary-transparent;
+    font-weight: 400;
+}
+
+/* Behavior Sections */
+
+.behavior-list {
+    padding: 0.5rem 0;
+    background-color: $ui-white;
+}
+
+.behavior-section {
+    padding: 0.25rem 0.75rem 0.25rem 1.5rem;
+}
+
+.behavior-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.25rem 0;
+}
+
+.behavior-header:hover .behavior-event {
+    color: $motion-primary;
+}
+
+.behavior-event {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: $motion-tertiary;
+    font-family: monospace;
+}
+
+.behavior-description {
+    font-size: 0.85rem;
+    color: $text-primary-transparent;
+    padding: 0.1rem 0 0.35rem 1.35rem;
+    line-height: 1.4;
+}
+
+/* Detail Items */
+
+.detail-list {
+    margin: 0.25rem 0 0.5rem 1.35rem;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-item {
+    font-size: 0.85rem;
+    color: $text-primary;
+    line-height: 1.6;
+    padding-left: 0.75rem;
+    position: relative;
+}
+
+.detail-item::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: $text-primary-transparent;
+}
+
+/* Chevron */
+
+.chevron {
+    font-size: 0.6rem;
+    color: $text-primary-transparent;
+    flex-shrink: 0;
+    width: 0.75rem;
+    text-align: center;
+}
+
+/* Inline editable value token */
+
+.inline-input {
+    display: inline;
+    font-family: inherit;
+    font-size: inherit;
+    color: $motion-tertiary;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid $motion-primary;
+    outline: none;
+    padding: 0 0.15rem;
+    min-width: 1.5rem;
+    text-align: center;
+    cursor: text;
+    border-radius: 0;
+}
+
+.inline-input:focus {
+    background-color: $ui-primary;
+    border-radius: 0.25rem;
+    border-bottom-color: $motion-tertiary;
+}
+
+/* Inline menu token */
+
+.inline-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1rem;
+    background-color: hsla(215, 100%, 65%, 0.12);
+    color: $motion-tertiary;
+    border: 1px solid hsla(215, 100%, 65%, 0.3);
+    border-radius: 0.75rem;
+    padding: 0 0.4rem;
+    font-size: 0.8em;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    vertical-align: baseline;
+}
+
+.inline-menu:hover {
+    background-color: hsla(215, 100%, 65%, 0.22);
+}

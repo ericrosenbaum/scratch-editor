@@ -12,6 +12,7 @@ import Renderer from '@scratch/scratch-render';
 
 import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
+import MapTab from '../map-tab/map-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
@@ -39,6 +40,7 @@ import {DEFAULT_THEME, themeMap} from '../../lib/settings/theme/index.js';
 import {AccountMenuOptionsPropTypes} from '../../lib/account-menu-options';
 
 import styles from './gui.css';
+import mapIcon from './icon--map.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
@@ -413,6 +415,21 @@ const GUIComponent = props => {
                                         >
                                             <img
                                                 draggable={false}
+                                                src={mapIcon}
+                                            />
+                                            <FormattedMessage
+                                                defaultMessage="Map"
+                                                description="Button to get to the map panel"
+                                                id="gui.gui.mapTab"
+                                            />
+                                        </Tab>
+                                        <Tab
+                                            className={tabClassNames.tab}
+                                            tabIndex="0"
+                                            role="tab"
+                                        >
+                                            <img
+                                                draggable={false}
                                                 src={codeIcon}
                                             />
                                             <FormattedMessage
@@ -463,6 +480,12 @@ const GUIComponent = props => {
                                         </Tab>
                                     </TabList>
                                 </Box>
+                                <TabPanel
+                                    className={tabClassNames.tabPanel}
+                                    role="tabpanel"
+                                >
+                                    <MapTab />
+                                </TabPanel>
                                 <TabPanel
                                     className={tabClassNames.tabPanel}
                                     role="tabpanel"
@@ -578,6 +601,7 @@ GUIComponent.propTypes = {
     backpackHost: PropTypes.string,
     backpackVisible: PropTypes.bool,
     basePath: PropTypes.string,
+    mapTabVisible: PropTypes.bool,
     blocksTabVisible: PropTypes.bool,
     blocksId: PropTypes.string,
     canChangeLanguage: PropTypes.bool,
