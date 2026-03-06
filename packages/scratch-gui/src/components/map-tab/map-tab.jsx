@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
+import {createPortal} from 'react-dom';
 import {connect} from 'react-redux';
 import styles from './map-tab.css';
 import catFlyingThumb from './sprite--cat-flying.svg';
@@ -19,8 +20,8 @@ const MAP_DATA = {
                     event: 'when green flag clicked',
                     description: 'The cat glides left and right in a loop',
                     details: [
-                        'Glide [[40]] steps each way.',
-                        'Each glide takes [[0.5]] seconds.',
+                        'Glide [[40|range=0:240]] steps each way.',
+                        'Each glide takes [[0.5|range=0:5:0.1]] seconds.',
                         'Switch costume between [[cat-flying-a|menu=looks_costume]] and [[cat-flying-a2|menu=looks_costume]] to face the direction of motion.'
                     ]
                 }
@@ -35,14 +36,14 @@ const MAP_DATA = {
                     event: 'when green flag clicked',
                     description: 'The person dances by changing costumes in a loop.',
                     details: [
-                        'Change to the next costume every [[0.5]] seconds.'
+                        'Change to the next costume every [[0.5|range=0:5:0.1]] seconds.'
                     ]
                 },
                 {
                     event: 'when green flag clicked',
                     description: 'After a short wait, the person suggests joining in.',
                     details: [
-                        'Wait [[2]] seconds.',
+                        'Wait [[2|range=0:30]] seconds.',
                         'Say [[Join the dance party by remixing this project and adding another sprite!]].'
                     ]
                 }
@@ -57,7 +58,7 @@ const MAP_DATA = {
                     event: 'when green flag clicked',
                     description: 'The person dances by changing costumes in a loop.',
                     details: [
-                        'Change to the next costume every [[0.5]] seconds.'
+                        'Change to the next costume every [[0.5|range=0:5:0.1]] seconds.'
                     ]
                 }
             ]
@@ -72,7 +73,7 @@ const MAP_DATA = {
                     description: 'The dancefloor plays music and animates a colorful floor.',
                     details: [
                         'Play sound [[Dance Energetic|menu=sound_sounds_menu]] in a loop.',
-                        'Switch to the next backdrop every [[0.25]] seconds.'
+                        'Switch to the next backdrop every [[0.25|range=0:5:0.05]] seconds.'
                     ]
                 }
             ]
@@ -80,12 +81,22 @@ const MAP_DATA = {
     ]
 };
 
+// Guess a reasonable slider step from the default value string.
+// "40" → 1, "0.5" → 0.1, "0.25" → 0.05
+function guessStep (valueStr) {
+    const dot = valueStr.indexOf('.');
+    if (dot < 0) return 1;
+    return Math.pow(10, -(valueStr.length - dot - 1));
+}
+
 // Parse a detail string into segments: plain text, editable value, or menu value.
-// e.g. "Wait [[2]] seconds." → [{type:'text', content:'Wait '}, {type:'value', content:'2'}, {type:'text', content:' seconds.'}]
+// e.g. "Wait [[2]] seconds." → [{type:'text', content:'Wait '}, ...]
+// e.g. "[[40|range=0:240]]" → [{type:'value', content:'40', min:0, max:240, step:1}]
+// e.g. "[[0.5|range=0:5:0.1]]" → [{type:'value', content:'0.5', min:0, max:5, step:0.1}]
 // e.g. "[[cat-a|menu=looks_costume]]" → [{type:'menu', content:'cat-a', menuId:'looks_costume'}]
 function parseDetail (text) {
     const parts = [];
-    const regex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+    const regex = /\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g;
     let lastIndex = 0;
     let match;
     while ((match = regex.exec(text)) !== null) {
@@ -96,6 +107,12 @@ function parseDetail (text) {
         const meta = match[2];
         if (meta && meta.startsWith('menu=')) {
             parts.push({type: 'menu', content: value, menuId: meta.slice(5)});
+        } else if (meta && meta.startsWith('range=')) {
+            const rangeParts = meta.slice(6).split(':');
+            const min = parseFloat(rangeParts[0]);
+            const max = parseFloat(rangeParts[1]);
+            const step = rangeParts[2] !== undefined ? parseFloat(rangeParts[2]) : guessStep(value);
+            parts.push({type: 'value', content: value, min, max, step});
         } else {
             parts.push({type: 'value', content: value});
         }
@@ -107,12 +124,104 @@ function parseDetail (text) {
     return parts;
 }
 
+// Numeric input with a vertical slider popup for values that have a range specified.
+function InlineNumericInput ({defaultValue, min, max, step}) {
+    const [value, setValue] = useState(defaultValue);
+    const [popupAnchor, setPopupAnchor] = useState(null);
+    const inputRef = useRef(null);
+    const popupRef = useRef(null);
+
+    // Close on click outside
+    useEffect(() => {
+        if (!popupAnchor) return;
+        const handlePointerDown = e => {
+            if (
+                popupRef.current && !popupRef.current.contains(e.target) &&
+                inputRef.current && !inputRef.current.contains(e.target)
+            ) {
+                setPopupAnchor(null);
+            }
+        };
+        // Close on scroll (popup is fixed, input may move)
+        const handleScroll = () => setPopupAnchor(null);
+        document.addEventListener('pointerdown', handlePointerDown, true);
+        window.addEventListener('scroll', handleScroll, true);
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown, true);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [popupAnchor]);
+
+    const openSlider = () => {
+        if (!inputRef.current) return;
+        const rect = inputRef.current.getBoundingClientRect();
+        setPopupAnchor({x: rect.left + rect.width / 2, y: rect.top - 6});
+    };
+
+    const numValue = parseFloat(value);
+    const clampedValue = isNaN(numValue) ? min : Math.max(min, Math.min(max, numValue));
+
+    return (
+        <>
+            <input
+                ref={inputRef}
+                className={`${styles.inlineInput}${popupAnchor ? ` ${styles.inlineInputActive}` : ''}`}
+                value={value}
+                size={Math.max(1, String(value).length)}
+                onChange={e => setValue(e.target.value)}
+                onClick={openSlider}
+                onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === 'Escape') {
+                        setPopupAnchor(null);
+                        e.currentTarget.blur();
+                    }
+                }}
+            />
+            {popupAnchor && createPortal(
+                <div
+                    ref={popupRef}
+                    className={styles.sliderPopup}
+                    style={{
+                        position: 'fixed',
+                        left: popupAnchor.x,
+                        top: popupAnchor.y,
+                        transform: 'translate(-50%, -100%)'
+                    }}
+                >
+                    <div className={styles.sliderValue}>{value}</div>
+                    <input
+                        type="range"
+                        className={styles.verticalSlider}
+                        min={min}
+                        max={max}
+                        step={step}
+                        value={clampedValue}
+                        onChange={e => setValue(e.target.value)}
+                    />
+                </div>,
+                document.body
+            )}
+        </>
+    );
+}
+
 function DetailText ({text}) {
     const parts = parseDetail(text);
     return (
         <span>
             {parts.map((part, i) => {
                 if (part.type === 'value') {
+                    if (part.min !== undefined && part.max !== undefined) {
+                        return (
+                            <InlineNumericInput
+                                key={i}
+                                defaultValue={part.content}
+                                min={part.min}
+                                max={part.max}
+                                step={part.step}
+                            />
+                        );
+                    }
                     return (
                         <input
                             key={i}

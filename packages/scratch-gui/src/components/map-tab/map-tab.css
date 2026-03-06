@@ -198,10 +198,48 @@
     border-radius: 0;
 }
 
-.inline-input:focus {
+.inline-input:focus,
+.inline-input-active {
     background-color: $ui-primary;
     border-radius: 0.25rem;
     border-bottom-color: $motion-tertiary;
+}
+
+/* Vertical slider popup */
+
+.slider-popup {
+    background: $ui-white;
+    border: 1.5px solid $motion-primary;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.75rem 0.6rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    z-index: 9999;
+    user-select: none;
+    pointer-events: all;
+}
+
+.slider-value {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $motion-tertiary;
+    font-family: monospace;
+    min-width: 2.5rem;
+    text-align: center;
+}
+
+.vertical-slider {
+    writing-mode: vertical-lr;
+    -webkit-appearance: slider-vertical;
+    appearance: slider-vertical;
+    height: 8rem;
+    width: 1.5rem;
+    cursor: pointer;
+    /* Flip so dragging up = higher value */
+    transform: scaleY(-1);
 }
 
 /* Inline menu token */
