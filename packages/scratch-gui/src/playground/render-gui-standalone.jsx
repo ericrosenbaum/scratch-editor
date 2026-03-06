@@ -50,6 +50,11 @@ export default appTarget => {
         window.onbeforeunload = () => true;
     }
 
+    // Default to the Dance Party project if no project ID in URL hash
+    if (!window.location.hash.match(/#\d+/)) {
+        history.replaceState(null, '', '#1105113583');
+    }
+
     const state = new EditorState({
         showTelemetryModal: simulateScratchDesktop
     });
