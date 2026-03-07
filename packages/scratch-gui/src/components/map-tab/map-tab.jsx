@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {createPortal} from 'react-dom';
 import {connect} from 'react-redux';
 import styles from './map-tab.css';
+import getCostumeUrl from '../../lib/get-costume-url';
 import catFlyingThumb from './sprite--cat-flying.svg';
 import caseyThumb from './sprite--casey.svg';
 import benThumb from './sprite--ben.svg';
@@ -249,13 +250,49 @@ function DetailText ({text}) {
     );
 }
 
-function MapTab ({editingTargetName}) {
+function MapTab ({editingTargetName, vm, sprites, stage}) {
+    const getThumbnailUrl = name => {
+        if (!vm || !vm.runtime.storage) return null;
+        const storage = vm.runtime.storage;
+        const spriteEntry = sprites && Object.values(sprites).find(s => s.name === name);
+        if (spriteEntry && spriteEntry.costume && spriteEntry.costume.asset) {
+            return getCostumeUrl(storage, spriteEntry.costume.asset);
+        }
+        if (stage && stage.name === name && stage.costume && stage.costume.asset) {
+            return getCostumeUrl(storage, stage.costume.asset);
+        }
+        return null;
+    };
+    const [mapData, setMapData] = useState(MAP_DATA);
+    const [isGenerating, setIsGenerating] = useState(false);
     const [expandedSprites, setExpandedSprites] = useState(new Set());
     const [expandedBehaviors, setExpandedBehaviors] = useState(new Set());
     const spriteRefs = useRef([]);
 
+    const generateMap = async () => {
+        if (!vm || isGenerating) return;
+        setIsGenerating(true);
+        try {
+            const projectJson = vm.toJSON();
+            const response = await fetch('http://localhost:3000/api/generate-map', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({projectJson})
+            });
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+            const {mapData: generated} = await response.json();
+            setMapData(generated);
+            setExpandedSprites(new Set());
+            setExpandedBehaviors(new Set());
+        } catch (err) {
+            console.error('Failed to generate map:', err);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     useEffect(() => {
-        const idx = MAP_DATA.sprites.findIndex(s => s.name === editingTargetName);
+        const idx = mapData.sprites.findIndex(s => s.name === editingTargetName);
         if (idx >= 0 && spriteRefs.current[idx]) {
             spriteRefs.current[idx].scrollIntoView({behavior: 'smooth', block: 'nearest'});
         }
@@ -282,14 +319,22 @@ function MapTab ({editingTargetName}) {
     return (
         <div className={styles.mapTab}>
             <div className={styles.projectHeader}>
-                <div className={styles.projectTitle}>{MAP_DATA.title}</div>
-                <div className={styles.projectDescription}>{MAP_DATA.description}</div>
+                <div className={styles.projectTitle}>{mapData.title}</div>
+                <div className={styles.projectDescription}>{mapData.description}</div>
+                <button
+                    className={styles.generateButton}
+                    onClick={generateMap}
+                    disabled={isGenerating}
+                >
+                    {isGenerating ? 'Generating…' : 'Generate'}
+                </button>
             </div>
 
             <div className={styles.spriteList}>
-                {MAP_DATA.sprites.map((sprite, si) => {
+                {mapData.sprites.map((sprite, si) => {
                     const spriteExpanded = expandedSprites.has(si);
                     const isSelected = sprite.name === editingTargetName;
+                    const thumbnailUrl = getThumbnailUrl(sprite.name) || sprite.thumbnail;
                     return (
                         <div
                             key={si}
@@ -304,11 +349,11 @@ function MapTab ({editingTargetName}) {
                                     {spriteExpanded ? '▼' : '▶'}
                                 </span>
                                 <span className={styles.spriteThumbnailContainer}>
-                                    {sprite.thumbnail && (
+                                    {thumbnailUrl && (
                                         <img
                                             className={styles.spriteThumbnail}
                                             draggable={false}
-                                            src={sprite.thumbnail}
+                                            src={thumbnailUrl}
                                         />
                                     )}
                                 </span>
@@ -380,7 +425,7 @@ const mapStateToProps = state => {
         editingTargetName = stage.name;
     }
 
-    return {editingTargetName};
+    return {editingTargetName, vm: state.scratchGui.vm, sprites, stage};
 };
 
 export default connect(mapStateToProps)(MapTab);

@@ -35,6 +35,28 @@
     font-style: italic;
 }
 
+.generate-button {
+    margin-top: 0.6rem;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $ui-white;
+    background-color: $motion-primary;
+    border: none;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: background-color 0.1s, opacity 0.1s;
+}
+
+.generate-button:hover:not(:disabled) {
+    background-color: $motion-tertiary;
+}
+
+.generate-button:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
 /* Sprite Sections */
 
 .sprite-list {
