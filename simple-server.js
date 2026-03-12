@@ -14,11 +14,25 @@ const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY});
 // OpenAI strict mode requires additionalProperties: false on all objects
 const MAP_DATA_SCHEMA = {
     type: 'object',
-    required: ['title', 'description', 'sprites'],
+    required: ['title', 'description', 'spriteOrder', 'groups', 'sprites'],
     additionalProperties: false,
     properties: {
         title: {type: 'string'},
         description: {type: 'string'},
+        spriteOrder: {type: 'array', items: {type: 'string'}},
+        groups: {
+            type: 'array',
+            items: {
+                type: 'object',
+                required: ['name', 'description', 'spriteNames'],
+                additionalProperties: false,
+                properties: {
+                    name: {type: 'string'},
+                    description: {type: 'string'},
+                    spriteNames: {type: 'array', items: {type: 'string'}}
+                }
+            }
+        },
         sprites: {
             type: 'array',
             items: {
@@ -56,9 +70,17 @@ async function projectJsonToText (projectJsonString) {
     });
 
     const scratchblocksMap = project.toScratchblocks();
-    const lines = [];
+    const targets = [...project.sprites, project.stage];
 
-    for (const target of [...project.sprites, project.stage]) {
+    // Preamble: list all sprite/stage names so the model knows exactly what to cover
+    const allNames = targets.map(t => (t === project.stage ? 'Stage' : t.name));
+    const lines = [
+        `This project has ${allNames.length} sprites/targets. You MUST include every one of them in the sprites array of your output, with no exceptions:`,
+        allNames.map((n, i) => `  ${i + 1}. ${n}`).join('\n'),
+        ''
+    ];
+
+    for (const target of targets) {
         const name = target.name;
         const isStage = target === project.stage;
         lines.push(`=== ${isStage ? 'Stage' : `Sprite: ${name}`} ===`);
@@ -90,10 +112,18 @@ app.post('/api/generate-map', async (req, res) => {
     }
 
     try {
+        const projectParsed = JSON.parse(projectJson);
+        const allTargetNames = (projectParsed.targets || []).map(t => (t.isStage ? 'Stage' : t.name));
+
         const projectText = await projectJsonToText(projectJson);
+
+        console.log('\n=== PROJECT TEXT INPUT ===');
+        console.log(projectText);
+        console.log(`=== END PROJECT TEXT (${projectText.length} chars) ===\n`);
 
         const response = await openai.chat.completions.create({
             model: 'gpt-4o',
+            max_tokens: 16000,
             messages: [
                 {role: 'system', content: SYSTEM_PROMPT_MAP},
                 {role: 'user', content: projectText}
@@ -108,8 +138,51 @@ app.post('/api/generate-map', async (req, res) => {
             }
         });
 
-        const content = response.choices[0].message.content;
-        res.json({mapData: JSON.parse(content)});
+        const rawContent = response.choices[0].message.content;
+        const finishReason = response.choices[0].finish_reason;
+        console.log('\n=== GENERATED MAP JSON ===');
+        console.log(rawContent);
+        console.log(`=== END MAP JSON (${rawContent.length} chars, finish_reason=${finishReason}) ===\n`);
+
+        if (finishReason === 'length') {
+            console.error('WARNING: Response was truncated due to max_tokens limit!');
+            return res.status(500).json({error: 'Response was truncated — project may be too large.'});
+        }
+
+        const mapData = JSON.parse(rawContent);
+
+        // Warn about any sprites that the model omitted from the output
+        const outputSpriteNames = new Set(mapData.sprites.map(s => s.name));
+        const missingSprites = allTargetNames.filter(n => !outputSpriteNames.has(n));
+        if (missingSprites.length > 0) {
+            console.warn(`WARNING: ${missingSprites.length} sprites were omitted from the map:`, missingSprites);
+        }
+
+        // Apply spriteOrder: sort sprites, intra-group spriteNames, and groups themselves.
+        // Sprites missing from spriteOrder sort to the end.
+        const orderMap = new Map((mapData.spriteOrder || []).map((n, i) => [n, i]));
+        const rank = name => (orderMap.has(name) ? orderMap.get(name) : Infinity);
+
+        mapData.sprites.sort((a, b) => rank(a.name) - rank(b.name));
+
+        for (const group of (mapData.groups || [])) {
+            group.spriteNames.sort((a, b) => rank(a) - rank(b));
+        }
+
+        // Sanitize groups: remove any spriteNames that don't match an actual sprite,
+        // and drop groups that end up empty after filtering.
+        mapData.groups = (mapData.groups || [])
+            .map(group => ({...group, spriteNames: group.spriteNames.filter(n => outputSpriteNames.has(n))}))
+            .filter(group => group.spriteNames.length > 0);
+
+        // Sort groups by the earliest-ranked sprite they contain (after sanitization).
+        mapData.groups.sort((a, b) => {
+            const aMin = Math.min(...a.spriteNames.map(rank));
+            const bMin = Math.min(...b.spriteNames.map(rank));
+            return aMin - bMin;
+        });
+
+        res.json({mapData});
     } catch (err) {
         console.error('Error generating map:', err);
         res.status(500).json({error: err.message});

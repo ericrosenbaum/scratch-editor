@@ -57,6 +57,60 @@
     cursor: default;
 }
 
+/* Group Sections */
+
+.group-section {
+    border-radius: 0.5rem;
+    border: 2px solid $ui-tertiary;
+    overflow: hidden;
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: $ui-tertiary;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.1s;
+}
+
+.group-header:hover {
+    filter: brightness(0.95);
+}
+
+.group-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.group-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: $text-primary;
+}
+
+.group-description {
+    font-size: 0.75rem;
+    color: $text-primary-transparent;
+    font-style: italic;
+}
+
+.group-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.5rem;
+    background-color: $ui-secondary;
+}
+
+.group-body .sprite-section {
+    border-width: 1.5px;
+}
+
 /* Sprite Sections */
 
 .sprite-list {

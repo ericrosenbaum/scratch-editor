@@ -11,6 +11,14 @@ import stageThumb from './sprite--stage.svg';
 const MAP_DATA = {
     title: 'Dance Party',
     description: 'Three characters dance to a music loop on a colorful dance floor',
+    spriteOrder: ['Cat Flying', 'Casey', 'Ben', 'Stage'],
+    groups: [
+        {
+            name: 'Dancers',
+            description: 'Characters that dance in a loop to the music.',
+            spriteNames: ['Casey', 'Ben']
+        }
+    ],
     sprites: [
         {
             name: 'Cat Flying',
@@ -263,11 +271,13 @@ function MapTab ({editingTargetName, vm, sprites, stage}) {
         }
         return null;
     };
+
     const [mapData, setMapData] = useState(MAP_DATA);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [expandedSprites, setExpandedSprites] = useState(new Set());
-    const [expandedBehaviors, setExpandedBehaviors] = useState(new Set());
-    const spriteRefs = useRef([]);
+    const [expandedSprites, setExpandedSprites] = useState(new Set());   // keyed by sprite name
+    const [expandedBehaviors, setExpandedBehaviors] = useState(new Set()); // keyed by "SpriteName-bi"
+    const [expandedGroups, setExpandedGroups] = useState(() => new Set((MAP_DATA.groups || []).map(g => g.name))); // keyed by group name
+    const spriteRefs = useRef({});  // keyed by sprite name
 
     const generateMap = async () => {
         if (!vm || isGenerating) return;
@@ -284,6 +294,7 @@ function MapTab ({editingTargetName, vm, sprites, stage}) {
             setMapData(generated);
             setExpandedSprites(new Set());
             setExpandedBehaviors(new Set());
+            setExpandedGroups(new Set((generated.groups || []).map(g => g.name)));
         } catch (err) {
             console.error('Failed to generate map:', err);
         } finally {
@@ -292,17 +303,16 @@ function MapTab ({editingTargetName, vm, sprites, stage}) {
     };
 
     useEffect(() => {
-        const idx = mapData.sprites.findIndex(s => s.name === editingTargetName);
-        if (idx >= 0 && spriteRefs.current[idx]) {
-            spriteRefs.current[idx].scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        if (editingTargetName && spriteRefs.current[editingTargetName]) {
+            spriteRefs.current[editingTargetName].scrollIntoView({behavior: 'smooth', block: 'nearest'});
         }
     }, [editingTargetName]);
 
-    const toggleSprite = si => {
+    const toggleSprite = name => {
         setExpandedSprites(prev => {
             const next = new Set(prev);
-            if (next.has(si)) next.delete(si);
-            else next.add(si);
+            if (next.has(name)) next.delete(name);
+            else next.add(name);
             return next;
         });
     };
@@ -315,6 +325,99 @@ function MapTab ({editingTargetName, vm, sprites, stage}) {
             return next;
         });
     };
+
+    const toggleGroup = name => {
+        setExpandedGroups(prev => {
+            const next = new Set(prev);
+            if (next.has(name)) next.delete(name);
+            else next.add(name);
+            return next;
+        });
+    };
+
+    const renderSprite = sprite => {
+        if (!sprite) return null;
+        const spriteExpanded = expandedSprites.has(sprite.name);
+        const isSelected = sprite.name === editingTargetName;
+        const thumbnailUrl = getThumbnailUrl(sprite.name) || sprite.thumbnail;
+        return (
+            <div
+                key={sprite.name}
+                ref={el => { spriteRefs.current[sprite.name] = el; }}
+                className={`${styles.spriteSection}${isSelected ? ` ${styles.isSelected}` : ''}`}
+            >
+                <div
+                    className={styles.spriteHeader}
+                    onClick={() => toggleSprite(sprite.name)}
+                >
+                    <span className={styles.chevron}>
+                        {spriteExpanded ? '▼' : '▶'}
+                    </span>
+                    <span className={styles.spriteThumbnailContainer}>
+                        {thumbnailUrl && (
+                            <img
+                                className={styles.spriteThumbnail}
+                                draggable={false}
+                                src={thumbnailUrl}
+                            />
+                        )}
+                    </span>
+                    <span className={styles.spriteHeaderText}>
+                        <span className={styles.spriteName}>{sprite.name}</span>
+                        {sprite.description && (
+                            <span className={styles.spriteDescription}>{sprite.description}</span>
+                        )}
+                    </span>
+                </div>
+
+                {spriteExpanded && (
+                    <div className={styles.behaviorList}>
+                        {sprite.behaviors.map((behavior, bi) => {
+                            const key = `${sprite.name}-${bi}`;
+                            const behaviorExpanded = expandedBehaviors.has(key);
+                            return (
+                                <div
+                                    key={bi}
+                                    className={styles.behaviorSection}
+                                >
+                                    <div
+                                        className={styles.behaviorHeader}
+                                        onClick={() => toggleBehavior(key)}
+                                    >
+                                        <span className={styles.chevron}>
+                                            {behaviorExpanded ? '▼' : '▶'}
+                                        </span>
+                                        <span className={styles.behaviorEvent}>{behavior.event}</span>
+                                    </div>
+                                    <div className={styles.behaviorDescription}>
+                                        {behavior.description}
+                                    </div>
+
+                                    {behaviorExpanded && (
+                                        <ul className={styles.detailList}>
+                                            {behavior.details.map((detail, di) => (
+                                                <li
+                                                    key={di}
+                                                    className={styles.detailItem}
+                                                >
+                                                    <DetailText text={detail} />
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const groups = mapData.groups || [];
+    const groupedNames = new Set(groups.flatMap(g => g.spriteNames));
+    const spriteByName = Object.fromEntries(mapData.sprites.map(s => [s.name, s]));
+    const ungroupedSprites = mapData.sprites.filter(s => !groupedNames.has(s.name));
 
     return (
         <div className={styles.mapTab}>
@@ -331,83 +434,36 @@ function MapTab ({editingTargetName, vm, sprites, stage}) {
             </div>
 
             <div className={styles.spriteList}>
-                {mapData.sprites.map((sprite, si) => {
-                    const spriteExpanded = expandedSprites.has(si);
-                    const isSelected = sprite.name === editingTargetName;
-                    const thumbnailUrl = getThumbnailUrl(sprite.name) || sprite.thumbnail;
+                {groups.map(group => {
+                    const groupExpanded = expandedGroups.has(group.name);
                     return (
                         <div
-                            key={si}
-                            ref={el => { spriteRefs.current[si] = el; }}
-                            className={`${styles.spriteSection}${isSelected ? ` ${styles.isSelected}` : ''}`}
+                            key={group.name}
+                            className={styles.groupSection}
                         >
                             <div
-                                className={styles.spriteHeader}
-                                onClick={() => toggleSprite(si)}
+                                className={styles.groupHeader}
+                                onClick={() => toggleGroup(group.name)}
                             >
                                 <span className={styles.chevron}>
-                                    {spriteExpanded ? '▼' : '▶'}
+                                    {groupExpanded ? '▼' : '▶'}
                                 </span>
-                                <span className={styles.spriteThumbnailContainer}>
-                                    {thumbnailUrl && (
-                                        <img
-                                            className={styles.spriteThumbnail}
-                                            draggable={false}
-                                            src={thumbnailUrl}
-                                        />
-                                    )}
-                                </span>
-                                <span className={styles.spriteHeaderText}>
-                                    <span className={styles.spriteName}>{sprite.name}</span>
-                                    {sprite.description && (
-                                        <span className={styles.spriteDescription}>{sprite.description}</span>
+                                <span className={styles.groupHeaderText}>
+                                    <span className={styles.groupName}>{group.name}</span>
+                                    {group.description && (
+                                        <span className={styles.groupDescription}>{group.description}</span>
                                     )}
                                 </span>
                             </div>
-
-                            {spriteExpanded && (
-                                <div className={styles.behaviorList}>
-                                    {sprite.behaviors.map((behavior, bi) => {
-                                        const key = `${si}-${bi}`;
-                                        const behaviorExpanded = expandedBehaviors.has(key);
-                                        return (
-                                            <div
-                                                key={bi}
-                                                className={styles.behaviorSection}
-                                            >
-                                                <div
-                                                    className={styles.behaviorHeader}
-                                                    onClick={() => toggleBehavior(key)}
-                                                >
-                                                    <span className={styles.chevron}>
-                                                        {behaviorExpanded ? '▼' : '▶'}
-                                                    </span>
-                                                    <span className={styles.behaviorEvent}>{behavior.event}</span>
-                                                </div>
-                                                <div className={styles.behaviorDescription}>
-                                                    {behavior.description}
-                                                </div>
-
-                                                {behaviorExpanded && (
-                                                    <ul className={styles.detailList}>
-                                                        {behavior.details.map((detail, di) => (
-                                                            <li
-                                                                key={di}
-                                                                className={styles.detailItem}
-                                                            >
-                                                                <DetailText text={detail} />
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                            {groupExpanded && (
+                                <div className={styles.groupBody}>
+                                    {group.spriteNames.map(name => renderSprite(spriteByName[name]))}
                                 </div>
                             )}
                         </div>
                     );
                 })}
+                {ungroupedSprites.map(sprite => renderSprite(sprite))}
             </div>
         </div>
     );
