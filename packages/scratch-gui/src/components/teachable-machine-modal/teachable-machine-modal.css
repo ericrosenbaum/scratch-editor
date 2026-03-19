@@ -1,8 +1,11 @@
 @import "../../css/colors.css";
 @import "../../css/units.css";
 
+/* ── Modal shell ─────────────────────────────────────────────── */
+
 .modal-content {
-    width: 600px;
+    width: 640px;
+    max-height: 90vh;
 }
 
 .header {
@@ -11,249 +14,141 @@
 
 .body {
     background: $ui-white;
-}
-
-.label-tile-pane {
     overflow-y: auto;
-    width: 100%;
-    height: 100%;
+    max-height: calc(90vh - 3rem);
 }
 
-.label-tile {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    border-radius: 0.25rem;
-    padding: 10px;
-    width: 100%;
-    height: 120px;
-    margin-bottom: 0.5rem;
-    box-sizing: border-box;
+/* ── Shared: Coaching tip ────────────────────────────────────── */
+
+.coaching-tip {
+    text-align: center;
+    padding: 0.75rem 1rem;
 }
 
-.label-tile-complete {
-    background-color: $ui-white;
-    border: 1px solid $ui-secondary;
+.coaching-tip-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: 0.25rem;
 }
 
-.label-tile-incomplete {
-    background-color: hsla(215, 50%, 95%, 1);
-    border: 1px solid $motion-primary;
+.coaching-tip-secondary {
+    font-size: 0.85rem;
+    color: $text-primary-transparent;
 }
 
-.label-tile-header {
+/* ── Shared: Progress indicator ──────────────────────────────── */
+
+.progress-indicator {
     display: flex;
     align-items: center;
-    align-self: flex-start;
-    height: 2rem;
-    margin-left: 0.25rem;
-    width: 100%;
-}
-
-.label-tile-name {
-    display: flex;
-    flex-direction: column;
     justify-content: center;
-    align-items: flex-start;
-    font-size: 0.875rem;
-    margin-right: 1rem;
-    flex: 1;
+    padding: 0.75rem 0 0.5rem;
+    gap: 0;
 }
 
-.label-tile button {
-    padding: 0.3rem 0.5rem;
-    margin-right: 0.25rem;
-    border: none;
-    border-radius: 0.25rem;
+.progress-dot {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: $ui-tertiary;
+    color: $text-primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
     font-weight: 600;
-    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.progress-dot-current {
     background: $motion-primary;
     color: white;
-    cursor: pointer;
+    transform: scale(1.15);
 }
 
-.vertical-layout {
-    display: flex;
+.progress-dot-complete {
+    background: $ui-green;
+    color: white;
+}
+
+.progress-line {
+    width: 2rem;
+    height: 2px;
+    background: $ui-tertiary;
+}
+
+.progress-line-active {
+    background: $ui-green;
+}
+
+/* ── Shared: Status badge ────────────────────────────────────── */
+
+.status-badge {
+    display: inline-flex;
     align-items: center;
-    align-self: flex-start;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-}
-
-.example-preview {
-    overflow-x: auto;
-    overflow-y: hidden;
-    align-items: center;
-    display: flex;
-    height: calc(100% - 2rem);
-    width: calc(100% - 1rem);
-    margin-left: 1rem;
-}
-
-.needs-more-examples {
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
     font-size: 0.75rem;
-    color: $ui-tertiary;
+    font-weight: 600;
     white-space: nowrap;
-    margin-left: 0.5rem;
 }
 
-.example-viewer-text {
-    margin-left: 0.25rem;
-    height: 2.5rem;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+.status-badge-ready {
+    background: hsla(163, 85%, 90%, 1);
+    color: hsla(163, 85%, 30%, 1);
 }
 
-.example-viewer-image-container {
-    display: flex;
-    overflow-y: auto;
-    flex-wrap: wrap;
-    height: calc(100% - 1.5rem);
-    margin-left: 1rem;
+.status-badge-needs {
+    background: hsla(37, 96%, 90%, 1);
+    color: hsla(37, 96%, 40%, 1);
 }
 
-.loaded-examples-box {
-    height: 50%;
-    width: 80%;
-    margin: 0.7rem;
+/* ── Shared: Camera preview ──────────────────────────────────── */
+
+.camera-preview {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: $ui-secondary;
-    border-radius: 0.25rem;
-}
-
-.example-image {
-    height: 70%;
-    margin: 0.8rem;
-    border-radius: 2px;
-    position: relative;
-}
-
-.image-tile {
-    height: 100%;
-    position: relative;
-    border-radius: 5%;
+    border-radius: 0.5rem;
     overflow: hidden;
+    background: $ui-tertiary;
 }
 
-.image-tile-canvas {
-    height: 100%;
-    width: auto;
-    display: block;
-    border-radius: 5%;
-}
-
-.canvas-area {
-    height: 240px;
-    width: 320px;
-    position: relative;
-    margin: 0.25rem;
-    display: flex;
-    justify-content: center;
-}
-
-.canvas {
-    height: 100%;
+.camera-canvas {
     width: 100%;
-    position: relative;
-    border-radius: 5%;
+    height: 100%;
+    display: block;
     object-fit: cover;
 }
 
-.loading-camera-message {
+.camera-overlay-message {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
-    align-self: center;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-}
-
-.delete-button {
-    position: absolute;
-    top: 0.125rem;
-    right: 0.125rem;
-    z-index: 1;
-}
-
-.input-field {
-    height: 2rem;
-    padding: 0 0.75rem;
-    margin: 0.8rem;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 0.75rem;
-    font-weight: bold;
     color: $text-primary;
-    border-width: 1px;
-    border-style: solid;
-    border-color: $ui-secondary;
-    border-radius: 2rem;
-    outline: none;
-    cursor: text;
-    box-shadow: none;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-}
-
-.activity-area {
-    height: 300px;
-    background-color: $ui-tertiary;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: .5rem;
-}
-
-.button-row {
-    font-weight: bolder;
-    text-align: center;
-    display: flex;
-}
-
-.button-row button {
-    padding: 0.6rem 0.75rem;
-    border-radius: 0.5rem;
-    background: $motion-primary;
-    color: white;
-    font-weight: 600;
     font-size: 0.85rem;
-    margin: 0.25rem;
-    border: none;
-    cursor: pointer;
+    background: hsla(0, 0%, 100%, 0.7);
+}
+
+.countdown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
-}
-
-.bottom-area {
-    background-color: $ui-white;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1rem 0.75rem 0.75rem 0.75rem;
-}
-
-.bottom-area .bottom-area-item + .bottom-area-item {
-    margin-top: 1rem;
-}
-
-.instructions {
-    text-align: center;
-    height: 1.5rem;
-    display: flex;
     justify-content: center;
-}
-
-.checkbox {
-    display: flex;
-    flex-direction: row;
-    margin: 0 1rem;
+    font-size: 4rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
 }
 
 @keyframes flash {
@@ -269,6 +164,552 @@
     height: 100%;
     background: white;
     animation-name: flash;
-    animation-duration: 0.1s;
+    animation-duration: 0.15s;
     animation-fill-mode: forwards;
+    pointer-events: none;
+}
+
+/* ── Shared: Capture controls ────────────────────────────────── */
+
+.capture-controls {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    padding: 0.5rem 0;
+}
+
+.capture-button {
+    padding: 0.6rem 1.25rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    color: white;
+    transition: opacity 0.15s;
+}
+
+.capture-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.capture-button-single {
+    background: $motion-primary;
+}
+
+.capture-button-single:hover:not(:disabled) {
+    background: $motion-tertiary;
+}
+
+.capture-button-burst {
+    background: $ui-green;
+}
+
+.capture-button-burst:hover:not(:disabled) {
+    background: hsla(163, 85%, 30%, 1);
+}
+
+/* ── Shared: Image thumbnail ─────────────────────────────────── */
+
+.image-thumbnail {
+    position: relative;
+    height: 100%;
+    flex-shrink: 0;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.image-thumbnail-canvas {
+    height: 100%;
+    width: auto;
+    display: block;
+}
+
+.thumbnail-delete-button {
+    position: absolute;
+    top: 0.125rem;
+    right: 0.125rem;
+    z-index: 1;
+}
+
+/* ── Shared: Thumbnail strip ─────────────────────────────────── */
+
+.thumbnail-strip {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 3.5rem;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.thumbnail-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 100%;
+    background: $ui-tertiary;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $text-primary;
+    flex-shrink: 0;
+}
+
+/* ── Shared: Example block snippets ──────────────────────────── */
+
+.block-snippets {
+    padding: 0.75rem 1rem;
+}
+
+.blocks-preview {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
+
+.blocks-preview :global(.injectionDiv) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.blocks-preview :global(.blocklySvg) {
+    background: transparent !important;
+}
+
+.blocks-preview :global(.blocklyMainBackground) {
+    fill: none !important;
+    stroke: none !important;
+}
+
+.block-snippet-tip {
+    font-size: 0.8rem;
+    color: $text-primary-transparent;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+/* ── Shared: Buttons ─────────────────────────────────────────── */
+
+.primary-button {
+    padding: 0.6rem 1.5rem;
+    border-radius: 0.5rem;
+    background: $ui-green;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+}
+
+.primary-button:hover:not(:disabled) {
+    background: hsla(163, 85%, 30%, 1);
+}
+
+.primary-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.secondary-button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: $ui-tertiary;
+    color: $text-primary;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+}
+
+.secondary-button:hover {
+    background: $ui-secondary;
+}
+
+.danger-button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: $red-primary;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+}
+
+.danger-button:hover {
+    background: $red-tertiary;
+}
+
+.back-button {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    background: none;
+    border: none;
+    color: $text-primary;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.3rem 0.5rem;
+}
+
+.back-button:hover {
+    color: $motion-primary;
+}
+
+.icon-button {
+    background: none;
+    border: 1px solid $ui-tertiary;
+    border-radius: 0.25rem;
+    padding: 0.3rem;
+    cursor: pointer;
+    line-height: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: $text-primary;
+}
+
+.icon-button:hover {
+    background: $ui-secondary;
+}
+
+.collapse-button {
+    background: none;
+    border: none;
+    color: $text-primary-transparent;
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.tips-toggle {
+    background: none;
+    border: none;
+    color: $motion-primary;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.4rem 0;
+    text-align: left;
+}
+
+/* ── Shared: Label name input ────────────────────────────────── */
+
+.label-name-input {
+    height: 1.75rem;
+    padding: 0 0.6rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $text-primary;
+    border: 1px solid $ui-tertiary;
+    border-radius: 1.5rem;
+    outline: none;
+    min-width: 0;
+    max-width: 10rem;
+}
+
+.label-name-input:focus {
+    border-color: $motion-primary;
+}
+
+/* ── Wizard ──────────────────────────────────────────────────── */
+
+.wizard-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 480px;
+}
+
+.wizard-step-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 1.5rem 1rem;
+    flex: 1;
+}
+
+.wizard-camera {
+    width: 320px;
+    height: 240px;
+}
+
+.wizard-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    padding: 0.75rem 0 0.25rem;
+}
+
+/* ── Wizard: Capture layout ──────────────────────────────────── */
+
+.capture-layout {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.capture-sidebar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.capture-label-info {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.capture-label-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $text-primary;
+}
+
+.capture-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3rem, 1fr));
+    gap: 0.3rem;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.capture-image-grid .image-thumbnail {
+    height: 3rem;
+    width: 100%;
+}
+
+.capture-image-grid .image-thumbnail-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ── Wizard: Name label step ─────────────────────────────────── */
+
+.name-label-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+}
+
+.name-label-prompt {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $text-primary;
+}
+
+.name-label-input {
+    width: 16rem;
+    height: 2.5rem;
+    padding: 0 1rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 1rem;
+    color: $text-primary;
+    border: 2px solid $ui-tertiary;
+    border-radius: 2rem;
+    outline: none;
+    text-align: center;
+}
+
+.name-label-input:focus {
+    border-color: $motion-primary;
+}
+
+/* ── Wizard: Try it step ─────────────────────────────────────── */
+
+.try-it-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.try-it-checkmark {
+    font-size: 2.5rem;
+    color: $ui-green;
+    line-height: 1;
+}
+
+.try-it-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin-top: 0.25rem;
+}
+
+.try-it-subtitle {
+    font-size: 0.9rem;
+    color: $text-primary-transparent;
+    margin-top: 0.25rem;
+}
+
+/* ── Dashboard ───────────────────────────────────────────────── */
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    min-height: 350px;
+}
+
+.dashboard-status {
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $text-primary;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid $ui-tertiary;
+    margin-bottom: 0.5rem;
+}
+
+.label-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ── Dashboard: Label card ───────────────────────────────────── */
+
+.label-card {
+    border: 1px solid $ui-tertiary;
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    background: $ui-white;
+}
+
+.label-card-expanded {
+    border-color: $motion-primary;
+    background: hsla(215, 100%, 98%, 1);
+}
+
+.label-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+.label-card-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: $text-primary;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.label-card-actions {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+/* ── Dashboard: Inline capture ───────────────────────────────── */
+
+.inline-capture {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 0;
+    gap: 0.25rem;
+}
+
+.inline-camera-preview {
+    width: 240px;
+    height: 180px;
+}
+
+/* ── Dashboard: Label detail ─────────────────────────────────── */
+
+.label-detail {
+    padding: 0.5rem 0;
+}
+
+.label-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.label-detail-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $text-primary;
+}
+
+.label-detail-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.label-detail-grid .image-thumbnail {
+    height: 4rem;
+}
+
+.label-detail-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid $ui-tertiary;
+}
+
+.confirm-delete-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: $text-primary;
+}
+
+/* ── Dashboard: Add label / footer ───────────────────────────── */
+
+.dashboard-add-label {
+    padding: 0.5rem 0;
+}
+
+.add-label-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.dashboard-footer {
+    border-top: 1px solid $ui-tertiary;
+    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.dashboard-bottom-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.5rem;
 }

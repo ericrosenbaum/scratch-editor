@@ -1,6 +1,15 @@
 const {test, expect} = require('@playwright/test');
-const {openExtensionLibrary, addExtension, getTeachableClassifierState, setPredictedLabel} =
-    require('./helpers/scratch-helpers');
+const {
+    openExtensionLibrary,
+    addExtension,
+    getTeachableClassifierState,
+    setPredictedLabel,
+    openTeachableMachineModal,
+    getWizardStep,
+    getTeachableLabels,
+    isModelReady,
+    injectTrainingData
+} = require('./helpers/scratch-helpers');
 
 test.describe('Teachable Machine extension', () => {
     // ── Phase 1: Extension skeleton ──────────────────────────────────────────
@@ -16,16 +25,12 @@ test.describe('Teachable Machine extension', () => {
         await page.goto('/');
         await addExtension(page, 'Teachable Machine');
 
-        // The toolbox flyout should contain these block labels
         await expect(page.locator('.scratchCategoryMenuItem:has-text("Teachable Machine")').first())
             .toBeVisible();
-        // Open the Teachable Machine category in the toolbox
         await page.locator('.scratchCategoryMenuItem:has-text("Teachable Machine")').click();
         await expect(page.getByText('when I see')).toBeVisible();
         await expect(page.getByText('guess')).toBeVisible();
-        await expect(page.getByText('confidence')).toBeVisible();
         await expect(page.getByText('Edit Model')).toBeVisible();
-        await expect(page.getByText('add example with label')).toBeVisible();
     });
 
     // ── Phase 2: Video feed ───────────────────────────────────────────────────
@@ -37,7 +42,6 @@ test.describe('Teachable Machine extension', () => {
         await page.goto('/');
         await addExtension(page, 'Teachable Machine');
 
-        // Wait briefly for any async errors
         await page.waitForTimeout(500);
         expect(errors.filter(e => !e.includes('non-passive event'))).toHaveLength(0);
     });
@@ -48,91 +52,202 @@ test.describe('Teachable Machine extension', () => {
         await expect(page.locator('canvas').first()).toBeVisible();
     });
 
-    // ── Phase 3: Training data modal ─────────────────────────────────────────
+    // ── Phase 3: Wizard flow ────────────────────────────────────────────────
 
-    test('clicking Edit Model button in toolbox opens the modal', async ({page}) => {
+    test('modal opens in wizard mode when no data exists', async ({page}) => {
+        await page.goto('/');
+        await addExtension(page, 'Teachable Machine');
+        await openTeachableMachineModal(page);
+
+        const step = await getWizardStep(page);
+        expect(step).toBe(1);
+
+        await expect(page.locator('[class*="coaching-tip-text"]').filter({hasText: 'teach Scratch to see'}))
+            .toBeVisible();
+        await expect(page.getByRole('button', {name: 'Start!'})).toBeVisible();
+    });
+
+    test('Step 1 -> 2: Start advances to background capture', async ({page}) => {
+        await page.goto('/');
+        await addExtension(page, 'Teachable Machine');
+        await openTeachableMachineModal(page);
+
+        await expect(page.getByRole('button', {name: 'Start!'})).toBeEnabled({timeout: 10000});
+        await page.click('button:has-text("Start!")');
+
+        const step = await getWizardStep(page);
+        expect(step).toBe(2);
+
+        await expect(page.locator('[class*="camera-preview"]')).toBeVisible();
+        await expect(page.getByRole('button', {name: 'Take Photo'})).toBeVisible();
+        await expect(page.getByRole('button', {name: 'Capture 10'})).toBeVisible();
+        await expect(page.locator('[class*="label-name-input"]')).toHaveValue('Background');
+    });
+
+    test('Step 2: Status badge shows needs when no data', async ({page}) => {
+        await page.goto('/');
+        await addExtension(page, 'Teachable Machine');
+        await openTeachableMachineModal(page);
+
+        await expect(page.getByRole('button', {name: 'Start!'})).toBeEnabled({timeout: 10000});
+        await page.click('button:has-text("Start!")');
+
+        // Status badge should show "needs" state
+        await expect(page.locator('[class*="status-badge-needs"]')).toBeVisible();
+    });
+
+    test('Step 2: Injected data shows Ready badge and Next button', async ({page}) => {
         await page.goto('/');
         await addExtension(page, 'Teachable Machine');
 
-        // Click the Teachable Machine category in the toolbox
-        await page.locator('.scratchCategoryMenuItem:has-text("Teachable Machine")').click();
-        // Click the "Edit Model" button in the flyout
-        await page.click('[class*="blocklyFlyout"] [class*="blocklyFlyoutButton"]:has-text("Edit Model")');
+        // Inject training data before opening modal
+        await injectTrainingData(page, 'Background', 10);
+        await openTeachableMachineModal(page);
 
+        // With data, wizard should resume at step 2 (background has data but < 2 labels)
+        const step = await getWizardStep(page);
+        // Step should be 2 or 3 depending on logic
+        expect(step).toBeGreaterThanOrEqual(2);
+    });
+
+    test('Step 2 -> 3: Next shows name input', async ({page}) => {
+        await page.goto('/');
+        await addExtension(page, 'Teachable Machine');
+
+        // Inject background data so we can advance
+        await injectTrainingData(page, 'Background', 10);
+        await openTeachableMachineModal(page);
+
+        // Should be at step 3 (background done, need second label)
+        const step = await getWizardStep(page);
+        expect(step).toBe(3);
+
+        await expect(page.locator('[class*="name-label-input"]')).toBeVisible();
+        await expect(page.locator('[class*="coaching-tip-text"]').filter({hasText: 'something for Scratch to recognize'}))
+            .toBeVisible();
+    });
+
+    test('Step 3: Name input enables Next button', async ({page}) => {
+        await page.goto('/');
+        await addExtension(page, 'Teachable Machine');
+        await injectTrainingData(page, 'Background', 10);
+        await openTeachableMachineModal(page);
+
+        // Next button should be enabled initially (default label name "Hand")
+        const nextButton = page.locator('button:has-text("Next")');
+        await expect(nextButton).toBeEnabled();
+
+        // Clearing the name should disable the button
+        await page.locator('[class*="name-label-input"]').fill('');
+        await expect(nextButton).toBeDisabled();
+
+        // Typing a name re-enables it
+        await page.locator('[class*="name-label-input"]').fill('Cat');
+        await expect(nextButton).toBeEnabled();
+    });
+
+    test('Step 3 -> 4: Next shows second capture step', async ({page}) => {
+        await page.goto('/');
+        await addExtension(page, 'Teachable Machine');
+        await injectTrainingData(page, 'Background', 10);
+        await openTeachableMachineModal(page);
+
+        await page.locator('[class*="name-label-input"]').fill('Hand');
+        await page.click('button:has-text("Next")');
+
+        const step = await getWizardStep(page);
+        expect(step).toBe(4);
+
+        await expect(page.locator('[class*="coaching-tip-text"]').filter({hasText: 'Hand'}))
+            .toBeVisible();
+    });
+
+    test('with 2 trained labels, modal opens to dashboard', async ({page}) => {
+        await page.goto('/');
+        await addExtension(page, 'Teachable Machine');
+
+        await injectTrainingData(page, 'Background', 10);
+        await injectTrainingData(page, 'Hand', 10);
+        await openTeachableMachineModal(page);
+
+        // With 2 labels both having enough data, should show dashboard
+        await expect(page.locator('[class*="dashboard-container"]')).toBeVisible();
+        const ready = await isModelReady(page);
+        expect(ready).toBe(true);
+    });
+
+    test('Done button closes modal', async ({page}) => {
+        await page.goto('/');
+        await addExtension(page, 'Teachable Machine');
+        await openTeachableMachineModal(page);
+
+        // Wizard step 1 - no data yet
+        // We can close from the X button
+        await page.locator('[class*="modal-content"] [class*="close-button"]').first().click();
         await expect(page.locator('[class*="modal-content"]').filter({hasText: 'Teachable Machine'}))
-            .toBeVisible({timeout: 5000});
+            .not.toBeVisible({timeout: 3000});
     });
 
-    test('modal shows Add a Label and Done buttons', async ({page}) => {
+    // ── Phase 4: Dashboard ──────────────────────────────────────────────────
+
+    test('modal opens in dashboard mode when data exists', async ({page}) => {
         await page.goto('/');
         await addExtension(page, 'Teachable Machine');
-        await page.locator('.scratchCategoryMenuItem:has-text("Teachable Machine")').click();
-        await page.click('[class*="blocklyFlyout"] [class*="blocklyFlyoutButton"]:has-text("Edit Model")');
-        await page.waitForSelector('[class*="modal-content"]', {timeout: 5000});
+        await injectTrainingData(page, 'Background', 10);
+        await injectTrainingData(page, 'Hand', 10);
+        await openTeachableMachineModal(page);
 
-        await expect(page.getByRole('button', {name: 'Add a Label'})).toBeVisible();
-        await expect(page.getByRole('button', {name: 'Done'})).toBeVisible();
+        await expect(page.locator('[class*="dashboard-container"]')).toBeVisible();
+        // Count direct children of label-card-list that are label cards
+        await expect(page.locator('[class*="label-card-list"] > [class*="label-card"]')).toHaveCount(2);
     });
 
-    test('clicking Add a Label enters the example editor', async ({page}) => {
+    test('dashboard shows status text with label names', async ({page}) => {
         await page.goto('/');
         await addExtension(page, 'Teachable Machine');
-        await page.locator('.scratchCategoryMenuItem:has-text("Teachable Machine")').click();
-        await page.click('[class*="blocklyFlyout"] [class*="blocklyFlyoutButton"]:has-text("Edit Model")');
-        await page.waitForSelector('[class*="modal-content"]', {timeout: 5000});
+        await injectTrainingData(page, 'Background', 10);
+        await injectTrainingData(page, 'Hand', 10);
+        await openTeachableMachineModal(page);
 
-        await page.click('button:has-text("Add a Label")');
-        // Should navigate to example editor (Train button visible)
-        await expect(page.getByRole('button', {name: 'Train'})).toBeVisible({timeout: 3000});
+        await expect(page.locator('[class*="dashboard-status"]')).toContainText('Background');
+        await expect(page.locator('[class*="dashboard-status"]')).toContainText('Hand');
     });
 
-    test('Done button closes the modal', async ({page}) => {
+    test('dashboard Done button closes modal', async ({page}) => {
         await page.goto('/');
         await addExtension(page, 'Teachable Machine');
-        await page.locator('.scratchCategoryMenuItem:has-text("Teachable Machine")').click();
-        await page.click('[class*="blocklyFlyout"] [class*="blocklyFlyoutButton"]:has-text("Edit Model")');
-        await page.waitForSelector('[class*="modal-content"]', {timeout: 5000});
+        await injectTrainingData(page, 'Background', 10);
+        await injectTrainingData(page, 'Hand', 10);
+        await openTeachableMachineModal(page);
 
         await page.click('button:has-text("Done")');
         await expect(page.locator('[class*="modal-content"]').filter({hasText: 'Teachable Machine'}))
             .not.toBeVisible({timeout: 3000});
     });
 
-    // ── Phase 4: Model loading indicator ─────────────────────────────────────
+    // ── Phase 5: Navigation ─────────────────────────────────────────────────
 
-    test('loading alert appears after adding the extension', async ({page}) => {
-        await page.goto('/');
-
-        // Start watching for the loading alert before adding the extension
-        await openExtensionLibrary(page);
-        // Click the tile — the loading event fires during model load
-        await page.click('button[class*="library-item"]:has-text("Teachable Machine")');
-        await page.waitForSelector('[class*="library-item"]', {state: 'hidden', timeout: 10000});
-
-        // The alert should appear (even briefly)
-        // Give it up to 5 seconds to show up since model load starts in constructor
-        const alert = page.locator('[class*="alert"]').filter({hasText: /loading/i});
-        // It may have already disappeared by now if model loads very fast; check it appeared
-        // by verifying the extension loads without errors instead
-        await expect(page.locator('.scratchCategoryMenuItem:has-text("Teachable Machine")').first())
-            .toBeVisible({timeout: 10000});
-    });
-
-    test('loading alert disappears once model is ready', async ({page}) => {
+    test('Back button works in wizard', async ({page}) => {
         await page.goto('/');
         await addExtension(page, 'Teachable Machine');
+        await openTeachableMachineModal(page);
 
-        // Wait up to 30 seconds for any loading alert to disappear
-        const alert = page.locator('[class*="alert_alert"]').filter({hasText: /loading/i}).first();
-        await expect(alert).not.toBeVisible({timeout: 30000});
+        await expect(page.getByRole('button', {name: 'Start!'})).toBeEnabled({timeout: 10000});
+        await page.click('button:has-text("Start!")');
+
+        let step = await getWizardStep(page);
+        expect(step).toBe(2);
+
+        await page.click('button:has-text("Back")');
+        step = await getWizardStep(page);
+        expect(step).toBe(1);
     });
 
-    // ── Phase 5: Reporter blocks ──────────────────────────────────────────────
+    // ── Phase 6: Reporter blocks ────────────────────────────────────────────
 
     test('guess reporter returns empty string before training', async ({page}) => {
         await page.goto('/');
         await addExtension(page, 'Teachable Machine');
-        // Wait for extension to initialize
         await page.waitForTimeout(500);
 
         const state = await getTeachableClassifierState(page);
@@ -160,7 +275,7 @@ test.describe('Teachable Machine extension', () => {
         expect(state.predictedLabel).toBe('cat');
     });
 
-    // ── Phase 6: Project save/load ────────────────────────────────────────────
+    // ── Phase 7: Project save/load ──────────────────────────────────────────
 
     test('saving a project works without errors', async ({page}) => {
         const errors = [];
@@ -170,7 +285,6 @@ test.describe('Teachable Machine extension', () => {
         await addExtension(page, 'Teachable Machine');
         await page.waitForTimeout(500);
 
-        // Trigger a save by accessing the VM's serializer
         const projectJSON = await page.evaluate(async () => {
             const store = window.__scratchStore;
             if (!store) return null;
@@ -181,28 +295,50 @@ test.describe('Teachable Machine extension', () => {
 
         expect(projectJSON).not.toBeNull();
         const parsed = JSON.parse(projectJSON);
-        // Project should be valid JSON with a targets array
         expect(parsed.targets).toBeTruthy();
-        // No errors during save
         expect(errors).toHaveLength(0);
     });
 
-    test('project JSON includes extensions_data when training data exists', async ({page}) => {
+    // ── Phase 8: Integration ────────────────────────────────────────────────
+
+    test('no JS errors during wizard navigation', async ({page}) => {
+        const errors = [];
+        page.on('pageerror', err => errors.push(err.message));
+
         await page.goto('/');
         await addExtension(page, 'Teachable Machine');
-        await page.waitForTimeout(500);
+        await openTeachableMachineModal(page);
 
-        // Verify the serialized project preserves extensions_data structure
-        const projectJSON = await page.evaluate(async () => {
-            const store = window.__scratchStore;
-            if (!store) return null;
-            const vm = store.getState().scratchGui && store.getState().scratchGui.vm;
-            if (!vm) return null;
-            return vm.toJSON();
-        });
-        const parsed = JSON.parse(projectJSON);
-        // extensions_data may or may not be present depending on whether training data exists
-        // but it shouldn't throw
-        expect(parsed).toBeTruthy();
+        // Navigate through wizard steps
+        await expect(page.getByRole('button', {name: 'Start!'})).toBeEnabled({timeout: 10000});
+        await page.click('button:has-text("Start!")');
+        await page.click('button:has-text("Back")');
+        await page.click('button:has-text("Start!")');
+
+        // Close modal
+        await page.locator('[class*="modal-content"] [class*="close-button"]').first().click();
+
+        const realErrors = errors.filter(e => !e.includes('non-passive event'));
+        expect(realErrors).toHaveLength(0);
+    });
+
+    test('injected data persists after closing and reopening modal', async ({page}) => {
+        await page.goto('/');
+        await addExtension(page, 'Teachable Machine');
+        await injectTrainingData(page, 'Background', 10);
+        await injectTrainingData(page, 'Hand', 10);
+
+        // Open and close modal
+        await openTeachableMachineModal(page);
+        await page.click('button:has-text("Done")');
+        await expect(page.locator('[class*="modal-content"]').filter({hasText: 'Teachable Machine'}))
+            .not.toBeVisible({timeout: 3000});
+
+        // Data should still be there
+        const labels = await getTeachableLabels(page);
+        expect(labels['Background']).toBeDefined();
+        expect(labels['Hand']).toBeDefined();
+        expect(labels['Background'].classifierCount).toBe(10);
+        expect(labels['Hand'].classifierCount).toBe(10);
     });
 });

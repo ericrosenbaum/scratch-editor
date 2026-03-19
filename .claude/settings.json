@@ -42,7 +42,10 @@
       "Bash(tr:*)",
       "Bash(xargs:*)",
       "Bash(diff:*)",
-      "Read"
+      "Read",
+      "Bash(npx eslint:*)",
+      "Bash(npx webpack:*)",
+      "Bash(npm start:*)"
     ]
   }
 }
