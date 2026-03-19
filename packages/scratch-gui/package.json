@@ -62,6 +62,7 @@
     "test": "npm run test:lint && npm run test:unit && npm run test:integration",
     "test:integration": "cross-env JEST_JUNIT_OUTPUT_NAME=integration-tests-results.xml jest --maxWorkers=4 test[\\\\/]integration",
     "test:lint": "eslint",
+    "test:playwright": "playwright test test/playwright/",
     "test:smoke": "jest --runInBand test[\\\\/]smoke",
     "test:unit": "cross-env JEST_JUNIT_OUTPUT_NAME=unit-tests-results.xml jest test[\\\\/]unit",
     "watch": "webpack --watch"
@@ -116,6 +117,8 @@
     "@scratch/scratch-svg-renderer": "12.6.2",
     "@scratch/scratch-vm": "12.6.2",
     "@tensorflow-models/face-detection": "1.0.3",
+    "@tensorflow-models/knn-classifier": "1.2.4",
+    "@tensorflow-models/mobilenet": "2.1.1",
     "@tensorflow/tfjs": "4.22.0",
     "@testing-library/user-event": "14.6.1",
     "arraybuffer-loader": "1.0.8",
@@ -180,6 +183,7 @@
     "xhr": "2.6.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.44.0",
     "@babel/cli": "7.28.6",
     "@babel/core": "7.29.0",
     "@babel/preset-env": "7.29.0",

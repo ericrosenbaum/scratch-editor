@@ -11,7 +11,8 @@ interface WindowWithDevtools {
 
 const composeEnhancers = (window as WindowWithDevtools).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-// TypeScript doesn't know about require here, and we don't want to change behavior, so...
+// TypeScript doesn't know about require or process here, and we don't want to change behavior, so...
+declare const process: {env: {NODE_ENV: string}};
 declare function require(path: '../reducers/gui'): typeof import('../reducers/gui');
 declare function require(path: 'scratch-paint'): typeof import('scratch-paint');
 declare function require(path: '../legacy-config'): typeof import('../legacy-config');
@@ -110,6 +111,10 @@ export class EditorState {
         }
         const reducer = combineReducers(reducers);
         this.store = createStore(reducer, initialState, enhancer);
+        // Expose store globally in non-production for testing
+        if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
+            (window as any).__scratchStore = this.store;
+        }
     }
 
     dispatch (action) {

@@ -1,0 +1,274 @@
+@import "../../css/colors.css";
+@import "../../css/units.css";
+
+.modal-content {
+    width: 600px;
+}
+
+.header {
+    background-color: $motion-primary;
+}
+
+.body {
+    background: $ui-white;
+}
+
+.label-tile-pane {
+    overflow-y: auto;
+    width: 100%;
+    height: 100%;
+}
+
+.label-tile {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-radius: 0.25rem;
+    padding: 10px;
+    width: 100%;
+    height: 120px;
+    margin-bottom: 0.5rem;
+    box-sizing: border-box;
+}
+
+.label-tile-complete {
+    background-color: $ui-white;
+    border: 1px solid $ui-secondary;
+}
+
+.label-tile-incomplete {
+    background-color: hsla(215, 50%, 95%, 1);
+    border: 1px solid $motion-primary;
+}
+
+.label-tile-header {
+    display: flex;
+    align-items: center;
+    align-self: flex-start;
+    height: 2rem;
+    margin-left: 0.25rem;
+    width: 100%;
+}
+
+.label-tile-name {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    font-size: 0.875rem;
+    margin-right: 1rem;
+    flex: 1;
+}
+
+.label-tile button {
+    padding: 0.3rem 0.5rem;
+    margin-right: 0.25rem;
+    border: none;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    background: $motion-primary;
+    color: white;
+    cursor: pointer;
+}
+
+.vertical-layout {
+    display: flex;
+    align-items: center;
+    align-self: flex-start;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+.example-preview {
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-items: center;
+    display: flex;
+    height: calc(100% - 2rem);
+    width: calc(100% - 1rem);
+    margin-left: 1rem;
+}
+
+.needs-more-examples {
+    font-size: 0.75rem;
+    color: $ui-tertiary;
+    white-space: nowrap;
+    margin-left: 0.5rem;
+}
+
+.example-viewer-text {
+    margin-left: 0.25rem;
+    height: 2.5rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+
+.example-viewer-image-container {
+    display: flex;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    height: calc(100% - 1.5rem);
+    margin-left: 1rem;
+}
+
+.loaded-examples-box {
+    height: 50%;
+    width: 80%;
+    margin: 0.7rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $ui-secondary;
+    border-radius: 0.25rem;
+}
+
+.example-image {
+    height: 70%;
+    margin: 0.8rem;
+    border-radius: 2px;
+    position: relative;
+}
+
+.image-tile {
+    height: 100%;
+    position: relative;
+    border-radius: 5%;
+    overflow: hidden;
+}
+
+.image-tile-canvas {
+    height: 100%;
+    width: auto;
+    display: block;
+    border-radius: 5%;
+}
+
+.canvas-area {
+    height: 240px;
+    width: 320px;
+    position: relative;
+    margin: 0.25rem;
+    display: flex;
+    justify-content: center;
+}
+
+.canvas {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    border-radius: 5%;
+    object-fit: cover;
+}
+
+.loading-camera-message {
+    position: absolute;
+    display: flex;
+    align-self: center;
+    text-align: center;
+}
+
+.delete-button {
+    position: absolute;
+    top: 0.125rem;
+    right: 0.125rem;
+    z-index: 1;
+}
+
+.input-field {
+    height: 2rem;
+    padding: 0 0.75rem;
+    margin: 0.8rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: $text-primary;
+    border-width: 1px;
+    border-style: solid;
+    border-color: $ui-secondary;
+    border-radius: 2rem;
+    outline: none;
+    cursor: text;
+    box-shadow: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.activity-area {
+    height: 300px;
+    background-color: $ui-tertiary;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: .5rem;
+}
+
+.button-row {
+    font-weight: bolder;
+    text-align: center;
+    display: flex;
+}
+
+.button-row button {
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.5rem;
+    background: $motion-primary;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: 0.25rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.bottom-area {
+    background-color: $ui-white;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0.75rem 0.75rem 0.75rem;
+}
+
+.bottom-area .bottom-area-item + .bottom-area-item {
+    margin-top: 1rem;
+}
+
+.instructions {
+    text-align: center;
+    height: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.checkbox {
+    display: flex;
+    flex-direction: row;
+    margin: 0 1rem;
+}
+
+@keyframes flash {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.flash-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    animation-name: flash;
+    animation-duration: 0.1s;
+    animation-fill-mode: forwards;
+}

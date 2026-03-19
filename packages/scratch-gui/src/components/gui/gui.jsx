@@ -30,6 +30,7 @@ import Cards from '../../containers/cards.jsx';
 import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
+import TeachableMachineModal from '../../containers/teachable-machine-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
@@ -141,6 +142,7 @@ const GUIComponent = props => {
         canUseCloud,
         children,
         connectionModalVisible,
+        teachableMachineModalVisible,
         costumeLibraryVisible,
         costumesTabVisible,
         debugModalVisible,
@@ -312,6 +314,11 @@ const GUIComponent = props => {
                     {connectionModalVisible ? (
                         <ConnectionModal
                             useExternalPeripheralList={useExternalPeripheralList}
+                            vm={vm}
+                        />
+                    ) : null}
+                    {teachableMachineModalVisible ? (
+                        <TeachableMachineModal
                             vm={vm}
                         />
                     ) : null}
@@ -645,6 +652,7 @@ GUIComponent.propTypes = {
     stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
     setPlatform: PropTypes.func,
     targetIsStage: PropTypes.bool,
+    teachableMachineModalVisible: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
     colorMode: PropTypes.string,
     theme: PropTypes.string,

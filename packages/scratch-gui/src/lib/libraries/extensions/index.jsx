@@ -49,6 +49,9 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
+import teachableClassifierIconURL from './teachableClassifier/teachableClassifier.png';
+import teachableClassifierInsetIconURL from './teachableClassifier/teachableClassifier-small.svg';
+
 export default [
     {
         name: (
@@ -412,5 +415,25 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/wedo'
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Teachable Machine"
+                description="Name for the 'Teachable Machine' extension"
+                id="gui.extension.teachableClassifier.name"
+            />
+        ),
+        extensionId: 'teachableClassifier',
+        iconURL: teachableClassifierIconURL,
+        insetIconURL: teachableClassifierInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Teach your computer to recognize images from the webcam."
+                description="Description for the 'Teachable Machine' extension"
+                id="gui.extension.teachableClassifier.description"
+            />
+        ),
+        featured: true
     }
 ];

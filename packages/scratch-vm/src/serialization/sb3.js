@@ -574,6 +574,12 @@ const serialize = function (runtime, targetId) {
     // Assemble extension list
     obj.extensions = Array.from(extensions);
 
+    // Persist Teachable Classifier training data if the extension is loaded
+    const teachableExt = runtime.ext_teachableClassifier;
+    if (teachableExt) {
+        obj.extensions_data = {teachableClassifier: teachableExt.getTrainingData()};
+    }
+
     // Assemble metadata
     const meta = Object.create(null);
     meta.semver = '3.0.0';
@@ -1306,7 +1312,26 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         .then(targets => ({
             targets,
             extensions
-        }));
+        }))
+        .then(result => {
+            // Restore Teachable Classifier training data after extension loads
+            if (json.extensions_data && json.extensions_data.teachableClassifier) {
+                const trainingData = json.extensions_data.teachableClassifier;
+                if (runtime.ext_teachableClassifier) {
+                    runtime.ext_teachableClassifier.setTrainingData(trainingData);
+                } else {
+                    // Extension may not be loaded yet; wait for it
+                    const onExtAdded = () => {
+                        if (runtime.ext_teachableClassifier) {
+                            runtime.ext_teachableClassifier.setTrainingData(trainingData);
+                            runtime.removeListener('EXTENSION_ADDED', onExtAdded);
+                        }
+                    };
+                    runtime.on('EXTENSION_ADDED', onExtAdded);
+                }
+            }
+            return result;
+        });
 };
 
 module.exports = {
