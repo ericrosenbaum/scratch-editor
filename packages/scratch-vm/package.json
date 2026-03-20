@@ -60,6 +60,7 @@
     "allow-incomplete-coverage": true
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
     "@scratch/scratch-render": "13.3.0",
     "@scratch/scratch-svg-renderer": "13.3.0",
     "@vernier/godirect": "1.8.3",

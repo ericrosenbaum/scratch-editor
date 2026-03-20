@@ -87,6 +87,11 @@ const baseConfig = new ScratchWebpackConfigBuilder(
                 noErrorOnMissing: true
             },
             {
+                context: '../../node_modules/@scratch/scratch-vm/dist/web',
+                from: 'whisper-worker.{js,js.map}',
+                noErrorOnMissing: true
+            },
+            {
                 context: '../../node_modules/scratch-storage/dist/web',
                 from: 'chunks/fetch-worker.*.{js,js.map}',
                 noErrorOnMissing: true
@@ -99,6 +104,11 @@ const baseConfig = new ScratchWebpackConfigBuilder(
             {
                 from: '../../node_modules/@mediapipe/face_detection',
                 to: 'chunks/mediapipe/face_detection'
+            },
+            {
+                from: '../../node_modules/onnxruntime-web/dist/*.wasm',
+                to: 'chunks/onnx/[name][ext]',
+                noErrorOnMissing: true
             }
         ]
     }));
