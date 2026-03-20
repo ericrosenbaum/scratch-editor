@@ -11,24 +11,38 @@ import {
     dragUnstuck,
     startDrag,
     endDrag,
-    openUnstuck
+    openUnstuck,
+    toggleCodeExpanded
 } from '../reducers/unstuck';
 
 import UnstuckCardComponent from '../components/unstuck-card/unstuck-card.jsx';
 import tips, {quickPicks} from '../lib/libraries/tips/index.js';
 import KeywordTipProvider from '../lib/unstuck/tip-provider.js';
 import extractProjectContext from '../lib/unstuck/context-extractor.js';
+import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions.js';
+import blockTemplates from '../lib/unstuck/block-templates.js';
+import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
 
 const tipProvider = new KeywordTipProvider(tips);
 
 class UnstuckCard extends React.Component {
     constructor (props) {
         super(props);
+        this.state = {
+            listening: false
+        };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleQueryChange = this.handleQueryChange.bind(this);
         this.handlePickClick = this.handlePickClick.bind(this);
         this.handleFollowUp = this.handleFollowUp.bind(this);
         this.handleAskAnother = this.handleAskAnother.bind(this);
+        this.handlePointerClick = this.handlePointerClick.bind(this);
+        this.handleAddToProject = this.handleAddToProject.bind(this);
+        this.handleVoiceClick = this.handleVoiceClick.bind(this);
+    }
+
+    componentWillUnmount () {
+        destroyHighlight();
     }
 
     handleQueryChange (e) {
@@ -80,8 +94,52 @@ class UnstuckCard extends React.Component {
     }
 
     handleAskAnother () {
+        destroyHighlight();
         this.props.onSetQuery('');
         this.props.onSetTip(null);
+    }
+
+    handleAddToProject () {
+        const activeTip = this.props.activeTipId ? tips[this.props.activeTipId] : null;
+        if (!activeTip || !activeTip.blockExample) return;
+        const template = blockTemplates[activeTip.blockExample];
+        if (!template) return;
+        this.props.vm.shareBlocksToTarget(template, this.props.vm.editingTarget.id)
+            .then(() => {
+                this.props.vm.refreshWorkspace();
+            });
+    }
+
+    handlePointerClick (pointerIndex) {
+        const activeTip = this.props.activeTipId ? tips[this.props.activeTipId] : null;
+        if (!activeTip || !activeTip.pointers || !activeTip.pointers[pointerIndex]) return;
+        highlightElement(activeTip.pointers[pointerIndex], this.props.dispatch);
+    }
+
+    handleVoiceClick () {
+        if (this.state.listening) return;
+        this.setState({listening: true});
+        voiceListen({
+            onEnd: () => this.setState({listening: false})
+        })
+            .then(transcript => {
+                this.props.onSetQuery(transcript);
+                // Auto-submit after getting the transcript
+                this.props.onSetLoading(true);
+                const context = extractProjectContext(
+                    this.props.vm,
+                    this.props.activeTabIndex
+                );
+                tipProvider.getTips(context, transcript)
+                    .then(results => {
+                        if (results.length > 0) {
+                            this.props.onSetTip(results[0].tipId);
+                        }
+                    });
+            })
+            .catch(() => {
+                this.setState({listening: false});
+            });
     }
 
     render () {
@@ -90,22 +148,29 @@ class UnstuckCard extends React.Component {
         return (
             <UnstuckCardComponent
                 activeTip={activeTip}
+                codeExpanded={this.props.codeExpanded}
                 expanded={this.props.expanded}
+                listening={this.state.listening}
                 loading={this.props.loading}
                 query={this.props.query}
+                voiceSupported={isVoiceSupported()}
                 quickPicks={quickPicks}
                 tips={tips}
                 x={this.props.x}
                 y={this.props.y}
+                onAddToProject={this.handleAddToProject}
                 onAskAnother={this.handleAskAnother}
                 onClose={this.props.onClose}
                 onDrag={this.props.onDrag}
                 onEndDrag={this.props.onEndDrag}
                 onFollowUp={this.handleFollowUp}
                 onPickClick={this.handlePickClick}
+                onPointerClick={this.handlePointerClick}
                 onQueryChange={this.handleQueryChange}
                 onShrinkExpand={this.props.onShrinkExpand}
                 onStartDrag={this.props.onStartDrag}
+                onToggleCode={this.props.onToggleCode}
+                onVoiceClick={this.handleVoiceClick}
                 onSubmit={this.handleSubmit}
             />
         );
@@ -115,6 +180,8 @@ class UnstuckCard extends React.Component {
 UnstuckCard.propTypes = {
     activeTipId: PropTypes.string,
     activeTabIndex: PropTypes.number.isRequired,
+    codeExpanded: PropTypes.bool.isRequired,
+    dispatch: PropTypes.func.isRequired,
     expanded: PropTypes.bool.isRequired,
     loading: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
@@ -125,6 +192,7 @@ UnstuckCard.propTypes = {
     onSetTip: PropTypes.func.isRequired,
     onShrinkExpand: PropTypes.func.isRequired,
     onStartDrag: PropTypes.func.isRequired,
+    onToggleCode: PropTypes.func.isRequired,
     query: PropTypes.string.isRequired,
     vm: PropTypes.object.isRequired,
     x: PropTypes.number.isRequired,
@@ -134,6 +202,7 @@ UnstuckCard.propTypes = {
 const mapStateToProps = state => ({
     activeTipId: state.scratchGui.unstuck.activeTipId,
     activeTabIndex: state.scratchGui.editorTab.activeTabIndex,
+    codeExpanded: state.scratchGui.unstuck.codeExpanded,
     expanded: state.scratchGui.unstuck.expanded,
     loading: state.scratchGui.unstuck.loading,
     query: state.scratchGui.unstuck.query,
@@ -142,7 +211,11 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-    onClose: () => dispatch(closeUnstuck()),
+    dispatch,
+    onClose: () => {
+        destroyHighlight();
+        dispatch(closeUnstuck());
+    },
     onDrag: (e_, data) => dispatch(dragUnstuck(data.x, data.y)),
     onEndDrag: () => dispatch(endDrag()),
     onOpen: () => dispatch(openUnstuck()),
@@ -150,7 +223,8 @@ const mapDispatchToProps = dispatch => ({
     onSetQuery: query => dispatch(setQuery(query)),
     onSetTip: tipId => dispatch(setTip(tipId)),
     onShrinkExpand: () => dispatch(shrinkExpandUnstuck()),
-    onStartDrag: () => dispatch(startDrag())
+    onStartDrag: () => dispatch(startDrag()),
+    onToggleCode: () => dispatch(toggleCodeExpanded())
 });
 
 export default connect(

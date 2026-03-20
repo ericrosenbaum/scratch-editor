@@ -7,6 +7,7 @@ const SET_LOADING = 'scratch-gui/unstuck/SET_LOADING';
 const DRAG_UNSTUCK = 'scratch-gui/unstuck/DRAG_UNSTUCK';
 const START_DRAG = 'scratch-gui/unstuck/START_DRAG';
 const END_DRAG = 'scratch-gui/unstuck/END_DRAG';
+const TOGGLE_CODE_EXPANDED = 'scratch-gui/unstuck/TOGGLE_CODE_EXPANDED';
 
 const initialState = {
     visible: false,
@@ -14,6 +15,7 @@ const initialState = {
     query: '',
     loading: false,
     expanded: true,
+    codeExpanded: false,
     x: 0,
     y: 0,
     dragging: false
@@ -45,7 +47,12 @@ const reducer = function (state, action) {
     case SET_TIP:
         return Object.assign({}, state, {
             activeTipId: action.tipId,
-            loading: false
+            loading: false,
+            codeExpanded: false
+        });
+    case TOGGLE_CODE_EXPANDED:
+        return Object.assign({}, state, {
+            codeExpanded: !state.codeExpanded
         });
     case SET_LOADING:
         return Object.assign({}, state, {
@@ -105,6 +112,10 @@ const endDrag = function () {
     return {type: END_DRAG};
 };
 
+const toggleCodeExpanded = function () {
+    return {type: TOGGLE_CODE_EXPANDED};
+};
+
 export {
     reducer as default,
     initialState as unstuckInitialState,
@@ -116,5 +127,6 @@ export {
     setLoading,
     dragUnstuck,
     startDrag,
-    endDrag
+    endDrag,
+    toggleCodeExpanded
 };
