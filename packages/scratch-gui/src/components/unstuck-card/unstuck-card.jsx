@@ -20,7 +20,8 @@ const UnstuckCardHeader = ({activeTip, onClose, onShrinkExpand, onAskAnother, ex
                     className={styles.backButton}
                     onClick={onAskAnother}
                 >
-                    {'\u2190 New question'}
+                    <span className={styles.backArrow}>{'\u2190'}</span>
+                    {' New question'}
                 </button>
             ) : (
                 <span>{'Need help?'}</span>
@@ -117,16 +118,20 @@ class QuickPicks extends React.Component {
     render () {
         return (
             <div className={styles.quickPicks}>
-                {this.props.picks.map(pick => (
+                {this.props.picks.map((pick, index) => (
                     <button
                         className={styles.quickPick}
                         data-query={pick.query}
                         key={pick.query}
+                        style={{animationDelay: `${index * 40}ms`}}
                         onClick={this.handleClick}
                     >
                         <span
                             className={styles.quickPickDot}
-                            style={{backgroundColor: pick.color || '#ccc'}}
+                            style={{
+                                backgroundColor: pick.color || '#ccc',
+                                boxShadow: `0 0 0 3px ${pick.color || '#ccc'}33`
+                            }}
                         />
                         {pick.label}
                     </button>
@@ -331,7 +336,10 @@ const UnstuckCard = ({
                         {expanded ? (
                             <div className={classNames(styles.body, 'no-drag')}>
                                 {loading ? (
-                                    <div className={styles.loading}>{'Finding a tip...'}</div>
+                                    <div className={styles.loading}>
+                                        {'Finding a tip'}
+                                        <span className={styles.loadingDots} />
+                                    </div>
                                 ) : activeTip ? (
                                     <TipDisplay
                                         codeExpanded={codeExpanded}

@@ -28,6 +28,7 @@ import WebGlModal from '../../containers/webgl-modal.jsx';
 import TipsLibrary from '../../containers/tips-library.jsx';
 import Cards from '../../containers/cards.jsx';
 import UnstuckCard from '../../containers/unstuck-card.jsx';
+import TipsReview from '../../containers/tips-review.jsx';
 import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
@@ -199,6 +200,7 @@ const GUIComponent = props => {
         colorMode,
         theme,
         tipsLibraryVisible,
+        tipsReviewVisible,
         unstuckVisible,
         useExternalPeripheralList,
         username,
@@ -312,6 +314,9 @@ const GUIComponent = props => {
                     ) : null}
                     {unstuckVisible ? (
                         <UnstuckCard vm={vm} />
+                    ) : null}
+                    {tipsReviewVisible ? (
+                        <TipsReview />
                     ) : null}
                     {alertsVisible ? (
                         <Alerts className={styles.alertsContainer} />
@@ -659,6 +664,7 @@ GUIComponent.propTypes = {
     colorMode: PropTypes.string,
     theme: PropTypes.string,
     tipsLibraryVisible: PropTypes.bool,
+    tipsReviewVisible: PropTypes.bool,
     unstuckVisible: PropTypes.bool,
     useExternalPeripheralList: PropTypes.bool, // true for CDM, false for normal Scratch Link
     username: PropTypes.string,

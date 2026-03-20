@@ -33,12 +33,17 @@ body .unstuck-container {
     box-shadow: 0px 4px 20px 2px hsla(0, 0%, 0%, 0.12);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     background: $ui-white;
-    animation: card-enter 150ms ease-out;
+    animation: card-enter 250ms ease-out;
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0px 6px 24px 4px hsla(0, 0%, 0%, 0.15);
 }
 
 @keyframes card-enter {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Header */
@@ -47,7 +52,7 @@ body .unstuck-container {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    background: $unstuck-purple;
+    background: linear-gradient(135deg, hsla(260, 60%, 64%, 1), hsla(260, 60%, 56%, 1));
     padding: 0 0 0 0.75rem;
     min-height: 36px;
 }
@@ -82,6 +87,15 @@ body .unstuck-container {
     opacity: 1;
 }
 
+.back-arrow {
+    display: inline-block;
+    transition: transform 0.15s ease;
+}
+
+.back-button:hover .back-arrow {
+    transform: translateX(-2px);
+}
+
 .header-buttons {
     display: flex;
     flex-direction: row;
@@ -97,6 +111,8 @@ body .unstuck-container {
     padding: 0.5rem;
     background: none;
     border: none;
+    border-radius: 0.25rem;
+    transition: background-color 0.15s ease;
 }
 
 .header-button:hover {
@@ -148,20 +164,33 @@ body .unstuck-container {
     color: $text-primary;
     cursor: pointer;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.15s ease;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.15s ease, background-color 0.15s ease;
     text-align: left;
     line-height: 1.2;
+    animation: pick-enter 200ms ease-out both;
 }
 
 .quick-pick:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px hsla(0, 0%, 0%, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 12px hsla(0, 0%, 0%, 0.1);
     border-color: $unstuck-purple;
+    background: hsla(260, 60%, 60%, 0.04);
+}
+
+.quick-pick:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 1px 4px hsla(0, 0%, 0%, 0.06);
+    transition-duration: 0.05s;
+}
+
+@keyframes pick-enter {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .quick-pick-dot {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     flex-shrink: 0;
 }
@@ -182,12 +211,13 @@ body .unstuck-container {
     font-size: 0.8rem;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     outline: none;
-    transition: border-color 0.15s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
     color: $text-primary;
 }
 
 .query-input:focus {
     border-color: $unstuck-purple;
+    box-shadow: 0 0 0 3px hsla(260, 60%, 60%, 0.15);
 }
 
 .query-input::placeholder {
@@ -211,29 +241,30 @@ body .unstuck-container {
     cursor: pointer;
     font-size: 0.9rem;
     border-radius: 50%;
-    transition: background-color 0.15s ease;
+    transition: background-color 0.15s ease, transform 0.15s ease;
 }
 
 .mic-button:hover {
-    background: $ui-primary;
+    background: hsla(260, 60%, 60%, 0.1);
+    transform: translateY(-50%) scale(1.08);
 }
 
 .mic-button-active {
-    background: hsla(0, 80%, 95%, 1);
+    background: hsla(0, 80%, 60%, 0.15);
     animation: pulse 1s infinite;
 }
 
 @keyframes pulse {
     0% { transform: translateY(-50%) scale(1); }
-    50% { transform: translateY(-50%) scale(1.1); }
+    50% { transform: translateY(-50%) scale(1.15); }
     100% { transform: translateY(-50%) scale(1); }
 }
 
 /* ===== TIP DISPLAY ===== */
 .tip-text {
     font-size: 0.9rem;
-    line-height: 1.5;
-    color: $text-primary;
+    line-height: 1.6;
+    color: hsla(225, 20%, 30%, 1);
 }
 
 /* Show me button */
@@ -250,21 +281,35 @@ body .unstuck-container {
     font-weight: bold;
     cursor: pointer;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    transition: background-color 0.15s ease;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
     align-self: flex-start;
+    box-shadow: 0 2px 8px hsla(215, 100%, 65%, 0.3);
 }
 
 .show-me-button:hover {
     background: $unstuck-blue-dark;
+    box-shadow: 0 3px 12px hsla(215, 100%, 65%, 0.4);
+}
+
+.show-me-button:active {
+    transform: scale(0.95);
+    transition-duration: 0.05s;
 }
 
 .show-me-arrow {
     font-size: 0.7rem;
+    display: inline-block;
+    transition: transform 0.15s ease;
+}
+
+.show-me-button:hover .show-me-arrow {
+    transform: translateX(3px);
 }
 
 /* Try this code — collapsible section */
 .code-section {
     border: 1px solid $ui-tertiary;
+    border-left: 3px solid $unstuck-purple;
     border-radius: 0.5rem;
     overflow: hidden;
 }
@@ -282,6 +327,7 @@ body .unstuck-container {
     font-weight: bold;
     color: $text-primary;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    transition: background-color 0.15s ease;
 }
 
 .code-section-header:hover {
@@ -290,8 +336,12 @@ body .unstuck-container {
 
 .code-section-caret {
     font-size: 0.6rem;
-    transition: transform 0.2s ease;
+    transition: transform 0.3s ease-in-out, color 0.15s ease;
     color: $text-primary-transparent;
+}
+
+.code-section-header:hover .code-section-caret {
+    color: $unstuck-purple;
 }
 
 .code-section-caret-open {
@@ -300,7 +350,7 @@ body .unstuck-container {
 
 .code-section-body {
     overflow: hidden;
-    transition: max-height 0.2s ease;
+    transition: max-height 0.3s ease-in-out;
 }
 
 .code-section-body-collapsed {
@@ -324,16 +374,22 @@ body .unstuck-container {
     color: white;
     border: none;
     border-radius: 1.25rem;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.7rem;
+    padding: 0.4rem 0.875rem;
+    font-size: 0.75rem;
     font-weight: bold;
     cursor: pointer;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    transition: background-color 0.15s ease;
+    transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .add-to-project-button:hover {
     background: hsla(163, 85%, 35%, 1);
+    transform: scale(1.03);
+}
+
+.add-to-project-button:active {
+    transform: scale(0.97);
+    transition-duration: 0.05s;
 }
 
 /* Follow-up chips */
@@ -341,32 +397,59 @@ body .unstuck-container {
     display: flex;
     flex-wrap: wrap;
     gap: 0.3rem;
-    padding-top: 0.125rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid hsla(215, 50%, 90%, 0.6);
+    margin-top: 0.125rem;
 }
 
 .follow-up {
     background: $ui-primary;
     border: 1px solid $ui-tertiary;
+    border-left: 2px solid $unstuck-purple;
     border-radius: 1rem;
     padding: 0.3rem 0.625rem;
     font-size: 0.7rem;
     color: $text-primary;
     cursor: pointer;
-    transition: background-color 0.1s ease, border-color 0.1s ease;
+    transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.1s ease;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .follow-up:hover {
     background: $ui-secondary;
     border-color: $unstuck-purple;
+    transform: translateY(-1px);
+}
+
+.follow-up:active {
+    transform: scale(0.96);
+    transition-duration: 0.05s;
 }
 
 /* Loading state */
 .loading {
     font-size: 0.85rem;
-    color: $text-primary-transparent;
-    padding: 1rem 0;
+    color: $text-primary;
+    padding: 1.5rem 0;
     text-align: center;
+    animation: loading-breathe 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-breathe {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+.loading-dots::after {
+    content: '';
+    animation: loading-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes loading-dots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
 }
 
 .hidden {
