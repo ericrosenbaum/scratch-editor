@@ -31,6 +31,7 @@ import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
 import SettingsMenu from './settings-menu.jsx';
 
 import {openTipsLibrary, openDebugModal} from '../../reducers/modals';
+import {openUnstuck} from '../../reducers/unstuck';
 import {setPlayer} from '../../reducers/mode';
 import {
     isTimeTravel220022BC,
@@ -109,6 +110,11 @@ const ariaMessages = defineMessages({
         id: 'gui.menuBar.debug',
         defaultMessage: 'Debug',
         description: 'accessibility text for the debug button'
+    },
+    unstuck: {
+        id: 'gui.menuBar.unstuck',
+        defaultMessage: 'Get Unstuck',
+        description: 'accessibility text for the get unstuck help button'
     }
 });
 
@@ -739,6 +745,19 @@ class MenuBar extends React.Component {
                                 <FormattedMessage {...ariaMessages.debug} />
                             </span>
                         </div>
+                        <div
+                            aria-label={this.props.intl.formatMessage(ariaMessages.unstuck)}
+                            className={classNames(styles.menuBarItem, styles.noOffset, styles.hoverable)}
+                            onClick={this.props.onOpenUnstuck}
+                        >
+                            <img
+                                className={styles.helpIcon}
+                                src={helpIcon}
+                            />
+                            <span className={styles.unstuckLabel}>
+                                <FormattedMessage {...ariaMessages.unstuck} />
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -967,6 +986,7 @@ MenuBar.propTypes = {
     onOpenRegistration: PropTypes.func,
     onOpenTipLibrary: PropTypes.func,
     onOpenDebugModal: PropTypes.func,
+    onOpenUnstuck: PropTypes.func,
     onProjectTelemetryEvent: PropTypes.func,
     onRequestCloseAbout: PropTypes.func,
     onRequestCloseAccount: PropTypes.func,
@@ -1058,6 +1078,7 @@ const mapDispatchToProps = (dispatch, ownProps) => ({
     autoUpdateProject: () => dispatch(autoUpdateProject()),
     onOpenTipLibrary: () => dispatch(openTipsLibrary()),
     onOpenDebugModal: () => dispatch(openDebugModal()),
+    onOpenUnstuck: () => dispatch(openUnstuck()),
     onClickAccount: () => dispatch(openAccountMenu()),
     onRequestCloseAccount: () => dispatch(closeAccountMenu()),
     onClickFile: () => dispatch(openFileMenu()),

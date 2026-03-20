@@ -204,6 +204,7 @@ const mapStateToProps = (state, ownProps) => {
         ),
         telemetryModalVisible: state.scratchGui.modals.telemetryModal,
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
+        unstuckVisible: state.scratchGui.unstuck.visible,
         vm: state.scratchGui.vm
     };
 };
