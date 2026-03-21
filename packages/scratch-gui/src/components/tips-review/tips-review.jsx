@@ -147,9 +147,11 @@ function tipMatchesFilter (tipId, tip, searchQuery, activeTag, warningsOnly, orp
 class TipCard extends React.Component {
     constructor (props) {
         super(props);
-        this.state = {copied: false, showBlocks: false};
+        this.state = {copied: false, showBlocks: false, showJson: false, showTipJson: false};
         this.handleCopyId = this.handleCopyId.bind(this);
         this.handleShowBlocks = this.handleShowBlocks.bind(this);
+        this.handleShowJson = this.handleShowJson.bind(this);
+        this.handleShowTipJson = this.handleShowTipJson.bind(this);
     }
     handleCopyId () {
         const searchString = `'${this.props.tipId}': {`;
@@ -160,6 +162,12 @@ class TipCard extends React.Component {
     }
     handleShowBlocks () {
         this.setState(prev => ({showBlocks: !prev.showBlocks}));
+    }
+    handleShowJson () {
+        this.setState(prev => ({showJson: !prev.showJson}));
+    }
+    handleShowTipJson () {
+        this.setState(prev => ({showTipJson: !prev.showTipJson}));
     }
     render () {
         const {tipId, tip, warnings, referencedBy, onTagClick} = this.props;
@@ -208,7 +216,19 @@ class TipCard extends React.Component {
                             {tip.followUpLabel}
                         </span>
                     ) : null}
+                    <button
+                        className={styles.tipJsonButton}
+                        onClick={this.handleShowTipJson}
+                    >
+                        {this.state.showTipJson ? 'Hide JSON' : 'JSON'}
+                    </button>
                 </div>
+
+                {this.state.showTipJson ? (
+                    <pre className={styles.jsonBlock}>
+                        {JSON.stringify(tip, null, 2)}
+                    </pre>
+                ) : null}
 
                 <div className={styles.tipText}>{tip.text}</div>
 
@@ -247,6 +267,12 @@ class TipCard extends React.Component {
                             >
                                 {this.state.showBlocks ? 'Hide blocks' : 'Show blocks'}
                             </button>
+                            <button
+                                className={styles.renderBlocksButton}
+                                onClick={this.handleShowJson}
+                            >
+                                {this.state.showJson ? 'Hide JSON' : 'Show JSON'}
+                            </button>
                         </div>
                         {opcodeChain.length > 0 ? (
                             <div className={styles.opcodeChain}>
@@ -264,6 +290,11 @@ class TipCard extends React.Component {
                             <div className={styles.blockPreviewWrapper}>
                                 <BlockPreview templateName={tip.blockExample} />
                             </div>
+                        ) : null}
+                        {this.state.showJson ? (
+                            <pre className={styles.jsonBlock}>
+                                {JSON.stringify(blockTemplates[tip.blockExample], null, 2)}
+                            </pre>
                         ) : null}
                     </div>
                 ) : null}

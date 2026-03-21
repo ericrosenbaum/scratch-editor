@@ -256,6 +256,24 @@
     100% { opacity: 0; }
 }
 
+.tip-json-button {
+    margin-left: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 11px;
+    cursor: pointer;
+    color: #555;
+    vertical-align: middle;
+    transition: all 0.15s;
+}
+
+.tip-json-button:hover {
+    background: #f0f2f5;
+    border-color: #999;
+}
+
 .follow-up-label {
     font-size: 13px;
     color: #888;
@@ -344,6 +362,21 @@
     border-radius: 6px;
     overflow: hidden;
     max-width: 400px;
+}
+
+.json-block {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: #1e1e2e;
+    color: #a9b7c6;
+    border-radius: 6px;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-x: auto;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre;
 }
 
 .opcode-chain {
