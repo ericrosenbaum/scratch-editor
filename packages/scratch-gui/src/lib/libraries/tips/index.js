@@ -28,9 +28,9 @@ const tips = {
         blockExample: 'whenFlagMove',
         pointers: [
             {
-                label: 'Find "when green flag clicked" here',
-                target: '.blocklyToolboxCategory#events',
-                preAction: 'switchToCodeTab',
+                label: 'Drag "when green flag clicked" into your code',
+                blockOpcode: 'event_whenflagclicked',
+                category: 'events',
                 side: 'right'
             }
         ],
@@ -67,9 +67,9 @@ const tips = {
         blockExample: 'whenFlagMove',
         pointers: [
             {
-                label: 'Motion blocks are here',
-                target: '.blocklyToolboxCategory#motion',
-                preAction: 'switchToCodeTab',
+                label: 'Drag "move 10 steps" into your code',
+                blockOpcode: 'motion_movesteps',
+                category: 'motion',
                 side: 'right'
             }
         ],
@@ -89,9 +89,9 @@ const tips = {
         blockExample: 'whenKeyMoveRight',
         pointers: [
             {
-                label: 'Find "when key pressed" in Events',
-                target: '.blocklyToolboxCategory#events',
-                preAction: 'switchToCodeTab',
+                label: 'Drag "when key pressed" into your code',
+                blockOpcode: 'event_whenkeypressed',
+                category: 'events',
                 side: 'right'
             }
         ],
@@ -188,9 +188,9 @@ const tips = {
         blockExample: 'saySomething',
         pointers: [
             {
-                label: 'Find "say" and "think" in Looks',
-                target: '.blocklyToolboxCategory#looks',
-                preAction: 'switchToCodeTab',
+                label: 'Drag "say Hello!" into your code',
+                blockOpcode: 'looks_sayforsecs',
+                category: 'looks',
                 side: 'right'
             }
         ],
@@ -216,9 +216,9 @@ const tips = {
         followUps: ['add-costume', 'animate-costume', 'costume-center'],
         pointers: [
             {
-                label: 'Costume blocks are in Looks',
-                target: '.blocklyToolboxCategory#looks',
-                preAction: 'switchToCodeTab',
+                label: 'Drag "next costume" into your code',
+                blockOpcode: 'looks_nextcostume',
+                category: 'looks',
                 side: 'right'
             }
         ],
@@ -263,9 +263,9 @@ const tips = {
         blockExample: 'foreverMove',
         pointers: [
             {
-                label: 'Find "forever" in Control',
-                target: '.blocklyToolboxCategory#control',
-                preAction: 'switchToCodeTab',
+                label: 'Drag "forever" into your code',
+                blockOpcode: 'control_forever',
+                category: 'control',
                 side: 'right'
             }
         ],
@@ -347,9 +347,9 @@ const tips = {
         blockExample: 'foreverIfTouching',
         pointers: [
             {
-                label: 'Find "touching" in Sensing',
-                target: '.blocklyToolboxCategory#sensing',
-                preAction: 'switchToCodeTab',
+                label: 'Drag "touching?" into your code',
+                blockOpcode: 'sensing_touchingobject',
+                category: 'sensing',
                 side: 'right'
             }
         ],
@@ -695,9 +695,9 @@ const tips = {
         followUps: ['nothing-happens', 'green-flag'],
         pointers: [
             {
-                label: 'Hat blocks are in Events',
-                target: '.blocklyToolboxCategory#events',
-                preAction: 'switchToCodeTab',
+                label: 'Drag "when green flag clicked" into your code',
+                blockOpcode: 'event_whenflagclicked',
+                category: 'events',
                 side: 'right'
             }
         ],
@@ -907,9 +907,9 @@ const tips = {
         blockExample: 'askAndSay',
         pointers: [
             {
-                label: 'Find "ask" in Sensing',
-                target: '.blocklyToolboxCategory#sensing',
-                preAction: 'switchToCodeTab',
+                label: 'Drag "ask and wait" into your code',
+                blockOpcode: 'sensing_askandwait',
+                category: 'sensing',
                 side: 'right'
             }
         ],
