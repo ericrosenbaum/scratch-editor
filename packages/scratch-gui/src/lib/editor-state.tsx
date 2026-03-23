@@ -110,6 +110,10 @@ export class EditorState {
         }
         const reducer = combineReducers(reducers);
         this.store = createStore(reducer, initialState, enhancer);
+        // Expose store for Playwright tests and debugging
+        if (typeof window !== 'undefined') {
+            (window as any).__scratchStore = this.store;
+        }
     }
 
     dispatch (action) {

@@ -117,6 +117,337 @@ const BLOCK_XML = {
                     </block>
                 </next>
             </block>
+        </xml>`,
+    foreverIfCheck: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="control_if">
+                                <value name="CONDITION">
+                                    <block type="sensing_touchingobject">
+                                        <value name="TOUCHINGOBJECTMENU">
+                                            <shadow type="sensing_touchingobjectmenu">
+                                                <field name="TOUCHINGOBJECTMENU">_edge_</field>
+                                            </shadow>
+                                        </value>
+                                    </block>
+                                </value>
+                                <statement name="SUBSTACK">
+                                    <block type="looks_say">
+                                        <value name="MESSAGE">
+                                            <shadow type="text">
+                                                <field name="TEXT">Touching!</field>
+                                            </shadow>
+                                        </value>
+                                    </block>
+                                </statement>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    whenFlagGoToReset: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="motion_gotoxy">
+                        <value name="X">
+                            <shadow type="math_number"><field name="NUM">0</field></shadow>
+                        </value>
+                        <value name="Y">
+                            <shadow type="math_number"><field name="NUM">0</field></shadow>
+                        </value>
+                        <next>
+                            <block type="looks_setsizeto">
+                                <value name="SIZE">
+                                    <shadow type="math_number"><field name="NUM">100</field></shadow>
+                                </value>
+                            </block>
+                        </next>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    foreverColorChange: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="looks_changeeffectby">
+                                <field name="EFFECT">COLOR</field>
+                                <value name="CHANGE">
+                                    <shadow type="math_number"><field name="NUM">25</field></shadow>
+                                </value>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    foreverSpin: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="motion_turnright">
+                                <value name="DEGREES">
+                                    <shadow type="math_number"><field name="NUM">15</field></shadow>
+                                </value>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    foreverBounce: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="motion_movesteps">
+                                <value name="STEPS">
+                                    <shadow type="math_number"><field name="NUM">10</field></shadow>
+                                </value>
+                                <next>
+                                    <block type="motion_ifonedgebounce" />
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    whenClickedChangeScore: `
+        <xml>
+            <block type="event_whenthisspriteclicked" x="10" y="10">
+                <next>
+                    <block type="data_changevariableby">
+                        <field name="VARIABLE" id="unstuck_score_var">score</field>
+                        <value name="VALUE">
+                            <shadow type="math_number"><field name="NUM">1</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    foreverMove: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="motion_movesteps">
+                                <value name="STEPS">
+                                    <shadow type="math_number"><field name="NUM">10</field></shadow>
+                                </value>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    repeatTurn: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_repeat">
+                        <value name="TIMES">
+                            <shadow type="math_whole_number"><field name="NUM">10</field></shadow>
+                        </value>
+                        <statement name="SUBSTACK">
+                            <block type="motion_movesteps">
+                                <value name="STEPS">
+                                    <shadow type="math_number"><field name="NUM">10</field></shadow>
+                                </value>
+                                <next>
+                                    <block type="motion_turnright">
+                                        <value name="DEGREES">
+                                            <shadow type="math_number"><field name="NUM">36</field></shadow>
+                                        </value>
+                                    </block>
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    glideTo: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="motion_glidesecstoxy">
+                        <value name="SECS">
+                            <shadow type="math_number"><field name="NUM">1</field></shadow>
+                        </value>
+                        <value name="X">
+                            <shadow type="math_number"><field name="NUM">100</field></shadow>
+                        </value>
+                        <value name="Y">
+                            <shadow type="math_number"><field name="NUM">100</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    followMouse: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="motion_goto">
+                                <value name="TO">
+                                    <shadow type="motion_goto_menu">
+                                        <field name="TO">_mouse_</field>
+                                    </shadow>
+                                </value>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    askAndSay: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="sensing_askandwait">
+                        <value name="QUESTION">
+                            <shadow type="text"><field name="TEXT">What's your name?</field></shadow>
+                        </value>
+                        <next>
+                            <block type="looks_say">
+                                <value name="MESSAGE">
+                                    <block type="sensing_answer" />
+                                </value>
+                            </block>
+                        </next>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    repeatUntilEdge: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_repeat_until">
+                        <value name="CONDITION">
+                            <block type="sensing_touchingobject">
+                                <value name="TOUCHINGOBJECTMENU">
+                                    <shadow type="sensing_touchingobjectmenu">
+                                        <field name="TOUCHINGOBJECTMENU">_edge_</field>
+                                    </shadow>
+                                </value>
+                            </block>
+                        </value>
+                        <statement name="SUBSTACK">
+                            <block type="motion_movesteps">
+                                <value name="STEPS">
+                                    <shadow type="math_number"><field name="NUM">10</field></shadow>
+                                </value>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    gravityFall: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="motion_changeyby">
+                                <value name="DY">
+                                    <shadow type="math_number"><field name="NUM">-2</field></shadow>
+                                </value>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    broadcastGo: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="event_broadcast">
+                        <value name="BROADCAST_INPUT">
+                            <shadow type="event_broadcast_menu">
+                                <field name="BROADCAST_OPTION">go!</field>
+                            </shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    cloneForever: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="control_create_clone_of">
+                                <value name="CLONE_OPTION">
+                                    <shadow type="control_create_clone_of_menu">
+                                        <field name="CLONE_OPTION">_myself_</field>
+                                    </shadow>
+                                </value>
+                                <next>
+                                    <block type="control_wait">
+                                        <value name="DURATION">
+                                            <shadow type="math_positive_number">
+                                                <field name="NUM">1</field>
+                                            </shadow>
+                                        </value>
+                                    </block>
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    goToCenter: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="motion_gotoxy">
+                        <value name="X">
+                            <shadow type="math_number"><field name="NUM">0</field></shadow>
+                        </value>
+                        <value name="Y">
+                            <shadow type="math_number"><field name="NUM">0</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    moveRandomSteps: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="motion_movesteps">
+                        <value name="STEPS">
+                            <block type="operator_random">
+                                <value name="FROM">
+                                    <shadow type="math_number"><field name="NUM">1</field></shadow>
+                                </value>
+                                <value name="TO">
+                                    <shadow type="math_number"><field name="NUM">10</field></shadow>
+                                </value>
+                            </block>
+                        </value>
+                    </block>
+                </next>
+            </block>
         </xml>`
 };
 
@@ -150,6 +481,9 @@ class BlockPreview extends React.Component {
             getColorsForMode(this.props.colorMode)
         );
 
+        // Save the main workspace before inject, since inject() replaces it
+        const previousMainWorkspace = ScratchBlocks.getMainWorkspace();
+
         this.workspace = ScratchBlocks.inject(el, {
             readOnly: true,
             zoom: {
@@ -166,6 +500,12 @@ class BlockPreview extends React.Component {
             trashcan: false,
             theme
         });
+
+        // Restore the main workspace so glowStack and other features
+        // continue to operate on the editor workspace, not this preview
+        if (previousMainWorkspace) {
+            ScratchBlocks.common.setMainWorkspace(previousMainWorkspace);
+        }
 
         this.buildBlocks();
     }
