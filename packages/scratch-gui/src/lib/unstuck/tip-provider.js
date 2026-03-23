@@ -6,6 +6,68 @@
  */
 
 /**
+ * Get all opcodes used in the project from context.
+ */
+const getAllOpcodes = function (context) {
+    const opcodes = new Set();
+    if (context.stage && context.stage.hatOpcodes) {
+        context.stage.hatOpcodes.forEach(o => opcodes.add(o));
+    }
+    for (const sprite of context.sprites) {
+        if (sprite.hatOpcodes) {
+            sprite.hatOpcodes.forEach(o => opcodes.add(o));
+        }
+    }
+    return opcodes;
+};
+
+/**
+ * Get all block categories used in the project.
+ */
+const getAllCategories = function (context) {
+    const categories = new Set();
+    if (context.stage) {
+        context.stage.blockCategories.forEach(c => categories.add(c));
+    }
+    for (const sprite of context.sprites) {
+        sprite.blockCategories.forEach(c => categories.add(c));
+    }
+    return categories;
+};
+
+/**
+ * Score a tip based on project context signals only.
+ * @param {object} tip - A tip object from the tips library
+ * @param {object} context - Project context from extractProjectContext
+ * @returns {number} Context relevance score
+ */
+const scoreContext = function (tip, context) {
+    let score = 0;
+    if (context && tip.relevance) {
+        const {projectSignals} = tip.relevance;
+        if (projectSignals) {
+            if (projectSignals.missing) {
+                const allOpcodes = getAllOpcodes(context);
+                for (const opcode of projectSignals.missing) {
+                    if (!allOpcodes.has(opcode)) {
+                        score += 2;
+                    }
+                }
+            }
+            if (projectSignals.hasCategories) {
+                const allCategories = getAllCategories(context);
+                for (const cat of projectSignals.hasCategories) {
+                    if (allCategories.has(cat)) {
+                        score += 1;
+                    }
+                }
+            }
+        }
+    }
+    return score;
+};
+
+/**
  * Score a tip against a query using keyword matching.
  * Returns a relevance score (higher = better match).
  * @param {object} tip - A tip object from the tips library
@@ -44,62 +106,9 @@ const scoreTip = function (tip, query, context) {
         }
     }
 
-    // Context-aware scoring: boost tips relevant to current project state
-    if (context && tip.relevance) {
-        const {projectSignals} = tip.relevance;
-        if (projectSignals) {
-            // Boost tips about things the project is missing
-            if (projectSignals.missing) {
-                const allOpcodes = getAllOpcodes(context);
-                for (const opcode of projectSignals.missing) {
-                    if (!allOpcodes.has(opcode)) {
-                        score += 2;
-                    }
-                }
-            }
-            // Boost tips about categories the project already uses
-            if (projectSignals.hasCategories) {
-                const allCategories = getAllCategories(context);
-                for (const cat of projectSignals.hasCategories) {
-                    if (allCategories.has(cat)) {
-                        score += 1;
-                    }
-                }
-            }
-        }
-    }
+    score += scoreContext(tip, context);
 
     return score;
-};
-
-/**
- * Get all opcodes used in the project from context.
- */
-const getAllOpcodes = function (context) {
-    const opcodes = new Set();
-    if (context.stage && context.stage.hatOpcodes) {
-        context.stage.hatOpcodes.forEach(o => opcodes.add(o));
-    }
-    for (const sprite of context.sprites) {
-        if (sprite.hatOpcodes) {
-            sprite.hatOpcodes.forEach(o => opcodes.add(o));
-        }
-    }
-    return opcodes;
-};
-
-/**
- * Get all block categories used in the project.
- */
-const getAllCategories = function (context) {
-    const categories = new Set();
-    if (context.stage) {
-        context.stage.blockCategories.forEach(c => categories.add(c));
-    }
-    for (const sprite of context.sprites) {
-        sprite.blockCategories.forEach(c => categories.add(c));
-    }
-    return categories;
 };
 
 /**
@@ -131,5 +140,5 @@ class KeywordTipProvider {
     }
 }
 
-export {KeywordTipProvider};
+export {KeywordTipProvider, scoreContext};
 export default KeywordTipProvider;

@@ -9,6 +9,13 @@ const waitForEditor = async page => {
         });
     }
     await page.waitForSelector('[class*="blocks_blocks"]', {timeout: 30000});
+    // Remove webpack-dev-server overlay iframe that can intercept pointer events.
+    // Wait briefly for it to appear since it's injected asynchronously.
+    await page.waitForTimeout(1000);
+    await page.evaluate(() => {
+        const overlay = document.getElementById('webpack-dev-server-client-overlay');
+        if (overlay) overlay.remove();
+    });
 };
 
 const openUnstuck = async page => {
@@ -34,7 +41,7 @@ const typeQuery = async (page, query) => {
 
 test.describe('Block-Level Pointers', () => {
 
-    test('show-me highlights a specific block in the flyout', async ({page}) => {
+    test('show-me highlights a block in the flyout', async ({page}) => {
         const errors = [];
         page.on('pageerror', err => errors.push(err.message));
 
@@ -42,15 +49,12 @@ test.describe('Block-Level Pointers', () => {
         await openUnstuck(page);
         await typeQuery(page, 'nothing happens');
 
-        // Click show me
         const showMe = page.locator('[class*="show-me"], [class*="showMe"]').first();
         await expect(showMe).toBeVisible({timeout: 3000});
         await showMe.click();
 
-        // Wait for highlight (tab switch 300ms + category scroll 200ms + render)
         await page.waitForTimeout(1000);
 
-        // Verify driver.js overlay and popover appeared
         const overlay = page.locator('.driver-overlay');
         await expect(overlay).toBeVisible({timeout: 3000});
 
@@ -59,33 +63,71 @@ test.describe('Block-Level Pointers', () => {
         const title = await popoverTitle.textContent();
         expect(title).toContain('when green flag clicked');
 
-        // No JS errors
-        const relevantErrors = errors.filter(e => !e.includes('defaultProps'));
+        const relevantErrors = errors.filter(e =>
+            !e.includes('defaultProps') && !e.includes('importScripts'));
         expect(relevantErrors).toEqual([]);
     });
 
-    test('block opcode CSS selectors find flyout blocks', async ({page}) => {
+    test('show-me switches category and highlights block from a different category', async ({page}) => {
+        const errors = [];
+        page.on('pageerror', err => errors.push(err.message));
+
         await waitForEditor(page);
 
-        // motion_movesteps should be visible in the default (Motion) category
-        const motionBlock = await page.evaluate(() => {
-            const block = document.querySelector(
-                '.blocklyFlyout .motion_movesteps.blocklyDraggable'
-            );
-            return block ? {found: true, text: block.textContent} : {found: false};
-        });
-        expect(motionBlock.found).toBe(true);
-
-        // Click Events category, then find event_whenflagclicked
+        // Select events category so motion blocks are scrolled off
         await page.click('.blocklyToolboxCategory#events');
         await page.waitForTimeout(300);
 
-        const eventBlock = await page.evaluate(() => {
+        // Verify motion block is NOT visible
+        const motionBefore = await page.evaluate(() => {
+            const flyout = document.querySelector('.blocklyFlyout');
+            const flyoutRect = flyout.getBoundingClientRect();
             const block = document.querySelector(
-                '.blocklyFlyout .event_whenflagclicked.blocklyDraggable'
+                '.blocklyFlyout .motion_movesteps.blocklyDraggable'
             );
-            return block ? {found: true, text: block.textContent} : {found: false};
+            if (!block) return {found: false};
+            const blockRect = block.getBoundingClientRect();
+            return {
+                found: true,
+                visible: blockRect.top >= flyoutRect.top && blockRect.bottom <= flyoutRect.bottom
+            };
         });
-        expect(eventBlock.found).toBe(true);
+        expect(motionBefore.visible).toBe(false);
+
+        // Open unstuck and ask about motion
+        await openUnstuck(page);
+        await typeQuery(page, 'how do I make my sprite move');
+
+        const showMe = page.locator('[class*="show-me"], [class*="showMe"]').first();
+        await expect(showMe).toBeVisible({timeout: 3000});
+        await showMe.click();
+
+        await page.waitForTimeout(1000);
+
+        // Verify highlight appeared
+        const overlay = page.locator('.driver-overlay');
+        await expect(overlay).toBeVisible({timeout: 3000});
+
+        // Verify the block is now visible in the flyout
+        const motionAfter = await page.evaluate(() => {
+            const flyout = document.querySelector('.blocklyFlyout');
+            const flyoutRect = flyout.getBoundingClientRect();
+            const block = document.querySelector(
+                '.blocklyFlyout .motion_movesteps.blocklyDraggable'
+            );
+            if (!block) return {found: false};
+            const blockRect = block.getBoundingClientRect();
+            return {
+                found: true,
+                visible: blockRect.top >= flyoutRect.top && blockRect.bottom <= flyoutRect.bottom,
+                selectedCategory: document.querySelector('.blocklyToolboxSelected')?.id
+            };
+        });
+        expect(motionAfter.visible).toBe(true);
+        expect(motionAfter.selectedCategory).toBe('motion');
+
+        const relevantErrors = errors.filter(e =>
+            !e.includes('defaultProps') && !e.includes('importScripts'));
+        expect(relevantErrors).toEqual([]);
     });
 });

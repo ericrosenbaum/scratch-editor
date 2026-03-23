@@ -61,6 +61,32 @@ const findFlyoutBlockElement = function (opcode) {
 };
 
 /**
+ * Simulate a full user click on an element.
+ * Blockly toolbox categories require a pointerdown event sequence
+ * (not just .click()) to trigger category selection and flyout scrolling.
+ * @param {Element} element - The DOM element to click
+ */
+const simulateClick = function (element) {
+    const rect = element.getBoundingClientRect();
+    const cx = rect.left + (rect.width / 2);
+    const cy = rect.top + (rect.height / 2);
+    const eventOpts = {
+        bubbles: true,
+        cancelable: true,
+        clientX: cx,
+        clientY: cy,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse'
+    };
+    element.dispatchEvent(new PointerEvent('pointerdown', eventOpts));
+    element.dispatchEvent(new PointerEvent('pointerup', eventOpts));
+    element.dispatchEvent(new MouseEvent('mousedown', eventOpts));
+    element.dispatchEvent(new MouseEvent('mouseup', eventOpts));
+    element.dispatchEvent(new MouseEvent('click', eventOpts));
+};
+
+/**
  * Click a toolbox category and scroll the flyout to show a specific block.
  * @param {string} category - Toolbox category ID (e.g. 'motion', 'events')
  * @param {string} opcode - Block opcode to find and scroll to
@@ -74,36 +100,18 @@ const openCategoryAndScrollToBlock = function (category, opcode, dispatch) {
     return new Promise(resolve => {
         // Wait for tab switch to render
         setTimeout(() => {
-            // Click the category in the toolbox
+            // Click the category in the toolbox using a full event sequence
+            // so Blockly handles the selection and scrolls the flyout
             const categoryElement = document.querySelector(
                 `.blocklyToolboxCategory#${category}`
             );
             if (categoryElement) {
-                categoryElement.click();
+                simulateClick(categoryElement);
             }
 
             // Wait for flyout to scroll to category
             setTimeout(() => {
-                const blockElement = findFlyoutBlockElement(opcode);
-                if (!blockElement) return resolve(null);
-
-                // Check if block is visible in the flyout
-                const flyout = document.querySelector('.blocklyFlyout');
-                if (flyout) {
-                    const flyoutRect = flyout.getBoundingClientRect();
-                    const blockRect = blockElement.getBoundingClientRect();
-
-                    // If block is outside the visible flyout, scroll to it
-                    if (blockRect.top < flyoutRect.top ||
-                        blockRect.bottom > flyoutRect.bottom) {
-                        blockElement.scrollIntoView({
-                            block: 'center',
-                            behavior: 'instant'
-                        });
-                    }
-                }
-
-                resolve(blockElement);
+                resolve(findFlyoutBlockElement(opcode));
             }, 200);
         }, 300);
     });

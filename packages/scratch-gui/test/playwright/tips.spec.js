@@ -12,6 +12,13 @@ const waitForEditor = async page => {
     }
     // Wait for the workspace to be ready
     await page.waitForSelector('[class*="blocks_blocks"]', {timeout: 30000});
+    // Remove webpack-dev-server overlay iframe that can intercept pointer events.
+    // Wait briefly for it to appear since it's injected asynchronously.
+    await page.waitForTimeout(1000);
+    await page.evaluate(() => {
+        const wdsOverlay = document.getElementById('webpack-dev-server-client-overlay');
+        if (wdsOverlay) wdsOverlay.remove();
+    });
 };
 
 // Open the Get Unstuck panel via the menu bar

@@ -51,7 +51,15 @@ const baseConfig = new ScratchWebpackConfigBuilder(
                 Buffer: require.resolve('buffer/'),
                 stream: require.resolve('stream-browserify')
             }
-        }
+        },
+        ignoreWarnings: [
+            // @huggingface/transformers uses `Object(import.meta)` which triggers
+            // a webpack warning but is intentional and safe to ignore.
+            {
+                module: /@huggingface[\\/]transformers/,
+                message: /import\.meta/
+            }
+        ]
     })
     .addModuleRule({
         test: /\.(svg|png|wav|mp3|gif|jpg)$/,
@@ -99,6 +107,10 @@ const baseConfig = new ScratchWebpackConfigBuilder(
             {
                 from: '../../node_modules/@mediapipe/face_detection',
                 to: 'chunks/mediapipe/face_detection'
+            },
+            {
+                from: 'src/lib/unstuck/embedding-worker.js',
+                to: 'static/embedding-worker.js'
             }
         ]
     }));

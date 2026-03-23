@@ -18,12 +18,33 @@ import {
 import UnstuckCardComponent from '../components/unstuck-card/unstuck-card.jsx';
 import tips, {quickPicks} from '../lib/libraries/tips/index.js';
 import KeywordTipProvider from '../lib/unstuck/tip-provider.js';
+import EmbeddingTipProvider from '../lib/unstuck/embedding-tip-provider.js';
 import extractProjectContext from '../lib/unstuck/context-extractor.js';
 import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions.js';
 import blockTemplates from '../lib/unstuck/block-templates.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
 
-const tipProvider = new KeywordTipProvider(tips);
+const keywordProvider = new KeywordTipProvider(tips);
+let tipProvider;
+try {
+    tipProvider = new EmbeddingTipProvider(tips, keywordProvider);
+} catch (e) {
+    console.warn('[Unstuck] Embedding provider failed to initialize, using keyword fallback', e);
+    tipProvider = keywordProvider;
+}
+
+const queryTips = function (context, query) {
+    const provider = tipProvider._ready ? 'embedding' : 'keyword';
+    console.log(`[Tips] query="${query}" provider=${provider}`);
+    return tipProvider.getTips(context, query)
+        .then(results => {
+            const summary = results.map(r =>
+                `${r.tipId} (${r.score.toFixed(1)}): ${(tips[r.tipId] && tips[r.tipId].text || '').substring(0, 60)}`
+            );
+            console.log(`[Tips] results (${results.length}):\n  ${summary.join('\n  ')}`);
+            return results;
+        });
+};
 
 class UnstuckCard extends React.Component {
     constructor (props) {
@@ -60,7 +81,7 @@ class UnstuckCard extends React.Component {
             this.props.activeTabIndex
         );
 
-        tipProvider.getTips(context, query)
+        queryTips(context, query)
             .then(results => {
                 if (results.length > 0) {
                     this.props.onSetTip(results[0].tipId);
@@ -80,7 +101,7 @@ class UnstuckCard extends React.Component {
                 this.props.vm,
                 this.props.activeTabIndex
             );
-            tipProvider.getTips(context, query)
+            queryTips(context, query)
                 .then(results => {
                     if (results.length > 0) {
                         this.props.onSetTip(results[0].tipId);
@@ -130,7 +151,7 @@ class UnstuckCard extends React.Component {
                     this.props.vm,
                     this.props.activeTabIndex
                 );
-                tipProvider.getTips(context, transcript)
+                queryTips(context, transcript)
                     .then(results => {
                         if (results.length > 0) {
                             this.props.onSetTip(results[0].tipId);
