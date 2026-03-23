@@ -528,6 +528,17 @@ body .unstuck-container {
     line-height: 1.4;
 }
 
+.tutorial-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: bold;
+    padding: 0.1rem 0.45rem;
+    border-radius: 0.75rem;
+    color: white;
+    line-height: 1.4;
+    background: linear-gradient(135deg, #855CD6, #4C97FF);
+}
+
 /* Loading state */
 .loading {
     font-size: 0.85rem;

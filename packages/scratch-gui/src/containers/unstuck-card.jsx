@@ -17,6 +17,8 @@ import {
     toggleCodeExpanded
 } from '../reducers/unstuck';
 
+import {activateDeck} from '../reducers/cards.js';
+
 import UnstuckCardComponent from '../components/unstuck-card/unstuck-card.jsx';
 import tips, {quickPicks} from '../lib/libraries/tips/index.js';
 import KeywordTipProvider from '../lib/unstuck/tip-provider.js';
@@ -153,6 +155,12 @@ class UnstuckCard extends React.Component {
     }
 
     handleFollowUp (tipId) {
+        const tip = tips[tipId];
+        if (tip && tip.tutorialId) {
+            this.props.onActivateDeck(tip.tutorialId);
+            this.props.onClose();
+            return;
+        }
         this.props.onSetTip(tipId);
     }
 
@@ -162,6 +170,12 @@ class UnstuckCard extends React.Component {
     }
 
     handleSelectResult (tipId) {
+        const tip = tips[tipId];
+        if (tip && tip.tutorialId) {
+            this.props.onActivateDeck(tip.tutorialId);
+            this.props.onClose();
+            return;
+        }
         this.props.onSetTip(tipId);
     }
 
@@ -255,6 +269,7 @@ class UnstuckCard extends React.Component {
 UnstuckCard.propTypes = {
     activeTipId: PropTypes.string,
     activeTabIndex: PropTypes.number.isRequired,
+    onActivateDeck: PropTypes.func.isRequired,
     codeExpanded: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired,
     expanded: PropTypes.bool.isRequired,
@@ -308,7 +323,8 @@ const mapDispatchToProps = dispatch => ({
     onSetTip: tipId => dispatch(setTip(tipId)),
     onShrinkExpand: () => dispatch(shrinkExpandUnstuck()),
     onStartDrag: () => dispatch(startDrag()),
-    onToggleCode: () => dispatch(toggleCodeExpanded())
+    onToggleCode: () => dispatch(toggleCodeExpanded()),
+    onActivateDeck: deckId => dispatch(activateDeck(deckId))
 });
 
 export default connect(

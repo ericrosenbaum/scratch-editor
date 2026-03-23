@@ -2388,6 +2388,412 @@ const tips = {
         relevance: {
             keywords: ['drag', 'stage', 'wrong place', 'blocks', 'workspace', 'won\'t snap', 'can\'t connect']
         }
+    },
+
+    // ──────────────────────────────────────────────
+    // TUTORIALS — each opens a step-by-step tutorial deck
+    // ──────────────────────────────────────────────
+
+    'tutorial-getting-started': {
+        id: 'tutorial-getting-started',
+        tutorialId: 'intro-move-sayhello',
+        text: 'Try the "Getting Started" tutorial to learn how to make a sprite move and say hello!',
+        tags: ['beginner', 'tutorial'],
+        queries: [
+            'how do I get started',
+            'I\'m new to Scratch what do I do',
+            'beginner tutorial',
+            'how do I start making something',
+            'teach me Scratch'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['start', 'begin', 'new', 'first', 'learn', 'hello', 'tutorial', 'getting started']
+        }
+    },
+    'tutorial-getting-started-asl': {
+        id: 'tutorial-getting-started-asl',
+        tutorialId: 'intro-getting-started-ASL',
+        text: 'Try the "Getting Started - ASL" tutorial to learn Scratch with American Sign Language!',
+        tags: ['beginner', 'tutorial'],
+        queries: [
+            'getting started with ASL',
+            'American Sign Language tutorial',
+            'deaf accessible tutorial',
+            'sign language Scratch tutorial'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['asl', 'sign language', 'deaf', 'accessible', 'getting started']
+        }
+    },
+    'tutorial-animate-a-name': {
+        id: 'tutorial-animate-a-name',
+        tutorialId: 'animate-a-name',
+        text: 'Try the "Animate a Name" tutorial to make letters spin, grow, and change color!',
+        tags: ['animation', 'art', 'tutorial'],
+        queries: [
+            'how do I animate letters',
+            'I want to make a name animation',
+            'animate text or letters',
+            'make letters spin and change color'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['animate', 'name', 'letter', 'spin', 'grow', 'color', 'art', 'tutorial']
+        }
+    },
+    'tutorial-animate-a-character': {
+        id: 'tutorial-animate-a-character',
+        tutorialId: 'Animate-A-Character',
+        text: 'Try the "Animate a Character" tutorial to make a character talk, move with arrow keys, and jump!',
+        tags: ['animation', 'tutorial'],
+        queries: [
+            'how do I animate a character',
+            'make my character move and talk',
+            'character animation tutorial',
+            'how do I make a character jump'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['animate', 'character', 'talk', 'jump', 'arrow keys', 'move', 'tutorial']
+        }
+    },
+    'tutorial-tell-a-story': {
+        id: 'tutorial-tell-a-story',
+        tutorialId: 'Tell-A-Story',
+        text: 'Try the "Create a Story" tutorial to make characters have conversations and switch scenes!',
+        tags: ['stories', 'tutorial'],
+        queries: [
+            'how do I make a story',
+            'I want to create a story in Scratch',
+            'make characters talk to each other',
+            'how do I switch scenes in a story'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['story', 'conversation', 'talk', 'scene', 'backdrop', 'narrative', 'tutorial']
+        }
+    },
+    'tutorial-say-it-out-loud': {
+        id: 'tutorial-say-it-out-loud',
+        tutorialId: 'say-it-out-loud',
+        text: 'Try the "Create Animations That Talk" tutorial to use the text-to-speech extension and make sprites speak out loud!',
+        tags: ['sound', 'tutorial'],
+        queries: [
+            'how do I make a sprite talk out loud',
+            'text to speech in Scratch',
+            'make my character speak with a voice',
+            'how do I use text to speech'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['text to speech', 'talk', 'speak', 'voice', 'say', 'out loud', 'tts', 'tutorial']
+        }
+    },
+    'tutorial-imagine': {
+        id: 'tutorial-imagine',
+        tutorialId: 'imagine',
+        text: 'Try the "Imagine a World" tutorial to create an interactive world with flying, gliding, and costume changes!',
+        tags: ['animation', 'stories', 'tutorial'],
+        queries: [
+            'imagine a world tutorial',
+            'how do I make an interactive world',
+            'I want to create a world in Scratch',
+            'make sprites fly around and change costumes'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['imagine', 'world', 'fly', 'glide', 'costume', 'interactive', 'tutorial']
+        }
+    },
+    'tutorial-add-effects': {
+        id: 'tutorial-add-effects',
+        tutorialId: 'add-effects',
+        text: 'Try the "Add Effects" tutorial to learn about color, fisheye, whirl, pixelate, and other cool effects!',
+        tags: ['looks', 'tutorial'],
+        queries: [
+            'how do I add effects to a sprite',
+            'color fisheye whirl pixelate effects',
+            'how do I make my sprite look cool',
+            'graphic effects in Scratch'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['effects', 'color', 'fisheye', 'whirl', 'pixelate', 'mosaic', 'ghost', 'brightness', 'tutorial']
+        }
+    },
+    'tutorial-make-it-fly': {
+        id: 'tutorial-make-it-fly',
+        tutorialId: 'make-it-fly',
+        text: 'Try the "Make it Fly" tutorial to create a flying game with arrow keys, collectibles, and a score!',
+        tags: ['games', 'tutorial'],
+        queries: [
+            'how do I make a flying game',
+            'make my sprite fly around',
+            'flying game with score',
+            'how do I collect things in a game'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['fly', 'flying', 'game', 'arrow keys', 'collect', 'score', 'scenery', 'tutorial']
+        }
+    },
+    'tutorial-make-music': {
+        id: 'tutorial-make-music',
+        tutorialId: 'Make-Music',
+        text: 'Try the "Make Music" tutorial to pick instruments, create songs, and make a beatbox!',
+        tags: ['music', 'sound', 'tutorial'],
+        queries: [
+            'how do I make music in Scratch',
+            'I want to play instruments',
+            'create a song or beat',
+            'make a drum beat or beatbox'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['music', 'instrument', 'song', 'beat', 'drum', 'beatbox', 'play', 'band', 'tutorial']
+        }
+    },
+    'tutorial-pong': {
+        id: 'tutorial-pong',
+        tutorialId: 'pong',
+        text: 'Try the "Pong Game" tutorial to make a ball bounce off a paddle and keep score!',
+        tags: ['games', 'tutorial'],
+        queries: [
+            'how do I make a pong game',
+            'bouncing ball game with paddle',
+            'how do I make a ball bounce off things',
+            'pong game tutorial'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['pong', 'bounce', 'paddle', 'ball', 'game', 'score', 'tutorial']
+        }
+    },
+    'tutorial-clicker-game': {
+        id: 'tutorial-clicker-game',
+        tutorialId: 'Make-A-Game',
+        text: 'Try the "Make a Clicker Game" tutorial to make things pop up, click on them, and keep score!',
+        tags: ['games', 'tutorial'],
+        queries: [
+            'how do I make a clicker game',
+            'clicking game with score',
+            'make things pop up and click them',
+            'whack a mole style game'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['clicker', 'click', 'pop', 'game', 'score', 'random', 'tutorial']
+        }
+    },
+    'tutorial-chase-game': {
+        id: 'tutorial-chase-game',
+        tutorialId: 'Chase-Game',
+        text: 'Try the "Chase Game" tutorial to make a game where you chase things around the screen with arrow keys!',
+        tags: ['games', 'tutorial'],
+        queries: [
+            'how do I make a chase game',
+            'make a game where I chase things',
+            'arrow key game with score',
+            'how do I make a game with keyboard controls'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['chase', 'game', 'catch', 'follow', 'arrow keys', 'keyboard', 'score', 'tutorial']
+        }
+    },
+    'tutorial-video-sensing': {
+        id: 'tutorial-video-sensing',
+        tutorialId: 'Video-Sensing',
+        text: 'Try the "Video Sensing" tutorial to use your camera to pet the cat, animate sprites, and pop balloons!',
+        tags: ['sensing', 'tutorial'],
+        queries: [
+            'how do I use video sensing',
+            'camera in Scratch',
+            'use my webcam in a project',
+            'video sensing extension tutorial'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['video', 'sensing', 'camera', 'webcam', 'motion', 'pet', 'pop', 'tutorial']
+        }
+    },
+    'tutorial-face-sensing': {
+        id: 'tutorial-face-sensing',
+        tutorialId: 'Face-Sensing',
+        text: 'Try the "Face Sensing" tutorial to put accessories on your face and make games that use face tracking!',
+        tags: ['sensing', 'tutorial'],
+        queries: [
+            'how do I use face sensing',
+            'face tracking in Scratch',
+            'put things on my face with camera',
+            'face sensing extension tutorial'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['face', 'sensing', 'camera', 'tracking', 'hat', 'glasses', 'accessory', 'tutorial']
+        }
+    },
+    'tutorial-talking-tales': {
+        id: 'tutorial-talking-tales',
+        tutorialId: 'talking',
+        text: 'Try the "Talking Tales" tutorial to make characters speak, switch scenes, dance, and ask questions!',
+        tags: ['stories', 'sound', 'tutorial'],
+        queries: [
+            'talking tales tutorial',
+            'make characters speak and dance',
+            'text to speech story with scenes',
+            'ask and answer blocks tutorial'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['talking', 'tales', 'speak', 'dance', 'scene', 'ask', 'answer', 'text to speech', 'tutorial']
+        }
+    },
+    'tutorial-add-sprite': {
+        id: 'tutorial-add-sprite',
+        tutorialId: 'add-sprite',
+        text: 'Try the "Add a Sprite" tutorial to learn how to add new characters to your project!',
+        tags: ['beginner', 'tutorial'],
+        queries: [
+            'how do I add a sprite',
+            'add a new character',
+            'where do I find more sprites',
+            'how do I add a second sprite'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['add', 'sprite', 'character', 'new', 'choose', 'pick', 'tutorial']
+        }
+    },
+    'tutorial-add-backdrop': {
+        id: 'tutorial-add-backdrop',
+        tutorialId: 'add-a-backdrop',
+        text: 'Try the "Add a Backdrop" tutorial to learn how to change the background of your project!',
+        tags: ['beginner', 'tutorial'],
+        queries: [
+            'how do I add a backdrop',
+            'change the background',
+            'how do I set a background',
+            'add a scene or background'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['backdrop', 'background', 'scene', 'add', 'change', 'tutorial']
+        }
+    },
+    'tutorial-arrow-keys': {
+        id: 'tutorial-arrow-keys',
+        tutorialId: 'move-around-with-arrow-keys',
+        text: 'Try the "Use Arrow Keys" tutorial to learn how to move a sprite around with the keyboard!',
+        tags: ['events', 'motion', 'tutorial'],
+        queries: [
+            'how do I move with arrow keys',
+            'keyboard controls for my sprite',
+            'move up down left right with keys',
+            'how do I use arrow keys in Scratch'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['arrow', 'keys', 'keyboard', 'move', 'up', 'down', 'left', 'right', 'controls', 'tutorial']
+        }
+    },
+    'tutorial-change-size': {
+        id: 'tutorial-change-size',
+        tutorialId: 'change-size',
+        text: 'Try the "Change Size" tutorial to learn how to make sprites grow and shrink!',
+        tags: ['looks', 'tutorial'],
+        queries: [
+            'how do I change the size of a sprite',
+            'make my sprite bigger or smaller',
+            'grow and shrink a sprite',
+            'change size tutorial'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['size', 'change', 'grow', 'shrink', 'bigger', 'smaller', 'scale', 'tutorial']
+        }
+    },
+    'tutorial-glide-around': {
+        id: 'tutorial-glide-around',
+        tutorialId: 'glide-around',
+        text: 'Try the "Glide Around" tutorial to make your sprite glide smoothly back and forth or to a point!',
+        tags: ['motion', 'tutorial'],
+        queries: [
+            'how do I make a sprite glide',
+            'smooth movement glide to a point',
+            'glide back and forth',
+            'how do I use the glide block'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['glide', 'smooth', 'move', 'point', 'back', 'forth', 'slide', 'tutorial']
+        }
+    },
+    'tutorial-make-it-spin': {
+        id: 'tutorial-make-it-spin',
+        tutorialId: 'spin-video',
+        text: 'Try the "Make It Spin" tutorial to learn how to make a sprite turn and set its direction!',
+        tags: ['motion', 'tutorial'],
+        queries: [
+            'how do I make a sprite spin',
+            'turn and rotate a sprite',
+            'spinning animation',
+            'how do I set direction'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['spin', 'turn', 'rotate', 'direction', 'twist', 'tutorial']
+        }
+    },
+    'tutorial-record-a-sound': {
+        id: 'tutorial-record-a-sound',
+        tutorialId: 'record-a-sound',
+        text: 'Try the "Record a Sound" tutorial to record your own sounds and use them in your project!',
+        tags: ['sound', 'tutorial'],
+        queries: [
+            'how do I record a sound',
+            'record my own sound or voice',
+            'use the microphone to record',
+            'add my own sound to Scratch'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['record', 'sound', 'microphone', 'voice', 'audio', 'own', 'tutorial']
+        }
+    },
+    'tutorial-hide-and-show': {
+        id: 'tutorial-hide-and-show',
+        tutorialId: 'hide-and-show',
+        text: 'Try the "Hide and Show" tutorial to make sprites appear and disappear!',
+        tags: ['looks', 'tutorial'],
+        queries: [
+            'how do I hide and show a sprite',
+            'make a sprite appear and disappear',
+            'hide a sprite then show it',
+            'invisible sprite tutorial'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['hide', 'show', 'appear', 'disappear', 'visible', 'invisible', 'tutorial']
+        }
+    },
+    'tutorial-animate-a-sprite': {
+        id: 'tutorial-animate-a-sprite',
+        tutorialId: 'switch-costume',
+        text: 'Try the "Animate a Sprite" tutorial to learn how to switch costumes and create animations!',
+        tags: ['looks', 'animation', 'tutorial'],
+        queries: [
+            'how do I animate a sprite with costumes',
+            'switch costumes to make animation',
+            'costume animation tutorial',
+            'how do I change what my sprite looks like'
+        ],
+        followUps: [],
+        relevance: {
+            keywords: ['animate', 'costume', 'switch', 'change', 'look', 'appearance', 'tutorial']
+        }
     }
 };
 /* eslint-enable @stylistic/max-len */

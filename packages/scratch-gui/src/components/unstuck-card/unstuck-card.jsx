@@ -230,9 +230,14 @@ class SearchResults extends React.Component {
                             <div className={styles.resultCardText}>
                                 {tip.text}
                             </div>
-                            {tip.tags && tip.tags.length > 0 ? (
-                                <div className={styles.resultTags}>
-                                    {tip.tags.slice(0, 4).map(tag => (
+                            <div className={styles.resultTags}>
+                                {tip.tutorialId ? (
+                                    <span className={styles.tutorialBadge}>
+                                        {'\u25B6 Tutorial'}
+                                    </span>
+                                ) : null}
+                                {tip.tags && tip.tags.length > 0 ? (
+                                    tip.tags.filter(tag => tag !== 'tutorial').slice(0, 4).map(tag => (
                                         <span
                                             className={styles.resultTag}
                                             key={tag}
@@ -240,9 +245,9 @@ class SearchResults extends React.Component {
                                         >
                                             {tag}
                                         </span>
-                                    ))}
-                                </div>
-                            ) : null}
+                                    ))
+                                ) : null}
+                            </div>
                         </button>
                     );
                 })}
