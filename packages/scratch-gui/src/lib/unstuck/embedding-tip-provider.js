@@ -1,8 +1,15 @@
 /**
  * Embedding-based tip provider using a sentence embedding model in a Web Worker.
  * Falls back to KeywordTipProvider when the model isn't ready.
+ *
+ * Tip embeddings are pre-computed at build time (see scripts/generate-tip-embeddings.mjs)
+ * and loaded from a checked-in cache file. The worker only needs to embed user queries
+ * at runtime. If the cache is missing or stale, falls back to computing embeddings
+ * in the worker.
  */
 import {scoreContext} from './tip-provider.js';
+import embeddingCache from '../libraries/tips/embeddings-cache.json';
+import {createHash} from './embedding-hash.js';
 
 class EmbeddingTipProvider {
     constructor (tips, keywordProvider) {
@@ -23,6 +30,23 @@ class EmbeddingTipProvider {
             ].join(' ')
         }));
 
+        // Check if the build-time cache is still valid
+        this._cachedEmbeddings = null;
+        if (embeddingCache && embeddingCache.embeddings) {
+            const currentHash = createHash(
+                embeddingCache.modelName,
+                embeddingCache.modelDtype,
+                this._tipTexts
+            );
+            if (currentHash === embeddingCache.contentHash) {
+                this._cachedEmbeddings = embeddingCache.embeddings;
+            } else {
+                console.warn(
+                    '[EmbeddingTipProvider] Cache content hash mismatch — will compute embeddings at runtime'
+                );
+            }
+        }
+
         this._initWorker();
     }
 
@@ -40,11 +64,19 @@ class EmbeddingTipProvider {
             const {type} = event.data;
 
             if (type === 'ready') {
-                console.log('[EmbeddingTipProvider] Model loaded, embedding tips...');
-                this._worker.postMessage({
-                    type: 'embed-tips',
-                    tips: this._tipTexts
-                });
+                if (this._cachedEmbeddings) {
+                    console.log('[EmbeddingTipProvider] Model loaded, using cached embeddings');
+                    this._worker.postMessage({
+                        type: 'load-cached-embeddings',
+                        embeddings: this._cachedEmbeddings
+                    });
+                } else {
+                    console.log('[EmbeddingTipProvider] Model loaded, computing embeddings at runtime...');
+                    this._worker.postMessage({
+                        type: 'embed-tips',
+                        tips: this._tipTexts
+                    });
+                }
             } else if (type === 'tips-ready') {
                 console.log('[EmbeddingTipProvider] Tips embedded, switching to semantic matching');
                 this._ready = true;

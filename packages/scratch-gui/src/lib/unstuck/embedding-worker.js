@@ -71,7 +71,28 @@ self.onmessage = async function (event) {
                 message: 'Failed to load embedding model: ' + error.message
             });
         }
+    } else if (type === 'load-cached-embeddings') {
+        // Load pre-computed embeddings from the build-time cache
+        try {
+            const cached = event.data.embeddings;
+            const ids = Object.keys(cached);
+            console.log('[Embedding Worker] Loading ' + ids.length + ' cached tip embeddings...');
+
+            for (let i = 0; i < ids.length; i++) {
+                tipEmbeddings.set(ids[i], new Float32Array(cached[ids[i]]));
+            }
+
+            console.log('[Embedding Worker] All ' + ids.length + ' cached tip embeddings loaded');
+            self.postMessage({type: 'tips-ready'});
+        } catch (error) {
+            console.error('[Embedding Worker] Loading cached embeddings failed: ' + error.message);
+            self.postMessage({
+                type: 'error',
+                message: 'Loading cached embeddings failed: ' + error.message
+            });
+        }
     } else if (type === 'embed-tips') {
+        // Fallback: compute embeddings at runtime if no cache is available
         if (!embedder) {
             self.postMessage({type: 'error', message: 'Model not loaded yet'});
             return;
@@ -79,7 +100,7 @@ self.onmessage = async function (event) {
 
         try {
             const tips = event.data.tips;
-            console.log('[Embedding Worker] Embedding ' + tips.length + ' tips...');
+            console.log('[Embedding Worker] Embedding ' + tips.length + ' tips (no cache)...');
 
             for (let i = 0; i < tips.length; i++) {
                 const output = await embedder(tips[i].text, {pooling: 'mean', normalize: true});
