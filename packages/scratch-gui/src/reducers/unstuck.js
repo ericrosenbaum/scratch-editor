@@ -8,10 +8,13 @@ const DRAG_UNSTUCK = 'scratch-gui/unstuck/DRAG_UNSTUCK';
 const START_DRAG = 'scratch-gui/unstuck/START_DRAG';
 const END_DRAG = 'scratch-gui/unstuck/END_DRAG';
 const TOGGLE_CODE_EXPANDED = 'scratch-gui/unstuck/TOGGLE_CODE_EXPANDED';
+const SET_SEARCH_RESULTS = 'scratch-gui/unstuck/SET_SEARCH_RESULTS';
+const CLEAR_RESULTS = 'scratch-gui/unstuck/CLEAR_RESULTS';
 
 const initialState = {
     visible: false,
     activeTipId: null,
+    searchResults: [],
     query: '',
     loading: false,
     expanded: true,
@@ -28,6 +31,7 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             visible: true,
             activeTipId: null,
+            searchResults: [],
             query: '',
             loading: false,
             expanded: true
@@ -53,6 +57,20 @@ const reducer = function (state, action) {
     case TOGGLE_CODE_EXPANDED:
         return Object.assign({}, state, {
             codeExpanded: !state.codeExpanded
+        });
+    case SET_SEARCH_RESULTS:
+        return Object.assign({}, state, {
+            searchResults: action.results,
+            activeTipId: null,
+            loading: false,
+            codeExpanded: false
+        });
+    case CLEAR_RESULTS:
+        return Object.assign({}, state, {
+            searchResults: [],
+            activeTipId: null,
+            query: '',
+            codeExpanded: false
         });
     case SET_LOADING:
         return Object.assign({}, state, {
@@ -112,6 +130,14 @@ const endDrag = function () {
     return {type: END_DRAG};
 };
 
+const setSearchResults = function (results) {
+    return {type: SET_SEARCH_RESULTS, results};
+};
+
+const clearResults = function () {
+    return {type: CLEAR_RESULTS};
+};
+
 const toggleCodeExpanded = function () {
     return {type: TOGGLE_CODE_EXPANDED};
 };
@@ -128,5 +154,7 @@ export {
     dragUnstuck,
     startDrag,
     endDrag,
+    setSearchResults,
+    clearResults,
     toggleCodeExpanded
 };

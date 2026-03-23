@@ -29,18 +29,23 @@ const CACHE_PATH = resolve(__dirname, '../src/lib/libraries/tips/embeddings-cach
 
 const tips = (await import('../src/lib/libraries/tips/index.js')).default;
 
-const tipTexts = Object.keys(tips).map(tipId => {
+// Build a list of {id, text, tipId} for each query across all tips.
+// Each tip's `queries` array contains natural-language questions that map to that tip.
+const queryTexts = [];
+for (const tipId of Object.keys(tips)) {
     const tip = tips[tipId];
-    return {
-        id: tipId,
-        text: [
-            tip.text,
-            (tip.relevance && tip.relevance.keywords
-                ? tip.relevance.keywords.join(' ') : ''),
-            (tip.tags ? tip.tags.join(' ') : '')
-        ].join(' ')
-    };
-});
+    const queries = tip.queries || [];
+    for (let i = 0; i < queries.length; i++) {
+        queryTexts.push({
+            id: `${tipId}__q${i}`,
+            text: queries[i],
+            tipId
+        });
+    }
+}
+
+// Keep tipTexts as an alias for hash computation (the hash input is the query texts)
+const tipTexts = queryTexts;
 
 // ---------------------------------------------------------------------------
 // 2. Compute content hash — uses the same algorithm as the runtime
@@ -90,15 +95,16 @@ const embedder = await pipeline('feature-extraction', MODEL_NAME, {
     device: 'cpu'
 });
 
-console.log(`[generate-tip-embeddings] Embedding ${tipTexts.length} tips...`);
+console.log(`[generate-tip-embeddings] Embedding ${queryTexts.length} queries across ${Object.keys(tips).length} tips...`);
 
-const embeddings = {};
-for (let i = 0; i < tipTexts.length; i++) {
-    const output = await embedder(tipTexts[i].text, {pooling: 'mean', normalize: true});
-    // Store as plain arrays (JSON-serialisable)
-    embeddings[tipTexts[i].id] = Array.from(output.data);
-    if ((i + 1) % 10 === 0 || i === tipTexts.length - 1) {
-        console.log(`[generate-tip-embeddings] ${i + 1}/${tipTexts.length}`);
+const queries = [];
+const embeddings = [];
+for (let i = 0; i < queryTexts.length; i++) {
+    const output = await embedder(queryTexts[i].text, {pooling: 'mean', normalize: true});
+    queries.push({text: queryTexts[i].text, tipId: queryTexts[i].tipId});
+    embeddings.push(Array.from(output.data));
+    if ((i + 1) % 10 === 0 || i === queryTexts.length - 1) {
+        console.log(`[generate-tip-embeddings] ${i + 1}/${queryTexts.length}`);
     }
 }
 
@@ -111,6 +117,7 @@ const cache = {
     modelName: MODEL_NAME,
     modelDtype: MODEL_DTYPE,
     contentHash,
+    queries,
     embeddings
 };
 

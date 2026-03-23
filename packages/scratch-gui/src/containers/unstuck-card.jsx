@@ -8,6 +8,8 @@ import {
     setQuery,
     setTip,
     setLoading,
+    setSearchResults,
+    clearResults,
     dragUnstuck,
     startDrag,
     endDrag,
@@ -20,6 +22,8 @@ import tips, {quickPicks} from '../lib/libraries/tips/index.js';
 import KeywordTipProvider from '../lib/unstuck/tip-provider.js';
 import EmbeddingTipProvider from '../lib/unstuck/embedding-tip-provider.js';
 import extractProjectContext from '../lib/unstuck/context-extractor.js';
+import getProjectText from '../lib/unstuck/blocks-to-text.js';
+import buildContextQuery from '../lib/unstuck/context-query-builder.js';
 import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions.js';
 import blockTemplates from '../lib/unstuck/block-templates.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
@@ -60,10 +64,50 @@ class UnstuckCard extends React.Component {
         this.handlePointerClick = this.handlePointerClick.bind(this);
         this.handleAddToProject = this.handleAddToProject.bind(this);
         this.handleVoiceClick = this.handleVoiceClick.bind(this);
+        this.handleSelectResult = this.handleSelectResult.bind(this);
+        this.handleBackToResults = this.handleBackToResults.bind(this);
+        this.generateContextSuggestions = this.generateContextSuggestions.bind(this);
+    }
+
+    componentDidMount () {
+        this.generateContextSuggestions();
     }
 
     componentWillUnmount () {
         destroyHighlight();
+    }
+
+    generateContextSuggestions () {
+        const context = extractProjectContext(
+            this.props.vm,
+            this.props.activeTabIndex
+        );
+
+        if (context.totalBlockCount === 0) {
+            const starterTips = [
+                {tipId: 'nothing-happens', score: 10},
+                {tipId: 'move-sprite', score: 9},
+                {tipId: 'add-sound', score: 8}
+            ].filter(t => tips[t.tipId]);
+            console.log('[Tips] Empty project — using starter tips:', starterTips.map(t => t.tipId));
+            return;
+        }
+
+        getProjectText(this.props.vm)
+            .then(scratchblocksMap => {
+                const queryText = buildContextQuery(context, scratchblocksMap);
+                console.log('[Tips] Context scratchblocks:', scratchblocksMap);
+                console.log('[Tips] Context query text:', queryText);
+                return queryTips(null, queryText);
+            })
+            .then(results => {
+                console.log('[Tips] Context suggestions:', results.slice(0, 5).map(r =>
+                    `${r.tipId} (${r.score.toFixed(1)}): ${(tips[r.tipId] && tips[r.tipId].text || '').substring(0, 60)}`
+                ));
+            })
+            .catch(err => {
+                console.warn('[Tips] Context suggestion generation failed:', err);
+            });
     }
 
     handleQueryChange (e) {
@@ -84,17 +128,15 @@ class UnstuckCard extends React.Component {
         queryTips(context, query)
             .then(results => {
                 if (results.length > 0) {
-                    this.props.onSetTip(results[0].tipId);
+                    this.props.onSetSearchResults(results.slice(0, 3));
                 } else {
-                    // No matching tip found - show a fallback
-                    this.props.onSetTip('nothing-happens');
+                    this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
                 }
             });
     }
 
     handlePickClick (query) {
         this.props.onSetQuery(query);
-        // Use setTimeout to let the state update, then submit
         setTimeout(() => {
             this.props.onSetLoading(true);
             const context = extractProjectContext(
@@ -104,7 +146,7 @@ class UnstuckCard extends React.Component {
             queryTips(context, query)
                 .then(results => {
                     if (results.length > 0) {
-                        this.props.onSetTip(results[0].tipId);
+                        this.props.onSetSearchResults(results.slice(0, 3));
                     }
                 });
         }, 0);
@@ -116,7 +158,15 @@ class UnstuckCard extends React.Component {
 
     handleAskAnother () {
         destroyHighlight();
-        this.props.onSetQuery('');
+        this.props.onClearResults();
+    }
+
+    handleSelectResult (tipId) {
+        this.props.onSetTip(tipId);
+    }
+
+    handleBackToResults () {
+        destroyHighlight();
         this.props.onSetTip(null);
     }
 
@@ -145,7 +195,6 @@ class UnstuckCard extends React.Component {
         })
             .then(transcript => {
                 this.props.onSetQuery(transcript);
-                // Auto-submit after getting the transcript
                 this.props.onSetLoading(true);
                 const context = extractProjectContext(
                     this.props.vm,
@@ -154,7 +203,9 @@ class UnstuckCard extends React.Component {
                 queryTips(context, transcript)
                     .then(results => {
                         if (results.length > 0) {
-                            this.props.onSetTip(results[0].tipId);
+                            this.props.onSetSearchResults(results.slice(0, 3));
+                        } else {
+                            this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
                         }
                     });
             })
@@ -174,6 +225,7 @@ class UnstuckCard extends React.Component {
                 listening={this.state.listening}
                 loading={this.props.loading}
                 query={this.props.query}
+                searchResults={this.props.searchResults}
                 voiceSupported={isVoiceSupported()}
                 quickPicks={quickPicks}
                 tips={tips}
@@ -181,6 +233,7 @@ class UnstuckCard extends React.Component {
                 y={this.props.y}
                 onAddToProject={this.handleAddToProject}
                 onAskAnother={this.handleAskAnother}
+                onBackToResults={this.handleBackToResults}
                 onClose={this.props.onClose}
                 onDrag={this.props.onDrag}
                 onEndDrag={this.props.onEndDrag}
@@ -188,6 +241,7 @@ class UnstuckCard extends React.Component {
                 onPickClick={this.handlePickClick}
                 onPointerClick={this.handlePointerClick}
                 onQueryChange={this.handleQueryChange}
+                onSelectResult={this.handleSelectResult}
                 onShrinkExpand={this.props.onShrinkExpand}
                 onStartDrag={this.props.onStartDrag}
                 onToggleCode={this.props.onToggleCode}
@@ -205,16 +259,22 @@ UnstuckCard.propTypes = {
     dispatch: PropTypes.func.isRequired,
     expanded: PropTypes.bool.isRequired,
     loading: PropTypes.bool.isRequired,
+    onClearResults: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
     onDrag: PropTypes.func.isRequired,
     onEndDrag: PropTypes.func.isRequired,
     onSetLoading: PropTypes.func.isRequired,
     onSetQuery: PropTypes.func.isRequired,
+    onSetSearchResults: PropTypes.func.isRequired,
     onSetTip: PropTypes.func.isRequired,
     onShrinkExpand: PropTypes.func.isRequired,
     onStartDrag: PropTypes.func.isRequired,
     onToggleCode: PropTypes.func.isRequired,
     query: PropTypes.string.isRequired,
+    searchResults: PropTypes.arrayOf(PropTypes.shape({
+        tipId: PropTypes.string.isRequired,
+        score: PropTypes.number.isRequired
+    })).isRequired,
     vm: PropTypes.object.isRequired,
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired
@@ -227,6 +287,7 @@ const mapStateToProps = state => ({
     expanded: state.scratchGui.unstuck.expanded,
     loading: state.scratchGui.unstuck.loading,
     query: state.scratchGui.unstuck.query,
+    searchResults: state.scratchGui.unstuck.searchResults,
     x: state.scratchGui.unstuck.x,
     y: state.scratchGui.unstuck.y
 });
@@ -239,9 +300,11 @@ const mapDispatchToProps = dispatch => ({
     },
     onDrag: (e_, data) => dispatch(dragUnstuck(data.x, data.y)),
     onEndDrag: () => dispatch(endDrag()),
+    onClearResults: () => dispatch(clearResults()),
     onOpen: () => dispatch(openUnstuck()),
     onSetLoading: loading => dispatch(setLoading(loading)),
     onSetQuery: query => dispatch(setQuery(query)),
+    onSetSearchResults: results => dispatch(setSearchResults(results)),
     onSetTip: tipId => dispatch(setTip(tipId)),
     onShrinkExpand: () => dispatch(shrinkExpandUnstuck()),
     onStartDrag: () => dispatch(startDrag()),

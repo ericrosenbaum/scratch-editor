@@ -19,26 +19,31 @@ class EmbeddingTipProvider {
         this._pendingQueries = new Map(); // id -> {resolve, reject}
         this._queryId = 0;
 
-        // Prepare tip texts for embedding: combine text + keywords + tags
-        this._tipTexts = Object.keys(tips).map(tipId => ({
-            id: tipId,
-            text: [
-                tips[tipId].text,
-                (tips[tipId].relevance && tips[tipId].relevance.keywords
-                    ? tips[tipId].relevance.keywords.join(' ') : ''),
-                (tips[tipId].tags ? tips[tipId].tags.join(' ') : '')
-            ].join(' ')
-        }));
+        // Build query texts from each tip's `queries` array
+        this._queryTexts = [];
+        for (const tipId of Object.keys(tips)) {
+            const tip = tips[tipId];
+            const queries = tip.queries || [];
+            for (let i = 0; i < queries.length; i++) {
+                this._queryTexts.push({
+                    id: `${tipId}__q${i}`,
+                    text: queries[i],
+                    tipId
+                });
+            }
+        }
 
         // Check if the build-time cache is still valid
+        this._cachedQueries = null;
         this._cachedEmbeddings = null;
-        if (embeddingCache && embeddingCache.embeddings) {
+        if (embeddingCache && embeddingCache.queries && embeddingCache.embeddings) {
             const currentHash = createHash(
                 embeddingCache.modelName,
                 embeddingCache.modelDtype,
-                this._tipTexts
+                this._queryTexts
             );
             if (currentHash === embeddingCache.contentHash) {
+                this._cachedQueries = embeddingCache.queries;
                 this._cachedEmbeddings = embeddingCache.embeddings;
             } else {
                 console.warn(
@@ -64,17 +69,18 @@ class EmbeddingTipProvider {
             const {type} = event.data;
 
             if (type === 'ready') {
-                if (this._cachedEmbeddings) {
-                    console.log('[EmbeddingTipProvider] Model loaded, using cached embeddings');
+                if (this._cachedQueries && this._cachedEmbeddings) {
+                    console.log('[EmbeddingTipProvider] Model loaded, using cached query embeddings');
                     this._worker.postMessage({
                         type: 'load-cached-embeddings',
+                        queries: this._cachedQueries,
                         embeddings: this._cachedEmbeddings
                     });
                 } else {
-                    console.log('[EmbeddingTipProvider] Model loaded, computing embeddings at runtime...');
+                    console.log('[EmbeddingTipProvider] Model loaded, computing query embeddings at runtime...');
                     this._worker.postMessage({
                         type: 'embed-tips',
-                        tips: this._tipTexts
+                        tips: this._queryTexts
                     });
                 }
             } else if (type === 'tips-ready') {

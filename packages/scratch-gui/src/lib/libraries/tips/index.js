@@ -24,6 +24,14 @@ const tips = {
         followUpLabel: 'Start your code',
         text: 'Your code needs a "hat block" on top to know when to start — try "when green flag clicked"!',
         tags: ['events', 'start', 'beginner', 'hat'],
+        queries: [
+            'nothing happens when I click the green flag',
+            'my code is not working',
+            'why won\'t my project run',
+            'I clicked the blocks but nothing happened',
+            'my project is broken it doesn\'t do anything',
+            'how do I make my code start'
+        ],
         followUps: ['green-flag', 'add-event-block', 'no-visible-effect', 'block-already-there'],
         blockExample: 'whenFlagMove',
         pointers: [
@@ -46,6 +54,12 @@ const tips = {
         followUpLabel: 'Run your project',
         text: 'Click the green flag above the stage to run your project!',
         tags: ['events', 'start', 'beginner'],
+        queries: [
+            'how do I start my project',
+            'where is the play button',
+            'how do I run my code',
+            'where do I click to start'
+        ],
         followUps: ['nothing-happens', 'stop-project', 'reset-at-start'],
         pointers: [
             {
@@ -63,6 +77,13 @@ const tips = {
         followUpLabel: 'Move a sprite',
         text: 'Use "move 10 steps" from the Motion category to make your sprite move!',
         tags: ['motion', 'movement', 'beginner'],
+        queries: [
+            'how do I make my sprite move',
+            'my sprite is just sitting there',
+            'I want my character to walk',
+            'how do I move the cat',
+            'make sprite go forward'
+        ],
         followUps: ['move-with-keys', 'glide-to-position', 'negative-numbers'],
         blockExample: 'whenFlagMove',
         pointers: [
@@ -85,6 +106,13 @@ const tips = {
         followUpLabel: 'Keyboard controls',
         text: 'Use "when key pressed" with a "move" block to control your sprite with the keyboard!',
         tags: ['motion', 'events', 'keyboard', 'beginner'],
+        queries: [
+            'how do I use the arrow keys to move',
+            'I want to control my sprite with the keyboard',
+            'how do I make wasd controls',
+            'my sprite won\'t move when I press keys',
+            'how to add keyboard controls'
+        ],
         followUps: ['move-sprite', 'change-xy-position'],
         blockExample: 'whenKeyMoveRight',
         pointers: [
@@ -107,8 +135,22 @@ const tips = {
         followUpLabel: 'X and Y position',
         text: 'Use "change x by" and "change y by" for smooth left/right and up/down movement!',
         tags: ['motion', 'coordinates', 'position'],
+        queries: [
+            'how do I move my sprite left and right',
+            'how do I move up and down',
+            'what is x and y',
+            'I want smooth movement with arrow keys'
+        ],
         followUps: ['move-with-keys', 'go-to-position'],
         blockExample: 'whenKeyMoveRight',
+        pointers: [
+            {
+                label: 'Drag "change x by" into your code',
+                blockOpcode: 'motion_changexby',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['position', 'x', 'y', 'coordinate', 'left', 'right', 'up', 'down', 'direction']
         }
@@ -118,8 +160,21 @@ const tips = {
         followUpLabel: 'Go to a spot',
         text: 'Use "go to x: y:" to place your sprite at an exact spot on the stage!',
         tags: ['motion', 'position'],
+        queries: [
+            'how do I put my sprite in a specific spot',
+            'I want my sprite to go to the center',
+            'how do I set the position of my sprite'
+        ],
         followUps: ['change-xy-position', 'glide-to-position'],
         blockExample: 'goToCenter',
+        pointers: [
+            {
+                label: 'Drag "go to x: y:" into your code',
+                blockOpcode: 'motion_gotoxy',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['go to', 'place', 'position', 'where', 'location', 'center']
         }
@@ -129,8 +184,21 @@ const tips = {
         followUpLabel: 'Smooth movement',
         text: 'Use "glide" instead of "go to" for smooth, animated movement!',
         tags: ['motion', 'animation'],
+        queries: [
+            'how do I make my sprite slide smoothly',
+            'I want my sprite to glide across the screen',
+            'my sprite teleports instead of moving slowly'
+        ],
         followUps: ['move-sprite', 'too-fast'],
         blockExample: 'glideTo',
+        pointers: [
+            {
+                label: 'Drag "glide" into your code',
+                blockOpcode: 'motion_glidesecstoxy',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['glide', 'smooth', 'slide', 'animate', 'slow']
         }
@@ -140,6 +208,13 @@ const tips = {
         followUpLabel: 'Add a sound',
         text: 'Go to the Sounds tab to add sounds, then use "play sound" from the Sound category!',
         tags: ['sound', 'audio', 'beginner'],
+        queries: [
+            'how do I add a sound to my project',
+            'I want my sprite to make noise',
+            'where are the sound effects',
+            'how do I play music',
+            'I want to add a song'
+        ],
         followUps: ['record-sound', 'play-sound-until-done', 'play-vs-play-until-done'],
         blockExample: 'playSound',
         pointers: [
@@ -164,7 +239,20 @@ const tips = {
         followUpLabel: 'Record a sound',
         text: 'In the Sounds tab, click the microphone button to record your own sound!',
         tags: ['sound', 'recording'],
+        queries: [
+            'how do I record my own sound',
+            'I want to use my voice in my project',
+            'where is the microphone button',
+            'can I record audio'
+        ],
         followUps: ['add-sound', 'play-sound-until-done'],
+        pointers: [
+            {
+                label: 'Click the Sounds tab',
+                target: '[class*="tab-list"] [class*="tab"]:nth-child(3)',
+                side: 'bottom'
+            }
+        ],
         relevance: {
             keywords: ['record', 'microphone', 'voice', 'own sound']
         }
@@ -174,7 +262,20 @@ const tips = {
         followUpLabel: 'Wait for sound',
         text: 'Use "play sound until done" if you want to wait for the sound to finish before continuing!',
         tags: ['sound'],
+        queries: [
+            'my sounds are overlapping each other',
+            'how do I wait for a sound to finish',
+            'the sound keeps restarting'
+        ],
         followUps: ['add-sound', 'too-fast'],
+        pointers: [
+            {
+                label: 'Drag "play sound until done" into your code',
+                blockOpcode: 'sound_playuntildone',
+                category: 'sound',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['sound', 'overlap', 'wait', 'finish', 'until done']
         }
@@ -184,6 +285,13 @@ const tips = {
         followUpLabel: 'Speech bubbles',
         text: 'Use "say" or "think" from the Looks category to make your sprite talk with a speech bubble!',
         tags: ['looks', 'speech', 'beginner'],
+        queries: [
+            'how do I make my sprite talk',
+            'I want a speech bubble',
+            'how do I show text on the screen',
+            'I want my character to say something',
+            'how to make the sprite think'
+        ],
         followUps: ['change-costume', 'say-for-seconds', 'debug-with-say'],
         blockExample: 'saySomething',
         pointers: [
@@ -203,7 +311,20 @@ const tips = {
         followUpLabel: 'Timed messages',
         text: 'Use "say for 2 seconds" to show a message that disappears — great for conversations!',
         tags: ['looks', 'speech'],
+        queries: [
+            'how do I make the speech bubble go away',
+            'I want the text to disappear after a while',
+            'how do I make a conversation between sprites'
+        ],
         followUps: ['say-think', 'too-fast'],
+        pointers: [
+            {
+                label: 'Drag "say for 2 seconds" into your code',
+                blockOpcode: 'looks_sayforsecs',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['disappear', 'temporary', 'seconds', 'conversation', 'dialogue']
         }
@@ -213,6 +334,12 @@ const tips = {
         followUpLabel: 'Change costume',
         text: 'Use "switch costume" or "next costume" from Looks to change how your sprite looks!',
         tags: ['looks', 'costumes', 'animation', 'beginner'],
+        queries: [
+            'how do I change what my sprite looks like',
+            'I want to switch between different outfits',
+            'how do I use costumes',
+            'my sprite needs a different picture'
+        ],
         followUps: ['add-costume', 'animate-costume', 'costume-center'],
         pointers: [
             {
@@ -231,6 +358,11 @@ const tips = {
         followUpLabel: 'Add costumes',
         text: 'Go to the Costumes tab and click the cat button to add a new costume to your sprite!',
         tags: ['costumes', 'drawing'],
+        queries: [
+            'how do I add more costumes',
+            'I want to draw my own costume',
+            'where do I add a new picture for my sprite'
+        ],
         followUps: ['change-costume', 'animate-costume'],
         pointers: [
             {
@@ -248,8 +380,22 @@ const tips = {
         followUpLabel: 'Animate',
         text: 'Put "next costume" inside a "forever" loop with a "wait" block to make a simple animation!',
         tags: ['looks', 'costumes', 'animation', 'loops'],
+        queries: [
+            'how do I animate my sprite',
+            'I want my sprite to look like it\'s walking',
+            'how do I make a flipbook animation',
+            'my sprite should change costumes automatically'
+        ],
         followUps: ['change-costume', 'forever-loop'],
         blockExample: 'foreverNextCostume',
+        pointers: [
+            {
+                label: 'Drag "next costume" into your code',
+                blockOpcode: 'looks_nextcostume',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['animate', 'animation', 'flip', 'walk cycle', 'frame']
         }
@@ -259,6 +405,13 @@ const tips = {
         followUpLabel: 'Repeat forever',
         text: 'Use a "forever" block from Control to make something repeat over and over!',
         tags: ['control', 'loops', 'beginner'],
+        queries: [
+            'how do I make something repeat forever',
+            'I want my sprite to keep moving',
+            'how do I loop my code',
+            'my code only runs once',
+            'I want it to keep going and not stop'
+        ],
         followUps: ['repeat-loop', 'too-fast', 'if-not-forever'],
         blockExample: 'foreverMove',
         pointers: [
@@ -281,8 +434,21 @@ const tips = {
         followUpLabel: 'Repeat N times',
         text: 'Use "repeat 10" to do something a specific number of times!',
         tags: ['control', 'loops'],
+        queries: [
+            'how do I repeat something a certain number of times',
+            'I want to do something 10 times',
+            'how do I make a loop that stops'
+        ],
         followUps: ['forever-loop', 'too-fast'],
         blockExample: 'repeatTurn',
+        pointers: [
+            {
+                label: 'Drag "repeat" into your code',
+                blockOpcode: 'control_repeat',
+                category: 'control',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['repeat', 'times', 'loop', 'count', 'number of times']
         }
@@ -292,7 +458,23 @@ const tips = {
         followUpLabel: 'Slow it down',
         text: 'Add a "wait 1 seconds" block inside your loop to slow things down!',
         tags: ['control', 'timing', 'beginner'],
+        queries: [
+            'everything happens too fast',
+            'my sprite moves too quickly',
+            'how do I slow things down',
+            'it goes so fast I can\'t see anything',
+            'how do I add a pause'
+        ],
         followUps: ['forever-loop', 'glide-to-position', 'wait-vs-no-wait', 'understand-seconds'],
+        blockExample: 'waitBlock',
+        pointers: [
+            {
+                label: 'Drag "wait 1 seconds" into your code',
+                blockOpcode: 'control_wait',
+                category: 'control',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['fast', 'slow', 'speed', 'wait', 'pause', 'too quick', 'instant']
         }
@@ -302,6 +484,13 @@ const tips = {
         followUpLabel: 'Make a variable',
         text: 'Click "Make a Variable" in the Variables category to keep track of things like score!',
         tags: ['variables', 'data', 'beginner'],
+        queries: [
+            'how do I keep score',
+            'I want to count something',
+            'how do I make a score variable',
+            'how do I track lives or health',
+            'I need to save a number'
+        ],
         followUps: ['change-variable', 'use-lists'],
         pointers: [
             {
@@ -323,7 +512,21 @@ const tips = {
         followUpLabel: 'Update a variable',
         text: 'Use "set my variable to 0" at the start, then "change my variable by 1" to update it!',
         tags: ['variables', 'data'],
+        queries: [
+            'how do I add 1 to my score',
+            'how do I change my variable',
+            'my score won\'t go up',
+            'how do I reset the score to zero'
+        ],
         followUps: ['use-variables', 'detect-collision'],
+        pointers: [
+            {
+                label: 'Variables are here',
+                target: '.blocklyToolboxCategory#variables',
+                preAction: 'switchToCodeTab',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['change variable', 'increase', 'decrease', 'add', 'subtract', 'update', 'reset']
         }
@@ -333,7 +536,20 @@ const tips = {
         followUpLabel: 'Use lists',
         text: 'Click "Make a List" in Variables to store multiple things, like a collection of names!',
         tags: ['variables', 'lists', 'data'],
+        queries: [
+            'how do I store a bunch of things',
+            'I want to make a list of names',
+            'how do I save multiple items'
+        ],
         followUps: ['use-variables'],
+        pointers: [
+            {
+                label: 'Variables are here',
+                target: '.blocklyToolboxCategory#variables',
+                preAction: 'switchToCodeTab',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['list', 'array', 'collection', 'multiple', 'items', 'inventory']
         }
@@ -343,6 +559,13 @@ const tips = {
         followUpLabel: 'Detect collisions',
         text: 'Use "if touching" from Sensing inside a forever loop to detect when sprites bump into each other!',
         tags: ['sensing', 'collision', 'game'],
+        queries: [
+            'how do I tell when sprites touch each other',
+            'I want something to happen when my sprite hits another sprite',
+            'how do I detect collisions',
+            'my sprite should catch things',
+            'how do I know if two sprites are touching'
+        ],
         followUps: ['forever-loop', 'make-game', 'touching-wrong-color'],
         blockExample: 'foreverIfTouching',
         pointers: [
@@ -362,8 +585,22 @@ const tips = {
         followUpLabel: 'Send messages',
         text: 'Use "broadcast" and "when I receive" to send messages between sprites!',
         tags: ['events', 'broadcast', 'communication'],
+        queries: [
+            'how do I make one sprite tell another sprite to do something',
+            'how do sprites communicate',
+            'I want to send a message between sprites',
+            'how does broadcast work'
+        ],
         followUps: ['add-sprite', 'make-game', 'broadcast-for-levels'],
         blockExample: 'broadcastGo',
+        pointers: [
+            {
+                label: 'Drag "broadcast" into your code',
+                blockOpcode: 'event_broadcast',
+                category: 'events',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['broadcast', 'message', 'communicate', 'tell', 'signal', 'between sprites', 'other sprite']
         }
@@ -373,6 +610,12 @@ const tips = {
         followUpLabel: 'Add a sprite',
         text: 'Click the cat button below the stage to add a new sprite to your project!',
         tags: ['sprites', 'beginner'],
+        queries: [
+            'how do I add another character',
+            'I want more sprites in my project',
+            'where do I get a new sprite',
+            'how do I add a second sprite'
+        ],
         followUps: ['broadcast-message', 'detect-collision'],
         pointers: [
             {
@@ -390,7 +633,21 @@ const tips = {
         followUpLabel: 'Change backdrop',
         text: 'Click the picture button below the stage to add a backdrop, then use "switch backdrop"!',
         tags: ['looks', 'backdrop', 'stage', 'beginner'],
+        queries: [
+            'how do I change the background',
+            'I want a different scene',
+            'how do I add a backdrop',
+            'the white background is boring',
+            'how do I switch scenes'
+        ],
         followUps: ['add-sprite', 'backdrop-events'],
+        pointers: [
+            {
+                label: 'Add a backdrop here',
+                target: '[class*="stage-selector"] [class*="add-button"]',
+                side: 'top'
+            }
+        ],
         relevance: {
             keywords: ['backdrop', 'background', 'scene', 'stage', 'scenery', 'level']
         }
@@ -400,7 +657,22 @@ const tips = {
         followUpLabel: 'Make a game',
         text: 'A simple game needs: keyboard controls, something to collect or avoid, and a score variable!',
         tags: ['game', 'project-ideas'],
+        queries: [
+            'how do I make a game',
+            'I want to build a game',
+            'what do I need for a game',
+            'how do I make a simple game',
+            'I want to make something you can play'
+        ],
         followUps: ['move-with-keys', 'detect-collision', 'use-variables'],
+        pointers: [
+            {
+                label: 'Drag "when key pressed" into your code',
+                blockOpcode: 'event_whenkeypressed',
+                category: 'events',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['game', 'play', 'make a game', 'create game', 'build game']
         }
@@ -410,8 +682,22 @@ const tips = {
         followUpLabel: 'Clone sprites',
         text: 'Use "create clone of myself" to make copies of a sprite — great for projectiles or enemies!',
         tags: ['control', 'clones', 'advanced'],
+        queries: [
+            'how do I make copies of my sprite',
+            'I want lots of the same sprite',
+            'how do I spawn enemies',
+            'how do clones work'
+        ],
         followUps: ['make-game', 'detect-collision', 'clone-basics', 'clone-delete'],
         blockExample: 'cloneForever',
+        pointers: [
+            {
+                label: 'Drag "create clone of" into your code',
+                blockOpcode: 'control_create_clone_of',
+                category: 'control',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['clone', 'copy', 'duplicate', 'many', 'projectile', 'bullet', 'enemy', 'enemies', 'spawn']
         }
@@ -421,6 +707,13 @@ const tips = {
         followUpLabel: 'Add extensions',
         text: 'Click the blue "Add Extension" button at the bottom-left to get extra blocks like Music or Pen!',
         tags: ['extensions', 'beginner'],
+        queries: [
+            'how do I get more blocks',
+            'where are the extra blocks',
+            'I want to use pen or music blocks',
+            'how do I add an extension',
+            'I need more types of blocks'
+        ],
         followUps: ['pen-extension', 'music-extension', 'text-to-speech-extension'],
         pointers: [
             {
@@ -444,6 +737,12 @@ const tips = {
         followUpLabel: 'No visible effect',
         text: 'Some blocks don\'t have a visible effect on their own — try connecting them to other blocks in a stack!',
         tags: ['debugging', 'beginner'],
+        queries: [
+            'I clicked a block but nothing happened',
+            'the block doesn\'t seem to do anything',
+            'why doesn\'t this block work',
+            'I tried running my code but I can\'t see a difference'
+        ],
         followUps: ['nothing-happens', 'block-already-there', 'add-event-block'],
         relevance: {
             keywords: ['nothing', 'happen', 'work', 'try', 'click', 'broken', 'effect']
@@ -454,6 +753,12 @@ const tips = {
         followUpLabel: 'Already there',
         text: 'If a block doesn\'t seem to do anything, the sprite might already be where the block is telling it to go — try changing the number first!',
         tags: ['debugging', 'beginner'],
+        queries: [
+            'my block doesn\'t do anything',
+            'I used a block but nothing changed',
+            'the sprite is already in that position',
+            'why does this block not seem to work'
+        ],
         followUps: ['no-visible-effect', 'nothing-happens'],
         relevance: {
             keywords: ['nothing', 'happen', 'already', 'same', 'doesn\'t do', 'no change']
@@ -464,6 +769,13 @@ const tips = {
         followUpLabel: 'Fix volume',
         text: 'Can\'t hear anything? Check if the volume was set to 0 — use "set volume to 100%" to fix it!',
         tags: ['sound', 'debugging'],
+        queries: [
+            'I can\'t hear any sound',
+            'my sound isn\'t playing',
+            'why is there no audio',
+            'the volume is too quiet',
+            'my project is silent'
+        ],
         followUps: ['add-sound', 'play-vs-play-until-done'],
         pointers: [
             {
@@ -485,6 +797,13 @@ const tips = {
         followUpLabel: 'Unhide sprite',
         text: 'Can\'t see your sprite? It might be hidden! Click the "show" eye icon in the sprite info area, or use the "show" block.',
         tags: ['looks', 'debugging', 'beginner'],
+        queries: [
+            'my sprite disappeared',
+            'I can\'t see my sprite',
+            'where did my sprite go',
+            'my character is invisible',
+            'my sprite is hidden and I can\'t find it'
+        ],
         followUps: ['sprite-ghost-effect', 'sprite-too-small', 'sprite-off-stage'],
         pointers: [
             {
@@ -502,7 +821,22 @@ const tips = {
         followUpLabel: 'Fix ghost effect',
         text: 'If your sprite is see-through or invisible, the ghost effect might be on — use "set ghost effect to 0" to make it solid again!',
         tags: ['looks', 'debugging', 'effects'],
+        queries: [
+            'my sprite is see-through',
+            'my sprite looks faded or transparent',
+            'how do I make my sprite solid again',
+            'the ghost effect is stuck on'
+        ],
         followUps: ['sprite-is-hidden', 'graphic-effects'],
+        blockExample: 'setGhostZero',
+        pointers: [
+            {
+                label: 'Drag "set ghost effect to 0" from Looks',
+                blockOpcode: 'looks_seteffectto',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['ghost', 'transparent', 'see through', 'invisible', 'faded', 'effect']
         }
@@ -512,7 +846,22 @@ const tips = {
         followUpLabel: 'Fix size',
         text: 'Your sprite might be too small to see! Use "set size to 100%" to reset it.',
         tags: ['looks', 'debugging'],
+        queries: [
+            'my sprite is too tiny to see',
+            'my sprite shrunk and I can\'t find it',
+            'how do I make my sprite bigger again',
+            'my sprite got really small'
+        ],
         followUps: ['sprite-is-hidden', 'change-size'],
+        blockExample: 'setSizeTo100',
+        pointers: [
+            {
+                label: 'Drag "set size to" from Looks',
+                blockOpcode: 'looks_setsizeto',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['small', 'tiny', 'size', 'can\'t see', 'shrink', 'disappeared']
         }
@@ -522,7 +871,21 @@ const tips = {
         followUpLabel: 'Find sprite',
         text: 'Sprite missing? It might have moved off the edge of the stage! Use "go to x: 0 y: 0" to bring it back to the center.',
         tags: ['motion', 'debugging'],
+        queries: [
+            'my sprite went off the screen',
+            'I can\'t find my sprite it moved away',
+            'my sprite is gone off the edge',
+            'how do I bring my sprite back to the middle'
+        ],
         followUps: ['sprite-is-hidden', 'go-to-position'],
+        pointers: [
+            {
+                label: 'Drag "go to x: y:" into your code',
+                blockOpcode: 'motion_gotoxy',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['off screen', 'off stage', 'missing', 'where', 'find', 'gone', 'disappeared', 'can\'t find']
         }
@@ -532,6 +895,12 @@ const tips = {
         followUpLabel: 'Stop everything',
         text: 'Click the red stop sign to stop all running scripts — useful when things are going wrong!',
         tags: ['control', 'beginner'],
+        queries: [
+            'how do I stop my project',
+            'everything is going crazy how do I stop it',
+            'where is the stop button',
+            'my project won\'t stop running'
+        ],
         followUps: ['green-flag', 'nothing-happens'],
         pointers: [
             {
@@ -549,7 +918,21 @@ const tips = {
         followUpLabel: 'Debug with say',
         text: 'Not sure what your code is doing? Add a "say" block to show values while your code runs — it\'s like X-ray vision for your code!',
         tags: ['debugging', 'advanced'],
+        queries: [
+            'how do I figure out what\'s wrong with my code',
+            'I don\'t know why my code isn\'t working',
+            'how do I test what a variable equals',
+            'how do I debug my project'
+        ],
         followUps: ['say-think', 'show-hide-variable'],
+        pointers: [
+            {
+                label: 'Drag "say" into your code',
+                blockOpcode: 'looks_say',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['debug', 'test', 'check', 'what', 'value', 'wrong', 'figure out', 'troubleshoot']
         }
@@ -559,7 +942,21 @@ const tips = {
         followUpLabel: 'Check which sprite',
         text: 'Code not running? Make sure you added it to the right sprite — click the sprite you want in the sprite pane, then check its code!',
         tags: ['debugging', 'sprites', 'beginner'],
+        queries: [
+            'my code is on the wrong sprite',
+            'I put the code on the wrong character',
+            'why is the other sprite doing it instead',
+            'how do I check which sprite has the code',
+            'my code runs but the wrong sprite moves'
+        ],
         followUps: ['where-did-blocks-go', 'sprite-has-own-code'],
+        pointers: [
+            {
+                label: 'Click a sprite to see its code',
+                target: '[class*="sprite-selector_sprite-selector"]',
+                side: 'left'
+            }
+        ],
         relevance: {
             keywords: ['wrong sprite', 'not working', 'different sprite', 'which sprite', 'other']
         }
@@ -569,7 +966,21 @@ const tips = {
         followUpLabel: 'Fix color detection',
         text: 'If "touching color" isn\'t working, make sure you picked the exact right color — use the eyedropper tool on the color square to sample it from the stage!',
         tags: ['debugging', 'sensing'],
+        queries: [
+            'touching color isn\'t working',
+            'my color detection doesn\'t detect anything',
+            'the sprite doesn\'t notice the color',
+            'how do I pick the right color'
+        ],
         followUps: ['detect-collision', 'touching-color'],
+        pointers: [
+            {
+                label: 'Find "touching color?" in Sensing',
+                blockOpcode: 'sensing_touchingcolor',
+                category: 'sensing',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['touching color', 'wrong color', 'not detecting', 'color', 'eyedropper', 'pick']
         }
@@ -579,7 +990,22 @@ const tips = {
         followUpLabel: 'Add a wait',
         text: 'If things happen too fast to see, try adding "wait" blocks between actions — even "wait 0.1 seconds" can help!',
         tags: ['debugging', 'control', 'timing'],
+        queries: [
+            'things happen so fast I can\'t see them',
+            'my say block flashes and disappears',
+            'everything happens instantly',
+            'I need things to go slower',
+            'how do I add a delay between blocks'
+        ],
         followUps: ['too-fast', 'understand-seconds'],
+        pointers: [
+            {
+                label: 'Drag "wait" into your code',
+                blockOpcode: 'control_wait',
+                category: 'control',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['too fast', 'instant', 'can\'t see', 'flash', 'blink', 'quick', 'wait']
         }
@@ -594,6 +1020,13 @@ const tips = {
         followUpLabel: 'Find your blocks',
         text: 'Each sprite has its own code! Click on a sprite in the sprite pane to see its blocks.',
         tags: ['sprites', 'beginner', 'meta'],
+        queries: [
+            'where did my blocks go',
+            'my code disappeared',
+            'I can\'t find my code anymore',
+            'all my blocks are gone',
+            'I lost my code'
+        ],
         followUps: ['sprite-has-own-code', 'wrong-sprite-selected'],
         pointers: [
             {
@@ -611,6 +1044,11 @@ const tips = {
         followUpLabel: 'Separate code',
         text: 'Remember, each sprite has its own separate code, costumes, and sounds — check you\'re editing the right sprite!',
         tags: ['sprites', 'meta', 'beginner'],
+        queries: [
+            'does each sprite have its own code',
+            'why can\'t my sprites share code',
+            'I added code but it\'s not on my other sprite'
+        ],
         followUps: ['where-did-blocks-go', 'wrong-sprite-selected'],
         relevance: {
             keywords: ['wrong sprite', 'other sprite', 'code disappeared', 'sprite code', 'separate']
@@ -621,6 +1059,12 @@ const tips = {
         followUpLabel: 'Block order',
         text: 'Blocks in a stack run one at a time, from top to bottom — the order matters!',
         tags: ['control', 'beginner', 'meta'],
+        queries: [
+            'do blocks run in order',
+            'which block runs first',
+            'does order matter in my code',
+            'why does it do things one at a time'
+        ],
         followUps: ['two-stacks-same-time', 'add-event-block'],
         relevance: {
             keywords: ['order', 'sequence', 'first', 'top', 'bottom', 'which one', 'when']
@@ -631,7 +1075,21 @@ const tips = {
         followUpLabel: 'Do two things at once',
         text: 'You can run two stacks at the same time! Use two "when green flag clicked" blocks to do things in parallel.',
         tags: ['events', 'control', 'meta'],
+        queries: [
+            'how do I do two things at the same time',
+            'I want my sprite to move and talk at once',
+            'can I run two scripts together',
+            'how do I make things happen in parallel'
+        ],
         followUps: ['blocks-run-in-order', 'nothing-happens'],
+        pointers: [
+            {
+                label: 'Drag "when green flag clicked" into your code',
+                blockOpcode: 'event_whenflagclicked',
+                category: 'events',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['same time', 'two things', 'parallel', 'both', 'together', 'simultaneously']
         }
@@ -641,8 +1099,23 @@ const tips = {
         followUpLabel: 'Keep checking',
         text: '"If" checks only once! Wrap it inside a "forever" loop to keep checking over and over.',
         tags: ['control', 'beginner', 'meta'],
+        queries: [
+            'my if block only works once',
+            'why doesn\'t my if block keep checking',
+            'the if block runs but then stops',
+            'I need my if to keep checking over and over',
+            'my collision detection only works the first time'
+        ],
         followUps: ['forever-loop', 'detect-collision'],
         blockExample: 'foreverIfCheck',
+        pointers: [
+            {
+                label: 'Drag "if" into your code',
+                blockOpcode: 'control_if',
+                category: 'control',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['if', 'only once', 'check', 'forever', 'not working', 'condition', 'keeps', 'continuous']
         }
@@ -652,6 +1125,12 @@ const tips = {
         followUpLabel: 'Don\'t lose code',
         text: 'Careful — deleting a sprite also deletes all the code, costumes, and sounds inside it!',
         tags: ['sprites', 'meta', 'beginner'],
+        queries: [
+            'I deleted a sprite and lost all my code',
+            'can I undo deleting a sprite',
+            'all my code is gone after I deleted the sprite',
+            'I accidentally removed a sprite'
+        ],
         followUps: ['sprite-has-own-code', 'add-sprite'],
         relevance: {
             keywords: ['delete', 'remove', 'sprite', 'code gone', 'lost', 'disappeared', 'undo']
@@ -662,7 +1141,22 @@ const tips = {
         followUpLabel: 'Start coding',
         text: 'Drag blocks from the block palette on the left into the workspace to start coding!',
         tags: ['beginner', 'meta'],
+        queries: [
+            'how do I start coding',
+            'what do I do first',
+            'how do I use the blocks',
+            'where do I put the blocks',
+            'I don\'t know how to begin'
+        ],
         followUps: ['click-block-to-try', 'add-event-block'],
+        pointers: [
+            {
+                label: 'Drag blocks from here into the workspace',
+                blockOpcode: 'motion_movesteps',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['how', 'start', 'begin', 'drag', 'block', 'palette', 'workspace', 'where']
         }
@@ -672,6 +1166,11 @@ const tips = {
         followUpLabel: 'Try a block',
         text: 'You can click on any block in the workspace to try it! Click a whole stack to run all of them.',
         tags: ['beginner', 'meta'],
+        queries: [
+            'can I click a block to see what it does',
+            'how do I test a single block',
+            'how do I try out a block'
+        ],
         followUps: ['drag-blocks-to-workspace', 'nothing-happens'],
         relevance: {
             keywords: ['try', 'test', 'click', 'run', 'block', 'does it do']
@@ -682,6 +1181,12 @@ const tips = {
         followUpLabel: 'Remove a block',
         text: 'To remove a block from the middle of a stack, drag it out to the side — the blocks above and below will reconnect!',
         tags: ['beginner', 'meta', 'editing'],
+        queries: [
+            'how do I delete a block from the middle',
+            'how do I remove a block without breaking my code',
+            'I want to take out one block from my stack',
+            'how do I disconnect a block'
+        ],
         followUps: ['right-click-duplicate', 'drag-blocks-to-workspace'],
         relevance: {
             keywords: ['remove', 'delete', 'block', 'middle', 'stack', 'get rid', 'take out', 'disconnect']
@@ -692,6 +1197,13 @@ const tips = {
         followUpLabel: 'Add a hat block',
         text: 'Every script needs a "hat block" (the rounded ones) on top to know when to start running.',
         tags: ['events', 'beginner', 'meta'],
+        queries: [
+            'what is a hat block',
+            'my code doesn\'t have a starting block',
+            'how do I make my code run automatically',
+            'I need a when block on top',
+            'what goes at the top of my code'
+        ],
         followUps: ['nothing-happens', 'green-flag'],
         pointers: [
             {
@@ -710,7 +1222,21 @@ const tips = {
         followUpLabel: 'Why no effect?',
         text: 'Blocks that undo each other (like "turn 15" then "turn -15") happen so fast you won\'t see anything — add a "wait" block between them!',
         tags: ['motion', 'control', 'meta'],
+        queries: [
+            'I put turn and turn back but nothing happens',
+            'my blocks cancel each other out',
+            'the sprite doesn\'t seem to move at all',
+            'blocks happen too fast to see'
+        ],
         followUps: ['wait-vs-no-wait', 'too-fast'],
+        pointers: [
+            {
+                label: 'Drag "wait" into your code',
+                blockOpcode: 'control_wait',
+                category: 'control',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['undo', 'cancel', 'nothing', 'fast', 'instant', 'turn', 'no effect', 'can\'t see']
         }
@@ -725,6 +1251,12 @@ const tips = {
         followUpLabel: 'Go backward',
         text: 'Use a minus sign (-) before a number to go backward! For example, "move -10 steps" makes your sprite go the other way.',
         tags: ['motion', 'math', 'beginner'],
+        queries: [
+            'how do I make my sprite go backwards',
+            'I want my sprite to move the other way',
+            'how do I use negative numbers',
+            'can I move left instead of right'
+        ],
         followUps: ['move-sprite', 'decimal-numbers'],
         relevance: {
             keywords: ['backward', 'backwards', 'reverse', 'negative', 'minus', 'opposite', 'other way', 'back']
@@ -735,6 +1267,11 @@ const tips = {
         followUpLabel: 'Use decimals',
         text: 'You can use decimal numbers like 0.5! Try "wait 0.5 seconds" for a shorter pause, or "move 0.5 steps" for tiny movements.',
         tags: ['math', 'beginner', 'control'],
+        queries: [
+            'can I use decimal numbers like 0.5',
+            'how do I make a really short wait',
+            'I want to move less than 1 step'
+        ],
         followUps: ['negative-numbers', 'understand-seconds'],
         relevance: {
             keywords: ['decimal', 'point', 'half', '0.5', 'small number', 'fraction', 'less than 1']
@@ -745,7 +1282,21 @@ const tips = {
         followUpLabel: 'Compare numbers',
         text: 'The pointy symbols compare numbers: < means "less than" and > means "greater than" — the open end faces the bigger number!',
         tags: ['operators', 'math', 'beginner'],
+        queries: [
+            'what does the less than symbol mean',
+            'how do I compare two numbers',
+            'I don\'t understand greater than and less than',
+            'what are the pointy blocks for'
+        ],
         followUps: ['use-variables', 'if-not-forever'],
+        pointers: [
+            {
+                label: 'Operators are here',
+                target: '.blocklyToolboxCategory#operators',
+                preAction: 'switchToCodeTab',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['greater', 'less', 'than', 'symbol', 'compare', 'arrow', 'pointy', '<', '>']
         }
@@ -755,6 +1306,13 @@ const tips = {
         followUpLabel: 'Find blocks',
         text: 'Blocks are color-coded by category! Blue = Motion, Purple = Looks, Pink = Sound, Yellow = Events, Orange = Control.',
         tags: ['beginner', 'meta'],
+        queries: [
+            'I can\'t find the block I need',
+            'where is the move block',
+            'how do I know which category a block is in',
+            'what do the colors mean',
+            'I\'m looking for a specific block'
+        ],
         followUps: ['drag-blocks-to-workspace', 'add-event-block'],
         relevance: {
             keywords: ['find', 'where', 'block', 'color', 'category', 'which', 'looking for']
@@ -770,6 +1328,11 @@ const tips = {
         followUpLabel: 'Change options',
         text: 'See a dropdown on a block? Click it to change the option — like picking a different key, sound, or direction!',
         tags: ['beginner', 'meta'],
+        queries: [
+            'how do I change the option on a block',
+            'how do I pick a different sound or key',
+            'there\'s a little arrow on my block what does it do'
+        ],
         followUps: ['insert-reporter', 'click-block-to-try'],
         relevance: {
             keywords: ['dropdown', 'menu', 'option', 'change', 'pick', 'select', 'choose', 'different']
@@ -780,8 +1343,21 @@ const tips = {
         followUpLabel: 'Dynamic values',
         text: 'You can drag a round or pointed block into an input on another block to make it dynamic!',
         tags: ['beginner', 'meta', 'advanced'],
+        queries: [
+            'how do I put a variable inside a block',
+            'can I drag a block into another block',
+            'how do I use a random number in a move block'
+        ],
         followUps: ['random-numbers', 'use-variables'],
         blockExample: 'moveRandomSteps',
+        pointers: [
+            {
+                label: 'Find "pick random" in Operators',
+                blockOpcode: 'operator_random',
+                category: 'operators',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['reporter', 'round', 'input', 'drag into', 'dynamic', 'variable', 'inside']
         }
@@ -791,6 +1367,11 @@ const tips = {
         followUpLabel: 'Duplicate blocks',
         text: 'Right-click (or long-press) on a block to duplicate it, add a comment, or get help!',
         tags: ['beginner', 'meta', 'editing'],
+        queries: [
+            'how do I copy a block',
+            'how do I duplicate my code',
+            'is there a right-click menu'
+        ],
         followUps: ['remove-block-from-stack', 'click-block-to-try'],
         relevance: {
             keywords: ['right click', 'duplicate', 'copy', 'comment', 'help', 'context menu']
@@ -801,6 +1382,12 @@ const tips = {
         followUpLabel: 'Stage coordinates',
         text: 'The stage is like a grid: X goes left (-240) to right (240), and Y goes down (-180) to up (180), with center at (0, 0).',
         tags: ['motion', 'coordinates'],
+        queries: [
+            'how does the stage grid work',
+            'what are x and y coordinates',
+            'where is the center of the stage',
+            'how big is the stage'
+        ],
         followUps: ['go-to-position', 'change-xy-position'],
         relevance: {
             keywords: ['x', 'y', 'coordinate', 'grid', 'position', 'stage', 'center', '0', 'left', 'right', 'up', 'down', '240', '180']
@@ -811,6 +1398,11 @@ const tips = {
         followUpLabel: 'Timing tips',
         text: '1 second = a quick pause. "Wait 10 seconds" = a long pause. "Wait 0.1 seconds" = super fast! Try different numbers to get the right speed.',
         tags: ['control', 'timing'],
+        queries: [
+            'how long is 1 second in Scratch',
+            'what number should I put in the wait block',
+            'how do I get the right timing'
+        ],
         followUps: ['too-fast', 'decimal-numbers'],
         relevance: {
             keywords: ['seconds', 'time', 'how long', 'wait', 'slow', 'fast', 'timing']
@@ -821,6 +1413,11 @@ const tips = {
         followUpLabel: 'Make custom blocks',
         text: 'Click "Make a Block" in My Blocks to create your own custom block — great for cleaning up long scripts!',
         tags: ['myblocks', 'advanced'],
+        queries: [
+            'how do I make my own block',
+            'can I create a custom block',
+            'my code is really long how do I organize it'
+        ],
         followUps: ['forever-loop', 'repeat-loop'],
         pointers: [
             {
@@ -839,6 +1436,12 @@ const tips = {
         followUpLabel: 'Draw with Pen',
         text: 'Add the Pen extension to draw lines and shapes as your sprite moves — try "pen down" + "move" + "turn" in a loop!',
         tags: ['extensions', 'pen', 'drawing'],
+        queries: [
+            'how do I draw lines on the stage',
+            'I want my sprite to leave a trail',
+            'how do I use the pen',
+            'where are the drawing blocks'
+        ],
         followUps: ['add-extension', 'stamp-block', 'make-art'],
         pointers: [
             {
@@ -857,6 +1460,12 @@ const tips = {
         followUpLabel: 'Play music',
         text: 'Add the Music extension to play drums and instruments — use it in a loop to make a beat!',
         tags: ['extensions', 'music', 'sound'],
+        queries: [
+            'how do I play instruments',
+            'I want to make music with drums',
+            'where are the music blocks',
+            'how do I play notes'
+        ],
         followUps: ['add-extension', 'make-music-project'],
         pointers: [
             {
@@ -875,7 +1484,20 @@ const tips = {
         followUpLabel: 'Sprite talks out loud',
         text: 'Add the Text to Speech extension to make your sprite actually talk out loud!',
         tags: ['extensions', 'speech'],
+        queries: [
+            'how do I make my sprite talk out loud',
+            'I want to hear my sprite\'s voice',
+            'can my sprite speak with real audio'
+        ],
         followUps: ['add-extension', 'say-think'],
+        pointers: [
+            {
+                label: 'Add extensions here',
+                target: 'button[class*="extension-button"]',
+                preAction: 'switchToCodeTab',
+                side: 'top'
+            }
+        ],
         relevance: {
             keywords: ['text to speech', 'talk', 'voice', 'say out loud', 'speak', 'tts']
         }
@@ -885,6 +1507,12 @@ const tips = {
         followUpLabel: 'Use random',
         text: 'Use "pick random 1 to 10" from Operators to add surprises — great for random positions, sizes, or colors!',
         tags: ['operators', 'math'],
+        queries: [
+            'how do I make something random',
+            'I want a different thing to happen each time',
+            'how do I pick a random number',
+            'I want surprise elements in my project'
+        ],
         followUps: ['insert-reporter', 'surprise-sprite'],
         pointers: [
             {
@@ -903,6 +1531,12 @@ const tips = {
         followUpLabel: 'Ask a question',
         text: 'Use "ask and wait" from Sensing to ask the player a question — their response goes into the "answer" block!',
         tags: ['sensing', 'input'],
+        queries: [
+            'how do I ask the player a question',
+            'I want the user to type something',
+            'how do I get the player\'s name',
+            'how does the answer block work'
+        ],
         followUps: ['make-quiz', 'use-variables'],
         blockExample: 'askAndSay',
         pointers: [
@@ -922,7 +1556,20 @@ const tips = {
         followUpLabel: 'Detect colors',
         text: 'Use "touching color?" from Sensing — click the color square to pick any color from the stage with the eyedropper!',
         tags: ['sensing', 'color'],
+        queries: [
+            'how do I detect when my sprite touches a color',
+            'I want to know if my sprite is on the ground',
+            'how do I use the color picker'
+        ],
         followUps: ['detect-collision', 'touching-wrong-color'],
+        pointers: [
+            {
+                label: 'Drag "touching color?" into your code',
+                blockOpcode: 'sensing_touchingcolor',
+                category: 'sensing',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['color', 'touching color', 'pick', 'eyedropper', 'detect', 'sense']
         }
@@ -932,7 +1579,20 @@ const tips = {
         followUpLabel: 'Use the timer',
         text: 'Use the "timer" block from Sensing to time things — combine with "reset timer" to make countdowns or speedruns!',
         tags: ['sensing', 'timing'],
+        queries: [
+            'how do I add a timer to my game',
+            'I want a countdown',
+            'how do I time how long something takes'
+        ],
         followUps: ['use-variables', 'make-game'],
+        pointers: [
+            {
+                label: 'Find "timer" in Sensing',
+                blockOpcode: 'sensing_timer',
+                category: 'sensing',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['timer', 'time', 'countdown', 'stopwatch', 'clock', 'seconds']
         }
@@ -942,7 +1602,22 @@ const tips = {
         followUpLabel: 'Change size',
         text: 'Use "change size by 10" or "set size to" from Looks to make your sprite grow or shrink!',
         tags: ['looks', 'size'],
+        queries: [
+            'how do I make my sprite bigger',
+            'I want my sprite to grow',
+            'how do I shrink my sprite',
+            'how do I change the size of my sprite'
+        ],
         followUps: ['sprite-too-small', 'growing-shrinking'],
+        blockExample: 'changeSizeBy',
+        pointers: [
+            {
+                label: 'Drag "change size by" into your code',
+                blockOpcode: 'looks_changesizeby',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['size', 'big', 'small', 'grow', 'shrink', 'larger', 'smaller', 'scale']
         }
@@ -952,7 +1627,22 @@ const tips = {
         followUpLabel: 'Visual effects',
         text: 'Try "set color effect" or "set whirl effect" from Looks to add wild visual effects to your sprite!',
         tags: ['looks', 'effects'],
+        queries: [
+            'how do I add cool effects to my sprite',
+            'I want to make my sprite look weird',
+            'how do I change the color of my sprite',
+            'what visual effects are there'
+        ],
         followUps: ['sprite-ghost-effect', 'color-changing'],
+        blockExample: 'setColorEffect',
+        pointers: [
+            {
+                label: 'Drag "set effect to" from Looks',
+                blockOpcode: 'looks_seteffectto',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['effect', 'color', 'whirl', 'fisheye', 'pixelate', 'mosaic', 'brightness', 'ghost']
         }
@@ -962,7 +1652,20 @@ const tips = {
         followUpLabel: 'Stamp copies',
         text: 'Use "stamp" from the Pen extension to leave a copy of your sprite on the stage — like a trail of footprints!',
         tags: ['pen', 'effects', 'advanced'],
+        queries: [
+            'how do I stamp my sprite on the stage',
+            'I want to leave copies of my sprite',
+            'how do I make a trail of pictures'
+        ],
         followUps: ['pen-extension', 'trail-of-stamps'],
+        pointers: [
+            {
+                label: 'Add extensions here',
+                target: 'button[class*="extension-button"]',
+                preAction: 'switchToCodeTab',
+                side: 'top'
+            }
+        ],
         relevance: {
             keywords: ['stamp', 'copy', 'trail', 'footprint', 'mark', 'imprint']
         }
@@ -972,7 +1675,20 @@ const tips = {
         followUpLabel: 'Sound timing',
         text: '"Start sound" plays and keeps going. "Play sound until done" waits for it to finish. Use "start sound" for background music!',
         tags: ['sound'],
+        queries: [
+            'what is the difference between start sound and play sound until done',
+            'my sounds play on top of each other',
+            'how do I play background music'
+        ],
         followUps: ['add-sound', 'play-sound-until-done'],
+        pointers: [
+            {
+                label: 'Sound blocks are here',
+                target: '.blocklyToolboxCategory#sound',
+                preAction: 'switchToCodeTab',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['start sound', 'play sound', 'until done', 'background', 'music', 'difference', 'overlap']
         }
@@ -982,7 +1698,20 @@ const tips = {
         followUpLabel: 'Backdrop triggers',
         text: 'Use "when backdrop switches to" to trigger code when the scene changes — perfect for levels in a game!',
         tags: ['events', 'backdrop', 'game'],
+        queries: [
+            'how do I trigger code when the backdrop changes',
+            'I want something to happen when I switch scenes',
+            'how do I make levels with backdrops'
+        ],
         followUps: ['change-backdrop', 'broadcast-for-levels'],
+        pointers: [
+            {
+                label: 'Drag "when backdrop switches to" into your code',
+                blockOpcode: 'event_whenbackdropswitchesto',
+                category: 'events',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['backdrop', 'scene', 'level', 'switch', 'when backdrop', 'stage', 'background']
         }
@@ -992,8 +1721,21 @@ const tips = {
         followUpLabel: 'Follow mouse',
         text: 'Use "go to mouse-pointer" or "point towards mouse-pointer" to make sprites follow your mouse!',
         tags: ['motion', 'sensing', 'mouse'],
+        queries: [
+            'how do I make my sprite follow the mouse',
+            'I want my sprite to chase the cursor',
+            'how do I use the mouse to control a sprite'
+        ],
         followUps: ['move-sprite', 'forever-loop'],
         blockExample: 'followMouse',
+        pointers: [
+            {
+                label: 'Drag "go to" into your code',
+                blockOpcode: 'motion_goto',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['mouse', 'follow', 'cursor', 'pointer', 'track', 'chase']
         }
@@ -1008,7 +1750,21 @@ const tips = {
         followUpLabel: 'Clone behavior',
         text: 'When you create a clone, use "when I start as a clone" to give the clone its own behavior — it\'s like a copy that can do its own thing!',
         tags: ['control', 'clones', 'advanced'],
+        queries: [
+            'what happens when a clone starts',
+            'how do I give clones their own code',
+            'how do I make each clone do something different'
+        ],
         followUps: ['clone-sprite', 'clone-delete'],
+        blockExample: 'whenCloneStart',
+        pointers: [
+            {
+                label: 'Drag "when I start as a clone" into your code',
+                blockOpcode: 'control_start_as_clone',
+                category: 'control',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['clone', 'start as clone', 'when I start', 'copy', 'behavior', 'own', 'each']
         }
@@ -1018,7 +1774,20 @@ const tips = {
         followUpLabel: 'Variable display',
         text: 'Right-click a variable on the stage to change how it looks — you can make it a slider for testing!',
         tags: ['variables', 'debugging'],
+        queries: [
+            'how do I show a variable on the stage',
+            'how do I hide the variable display',
+            'can I make a variable slider'
+        ],
         followUps: ['use-variables', 'debug-with-say'],
+        pointers: [
+            {
+                label: 'Variables are here',
+                target: '.blocklyToolboxCategory#variables',
+                preAction: 'switchToCodeTab',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['variable', 'display', 'slider', 'show', 'monitor', 'stage', 'readout']
         }
@@ -1028,8 +1797,22 @@ const tips = {
         followUpLabel: 'Reset at start',
         text: 'Put "go to x: y:" and "set size to 100" under "when green flag clicked" to reset your sprite at the start!',
         tags: ['events', 'motion', 'beginner'],
+        queries: [
+            'my sprite starts in the wrong place every time',
+            'how do I reset my sprite at the beginning',
+            'my sprite doesn\'t go back to the start',
+            'I want everything to reset when I click the green flag'
+        ],
         followUps: ['green-flag', 'go-to-position'],
         blockExample: 'whenFlagGoToReset',
+        pointers: [
+            {
+                label: 'Drag "go to x: y:" into your code',
+                blockOpcode: 'motion_gotoxy',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['reset', 'start', 'beginning', 'initial', 'position', 'restart', 'go back']
         }
@@ -1039,7 +1822,20 @@ const tips = {
         followUpLabel: 'Game levels',
         text: 'Use "broadcast" to switch between levels or scenes — each sprite can listen for the same message and react differently!',
         tags: ['events', 'broadcast', 'game', 'advanced'],
+        queries: [
+            'how do I make levels in my game',
+            'how do I go to the next level',
+            'I want to switch between game scenes'
+        ],
         followUps: ['broadcast-message', 'backdrop-events'],
+        pointers: [
+            {
+                label: 'Drag "broadcast" into your code',
+                blockOpcode: 'event_broadcast',
+                category: 'events',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['level', 'scene', 'broadcast', 'switch', 'advance', 'next level', 'game over']
         }
@@ -1049,7 +1845,21 @@ const tips = {
         followUpLabel: 'Delete clones',
         text: 'Don\'t forget to "delete this clone" when you\'re done with it — otherwise you might hit the 300 clone limit!',
         tags: ['control', 'clones', 'advanced'],
+        queries: [
+            'how do I get rid of clones',
+            'there are too many clones and my project is lagging',
+            'my project is slow because of clones'
+        ],
         followUps: ['clone-basics', 'clone-sprite'],
+        blockExample: 'deleteClone',
+        pointers: [
+            {
+                label: 'Drag "delete this clone" into your code',
+                blockOpcode: 'control_delete_this_clone',
+                category: 'control',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['clone', 'delete', 'remove', 'limit', 'too many', '300', 'maximum', 'lag', 'slow']
         }
@@ -1059,8 +1869,21 @@ const tips = {
         followUpLabel: 'Repeat until',
         text: 'Use "repeat until" to keep doing something until a condition is met — like moving until you reach the edge!',
         tags: ['control', 'loops'],
+        queries: [
+            'how do I repeat until something happens',
+            'I want to keep going until I reach the edge',
+            'how do I stop a loop when a condition is true'
+        ],
         followUps: ['forever-loop', 'if-not-forever'],
         blockExample: 'repeatUntilEdge',
+        pointers: [
+            {
+                label: 'Drag "repeat until" into your code',
+                blockOpcode: 'control_repeat_until',
+                category: 'control',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['repeat until', 'condition', 'stop when', 'keep going', 'until', 'reach']
         }
@@ -1075,7 +1898,20 @@ const tips = {
         followUpLabel: 'Tell a story',
         text: 'Tell a story! Use "say for 2 seconds", "wait", and "switch backdrop" to create scenes and dialogue.',
         tags: ['project-ideas', 'looks'],
+        queries: [
+            'I want to make a story',
+            'how do I make characters talk to each other',
+            'I want to create a cartoon or movie'
+        ],
         followUps: ['say-for-seconds', 'change-backdrop'],
+        pointers: [
+            {
+                label: 'Drag "say for 2 seconds" into your code',
+                blockOpcode: 'looks_sayforsecs',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['story', 'tell', 'narrative', 'dialogue', 'conversation', 'scene', 'tale']
         }
@@ -1085,7 +1921,19 @@ const tips = {
         followUpLabel: 'Make animation',
         text: 'Create an animation by switching costumes in a loop — draw your own frames in the Costumes tab!',
         tags: ['project-ideas', 'animation', 'looks'],
+        queries: [
+            'how do I make an animation',
+            'I want to make a cartoon',
+            'how do I create a flipbook or movie'
+        ],
         followUps: ['animate-costume', 'add-costume'],
+        pointers: [
+            {
+                label: 'Click the Costumes tab',
+                target: '[class*="tab-list"] [class*="tab"]:nth-child(2)',
+                side: 'bottom'
+            }
+        ],
         relevance: {
             keywords: ['animation', 'animate', 'cartoon', 'frames', 'flipbook', 'movie']
         }
@@ -1095,7 +1943,20 @@ const tips = {
         followUpLabel: 'Compose music',
         text: 'Make a music project! Use the Music extension with "play note" blocks to compose your own song.',
         tags: ['project-ideas', 'music', 'sound'],
+        queries: [
+            'how do I make a music project',
+            'I want to compose a song',
+            'how do I create beats and melodies'
+        ],
         followUps: ['music-extension', 'add-sound'],
+        pointers: [
+            {
+                label: 'Add extensions here',
+                target: 'button[class*="extension-button"]',
+                preAction: 'switchToCodeTab',
+                side: 'top'
+            }
+        ],
         relevance: {
             keywords: ['song', 'compose', 'music', 'melody', 'create music', 'band']
         }
@@ -1105,7 +1966,20 @@ const tips = {
         followUpLabel: 'Create art',
         text: 'Make art! Use the Pen extension with loops and turns to draw amazing patterns and spirals.',
         tags: ['project-ideas', 'pen', 'art'],
+        queries: [
+            'how do I make art in Scratch',
+            'I want to draw patterns and spirals',
+            'how do I make geometric designs'
+        ],
         followUps: ['pen-extension', 'trail-of-stamps'],
+        pointers: [
+            {
+                label: 'Add extensions here',
+                target: 'button[class*="extension-button"]',
+                preAction: 'switchToCodeTab',
+                side: 'top'
+            }
+        ],
         relevance: {
             keywords: ['art', 'draw', 'pattern', 'spiral', 'design', 'creative', 'geometric']
         }
@@ -1115,7 +1989,20 @@ const tips = {
         followUpLabel: 'Make a quiz',
         text: 'Make a quiz! Use "ask and wait" + "if answer =" to check if the player got it right.',
         tags: ['project-ideas', 'sensing', 'operators'],
+        queries: [
+            'how do I make a quiz game',
+            'I want to make a trivia game',
+            'how do I check if the answer is right'
+        ],
         followUps: ['ask-and-answer', 'use-variables'],
+        pointers: [
+            {
+                label: 'Drag "ask and wait" into your code',
+                blockOpcode: 'sensing_askandwait',
+                category: 'sensing',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['quiz', 'question', 'test', 'trivia', 'answer', 'right', 'wrong']
         }
@@ -1125,8 +2012,21 @@ const tips = {
         followUpLabel: 'Platformer game',
         text: 'Make a platformer game! Use "change y by -2" in a forever loop for gravity, and "if touching color" for the ground.',
         tags: ['project-ideas', 'game', 'advanced'],
+        queries: [
+            'how do I make a platformer game',
+            'I want to add gravity and jumping',
+            'how do I make a side scrolling game like Mario'
+        ],
         followUps: ['make-game', 'touching-color', 'move-with-keys'],
         blockExample: 'gravityFall',
+        pointers: [
+            {
+                label: 'Drag "change y by" into your code',
+                blockOpcode: 'motion_changeyby',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['platformer', 'jump', 'gravity', 'platform', 'side scroller', 'mario']
         }
@@ -1136,8 +2036,21 @@ const tips = {
         followUpLabel: 'Clicker game',
         text: 'Make a clicker game! Use "when this sprite clicked" + "change score by 1" — add costumes to make the sprite react to each click!',
         tags: ['project-ideas', 'game', 'beginner'],
+        queries: [
+            'how do I make a clicker game',
+            'I want to click a sprite to get points',
+            'how do I make a cookie clicker'
+        ],
         followUps: ['use-variables', 'change-costume'],
         blockExample: 'whenClickedChangeScore',
+        pointers: [
+            {
+                label: 'Drag "when this sprite clicked" into your code',
+                blockOpcode: 'event_whenthisspriteclicked',
+                category: 'events',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['clicker', 'click', 'tap', 'cookie', 'idle', 'score', 'points']
         }
@@ -1147,7 +2060,19 @@ const tips = {
         followUpLabel: 'Dance party',
         text: 'Make a dance party! Add multiple sprites, give each one a forever loop with costume changes and moves, then add music!',
         tags: ['project-ideas', 'fun', 'animation'],
+        queries: [
+            'how do I make a dance party',
+            'I want sprites to dance together',
+            'how do I make a music video'
+        ],
         followUps: ['add-sprite', 'animate-costume', 'music-extension'],
+        pointers: [
+            {
+                label: 'Add a new sprite here',
+                target: '[class*="sprite-selector_sprite-selector"] [class*="add-button"]',
+                side: 'top'
+            }
+        ],
         relevance: {
             keywords: ['dance', 'party', 'choreography', 'music', 'move', 'groove']
         }
@@ -1157,7 +2082,20 @@ const tips = {
         followUpLabel: 'Virtual pet',
         text: 'Make a virtual pet! Use variables to track hunger, happiness, and energy — and buttons to feed, play, and rest.',
         tags: ['project-ideas', 'game', 'variables'],
+        queries: [
+            'how do I make a virtual pet',
+            'I want to make a tamagotchi',
+            'how do I make a pet you can feed and play with'
+        ],
         followUps: ['use-variables', 'change-costume'],
+        pointers: [
+            {
+                label: 'Variables are here',
+                target: '.blocklyToolboxCategory#variables',
+                preAction: 'switchToCodeTab',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['pet', 'virtual pet', 'tamagotchi', 'care', 'feed', 'play']
         }
@@ -1167,7 +2105,20 @@ const tips = {
         followUpLabel: 'Random surprise',
         text: 'Try putting "set size to pick random 50 to 200" in your project for fun surprises!',
         tags: ['fun', 'operators'],
+        queries: [
+            'I want something fun and random to happen',
+            'how do I make my sprite a surprise size',
+            'I want silly random stuff'
+        ],
         followUps: ['random-numbers', 'change-size'],
+        pointers: [
+            {
+                label: 'Find "pick random" in Operators',
+                blockOpcode: 'operator_random',
+                category: 'operators',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['surprise', 'fun', 'random', 'silly', 'goofy', 'playful', 'wacky']
         }
@@ -1177,6 +2128,11 @@ const tips = {
         followUpLabel: 'Silly sounds',
         text: 'Try the sound effects in the Sounds tab — there are funny sounds like "boing", "chomp", and "zoop"!',
         tags: ['fun', 'sound'],
+        queries: [
+            'where are the funny sounds',
+            'I want silly sound effects',
+            'are there any cool sounds I can use'
+        ],
         followUps: ['add-sound', 'sound-remix'],
         pointers: [
             {
@@ -1194,8 +2150,21 @@ const tips = {
         followUpLabel: 'Rainbow colors',
         text: 'Put "change color effect by 25" inside a forever loop to make your sprite cycle through rainbow colors!',
         tags: ['fun', 'looks', 'effects'],
+        queries: [
+            'how do I make my sprite change colors like a rainbow',
+            'I want rainbow effects',
+            'how do I make a color cycling effect'
+        ],
         followUps: ['graphic-effects', 'spinning'],
         blockExample: 'foreverColorChange',
+        pointers: [
+            {
+                label: 'Drag "change color effect" into your code',
+                blockOpcode: 'looks_changeeffectby',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['rainbow', 'color', 'change', 'cycle', 'colorful', 'effect']
         }
@@ -1205,8 +2174,21 @@ const tips = {
         followUpLabel: 'Spin around',
         text: 'Put "turn 15 degrees" inside a forever loop to make your sprite spin! Change the number to spin faster or slower.',
         tags: ['fun', 'motion'],
+        queries: [
+            'how do I make my sprite spin',
+            'I want my sprite to rotate around',
+            'how do I make something twirl'
+        ],
         followUps: ['color-changing', 'forever-loop'],
         blockExample: 'foreverSpin',
+        pointers: [
+            {
+                label: 'Drag "turn" into your code',
+                blockOpcode: 'motion_turnright',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['spin', 'turn', 'rotate', 'dizzy', 'twirl']
         }
@@ -1216,7 +2198,21 @@ const tips = {
         followUpLabel: 'Pulse effect',
         text: 'Make your sprite pulse! Use "change size by 5" and "wait", then "change size by -5" and "wait" in a forever loop.',
         tags: ['fun', 'looks'],
+        queries: [
+            'how do I make my sprite pulse or throb',
+            'I want my sprite to grow and shrink',
+            'how do I make a breathing or bouncing effect'
+        ],
         followUps: ['change-size', 'forever-loop'],
+        blockExample: 'foreverChangeSizePulse',
+        pointers: [
+            {
+                label: 'Drag "change size by" into your code',
+                blockOpcode: 'looks_changesizeby',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['grow', 'shrink', 'pulse', 'bounce', 'throb', 'beat', 'bigger', 'smaller']
         }
@@ -1226,7 +2222,20 @@ const tips = {
         followUpLabel: 'Leave a trail',
         text: 'Turn on pen down and move your sprite around with the keyboard — you\'ll leave a colorful trail everywhere you go!',
         tags: ['fun', 'pen', 'motion'],
+        queries: [
+            'how do I make a drawing program',
+            'I want my sprite to leave a colorful trail',
+            'how do I doodle on the stage'
+        ],
         followUps: ['pen-extension', 'move-with-keys'],
+        pointers: [
+            {
+                label: 'Add extensions here',
+                target: 'button[class*="extension-button"]',
+                preAction: 'switchToCodeTab',
+                side: 'top'
+            }
+        ],
         relevance: {
             keywords: ['trail', 'draw', 'path', 'trace', 'doodle', 'mark', 'line']
         }
@@ -1236,7 +2245,19 @@ const tips = {
         followUpLabel: 'Remix sounds',
         text: 'Record your own voice in the Sounds tab, then use "set pitch effect" to make it sound like a chipmunk or a monster!',
         tags: ['fun', 'sound'],
+        queries: [
+            'how do I make my voice sound funny',
+            'I want to make chipmunk or monster sounds',
+            'how do I change the pitch of a recording'
+        ],
         followUps: ['record-sound', 'silly-sounds'],
+        pointers: [
+            {
+                label: 'Click the Sounds tab',
+                target: '[class*="tab-list"] [class*="tab"]:nth-child(3)',
+                side: 'bottom'
+            }
+        ],
         relevance: {
             keywords: ['voice', 'record', 'pitch', 'chipmunk', 'monster', 'funny', 'remix', 'effect']
         }
@@ -1246,8 +2267,21 @@ const tips = {
         followUpLabel: 'Bouncing screensaver',
         text: 'Make a screensaver! Use "point in direction pick random 1 to 360", then "forever: move + if on edge bounce"!',
         tags: ['fun', 'motion', 'project-ideas'],
+        queries: [
+            'how do I make a bouncing screensaver',
+            'I want my sprite to bounce off the walls',
+            'how do I make a DVD logo effect'
+        ],
         followUps: ['forever-loop', 'random-numbers'],
         blockExample: 'foreverBounce',
+        pointers: [
+            {
+                label: 'Drag "if on edge, bounce" into your code',
+                blockOpcode: 'motion_ifonedgebounce',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
         relevance: {
             keywords: ['bounce', 'screensaver', 'random', 'float', 'drift', 'wall']
         }
@@ -1262,6 +2296,11 @@ const tips = {
         followUpLabel: 'Big number issues',
         text: 'Typed a really huge number? Numbers bigger than about 16 digits lose precision — and really enormous ones get treated as 0!',
         tags: ['debugging', 'math'],
+        queries: [
+            'I typed a really big number and it broke',
+            'why does my huge number turn into 0',
+            'my number is wrong after I type a lot of digits'
+        ],
         followUps: ['decimal-numbers', 'use-variables'],
         relevance: {
             keywords: ['huge', 'big number', 'infinity', 'large', 'lots of digits', '999', 'not working', 'overflow']
@@ -1272,6 +2311,12 @@ const tips = {
         followUpLabel: 'Fix rotation',
         text: 'If "turn" doesn\'t seem to work, check if the rotation style is set to "left-right" or "don\'t rotate" — change it to "all around" in the sprite info!',
         tags: ['motion', 'debugging'],
+        queries: [
+            'my sprite won\'t turn or rotate',
+            'the turn block doesn\'t seem to do anything',
+            'my sprite only flips left and right',
+            'how do I change the rotation style'
+        ],
         followUps: ['spinning', 'costume-center'],
         pointers: [
             {
@@ -1289,6 +2334,11 @@ const tips = {
         followUpLabel: 'Fix costume center',
         text: 'If your sprite rotates weirdly, the costume center point might be off — go to the Costumes tab and drag the crosshair to the center of your drawing!',
         tags: ['costumes', 'motion', 'debugging'],
+        queries: [
+            'my sprite wobbles when it turns',
+            'the sprite rotates around the wrong point',
+            'my sprite orbits in a circle instead of spinning'
+        ],
         followUps: ['rotation-style-vs-turn', 'change-costume'],
         pointers: [
             {
@@ -1306,7 +2356,19 @@ const tips = {
         followUpLabel: 'Missing asset',
         text: 'If a block says a costume or sound name that\'s grayed out, that asset might be missing — add it back in the Costumes or Sounds tab!',
         tags: ['debugging', 'costumes', 'sound'],
+        queries: [
+            'a costume or sound name is grayed out',
+            'my block says a name but it\'s missing',
+            'how do I fix a missing costume or sound'
+        ],
         followUps: ['add-costume', 'add-sound'],
+        pointers: [
+            {
+                label: 'Click the Costumes tab',
+                target: '[class*="tab-list"] [class*="tab"]:nth-child(2)',
+                side: 'bottom'
+            }
+        ],
         relevance: {
             keywords: ['missing', 'costume', 'sound', 'grayed', 'not found', 'empty', 'asset']
         }
@@ -1316,6 +2378,12 @@ const tips = {
         followUpLabel: 'Drag to workspace',
         text: 'Make sure you\'re dragging blocks to the code workspace (the big area in the middle), not onto the stage!',
         tags: ['debugging', 'beginner', 'meta'],
+        queries: [
+            'I\'m dragging blocks to the stage by accident',
+            'my blocks won\'t snap together',
+            'where am I supposed to put the blocks',
+            'blocks aren\'t connecting to each other'
+        ],
         followUps: ['drag-blocks-to-workspace', 'find-block-by-color'],
         relevance: {
             keywords: ['drag', 'stage', 'wrong place', 'blocks', 'workspace', 'won\'t snap', 'can\'t connect']

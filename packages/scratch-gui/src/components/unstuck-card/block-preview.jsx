@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import * as ScratchBlocks from 'scratch-blocks';
-import {getColorsForMode} from '../../lib/settings/color-mode';
+import {getColorsForMode, colorModeMap} from '../../lib/settings/color-mode';
 
 import styles from './block-preview.css';
 
@@ -448,6 +448,158 @@ const BLOCK_XML = {
                     </block>
                 </next>
             </block>
+        </xml>`,
+    changeSizeBy: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="looks_changesizeby">
+                        <value name="CHANGE">
+                            <shadow type="math_number"><field name="NUM">10</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    setGhostZero: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="looks_seteffectto">
+                        <field name="EFFECT">GHOST</field>
+                        <value name="VALUE">
+                            <shadow type="math_number"><field name="NUM">0</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    setSizeTo100: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="looks_setsizeto">
+                        <value name="SIZE">
+                            <shadow type="math_number"><field name="NUM">100</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    foreverChangeSizePulse: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="looks_changesizeby">
+                                <value name="CHANGE">
+                                    <shadow type="math_number"><field name="NUM">5</field></shadow>
+                                </value>
+                                <next>
+                                    <block type="control_wait">
+                                        <value name="DURATION">
+                                            <shadow type="math_positive_number">
+                                                <field name="NUM">0.5</field>
+                                            </shadow>
+                                        </value>
+                                        <next>
+                                            <block type="looks_changesizeby">
+                                                <value name="CHANGE">
+                                                    <shadow type="math_number"><field name="NUM">-5</field></shadow>
+                                                </value>
+                                                <next>
+                                                    <block type="control_wait">
+                                                        <value name="DURATION">
+                                                            <shadow type="math_positive_number">
+                                                                <field name="NUM">0.5</field>
+                                                            </shadow>
+                                                        </value>
+                                                    </block>
+                                                </next>
+                                            </block>
+                                        </next>
+                                    </block>
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    setColorEffect: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="looks_seteffectto">
+                        <field name="EFFECT">COLOR</field>
+                        <value name="VALUE">
+                            <shadow type="math_number"><field name="NUM">50</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    whenCloneStart: `
+        <xml>
+            <block type="control_start_as_clone" x="10" y="10">
+                <next>
+                    <block type="motion_movesteps">
+                        <value name="STEPS">
+                            <shadow type="math_number"><field name="NUM">50</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    deleteClone: `
+        <xml>
+            <block type="control_start_as_clone" x="10" y="10">
+                <next>
+                    <block type="motion_movesteps">
+                        <value name="STEPS">
+                            <shadow type="math_number"><field name="NUM">50</field></shadow>
+                        </value>
+                        <next>
+                            <block type="control_delete_this_clone" />
+                        </next>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    waitBlock: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="looks_sayforsecs">
+                        <value name="MESSAGE">
+                            <shadow type="text"><field name="TEXT">Hello!</field></shadow>
+                        </value>
+                        <value name="SECS">
+                            <shadow type="math_number"><field name="NUM">2</field></shadow>
+                        </value>
+                        <next>
+                            <block type="control_wait">
+                                <value name="DURATION">
+                                    <shadow type="math_positive_number">
+                                        <field name="NUM">1</field>
+                                    </shadow>
+                                </value>
+                                <next>
+                                    <block type="looks_sayforsecs">
+                                        <value name="MESSAGE">
+                                            <shadow type="text"><field name="TEXT">Goodbye!</field></shadow>
+                                        </value>
+                                        <value name="SECS">
+                                            <shadow type="math_number"><field name="NUM">2</field></shadow>
+                                        </value>
+                                    </block>
+                                </next>
+                            </block>
+                        </next>
+                    </block>
+                </next>
+            </block>
         </xml>`
 };
 
@@ -498,7 +650,8 @@ class BlockPreview extends React.Component {
             collapse: false,
             sounds: false,
             trashcan: false,
-            theme
+            theme,
+            media: `static/${colorModeMap[this.props.colorMode].blocksMediaFolder}/`
         });
 
         // Restore the main workspace so glowStack and other features

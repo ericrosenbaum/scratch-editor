@@ -28,7 +28,16 @@ const tipsWithBlocks = [
     {tipId: 'make-clicker', template: 'whenClickedChangeScore'},
     {tipId: 'color-changing', template: 'foreverColorChange'},
     {tipId: 'spinning', template: 'foreverSpin'},
-    {tipId: 'bouncing-around', template: 'foreverBounce'}
+    {tipId: 'bouncing-around', template: 'foreverBounce'},
+    // New block templates
+    {tipId: 'change-size', template: 'changeSizeBy'},
+    {tipId: 'sprite-ghost-effect', template: 'setGhostZero'},
+    {tipId: 'sprite-too-small', template: 'setSizeTo100'},
+    {tipId: 'growing-shrinking', template: 'foreverChangeSizePulse'},
+    {tipId: 'graphic-effects', template: 'setColorEffect'},
+    {tipId: 'clone-basics', template: 'whenCloneStart'},
+    {tipId: 'clone-delete', template: 'deleteClone'},
+    {tipId: 'too-fast', template: 'waitBlock'}
 ];
 
 // Wait for the editor to fully load

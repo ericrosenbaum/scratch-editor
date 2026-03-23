@@ -10,50 +10,72 @@ import BlockPreview from './block-preview.jsx';
 import closeIcon from '../cards/icon--close.svg';
 import shrinkIcon from '../cards/icon--shrink.svg';
 import expandIcon from '../cards/icon--expand.svg';
+import micIcon from './icon--mic.svg';
 
 /* ===== HEADER ===== */
-const UnstuckCardHeader = ({activeTip, onClose, onShrinkExpand, onAskAnother, expanded}) => (
-    <div className={styles.header}>
-        <div className={styles.headerLeft}>
-            {activeTip ? (
+const UnstuckCardHeader = ({
+    activeTip, hasResults, onClose, onShrinkExpand, onAskAnother, onBackToResults, expanded
+}) => {
+    let headerContent;
+    if (activeTip && hasResults) {
+        headerContent = (
+            <button
+                className={styles.backButton}
+                onClick={onBackToResults}
+            >
+                <span className={styles.backArrow}>{'\u2190'}</span>
+                {' Back'}
+            </button>
+        );
+    } else if (hasResults) {
+        headerContent = (
+            <button
+                className={styles.backButton}
+                onClick={onAskAnother}
+            >
+                <span className={styles.backArrow}>{'\u2190'}</span>
+                {' New question'}
+            </button>
+        );
+    } else {
+        headerContent = <span>{'Need help?'}</span>;
+    }
+
+    return (
+        <div className={styles.header}>
+            <div className={styles.headerLeft}>
+                {headerContent}
+            </div>
+            <div className={styles.headerButtons}>
                 <button
-                    className={styles.backButton}
-                    onClick={onAskAnother}
+                    className={styles.headerButton}
+                    onClick={onShrinkExpand}
                 >
-                    <span className={styles.backArrow}>{'\u2190'}</span>
-                    {' New question'}
+                    <img
+                        draggable={false}
+                        src={expanded ? shrinkIcon : expandIcon}
+                    />
                 </button>
-            ) : (
-                <span>{'Need help?'}</span>
-            )}
+                <button
+                    className={styles.headerButton}
+                    onClick={onClose}
+                >
+                    <img
+                        draggable={false}
+                        src={closeIcon}
+                    />
+                </button>
+            </div>
         </div>
-        <div className={styles.headerButtons}>
-            <button
-                className={styles.headerButton}
-                onClick={onShrinkExpand}
-            >
-                <img
-                    draggable={false}
-                    src={expanded ? shrinkIcon : expandIcon}
-                />
-            </button>
-            <button
-                className={styles.headerButton}
-                onClick={onClose}
-            >
-                <img
-                    draggable={false}
-                    src={closeIcon}
-                />
-            </button>
-        </div>
-    </div>
-);
+    );
+};
 
 UnstuckCardHeader.propTypes = {
     activeTip: PropTypes.object,
     expanded: PropTypes.bool.isRequired,
+    hasResults: PropTypes.bool.isRequired,
     onAskAnother: PropTypes.func.isRequired,
+    onBackToResults: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
     onShrinkExpand: PropTypes.func.isRequired
 };
@@ -89,7 +111,10 @@ class QueryInput extends React.Component {
                         title="Ask with your voice"
                         onClick={this.props.onVoiceClick}
                     >
-                        {this.props.listening ? '\uD83D\uDD34' : '\uD83C\uDF99'}
+                        <img
+                            className={styles.micIcon}
+                            src={micIcon}
+                        />
                     </button>
                 ) : null}
             </div>
@@ -148,6 +173,98 @@ QuickPicks.propTypes = {
         label: PropTypes.string.isRequired,
         query: PropTypes.string.isRequired
     })).isRequired
+};
+
+/* ===== TAG COLORS ===== */
+const TAG_COLORS = {
+    motion: '#4C97FF',
+    looks: '#9966FF',
+    sound: '#CF63CF',
+    events: '#FFBF00',
+    control: '#FFAB19',
+    sensing: '#5CB1D6',
+    operators: '#59C059',
+    variables: '#FF8C1A',
+    pen: '#0fBD8C'
+};
+
+const getTagColor = tag => TAG_COLORS[tag] || '#888';
+
+/* ===== SEARCH RESULTS ===== */
+class SearchResults extends React.Component {
+    constructor (props) {
+        super(props);
+        this.handleResultClick = this.handleResultClick.bind(this);
+    }
+    handleResultClick (e) {
+        this.props.onSelectResult(e.currentTarget.dataset.tipId);
+    }
+    render () {
+        const {results, tips, query, listening, voiceSupported,
+            onQueryChange, onSubmit, onVoiceClick} = this.props;
+
+        return (
+            <div className={styles.searchResults}>
+                <QueryInput
+                    listening={listening}
+                    query={query}
+                    voiceSupported={voiceSupported}
+                    onQueryChange={onQueryChange}
+                    onSubmit={onSubmit}
+                    onVoiceClick={onVoiceClick}
+                />
+                <div className={styles.resultsLabel}>
+                    {`${results.length} result${results.length !== 1 ? 's' : ''}`}
+                </div>
+                {results.map((result, index) => {
+                    const tip = tips[result.tipId];
+                    if (!tip) return null;
+                    return (
+                        <button
+                            className={styles.resultCard}
+                            data-tip-id={result.tipId}
+                            key={result.tipId}
+                            style={{animationDelay: `${index * 60}ms`}}
+                            onClick={this.handleResultClick}
+                        >
+                            <div className={styles.resultCardText}>
+                                {tip.text}
+                            </div>
+                            {tip.tags && tip.tags.length > 0 ? (
+                                <div className={styles.resultTags}>
+                                    {tip.tags.slice(0, 4).map(tag => (
+                                        <span
+                                            className={styles.resultTag}
+                                            key={tag}
+                                            style={{backgroundColor: getTagColor(tag)}}
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : null}
+                        </button>
+                    );
+                })}
+            </div>
+        );
+    }
+}
+
+SearchResults.propTypes = {
+    listening: PropTypes.bool,
+    onQueryChange: PropTypes.func.isRequired,
+    onSelectResult: PropTypes.func.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    onVoiceClick: PropTypes.func,
+    query: PropTypes.string.isRequired,
+    results: PropTypes.arrayOf(PropTypes.shape({
+        tipId: PropTypes.string.isRequired,
+        score: PropTypes.number.isRequired
+    })).isRequired,
+    // eslint-disable-next-line react/forbid-prop-types
+    tips: PropTypes.object.isRequired,
+    voiceSupported: PropTypes.bool
 };
 
 /* ===== TIP DISPLAY ===== */
@@ -275,6 +392,7 @@ const UnstuckCard = ({
     listening,
     loading,
     onAddToProject,
+    onBackToResults,
     onClose,
     onDrag,
     onEndDrag,
@@ -283,6 +401,7 @@ const UnstuckCard = ({
     onPickClick,
     onPointerClick,
     onQueryChange,
+    onSelectResult,
     onShrinkExpand,
     onStartDrag,
     onSubmit,
@@ -290,6 +409,7 @@ const UnstuckCard = ({
     onVoiceClick,
     query,
     quickPicks,
+    searchResults,
     tips,
     voiceSupported,
     x,
@@ -329,7 +449,9 @@ const UnstuckCard = ({
                         <UnstuckCardHeader
                             activeTip={activeTip}
                             expanded={expanded}
+                            hasResults={searchResults.length > 0}
                             onAskAnother={onAskAnother}
+                            onBackToResults={onBackToResults}
                             onClose={onClose}
                             onShrinkExpand={onShrinkExpand}
                         />
@@ -337,7 +459,7 @@ const UnstuckCard = ({
                             <div className={classNames(styles.body, 'no-drag')}>
                                 {loading ? (
                                     <div className={styles.loading}>
-                                        {'Finding a tip'}
+                                        {'Finding tips'}
                                         <span className={styles.loadingDots} />
                                     </div>
                                 ) : activeTip ? (
@@ -349,6 +471,18 @@ const UnstuckCard = ({
                                         onFollowUp={onFollowUp}
                                         onPointerClick={onPointerClick}
                                         onToggleCode={onToggleCode}
+                                    />
+                                ) : searchResults.length > 0 ? (
+                                    <SearchResults
+                                        listening={listening}
+                                        query={query}
+                                        results={searchResults}
+                                        tips={tips}
+                                        voiceSupported={voiceSupported}
+                                        onQueryChange={onQueryChange}
+                                        onSelectResult={onSelectResult}
+                                        onSubmit={onSubmit}
+                                        onVoiceClick={onVoiceClick}
                                     />
                                 ) : (
                                     <div className={styles.emptyState}>
@@ -386,6 +520,7 @@ UnstuckCard.propTypes = {
     loading: PropTypes.bool.isRequired,
     onAddToProject: PropTypes.func.isRequired,
     onAskAnother: PropTypes.func.isRequired,
+    onBackToResults: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
     onDrag: PropTypes.func.isRequired,
     onEndDrag: PropTypes.func.isRequired,
@@ -393,6 +528,7 @@ UnstuckCard.propTypes = {
     onPickClick: PropTypes.func.isRequired,
     onPointerClick: PropTypes.func.isRequired,
     onQueryChange: PropTypes.func.isRequired,
+    onSelectResult: PropTypes.func.isRequired,
     onShrinkExpand: PropTypes.func.isRequired,
     onStartDrag: PropTypes.func.isRequired,
     onSubmit: PropTypes.func.isRequired,
@@ -400,6 +536,10 @@ UnstuckCard.propTypes = {
     onVoiceClick: PropTypes.func,
     query: PropTypes.string.isRequired,
     quickPicks: PropTypes.array.isRequired,
+    searchResults: PropTypes.arrayOf(PropTypes.shape({
+        tipId: PropTypes.string.isRequired,
+        score: PropTypes.number.isRequired
+    })).isRequired,
     tips: PropTypes.object.isRequired,
     voiceSupported: PropTypes.bool,
     x: PropTypes.number.isRequired,

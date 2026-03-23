@@ -35,11 +35,14 @@ const listen = function (options = {}) {
         recognition.maxAlternatives = 1;
         recognition.continuous = false;
 
+        let hasResult = false;
+
         recognition.onstart = function () {
             if (options.onStart) options.onStart();
         };
 
         recognition.onresult = function (event) {
+            hasResult = true;
             const transcript = event.results[0][0].transcript;
             resolve(transcript);
         };
@@ -50,6 +53,9 @@ const listen = function (options = {}) {
 
         recognition.onend = function () {
             if (options.onEnd) options.onEnd();
+            if (!hasResult) {
+                reject(new Error('no-speech'));
+            }
         };
 
         recognition.start();

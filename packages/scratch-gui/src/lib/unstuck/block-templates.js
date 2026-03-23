@@ -1820,6 +1820,629 @@ const moveRandomSteps = [
 ];
 
 /**
+ * Template: when flag clicked → change size by 10
+ */
+const changeSizeBy = [
+    {
+        id: 'unstuck_csb_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_csb_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_csb_2',
+        opcode: 'looks_changesizeby',
+        next: null,
+        parent: 'unstuck_csb_1',
+        inputs: {
+            CHANGE: {
+                name: 'CHANGE',
+                block: 'unstuck_csb_2_val',
+                shadow: 'unstuck_csb_2_val'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_csb_2_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_csb_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '10'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag clicked → set ghost effect to 0
+ */
+const setGhostZero = [
+    {
+        id: 'unstuck_sge_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_sge_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_sge_2',
+        opcode: 'looks_seteffectto',
+        next: null,
+        parent: 'unstuck_sge_1',
+        inputs: {
+            VALUE: {
+                name: 'VALUE',
+                block: 'unstuck_sge_2_val',
+                shadow: 'unstuck_sge_2_val'
+            }
+        },
+        fields: {
+            EFFECT: {
+                name: 'EFFECT',
+                value: 'GHOST'
+            }
+        },
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_sge_2_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_sge_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '0'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag clicked → set size to 100%
+ */
+const setSizeTo100 = [
+    {
+        id: 'unstuck_ss_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_ss_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_ss_2',
+        opcode: 'looks_setsizeto',
+        next: null,
+        parent: 'unstuck_ss_1',
+        inputs: {
+            SIZE: {
+                name: 'SIZE',
+                block: 'unstuck_ss_2_val',
+                shadow: 'unstuck_ss_2_val'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_ss_2_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_ss_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '100'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag clicked → forever { change size by 5, wait, change size by -5, wait }
+ */
+const foreverChangeSizePulse = [
+    {
+        id: 'unstuck_pulse_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_pulse_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_pulse_2',
+        opcode: 'control_forever',
+        next: null,
+        parent: 'unstuck_pulse_1',
+        inputs: {
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_pulse_3',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_pulse_3',
+        opcode: 'looks_changesizeby',
+        next: 'unstuck_pulse_4',
+        parent: 'unstuck_pulse_2',
+        inputs: {
+            CHANGE: {
+                name: 'CHANGE',
+                block: 'unstuck_pulse_3_val',
+                shadow: 'unstuck_pulse_3_val'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_pulse_3_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_pulse_3',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '5'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_pulse_4',
+        opcode: 'control_wait',
+        next: 'unstuck_pulse_5',
+        parent: 'unstuck_pulse_3',
+        inputs: {
+            DURATION: {
+                name: 'DURATION',
+                block: 'unstuck_pulse_4_dur',
+                shadow: 'unstuck_pulse_4_dur'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_pulse_4_dur',
+        opcode: 'math_positive_number',
+        next: null,
+        parent: 'unstuck_pulse_4',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '0.5'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_pulse_5',
+        opcode: 'looks_changesizeby',
+        next: 'unstuck_pulse_6',
+        parent: 'unstuck_pulse_4',
+        inputs: {
+            CHANGE: {
+                name: 'CHANGE',
+                block: 'unstuck_pulse_5_val',
+                shadow: 'unstuck_pulse_5_val'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_pulse_5_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_pulse_5',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '-5'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_pulse_6',
+        opcode: 'control_wait',
+        next: null,
+        parent: 'unstuck_pulse_5',
+        inputs: {
+            DURATION: {
+                name: 'DURATION',
+                block: 'unstuck_pulse_6_dur',
+                shadow: 'unstuck_pulse_6_dur'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_pulse_6_dur',
+        opcode: 'math_positive_number',
+        next: null,
+        parent: 'unstuck_pulse_6',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '0.5'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag clicked → set color effect to 50
+ */
+const setColorEffect = [
+    {
+        id: 'unstuck_sce_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_sce_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_sce_2',
+        opcode: 'looks_seteffectto',
+        next: null,
+        parent: 'unstuck_sce_1',
+        inputs: {
+            VALUE: {
+                name: 'VALUE',
+                block: 'unstuck_sce_2_val',
+                shadow: 'unstuck_sce_2_val'
+            }
+        },
+        fields: {
+            EFFECT: {
+                name: 'EFFECT',
+                value: 'COLOR'
+            }
+        },
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_sce_2_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_sce_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '50'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when I start as a clone → move 50 steps
+ */
+const whenCloneStart = [
+    {
+        id: 'unstuck_wcs_1',
+        opcode: 'control_start_as_clone',
+        next: 'unstuck_wcs_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_wcs_2',
+        opcode: 'motion_movesteps',
+        next: null,
+        parent: 'unstuck_wcs_1',
+        inputs: {
+            STEPS: {
+                name: 'STEPS',
+                block: 'unstuck_wcs_2_val',
+                shadow: 'unstuck_wcs_2_val'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_wcs_2_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_wcs_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '50'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when I start as a clone → move 50 steps → delete this clone
+ */
+const deleteClone = [
+    {
+        id: 'unstuck_dc_1',
+        opcode: 'control_start_as_clone',
+        next: 'unstuck_dc_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_dc_2',
+        opcode: 'motion_movesteps',
+        next: 'unstuck_dc_3',
+        parent: 'unstuck_dc_1',
+        inputs: {
+            STEPS: {
+                name: 'STEPS',
+                block: 'unstuck_dc_2_val',
+                shadow: 'unstuck_dc_2_val'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_dc_2_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_dc_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '50'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_dc_3',
+        opcode: 'control_delete_this_clone',
+        next: null,
+        parent: 'unstuck_dc_2',
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag clicked → say "Hello!" for 2 secs → wait 1 → say "Goodbye!" for 2 secs
+ */
+const waitBlock = [
+    {
+        id: 'unstuck_wb_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_wb_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_wb_2',
+        opcode: 'looks_sayforsecs',
+        next: 'unstuck_wb_3',
+        parent: 'unstuck_wb_1',
+        inputs: {
+            MESSAGE: {
+                name: 'MESSAGE',
+                block: 'unstuck_wb_2_msg',
+                shadow: 'unstuck_wb_2_msg'
+            },
+            SECS: {
+                name: 'SECS',
+                block: 'unstuck_wb_2_secs',
+                shadow: 'unstuck_wb_2_secs'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_wb_2_msg',
+        opcode: 'text',
+        next: null,
+        parent: 'unstuck_wb_2',
+        inputs: {},
+        fields: {
+            TEXT: {
+                name: 'TEXT',
+                value: 'Hello!'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_wb_2_secs',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_wb_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '2'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_wb_3',
+        opcode: 'control_wait',
+        next: 'unstuck_wb_4',
+        parent: 'unstuck_wb_2',
+        inputs: {
+            DURATION: {
+                name: 'DURATION',
+                block: 'unstuck_wb_3_dur',
+                shadow: 'unstuck_wb_3_dur'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_wb_3_dur',
+        opcode: 'math_positive_number',
+        next: null,
+        parent: 'unstuck_wb_3',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '1'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_wb_4',
+        opcode: 'looks_sayforsecs',
+        next: null,
+        parent: 'unstuck_wb_3',
+        inputs: {
+            MESSAGE: {
+                name: 'MESSAGE',
+                block: 'unstuck_wb_4_msg',
+                shadow: 'unstuck_wb_4_msg'
+            },
+            SECS: {
+                name: 'SECS',
+                block: 'unstuck_wb_4_secs',
+                shadow: 'unstuck_wb_4_secs'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_wb_4_msg',
+        opcode: 'text',
+        next: null,
+        parent: 'unstuck_wb_4',
+        inputs: {},
+        fields: {
+            TEXT: {
+                name: 'TEXT',
+                value: 'Goodbye!'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_wb_4_secs',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_wb_4',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '2'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
  * Map of template names to block arrays.
  */
 const blockTemplates = {
@@ -1845,7 +2468,15 @@ const blockTemplates = {
     broadcastGo,
     cloneForever,
     goToCenter,
-    moveRandomSteps
+    moveRandomSteps,
+    changeSizeBy,
+    setGhostZero,
+    setSizeTo100,
+    foreverChangeSizePulse,
+    setColorEffect,
+    whenCloneStart,
+    deleteClone,
+    waitBlock
 };
 
 export {blockTemplates as default};
