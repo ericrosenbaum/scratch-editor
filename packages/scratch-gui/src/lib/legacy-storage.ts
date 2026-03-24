@@ -1,4 +1,5 @@
 import {ScratchStorage, Asset} from '@scratch/scratch-storage';
+import {Logger} from 'tslog';
 
 import defaultProject from './default-project';
 import {GUIStorage, TranslatorFunction, VirtualMachine, GUICloudVariableProvider} from '../gui-config';
@@ -6,6 +7,8 @@ import {LegacyBackpackStorage} from './legacy-backpack-storage';
 import CloudProvider from './cloud-provider';
 
 import saveProjectToServer from '../lib/save-project-to-server';
+
+const log = new Logger({name: 'legacy-storage'});
 
 export class LegacyStorage implements GUIStorage {
     private projectHost?: string;
@@ -41,6 +44,7 @@ export class LegacyStorage implements GUIStorage {
     constructor () {
         this.cacheDefaultProject(this.scratchStorage);
         this.addOfficialScratchWebStores(this.scratchStorage);
+        this.disableFetchWorkerForSubdirectoryDeployment(this.scratchStorage);
     }
 
     setProjectHost (host: string): void {
@@ -99,6 +103,39 @@ export class LegacyStorage implements GUIStorage {
             asset.data,
             asset.id
         ));
+    }
+
+    /**
+     * scratch-storage's pre-built webpack bundle has publicPath hardcoded to "/".
+     * This causes the fetch web worker URL to resolve from the host root rather
+     * than relative to the page. When deployed to a subdirectory (e.g. GitHub Pages
+     * at /repo-name/branch/scratch-gui/), the worker tries to load from /chunks/...
+     * which is a 404, and then silently hangs all asset requests forever.
+     *
+     * Fix: when serving from a subdirectory, remove the broken worker tool so
+     * scratch-storage falls back to direct fetch() which works correctly.
+     */
+    private disableFetchWorkerForSubdirectoryDeployment (storage: ScratchStorage): void {
+        if (typeof window === 'undefined') return;
+
+        // Only needed when page is served from a subdirectory (not root)
+        const path = window.location.pathname;
+        const isSubdirectory = path !== '/' && path !== '/index.html';
+
+        if (isSubdirectory) {
+            const webHelper = (storage as any).webHelper;
+            if (webHelper?.assetTool?.tools) {
+                // Filter out PublicFetchWorkerTool (has an 'inner' property),
+                // keeping only FetchTool which uses direct fetch()
+                const originalCount = webHelper.assetTool.tools.length;
+                webHelper.assetTool.tools = webHelper.assetTool.tools.filter(
+                    (tool: any) => !('inner' in tool)
+                );
+                if (webHelper.assetTool.tools.length < originalCount) {
+                    log.info('Disabled fetch worker for subdirectory deployment (using direct fetch)');
+                }
+            }
+        }
     }
 
     private addOfficialScratchWebStores (storage: ScratchStorage) {
