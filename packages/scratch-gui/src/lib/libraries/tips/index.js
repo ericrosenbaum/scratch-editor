@@ -592,7 +592,7 @@ const tips = {
             'how does broadcast work'
         ],
         followUps: ['add-sprite', 'make-game', 'broadcast-for-levels'],
-        blockExample: 'broadcastGo',
+        blockExample: 'broadcastAndReceive',
         pointers: [
             {
                 label: 'Drag "broadcast" into your code',
@@ -689,7 +689,7 @@ const tips = {
             'how do clones work'
         ],
         followUps: ['make-game', 'detect-collision', 'clone-basics', 'clone-delete'],
-        blockExample: 'cloneForever',
+        blockExample: 'cloneCreateAndBehave',
         pointers: [
             {
                 label: 'Drag "create clone of" into your code',
@@ -1082,6 +1082,7 @@ const tips = {
             'how do I make things happen in parallel'
         ],
         followUps: ['blocks-run-in-order', 'nothing-happens'],
+        blockExample: 'twoFlagStacks',
         pointers: [
             {
                 label: 'Drag "when green flag clicked" into your code',
@@ -1756,7 +1757,7 @@ const tips = {
             'how do I make each clone do something different'
         ],
         followUps: ['clone-sprite', 'clone-delete'],
-        blockExample: 'whenCloneStart',
+        blockExample: 'cloneBasicsPair',
         pointers: [
             {
                 label: 'Drag "when I start as a clone" into your code',
@@ -1828,6 +1829,7 @@ const tips = {
             'I want to switch between game scenes'
         ],
         followUps: ['broadcast-message', 'backdrop-events'],
+        blockExample: 'broadcastLevels',
         pointers: [
             {
                 label: 'Drag "broadcast" into your code',

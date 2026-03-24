@@ -600,6 +600,153 @@ const BLOCK_XML = {
                     </block>
                 </next>
             </block>
+        </xml>`,
+    broadcastAndReceive: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="event_broadcast">
+                        <value name="BROADCAST_INPUT">
+                            <shadow type="event_broadcast_menu">
+                                <field name="BROADCAST_OPTION">go!</field>
+                            </shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+            <block type="event_whenbroadcastreceived" x="10" y="250">
+                <field name="BROADCAST_OPTION">go!</field>
+                <next>
+                    <block type="motion_movesteps">
+                        <value name="STEPS">
+                            <shadow type="math_number"><field name="NUM">10</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    cloneCreateAndBehave: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="control_create_clone_of">
+                                <value name="CLONE_OPTION">
+                                    <shadow type="control_create_clone_of_menu">
+                                        <field name="CLONE_OPTION">_myself_</field>
+                                    </shadow>
+                                </value>
+                                <next>
+                                    <block type="control_wait">
+                                        <value name="DURATION">
+                                            <shadow type="math_positive_number">
+                                                <field name="NUM">1</field>
+                                            </shadow>
+                                        </value>
+                                    </block>
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+            <block type="control_start_as_clone" x="10" y="400">
+                <next>
+                    <block type="motion_movesteps">
+                        <value name="STEPS">
+                            <shadow type="math_number"><field name="NUM">50</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    cloneBasicsPair: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_create_clone_of">
+                        <value name="CLONE_OPTION">
+                            <shadow type="control_create_clone_of_menu">
+                                <field name="CLONE_OPTION">_myself_</field>
+                            </shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+            <block type="control_start_as_clone" x="10" y="250">
+                <next>
+                    <block type="motion_movesteps">
+                        <value name="STEPS">
+                            <shadow type="math_number"><field name="NUM">50</field></shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    twoFlagStacks: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="motion_movesteps">
+                                <value name="STEPS">
+                                    <shadow type="math_number"><field name="NUM">10</field></shadow>
+                                </value>
+                                <next>
+                                    <block type="motion_ifonedgebounce" />
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+            <block type="event_whenflagclicked" x="10" y="380">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="looks_nextcostume">
+                                <next>
+                                    <block type="control_wait">
+                                        <value name="DURATION">
+                                            <shadow type="math_positive_number">
+                                                <field name="NUM">0.25</field>
+                                            </shadow>
+                                        </value>
+                                    </block>
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    broadcastLevels: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="event_broadcast">
+                        <value name="BROADCAST_INPUT">
+                            <shadow type="event_broadcast_menu">
+                                <field name="BROADCAST_OPTION">level2</field>
+                            </shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
+            <block type="event_whenbroadcastreceived" x="10" y="250">
+                <field name="BROADCAST_OPTION">level2</field>
+                <next>
+                    <block type="looks_switchbackdropto">
+                        <value name="BACKDROP">
+                            <shadow type="looks_backdrops">
+                                <field name="BACKDROP">backdrop2</field>
+                            </shadow>
+                        </value>
+                    </block>
+                </next>
+            </block>
         </xml>`
 };
 
@@ -678,24 +825,91 @@ class BlockPreview extends React.Component {
             return;
         }
 
-        requestAnimationFrame(() => {
+        // Let Blockly finish its initial render, then reposition and resize
+        setTimeout(() => {
+            this.layoutBlocks();
             this.resizeToFit();
-        });
+        }, 100);
+    }
+
+    layoutBlocks () {
+        if (!this.workspace || !this.container) return;
+
+        const canvas = this.container.querySelector('.blocklyBlockCanvas');
+        if (!canvas) return;
+
+        // Get all top-level block <g> elements
+        const groups = Array.from(canvas.children).filter(
+            el => el.tagName === 'g' && el.getAttribute('data-id')
+        );
+
+        if (groups.length <= 1) return;
+
+        const gap = 20;
+        const x = 10;
+        let yPos = 10;
+
+        for (const group of groups) {
+            const bbox = group.getBBox();
+            // Set transform to position this group, accounting for
+            // the block's internal offset (bbox.y relative to group origin)
+            group.setAttribute('transform', `translate(${x}, ${yPos - bbox.y})`);
+            yPos += bbox.height + gap;
+        }
     }
 
     resizeToFit () {
         if (!this.workspace || !this.container) return;
 
-        const metrics = this.workspace.getBlocksBoundingBox();
-        if (!metrics) return;
-
         const scale = this.workspace.scale || 0.55;
         const padding = 12;
-        const width = Math.max(200, ((metrics.right - metrics.left) * scale) + (padding * 2));
-        const height = Math.max(60, ((metrics.bottom - metrics.top) * scale) + (padding * 2));
+        const maxWidth = 460;
+        const maxHeight = 500;
 
-        this.container.style.height = `${Math.min(height, 250)}px`;
-        this.container.style.width = `${Math.min(width, 360)}px`;
+        // Calculate total extent from block groups' transforms + bboxes
+        const canvas = this.container.querySelector('.blocklyBlockCanvas');
+        const svg = this.container.querySelector('svg.blocklySvg');
+
+        let contentRight = 0;
+        let contentBottom = 0;
+
+        if (canvas) {
+            const groups = Array.from(canvas.children).filter(
+                el => el.tagName === 'g' && el.getAttribute('data-id')
+            );
+            for (const group of groups) {
+                const bbox = group.getBBox();
+                const transform = group.getAttribute('transform') || '';
+                const match = transform.match(/translate\(\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/);
+                const tx = match ? parseFloat(match[1]) : 0;
+                const ty = match ? parseFloat(match[2]) : 0;
+                contentRight = Math.max(contentRight, tx + bbox.width);
+                contentBottom = Math.max(contentBottom, ty + bbox.height);
+            }
+        }
+
+        if (contentBottom === 0) {
+            // Fallback to Blockly's metrics for single-stack templates
+            const metrics = this.workspace.getBlocksBoundingBox();
+            if (!metrics) return;
+            contentRight = metrics.right - metrics.left;
+            contentBottom = metrics.bottom - metrics.top;
+        }
+
+        const width = Math.max(200, (contentRight * scale) + (padding * 2));
+        const height = Math.max(60, (contentBottom * scale) + (padding * 2));
+
+        const finalWidth = Math.min(width, maxWidth);
+        const finalHeight = Math.min(height, maxHeight);
+
+        this.container.style.width = `${finalWidth}px`;
+        this.container.style.height = `${finalHeight}px`;
+
+        // Also resize the SVG element so it doesn't clip content
+        if (svg) {
+            svg.setAttribute('width', `${finalWidth}px`);
+            svg.setAttribute('height', `${finalHeight}px`);
+        }
     }
 
     render () {

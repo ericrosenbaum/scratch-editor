@@ -2445,6 +2445,585 @@ const waitBlock = [
 /**
  * Map of template names to block arrays.
  */
+/**
+ * Template: when flag → broadcast "go!" + when I receive "go!" → move 10
+ */
+const broadcastAndReceive = [
+    // Stack 1: flag → broadcast "go!"
+    {
+        id: 'unstuck_bcr_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_bcr_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_bcr_2',
+        opcode: 'event_broadcast',
+        next: null,
+        parent: 'unstuck_bcr_1',
+        inputs: {
+            BROADCAST_INPUT: {
+                name: 'BROADCAST_INPUT',
+                block: 'unstuck_bcr_2_menu',
+                shadow: 'unstuck_bcr_2_menu'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bcr_2_menu',
+        opcode: 'event_broadcast_menu',
+        next: null,
+        parent: 'unstuck_bcr_2',
+        inputs: {},
+        fields: {
+            BROADCAST_OPTION: {
+                name: 'BROADCAST_OPTION',
+                value: 'go!'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    // Stack 2: when I receive "go!" → move 10
+    {
+        id: 'unstuck_bcr_3',
+        opcode: 'event_whenbroadcastreceived',
+        next: 'unstuck_bcr_4',
+        parent: null,
+        inputs: {},
+        fields: {
+            BROADCAST_OPTION: {
+                name: 'BROADCAST_OPTION',
+                value: 'go!'
+            }
+        },
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 300
+    },
+    {
+        id: 'unstuck_bcr_4',
+        opcode: 'motion_movesteps',
+        next: null,
+        parent: 'unstuck_bcr_3',
+        inputs: {
+            STEPS: {
+                name: 'STEPS',
+                block: 'unstuck_bcr_4_val',
+                shadow: 'unstuck_bcr_4_val'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bcr_4_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_bcr_4',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '10'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag → forever { create clone + wait 1 } + when clone starts → move 50
+ */
+const cloneCreateAndBehave = [
+    // Stack 1: flag → forever { create clone of myself, wait 1 }
+    {
+        id: 'unstuck_ccb_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_ccb_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_ccb_2',
+        opcode: 'control_forever',
+        next: null,
+        parent: 'unstuck_ccb_1',
+        inputs: {
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_ccb_3',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_ccb_3',
+        opcode: 'control_create_clone_of',
+        next: 'unstuck_ccb_4',
+        parent: 'unstuck_ccb_2',
+        inputs: {
+            CLONE_OPTION: {
+                name: 'CLONE_OPTION',
+                block: 'unstuck_ccb_3_menu',
+                shadow: 'unstuck_ccb_3_menu'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_ccb_3_menu',
+        opcode: 'control_create_clone_of_menu',
+        next: null,
+        parent: 'unstuck_ccb_3',
+        inputs: {},
+        fields: {
+            CLONE_OPTION: {
+                name: 'CLONE_OPTION',
+                value: '_myself_'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_ccb_4',
+        opcode: 'control_wait',
+        next: null,
+        parent: 'unstuck_ccb_3',
+        inputs: {
+            DURATION: {
+                name: 'DURATION',
+                block: 'unstuck_ccb_4_dur',
+                shadow: 'unstuck_ccb_4_dur'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_ccb_4_dur',
+        opcode: 'math_positive_number',
+        next: null,
+        parent: 'unstuck_ccb_4',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '1'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    // Stack 2: when I start as a clone → move 50
+    {
+        id: 'unstuck_ccb_5',
+        opcode: 'control_start_as_clone',
+        next: 'unstuck_ccb_6',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 300
+    },
+    {
+        id: 'unstuck_ccb_6',
+        opcode: 'motion_movesteps',
+        next: null,
+        parent: 'unstuck_ccb_5',
+        inputs: {
+            STEPS: {
+                name: 'STEPS',
+                block: 'unstuck_ccb_6_val',
+                shadow: 'unstuck_ccb_6_val'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_ccb_6_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_ccb_6',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '50'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag → create clone of myself + when clone starts → move 50
+ */
+const cloneBasicsPair = [
+    // Stack 1: flag → create clone of myself
+    {
+        id: 'unstuck_cbp_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_cbp_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_cbp_2',
+        opcode: 'control_create_clone_of',
+        next: null,
+        parent: 'unstuck_cbp_1',
+        inputs: {
+            CLONE_OPTION: {
+                name: 'CLONE_OPTION',
+                block: 'unstuck_cbp_2_menu',
+                shadow: 'unstuck_cbp_2_menu'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_cbp_2_menu',
+        opcode: 'control_create_clone_of_menu',
+        next: null,
+        parent: 'unstuck_cbp_2',
+        inputs: {},
+        fields: {
+            CLONE_OPTION: {
+                name: 'CLONE_OPTION',
+                value: '_myself_'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    // Stack 2: when I start as a clone → move 50
+    {
+        id: 'unstuck_cbp_3',
+        opcode: 'control_start_as_clone',
+        next: 'unstuck_cbp_4',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 300
+    },
+    {
+        id: 'unstuck_cbp_4',
+        opcode: 'motion_movesteps',
+        next: null,
+        parent: 'unstuck_cbp_3',
+        inputs: {
+            STEPS: {
+                name: 'STEPS',
+                block: 'unstuck_cbp_4_val',
+                shadow: 'unstuck_cbp_4_val'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_cbp_4_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_cbp_4',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '50'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: two flag stacks — flag → forever { move + bounce } + flag → forever { next costume + wait }
+ */
+const twoFlagStacks = [
+    // Stack 1: flag → forever { move 10, if on edge bounce }
+    {
+        id: 'unstuck_tfs_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_tfs_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_tfs_2',
+        opcode: 'control_forever',
+        next: null,
+        parent: 'unstuck_tfs_1',
+        inputs: {
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_tfs_3',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tfs_3',
+        opcode: 'motion_movesteps',
+        next: 'unstuck_tfs_4',
+        parent: 'unstuck_tfs_2',
+        inputs: {
+            STEPS: {
+                name: 'STEPS',
+                block: 'unstuck_tfs_3_val',
+                shadow: 'unstuck_tfs_3_val'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tfs_3_val',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_tfs_3',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '10'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tfs_4',
+        opcode: 'motion_ifonedgebounce',
+        next: null,
+        parent: 'unstuck_tfs_3',
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    // Stack 2: flag → forever { next costume, wait 0.25 }
+    {
+        id: 'unstuck_tfs_5',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_tfs_6',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 300
+    },
+    {
+        id: 'unstuck_tfs_6',
+        opcode: 'control_forever',
+        next: null,
+        parent: 'unstuck_tfs_5',
+        inputs: {
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_tfs_7',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tfs_7',
+        opcode: 'looks_nextcostume',
+        next: 'unstuck_tfs_8',
+        parent: 'unstuck_tfs_6',
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tfs_8',
+        opcode: 'control_wait',
+        next: null,
+        parent: 'unstuck_tfs_7',
+        inputs: {
+            DURATION: {
+                name: 'DURATION',
+                block: 'unstuck_tfs_8_dur',
+                shadow: 'unstuck_tfs_8_dur'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tfs_8_dur',
+        opcode: 'math_positive_number',
+        next: null,
+        parent: 'unstuck_tfs_8',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '0.25'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag → broadcast "level2" + when I receive "level2" → switch backdrop
+ */
+const broadcastLevels = [
+    // Stack 1: flag → broadcast "level2"
+    {
+        id: 'unstuck_bfl_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_bfl_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_bfl_2',
+        opcode: 'event_broadcast',
+        next: null,
+        parent: 'unstuck_bfl_1',
+        inputs: {
+            BROADCAST_INPUT: {
+                name: 'BROADCAST_INPUT',
+                block: 'unstuck_bfl_2_menu',
+                shadow: 'unstuck_bfl_2_menu'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bfl_2_menu',
+        opcode: 'event_broadcast_menu',
+        next: null,
+        parent: 'unstuck_bfl_2',
+        inputs: {},
+        fields: {
+            BROADCAST_OPTION: {
+                name: 'BROADCAST_OPTION',
+                value: 'level2'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    // Stack 2: when I receive "level2" → switch backdrop
+    {
+        id: 'unstuck_bfl_3',
+        opcode: 'event_whenbroadcastreceived',
+        next: 'unstuck_bfl_4',
+        parent: null,
+        inputs: {},
+        fields: {
+            BROADCAST_OPTION: {
+                name: 'BROADCAST_OPTION',
+                value: 'level2'
+            }
+        },
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 300
+    },
+    {
+        id: 'unstuck_bfl_4',
+        opcode: 'looks_switchbackdropto',
+        next: null,
+        parent: 'unstuck_bfl_3',
+        inputs: {
+            BACKDROP: {
+                name: 'BACKDROP',
+                block: 'unstuck_bfl_4_menu',
+                shadow: 'unstuck_bfl_4_menu'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bfl_4_menu',
+        opcode: 'looks_backdrops',
+        next: null,
+        parent: 'unstuck_bfl_4',
+        inputs: {},
+        fields: {
+            BACKDROP: {
+                name: 'BACKDROP',
+                value: 'backdrop2'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
 const blockTemplates = {
     whenFlagMove,
     whenKeyMoveRight,
@@ -2476,7 +3055,12 @@ const blockTemplates = {
     setColorEffect,
     whenCloneStart,
     deleteClone,
-    waitBlock
+    waitBlock,
+    broadcastAndReceive,
+    cloneCreateAndBehave,
+    cloneBasicsPair,
+    twoFlagStacks,
+    broadcastLevels
 };
 
 export {blockTemplates as default};

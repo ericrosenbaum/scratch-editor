@@ -16,8 +16,8 @@ const tipsWithBlocks = [
     {tipId: 'forever-loop', template: 'foreverMove'},
     {tipId: 'repeat-loop', template: 'repeatTurn'},
     {tipId: 'detect-collision', template: 'foreverIfTouching'},
-    {tipId: 'broadcast-message', template: 'broadcastGo'},
-    {tipId: 'clone-sprite', template: 'cloneForever'},
+    {tipId: 'broadcast-message', template: 'broadcastAndReceive'},
+    {tipId: 'clone-sprite', template: 'cloneCreateAndBehave'},
     {tipId: 'if-not-forever', template: 'foreverIfCheck'},
     {tipId: 'insert-reporter', template: 'moveRandomSteps'},
     {tipId: 'ask-and-answer', template: 'askAndSay'},
@@ -35,9 +35,11 @@ const tipsWithBlocks = [
     {tipId: 'sprite-too-small', template: 'setSizeTo100'},
     {tipId: 'growing-shrinking', template: 'foreverChangeSizePulse'},
     {tipId: 'graphic-effects', template: 'setColorEffect'},
-    {tipId: 'clone-basics', template: 'whenCloneStart'},
+    {tipId: 'clone-basics', template: 'cloneBasicsPair'},
     {tipId: 'clone-delete', template: 'deleteClone'},
-    {tipId: 'too-fast', template: 'waitBlock'}
+    {tipId: 'too-fast', template: 'waitBlock'},
+    {tipId: 'two-stacks-same-time', template: 'twoFlagStacks'},
+    {tipId: 'broadcast-for-levels', template: 'broadcastLevels'}
 ];
 
 // Wait for the editor to fully load

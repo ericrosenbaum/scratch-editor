@@ -4,6 +4,7 @@
  */
 import {driver} from 'driver.js';
 import 'driver.js/dist/driver.css';
+import * as ScratchBlocks from 'scratch-blocks';
 
 import {
     activateTab,
@@ -13,11 +14,16 @@ import {
 } from '../../reducers/editor-tab';
 
 let activeDriver = null;
+let highlightCleanup = null;
 
 /**
  * Destroy any active driver highlight.
  */
 const destroyHighlight = function () {
+    if (highlightCleanup) {
+        highlightCleanup();
+        highlightCleanup = null;
+    }
     if (activeDriver) {
         activeDriver.destroy();
         activeDriver = null;
@@ -58,6 +64,41 @@ const executePreAction = function (preAction, dispatch) {
  */
 const findFlyoutBlockElement = function (opcode) {
     return document.querySelector(`.blocklyFlyout .${opcode}.blocklyDraggable`);
+};
+
+/**
+ * If a flyout block is outside the visible flyout area, scroll the flyout
+ * so the block is visible.
+ * @param {Element} blockElement - The block SVG element in the flyout
+ */
+const ensureBlockVisible = function (blockElement) {
+    const flyoutEl = document.querySelector('.blocklyFlyout');
+    if (!flyoutEl) return;
+
+    const flyoutRect = flyoutEl.getBoundingClientRect();
+    const blockRect = blockElement.getBoundingClientRect();
+
+    // Already fully visible — nothing to do
+    if (blockRect.top >= flyoutRect.top && blockRect.bottom <= flyoutRect.bottom) {
+        return;
+    }
+
+    const workspace = ScratchBlocks.getMainWorkspace();
+    if (!workspace) return;
+
+    const flyout = workspace.getFlyout();
+    if (!flyout) return;
+
+    const flyoutWorkspace = flyout.getWorkspace();
+    const metrics = flyoutWorkspace.getMetrics();
+
+    // Scroll so the block appears 1/3 from the top of the flyout.
+    // viewTop and setY both work in the same coordinate system.
+    const blockOffsetFromViewTop = blockRect.top - flyoutRect.top;
+    const targetOffset = flyoutRect.height / 3;
+    const scrollDelta = blockOffsetFromViewTop - targetOffset;
+
+    flyoutWorkspace.scrollbar.setY(Math.max(0, metrics.viewTop + scrollDelta));
 };
 
 /**
@@ -109,9 +150,17 @@ const openCategoryAndScrollToBlock = function (category, opcode, dispatch) {
                 simulateClick(categoryElement);
             }
 
-            // Wait for flyout to scroll to category
+            // Wait for flyout to scroll to category, then ensure block is visible.
+            // After scrolling, wait again so driver.js measures the correct position.
             setTimeout(() => {
-                resolve(findFlyoutBlockElement(opcode));
+                const blockElement = findFlyoutBlockElement(opcode);
+                if (blockElement) {
+                    ensureBlockVisible(blockElement);
+                    // Wait for scroll to settle before resolving
+                    setTimeout(() => resolve(blockElement), 200);
+                } else {
+                    resolve(null);
+                }
             }, 200);
         }, 300);
     });
@@ -132,6 +181,10 @@ const createDriver = function () {
         showButtons: ['close'],
         popoverClass: 'unstuck-pointer-popover',
         onDestroyed: () => {
+            if (highlightCleanup) {
+                highlightCleanup();
+                highlightCleanup = null;
+            }
             activeDriver = null;
         }
     });
@@ -176,6 +229,22 @@ const highlightElement = function (pointer, dispatch) {
             const element = document.querySelector(pointer.target);
             if (!element) {
                 return;
+            }
+
+            // Lower the main Blockly workspace so it doesn't paint over the overlay.
+            // There may be multiple .injectionDiv elements (block preview + main workspace),
+            // so we target the one inside the blocks component.
+            const injectionDivs = document.querySelectorAll('.injectionDiv');
+            const cleanups = [];
+            injectionDivs.forEach(div => {
+                const prevZIndex = div.style.zIndex;
+                div.style.zIndex = '-1';
+                cleanups.push(() => {
+                    div.style.zIndex = prevZIndex;
+                });
+            });
+            if (cleanups.length) {
+                highlightCleanup = () => cleanups.forEach(fn => fn());
             }
 
             activeDriver = createDriver();
