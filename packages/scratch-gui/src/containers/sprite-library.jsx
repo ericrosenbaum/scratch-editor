@@ -8,6 +8,7 @@ import {spriteShape} from '../lib/assets-prop-types.js';
 import VM from '@scratch/scratch-vm';
 import mergeDynamicAssets from '../lib/merge-dynamic-assets.js';
 
+import log from '../lib/log';
 import spriteLibraryContent from '../lib/libraries/sprites.json';
 import randomizeSpritePosition from '../lib/randomize-sprite-position';
 import spriteTags from '../lib/libraries/sprite-tags';
@@ -36,7 +37,10 @@ class SpriteLibrary extends React.PureComponent {
         randomizeSpritePosition(item);
         this.props.vm.addSprite(JSON.stringify(item)).then(() => {
             this.props.onActivateBlocksTab();
-        });
+        })
+            .catch(e => {
+                log.error('Failed to add sprite from library:', e);
+            });
     }
     mergeDynamicAssets () {
         if (this.processedSprites.source === this.props.dynamicSprites) {
