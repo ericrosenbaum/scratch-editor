@@ -11,6 +11,7 @@ import LibraryComponent from '../components/library/library.jsx';
 import soundIcon from '../components/library-item/lib-icon--sound.svg';
 import soundIconRtl from '../components/library-item/lib-icon--sound-rtl.svg';
 
+import log from '../lib/log';
 import soundLibraryContent from '../lib/libraries/sounds.json';
 import soundTags from '../lib/libraries/sound-tags';
 
@@ -148,7 +149,10 @@ class SoundLibrary extends React.PureComponent {
         };
         this.props.vm.addSound(vmSound).then(() => {
             this.props.onNewSound();
-        });
+        })
+            .catch(e => {
+                log.error('Failed to add sound from library:', e);
+            });
     }
     render () {
         // @todo need to use this hack to avoid library using md5 for image

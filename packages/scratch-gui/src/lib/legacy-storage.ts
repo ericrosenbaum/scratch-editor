@@ -1,9 +1,12 @@
 import {ScratchStorage, Asset} from 'scratch-storage';
+import {Logger} from 'tslog';
 
 import defaultProject from './default-project';
 import {GUIStorage, TranslatorFunction} from '../gui-config';
 
 import saveProjectToServer from '../lib/save-project-to-server';
+
+const log = new Logger({name: 'legacy-storage'});
 
 export class LegacyStorage implements GUIStorage {
     private projectHost: string = 'https://projects.scratch.mit.edu';
@@ -40,8 +43,8 @@ export class LegacyStorage implements GUIStorage {
     }
 
     setAssetHost (host: string): void {
-        console.log(`[LegacyStorage] setAssetHost called with: ${host}`);
-        if (host != null) this.assetHost = host;
+        log.info(`Asset host set to: ${host}`);
+        this.assetHost = host;
     }
 
     setTranslatorFunction (translator: TranslatorFunction): void {
@@ -133,11 +136,8 @@ export class LegacyStorage implements GUIStorage {
 
     private getAssetGetConfig (asset: Asset) {
         const url = `${this.assetHost}/internalapi/asset/${asset.assetId}.${asset.dataFormat}/get/`;
-        console.log(`[LegacyStorage] fetching asset: ${url}`);
-        return {
-            url,
-            // crossOrigin: 'anonymous' // Attempt to fix CORS issues if that is the cause
-        };
+        log.debug(`Fetching asset from: ${url}`);
+        return url;
     }
 
     private getAssetCreateConfig (asset: Asset) {

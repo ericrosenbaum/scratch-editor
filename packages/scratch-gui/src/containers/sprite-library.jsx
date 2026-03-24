@@ -5,6 +5,7 @@ import {injectIntl, defineMessages} from 'react-intl';
 import intlShape from '../lib/intlShape.js';
 import VM from '@scratch/scratch-vm';
 
+import log from '../lib/log';
 import spriteLibraryContent from '../lib/libraries/sprites.json';
 import randomizeSpritePosition from '../lib/randomize-sprite-position';
 import spriteTags from '../lib/libraries/sprite-tags';
@@ -27,26 +28,14 @@ class SpriteLibrary extends React.PureComponent {
         ]);
     }
     handleItemSelect (item) {
-        try {
-            console.log(`[SpriteLibrary] Selecting item: ${JSON.stringify(item)}`);
-            // Randomize position of library sprite
-            randomizeSpritePosition(item);
-            this.props.vm.addSprite(JSON.stringify(item)).then(() => {
-                console.log('[SpriteLibrary] Successfully added sprite');
-                this.props.onActivateBlocksTab();
-            }).catch(e => {
-                // Try to extract useful info even if it's a FetchError or similar
-                let errorStr = String(e);
-                if (typeof e === 'object') {
-                    errorStr = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
-                }
-                console.error(`[SpriteLibrary] Error adding sprite: ${errorStr}`);
-                alert(`Error adding sprite: ${errorStr}`);
+        // Randomize position of library sprite
+        randomizeSpritePosition(item);
+        this.props.vm.addSprite(JSON.stringify(item)).then(() => {
+            this.props.onActivateBlocksTab();
+        })
+            .catch(e => {
+                log.error('Failed to add sprite from library:', e);
             });
-        } catch (err) {
-            console.error(`[SpriteLibrary] Synchronous error in handleItemSelect: ${err.message}`);
-            alert(`Synchronous error in handleItemSelect: ${err.message}`);
-        }
     }
     render () {
         return (
