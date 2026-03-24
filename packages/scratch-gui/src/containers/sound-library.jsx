@@ -12,6 +12,7 @@ import LibraryComponent from '../components/library/library.jsx';
 import soundIcon from '../components/library-item/lib-icon--sound.svg';
 import soundIconRtl from '../components/library-item/lib-icon--sound-rtl.svg';
 
+import log from '../lib/log';
 import soundLibraryContent from '../lib/libraries/sounds.json';
 import soundTags from '../lib/libraries/sound-tags';
 import mergeDynamicAssets from '../lib/merge-dynamic-assets.js';
@@ -152,7 +153,10 @@ class SoundLibrary extends React.PureComponent {
         };
         this.props.vm.addSound(vmSound).then(() => {
             this.props.onNewSound();
-        });
+        })
+            .catch(e => {
+                log.error('Failed to add sound from library:', e);
+            });
     }
     mergeDynamicAssets () {
         if (this.processedSounds.source === this.props.dynamicSounds) {

@@ -1,10 +1,13 @@
 import {ScratchStorage, Asset} from 'scratch-storage';
+import {Logger} from 'tslog';
 
 import defaultProject from './default-project';
 import {GUIStorage, TranslatorFunction} from '../gui-config';
 import {LegacyBackpackStorage} from './legacy-backpack-storage';
 
 import saveProjectToServer from '../lib/save-project-to-server';
+
+const log = new Logger({name: 'legacy-storage'});
 
 export class LegacyStorage implements GUIStorage {
     private projectHost?: string;
@@ -53,6 +56,7 @@ export class LegacyStorage implements GUIStorage {
     }
 
     setAssetHost (host: string): void {
+        log.info(`Asset host set to: ${host}`);
         this.assetHost = host;
     }
 
@@ -135,7 +139,9 @@ export class LegacyStorage implements GUIStorage {
     }
 
     private getAssetGetConfig (asset: Asset) {
-        return `${this.assetHost}/internalapi/asset/${asset.assetId}.${asset.dataFormat}/get/`;
+        const url = `${this.assetHost}/internalapi/asset/${asset.assetId}.${asset.dataFormat}/get/`;
+        log.debug(`Fetching asset from: ${url}`);
+        return url;
     }
 
     private getAssetCreateConfig (asset: Asset) {

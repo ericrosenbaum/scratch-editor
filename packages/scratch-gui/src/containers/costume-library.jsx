@@ -8,6 +8,7 @@ import {costumeShape} from '../lib/assets-prop-types.js';
 import VM from '@scratch/scratch-vm';
 import mergeDynamicAssets from '../lib/merge-dynamic-assets.js';
 
+import log from '../lib/log';
 import costumeLibraryContent from '../lib/libraries/costumes.json';
 import spriteTags from '../lib/libraries/sprite-tags';
 import LibraryComponent from '../components/library/library.jsx';
@@ -38,7 +39,10 @@ class CostumeLibrary extends React.PureComponent {
             bitmapResolution: item.bitmapResolution,
             skinId: null
         };
-        this.props.vm.addCostumeFromLibrary(item.md5ext, vmCostume);
+        this.props.vm.addCostumeFromLibrary(item.md5ext, vmCostume)
+            .catch(e => {
+                log.error('Failed to add costume from library:', e);
+            });
     }
     mergeDynamicAssets () {
         if (this.processedCostumes.source === this.props.dynamicCostumes) {
