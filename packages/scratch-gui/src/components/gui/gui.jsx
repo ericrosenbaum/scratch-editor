@@ -43,6 +43,7 @@ import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
 import DebugModal from '../debug-modal/debug-modal.jsx';
+import StructureView from '../structure-view/structure-view.jsx';
 import {setPlatform} from '../../reducers/platform.js';
 import {setTheme} from '../../reducers/settings.js';
 import {PLATFORM} from '../../lib/platform.js';
@@ -143,6 +144,7 @@ const GUIComponent = props => {
         costumeLibraryVisible,
         costumesTabVisible,
         debugModalVisible,
+        structureViewVisible,
         onDebugModalClose,
         onTutorialSelect,
         enableCommunity,
@@ -178,6 +180,7 @@ const GUIComponent = props => {
         onRequestCloseBackdropLibrary,
         onRequestCloseCostumeLibrary,
         onRequestCloseDebugModal,
+        onRequestCloseStructureView,
         onRequestCloseTelemetryModal,
         onSeeCommunity,
         onShare,
@@ -323,6 +326,11 @@ const GUIComponent = props => {
                 {<DebugModal
                     isOpen={debugModalVisible}
                     onClose={onCloseDebugModal}
+                />}
+                {<StructureView
+                    isOpen={structureViewVisible}
+                    onClose={onRequestCloseStructureView}
+                    vm={vm}
                 />}
                 {backdropLibraryVisible ? (
                     <BackdropLibrary
@@ -599,6 +607,7 @@ GUIComponent.propTypes = {
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
     debugModalVisible: PropTypes.bool,
+    structureViewVisible: PropTypes.bool,
     hasActiveMembership: PropTypes.bool,
     onDebugModalClose: PropTypes.func,
     onTutorialSelect: PropTypes.func,
@@ -628,6 +637,7 @@ GUIComponent.propTypes = {
     onRequestCloseBackdropLibrary: PropTypes.func,
     onRequestCloseCostumeLibrary: PropTypes.func,
     onRequestCloseDebugModal: PropTypes.func,
+    onRequestCloseStructureView: PropTypes.func,
     onRequestCloseTelemetryModal: PropTypes.func,
     onSeeCommunity: PropTypes.func,
     onShare: PropTypes.func,

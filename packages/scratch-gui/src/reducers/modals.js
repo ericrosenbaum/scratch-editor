@@ -12,6 +12,7 @@ const MODAL_SPRITE_LIBRARY = 'spriteLibrary';
 const MODAL_SOUND_RECORDER = 'soundRecorder';
 const MODAL_CONNECTION = 'connectionModal';
 const MODAL_TIPS_LIBRARY = 'tipsLibrary';
+const MODAL_STRUCTURE_VIEW = 'structureView';
 
 const initialState = {
     [MODAL_BACKDROP_LIBRARY]: false,
@@ -24,7 +25,8 @@ const initialState = {
     [MODAL_SPRITE_LIBRARY]: false,
     [MODAL_SOUND_RECORDER]: false,
     [MODAL_CONNECTION]: false,
-    [MODAL_TIPS_LIBRARY]: false
+    [MODAL_TIPS_LIBRARY]: false,
+    [MODAL_STRUCTURE_VIEW]: false
 };
 
 const reducer = function (state, action) {
@@ -87,6 +89,9 @@ const openConnectionModal = function () {
 const openTipsLibrary = function () {
     return openModal(MODAL_TIPS_LIBRARY);
 };
+const openStructureView = function () {
+    return openModal(MODAL_STRUCTURE_VIEW);
+};
 const closeBackdropLibrary = function () {
     return closeModal(MODAL_BACKDROP_LIBRARY);
 };
@@ -120,6 +125,9 @@ const closeTipsLibrary = function () {
 const closeConnectionModal = function () {
     return closeModal(MODAL_CONNECTION);
 };
+const closeStructureView = function () {
+    return closeModal(MODAL_STRUCTURE_VIEW);
+};
 export {
     reducer as default,
     initialState as modalsInitialState,
@@ -134,6 +142,7 @@ export {
     openTelemetryModal,
     openTipsLibrary,
     openConnectionModal,
+    openStructureView,
     closeBackdropLibrary,
     closeCostumeLibrary,
     closeDebugModal,
@@ -144,5 +153,6 @@ export {
     closeSoundRecorder,
     closeTelemetryModal,
     closeTipsLibrary,
-    closeConnectionModal
+    closeConnectionModal,
+    closeStructureView
 };
