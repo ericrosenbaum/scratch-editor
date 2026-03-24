@@ -14,10 +14,21 @@ import micIcon from './icon--mic.svg';
 
 /* ===== HEADER ===== */
 const UnstuckCardHeader = ({
-    activeTip, hasResults, onClose, onShrinkExpand, onAskAnother, onBackToResults, expanded
+    activeTip, browseAll, hasResults, onClose, onShrinkExpand,
+    onAskAnother, onBackToResults, onBackFromBrowseTip, expanded
 }) => {
     let headerContent;
-    if (activeTip && hasResults) {
+    if (activeTip && browseAll) {
+        headerContent = (
+            <button
+                className={styles.backButton}
+                onClick={onBackFromBrowseTip}
+            >
+                <span className={styles.backArrow}>{'\u2190'}</span>
+                {' Back'}
+            </button>
+        );
+    } else if (activeTip && hasResults) {
         headerContent = (
             <button
                 className={styles.backButton}
@@ -25,6 +36,16 @@ const UnstuckCardHeader = ({
             >
                 <span className={styles.backArrow}>{'\u2190'}</span>
                 {' Back'}
+            </button>
+        );
+    } else if (browseAll) {
+        headerContent = (
+            <button
+                className={styles.backButton}
+                onClick={onAskAnother}
+            >
+                <span className={styles.backArrow}>{'\u2190'}</span>
+                {' New question'}
             </button>
         );
     } else if (hasResults) {
@@ -72,9 +93,11 @@ const UnstuckCardHeader = ({
 
 UnstuckCardHeader.propTypes = {
     activeTip: PropTypes.object,
+    browseAll: PropTypes.bool,
     expanded: PropTypes.bool.isRequired,
     hasResults: PropTypes.bool.isRequired,
     onAskAnother: PropTypes.func.isRequired,
+    onBackFromBrowseTip: PropTypes.func.isRequired,
     onBackToResults: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
     onShrinkExpand: PropTypes.func.isRequired
@@ -175,6 +198,25 @@ QuickPicks.propTypes = {
     })).isRequired
 };
 
+/* ===== BROWSE FILTERS ===== */
+const BROWSE_FILTERS = [
+    {tag: 'tutorial', label: 'Tutorials', color: '#855CD6'},
+    {tag: 'starter-project', label: 'Starters', color: '#FF6680'},
+    {tag: 'beginner', label: 'Beginner', color: '#4C97FF'},
+    {tag: 'motion', label: 'Motion', color: '#4C97FF'},
+    {tag: 'looks', label: 'Looks', color: '#9966FF'},
+    {tag: 'sound', label: 'Sound', color: '#CF63CF'},
+    {tag: 'events', label: 'Events', color: '#FFBF00'},
+    {tag: 'control', label: 'Control', color: '#FFAB19'},
+    {tag: 'sensing', label: 'Sensing', color: '#5CB1D6'},
+    {tag: 'operators', label: 'Operators', color: '#59C059'},
+    {tag: 'variables', label: 'Variables', color: '#FF8C1A'},
+    {tag: 'pen', label: 'Pen', color: '#0fBD8C'},
+    {tag: 'game', label: 'Game', color: '#FF6680'},
+    {tag: 'animation', label: 'Animation', color: '#9966FF'},
+    {tag: 'debugging', label: 'Debugging', color: '#FF8C1A'}
+];
+
 /* ===== TAG COLORS ===== */
 const TAG_COLORS = {
     motion: '#4C97FF',
@@ -273,6 +315,122 @@ class SearchResults extends React.Component {
         );
     }
 }
+
+/* ===== BROWSE ALL TIPS ===== */
+const tipMatchesFilter = (tip, filterTag) => {
+    if (filterTag === 'tutorial') return !!tip.tutorialId;
+    return tip.tags && tip.tags.includes(filterTag);
+};
+
+const sortByText = (a, b) => a.text.localeCompare(b.text);
+
+const getTipDotColor = tip => {
+    if (tip.tutorialId) return '#855CD6';
+    if (tip.tags && tip.tags.includes('starter-project')) return '#FF6680';
+    const categoryTags = ['motion', 'looks', 'sound', 'events', 'control', 'sensing', 'operators', 'variables', 'pen'];
+    for (const tag of categoryTags) {
+        if (tip.tags && tip.tags.includes(tag)) return TAG_COLORS[tag] || '#888';
+    }
+    return '#888';
+};
+
+class BrowseAllTips extends React.Component {
+    constructor (props) {
+        super(props);
+        this.handleTipClick = this.handleTipClick.bind(this);
+        this.handleFilterClick = this.handleFilterClick.bind(this);
+    }
+    handleTipClick (e) {
+        this.props.onSelectTip(e.currentTarget.dataset.tipId);
+    }
+    handleFilterClick (e) {
+        const tag = e.currentTarget.dataset.tag;
+        this.props.onFilterChange(tag === this.props.activeFilter ? null : tag);
+    }
+    render () {
+        const {tips, activeFilter} = this.props;
+        const allTips = Object.values(tips);
+
+        let sections;
+        if (activeFilter) {
+            const filtered = allTips
+                .filter(tip => tipMatchesFilter(tip, activeFilter))
+                .sort(sortByText);
+            const filterDef = BROWSE_FILTERS.find(f => f.tag === activeFilter);
+            sections = [{label: filterDef ? filterDef.label : activeFilter, tips: filtered}];
+        } else {
+            const tutorials = allTips.filter(t => t.tutorialId).sort(sortByText);
+            const starters = allTips
+                .filter(t => !t.tutorialId && t.tags && t.tags.includes('starter-project'))
+                .sort(sortByText);
+            const regular = allTips
+                .filter(t => !t.tutorialId && !(t.tags && t.tags.includes('starter-project')))
+                .sort(sortByText);
+            sections = [
+                {label: 'Tutorials', tips: tutorials},
+                {label: 'Starter Projects', tips: starters},
+                {label: 'Tips', tips: regular}
+            ].filter(s => s.tips.length > 0);
+        }
+
+        return (
+            <div className={styles.browseAll}>
+                <div className={styles.filterBar}>
+                    {BROWSE_FILTERS.map(f => (
+                        <button
+                            className={classNames(
+                                styles.filterPill,
+                                {[styles.filterPillActive]: activeFilter === f.tag}
+                            )}
+                            data-tag={f.tag}
+                            key={f.tag}
+                            style={activeFilter === f.tag ?
+                                {background: f.color, borderColor: f.color} :
+                                {}
+                            }
+                            onClick={this.handleFilterClick}
+                        >
+                            {f.label}
+                        </button>
+                    ))}
+                </div>
+                <div className={styles.tipList}>
+                    {sections.map(section => (
+                        <React.Fragment key={section.label}>
+                            <div className={styles.sectionLabel}>
+                                {`${section.label} (${section.tips.length})`}
+                            </div>
+                            {section.tips.map(tip => (
+                                <button
+                                    className={styles.compactTip}
+                                    data-tip-id={tip.id}
+                                    key={tip.id}
+                                    onClick={this.handleTipClick}
+                                >
+                                    <span
+                                        className={styles.typeDot}
+                                        style={{backgroundColor: getTipDotColor(tip)}}
+                                    />
+                                    <span className={styles.compactTipText}>
+                                        {tip.text}
+                                    </span>
+                                </button>
+                            ))}
+                        </React.Fragment>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+}
+
+BrowseAllTips.propTypes = {
+    activeFilter: PropTypes.string,
+    onFilterChange: PropTypes.func.isRequired,
+    onSelectTip: PropTypes.func.isRequired,
+    // eslint-disable-next-line react/forbid-prop-types
+    tips: PropTypes.object.isRequired
+};
 
 SearchResults.propTypes = {
     listening: PropTypes.bool,
@@ -438,12 +596,17 @@ TipDisplay.propTypes = {
 /* ===== MAIN CARD ===== */
 const UnstuckCard = ({
     activeTip,
+    browseAll,
+    browseFilter,
     codeExpanded,
     expanded,
     listening,
     loading,
     onAddToProject,
+    onBackFromBrowseTip,
     onBackToResults,
+    onBrowseAll,
+    onBrowseFilter,
     onClose,
     onDrag,
     onEndDrag,
@@ -452,6 +615,7 @@ const UnstuckCard = ({
     onPickClick,
     onPointerClick,
     onQueryChange,
+    onSelectBrowseTip,
     onSelectResult,
     onShrinkExpand,
     onStartDrag,
@@ -499,9 +663,11 @@ const UnstuckCard = ({
                     <div className={styles.card}>
                         <UnstuckCardHeader
                             activeTip={activeTip}
+                            browseAll={browseAll}
                             expanded={expanded}
                             hasResults={searchResults.length > 0}
                             onAskAnother={onAskAnother}
+                            onBackFromBrowseTip={onBackFromBrowseTip}
                             onBackToResults={onBackToResults}
                             onClose={onClose}
                             onShrinkExpand={onShrinkExpand}
@@ -535,6 +701,13 @@ const UnstuckCard = ({
                                         onSubmit={onSubmit}
                                         onVoiceClick={onVoiceClick}
                                     />
+                                ) : browseAll ? (
+                                    <BrowseAllTips
+                                        activeFilter={browseFilter}
+                                        tips={tips}
+                                        onFilterChange={onBrowseFilter}
+                                        onSelectTip={onSelectBrowseTip}
+                                    />
                                 ) : (
                                     <div className={styles.emptyState}>
                                         <div className={styles.promptText}>
@@ -552,6 +725,12 @@ const UnstuckCard = ({
                                             onSubmit={onSubmit}
                                             onVoiceClick={onVoiceClick}
                                         />
+                                        <button
+                                            className={styles.browseAllLink}
+                                            onClick={onBrowseAll}
+                                        >
+                                            {'Browse all tips'}
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -565,13 +744,18 @@ const UnstuckCard = ({
 
 UnstuckCard.propTypes = {
     activeTip: PropTypes.object,
+    browseAll: PropTypes.bool,
+    browseFilter: PropTypes.string,
     codeExpanded: PropTypes.bool,
     expanded: PropTypes.bool.isRequired,
     listening: PropTypes.bool,
     loading: PropTypes.bool.isRequired,
     onAddToProject: PropTypes.func.isRequired,
     onAskAnother: PropTypes.func.isRequired,
+    onBackFromBrowseTip: PropTypes.func.isRequired,
     onBackToResults: PropTypes.func.isRequired,
+    onBrowseAll: PropTypes.func.isRequired,
+    onBrowseFilter: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
     onDrag: PropTypes.func.isRequired,
     onEndDrag: PropTypes.func.isRequired,
@@ -579,6 +763,7 @@ UnstuckCard.propTypes = {
     onPickClick: PropTypes.func.isRequired,
     onPointerClick: PropTypes.func.isRequired,
     onQueryChange: PropTypes.func.isRequired,
+    onSelectBrowseTip: PropTypes.func.isRequired,
     onSelectResult: PropTypes.func.isRequired,
     onShrinkExpand: PropTypes.func.isRequired,
     onStartDrag: PropTypes.func.isRequired,

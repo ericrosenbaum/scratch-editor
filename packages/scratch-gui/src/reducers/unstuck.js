@@ -10,6 +10,8 @@ const END_DRAG = 'scratch-gui/unstuck/END_DRAG';
 const TOGGLE_CODE_EXPANDED = 'scratch-gui/unstuck/TOGGLE_CODE_EXPANDED';
 const SET_SEARCH_RESULTS = 'scratch-gui/unstuck/SET_SEARCH_RESULTS';
 const CLEAR_RESULTS = 'scratch-gui/unstuck/CLEAR_RESULTS';
+const SET_BROWSE_ALL = 'scratch-gui/unstuck/SET_BROWSE_ALL';
+const SET_BROWSE_FILTER = 'scratch-gui/unstuck/SET_BROWSE_FILTER';
 
 const initialState = {
     visible: false,
@@ -19,6 +21,8 @@ const initialState = {
     loading: false,
     expanded: true,
     codeExpanded: false,
+    browseAll: false,
+    browseFilter: null,
     x: 0,
     y: 0,
     dragging: false
@@ -34,7 +38,9 @@ const reducer = function (state, action) {
             searchResults: [],
             query: '',
             loading: false,
-            expanded: true
+            expanded: true,
+            browseAll: false,
+            browseFilter: null
         });
     case CLOSE_UNSTUCK:
         return Object.assign({}, state, {
@@ -70,7 +76,22 @@ const reducer = function (state, action) {
             searchResults: [],
             activeTipId: null,
             query: '',
+            codeExpanded: false,
+            browseAll: false,
+            browseFilter: null
+        });
+    case SET_BROWSE_ALL:
+        return Object.assign({}, state, {
+            browseAll: action.active,
+            browseFilter: null,
+            activeTipId: null,
+            searchResults: [],
+            query: '',
             codeExpanded: false
+        });
+    case SET_BROWSE_FILTER:
+        return Object.assign({}, state, {
+            browseFilter: action.tag
         });
     case SET_LOADING:
         return Object.assign({}, state, {
@@ -142,6 +163,14 @@ const toggleCodeExpanded = function () {
     return {type: TOGGLE_CODE_EXPANDED};
 };
 
+const setBrowseAll = function (active) {
+    return {type: SET_BROWSE_ALL, active};
+};
+
+const setBrowseFilter = function (tag) {
+    return {type: SET_BROWSE_FILTER, tag};
+};
+
 export {
     reducer as default,
     initialState as unstuckInitialState,
@@ -156,5 +185,7 @@ export {
     endDrag,
     setSearchResults,
     clearResults,
-    toggleCodeExpanded
+    toggleCodeExpanded,
+    setBrowseAll,
+    setBrowseFilter
 };

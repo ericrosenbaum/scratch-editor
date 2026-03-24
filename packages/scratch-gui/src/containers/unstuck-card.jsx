@@ -14,7 +14,9 @@ import {
     startDrag,
     endDrag,
     openUnstuck,
-    toggleCodeExpanded
+    toggleCodeExpanded,
+    setBrowseAll,
+    setBrowseFilter
 } from '../reducers/unstuck';
 
 import {activateDeck} from '../reducers/cards.js';
@@ -68,6 +70,8 @@ class UnstuckCard extends React.Component {
         this.handleVoiceClick = this.handleVoiceClick.bind(this);
         this.handleSelectResult = this.handleSelectResult.bind(this);
         this.handleBackToResults = this.handleBackToResults.bind(this);
+        this.handleSelectBrowseTip = this.handleSelectBrowseTip.bind(this);
+        this.handleBackFromBrowseTip = this.handleBackFromBrowseTip.bind(this);
         this.generateContextSuggestions = this.generateContextSuggestions.bind(this);
     }
 
@@ -182,6 +186,20 @@ class UnstuckCard extends React.Component {
         this.props.onSetTip(null);
     }
 
+    handleSelectBrowseTip (tipId) {
+        const tip = tips[tipId];
+        if (tip && tip.tutorialId) {
+            this.props.onActivateDeck(tip.tutorialId);
+            return;
+        }
+        this.props.onSetTip(tipId);
+    }
+
+    handleBackFromBrowseTip () {
+        destroyHighlight();
+        this.props.onSetTip(null);
+    }
+
     handleAddToProject () {
         const activeTip = this.props.activeTipId ? tips[this.props.activeTipId] : null;
         if (!activeTip || !activeTip.blockExample) return;
@@ -232,6 +250,8 @@ class UnstuckCard extends React.Component {
         return (
             <UnstuckCardComponent
                 activeTip={activeTip}
+                browseAll={this.props.browseAll}
+                browseFilter={this.props.browseFilter}
                 codeExpanded={this.props.codeExpanded}
                 expanded={this.props.expanded}
                 listening={this.state.listening}
@@ -245,7 +265,10 @@ class UnstuckCard extends React.Component {
                 y={this.props.y}
                 onAddToProject={this.handleAddToProject}
                 onAskAnother={this.handleAskAnother}
+                onBackFromBrowseTip={this.handleBackFromBrowseTip}
                 onBackToResults={this.handleBackToResults}
+                onBrowseAll={this.props.onBrowseAll}
+                onBrowseFilter={this.props.onBrowseFilter}
                 onClose={this.props.onClose}
                 onDrag={this.props.onDrag}
                 onEndDrag={this.props.onEndDrag}
@@ -253,6 +276,7 @@ class UnstuckCard extends React.Component {
                 onPickClick={this.handlePickClick}
                 onPointerClick={this.handlePointerClick}
                 onQueryChange={this.handleQueryChange}
+                onSelectBrowseTip={this.handleSelectBrowseTip}
                 onSelectResult={this.handleSelectResult}
                 onShrinkExpand={this.props.onShrinkExpand}
                 onStartDrag={this.props.onStartDrag}
@@ -267,7 +291,11 @@ class UnstuckCard extends React.Component {
 UnstuckCard.propTypes = {
     activeTipId: PropTypes.string,
     activeTabIndex: PropTypes.number.isRequired,
+    browseAll: PropTypes.bool.isRequired,
+    browseFilter: PropTypes.string,
     onActivateDeck: PropTypes.func.isRequired,
+    onBrowseAll: PropTypes.func.isRequired,
+    onBrowseFilter: PropTypes.func.isRequired,
     codeExpanded: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired,
     expanded: PropTypes.bool.isRequired,
@@ -296,6 +324,8 @@ UnstuckCard.propTypes = {
 const mapStateToProps = state => ({
     activeTipId: state.scratchGui.unstuck.activeTipId,
     activeTabIndex: state.scratchGui.editorTab.activeTabIndex,
+    browseAll: state.scratchGui.unstuck.browseAll,
+    browseFilter: state.scratchGui.unstuck.browseFilter,
     codeExpanded: state.scratchGui.unstuck.codeExpanded,
     expanded: state.scratchGui.unstuck.expanded,
     loading: state.scratchGui.unstuck.loading,
@@ -322,7 +352,9 @@ const mapDispatchToProps = dispatch => ({
     onShrinkExpand: () => dispatch(shrinkExpandUnstuck()),
     onStartDrag: () => dispatch(startDrag()),
     onToggleCode: () => dispatch(toggleCodeExpanded()),
-    onActivateDeck: deckId => dispatch(activateDeck(deckId))
+    onActivateDeck: deckId => dispatch(activateDeck(deckId)),
+    onBrowseAll: () => dispatch(setBrowseAll(true)),
+    onBrowseFilter: tag => dispatch(setBrowseFilter(tag))
 });
 
 export default connect(
