@@ -158,7 +158,6 @@ class UnstuckCard extends React.Component {
         const tip = tips[tipId];
         if (tip && tip.tutorialId) {
             this.props.onActivateDeck(tip.tutorialId);
-            this.props.onClose();
             return;
         }
         this.props.onSetTip(tipId);
@@ -173,7 +172,6 @@ class UnstuckCard extends React.Component {
         const tip = tips[tipId];
         if (tip && tip.tutorialId) {
             this.props.onActivateDeck(tip.tutorialId);
-            this.props.onClose();
             return;
         }
         this.props.onSetTip(tipId);

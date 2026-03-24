@@ -2794,6 +2794,746 @@ const tips = {
         relevance: {
             keywords: ['animate', 'costume', 'switch', 'change', 'look', 'appearance', 'tutorial']
         }
+    },
+
+    // ──────────────────────────────────────────────
+    // STARTER PROJECTS — each links to a remixable project on scratch.mit.edu
+    // ──────────────────────────────────────────────
+
+    // --- Animation ---
+    'starter-dance-party': {
+        id: 'starter-dance-party',
+        followUpLabel: 'Dance Party',
+        text: 'The Dance Party project shows how to make characters dance by switching costumes in a forever loop while the stage plays music!',
+        tags: ['animation', 'looks', 'sound', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1105113583_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1105113583/',
+        queries: [
+            'I want to make a dance animation',
+            'how do I make sprites dance',
+            'how do I animate to music',
+            'I want to make a dance party'
+        ],
+        followUps: ['starter-animate-crab', 'starter-walk-cycle', 'starter-food-truck'],
+        relevance: {
+            keywords: ['dance', 'animate', 'music', 'costume', 'party', 'loop', 'backdrop']
+        }
+    },
+    'starter-animate-crab': {
+        id: 'starter-animate-crab',
+        followUpLabel: 'Animate the Crab',
+        text: 'The Animate the Crab project shows how to bring a character to life with costume expressions, "if on edge bounce," and random positioning!',
+        tags: ['animation', 'motion', 'looks', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1105114913_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1105114913/',
+        queries: [
+            'how do I animate a character',
+            'how do costume animations work',
+            'how do I use if on edge bounce',
+            'make a character come alive'
+        ],
+        followUps: ['starter-dance-party', 'starter-walk-cycle', 'starter-mouse-trail'],
+        relevance: {
+            keywords: ['animate', 'character', 'costume', 'bounce', 'edge', 'crab', 'expression']
+        }
+    },
+    'starter-walk-cycle': {
+        id: 'starter-walk-cycle',
+        followUpLabel: 'Walk Cycle',
+        text: 'The Walk Cycle project shows how to create a realistic walking animation by combining "move steps" with "next costume" in a repeat loop!',
+        tags: ['animation', 'motion', 'looks', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1105114015_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1105114015/',
+        queries: [
+            'how do I make a walk cycle',
+            'make my sprite walk realistically',
+            'walking animation with costumes',
+            'how to animate walking'
+        ],
+        followUps: ['starter-dance-party', 'starter-animate-crab', 'starter-mouse-trail'],
+        relevance: {
+            keywords: ['walk', 'cycle', 'animate', 'costume', 'steps', 'repeat', 'loop']
+        }
+    },
+    'starter-mouse-trail': {
+        id: 'starter-mouse-trail',
+        followUpLabel: 'Mouse Trail',
+        text: 'The Mouse Trail project shows how to use cloning to create a trail of stars that follows your mouse, with each clone shrinking and disappearing!',
+        tags: ['animation', 'clones', 'motion', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1105118803_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1105118803/',
+        queries: [
+            'how do I make a mouse trail',
+            'how do clones work',
+            'particle effect with cloning',
+            'make things follow my mouse'
+        ],
+        followUps: ['starter-animate-crab', 'starter-walk-cycle', 'starter-food-truck'],
+        relevance: {
+            keywords: ['mouse', 'trail', 'clone', 'particle', 'follow', 'shrink', 'random']
+        }
+    },
+    'starter-food-truck': {
+        id: 'starter-food-truck',
+        followUpLabel: 'Food Truck Animation',
+        text: 'The Food Truck Animation project shows how to make a scrolling background, spinning tires, and flashing graphic effects with multiple sprites!',
+        tags: ['animation', 'motion', 'looks', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1105114421_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1105114421/',
+        queries: [
+            'how do I make a scrolling background',
+            'animate a scene with multiple sprites',
+            'how do I make a driving animation',
+            'scrolling side-scroll effect'
+        ],
+        followUps: ['starter-dance-party', 'starter-animate-crab', 'starter-walk-cycle'],
+        relevance: {
+            keywords: ['scroll', 'background', 'scene', 'drive', 'truck', 'spin', 'graphic', 'effect']
+        }
+    },
+
+    // --- Games ---
+    'starter-make-it-fly': {
+        id: 'starter-make-it-fly',
+        followUpLabel: 'Make It Fly',
+        text: 'The Make It Fly project shows how to use keyboard sensing and forever loops to make a flying cat dodge scrolling buildings!',
+        tags: ['game', 'control', 'sensing', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1110545496_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1110545496/',
+        queries: [
+            'how do I make a flying game',
+            'keyboard controls for a game',
+            'side scrolling game',
+            'flappy bird style game'
+        ],
+        followUps: ['starter-maze', 'starter-pong', 'starter-hide-seek'],
+        relevance: {
+            keywords: ['fly', 'game', 'keyboard', 'scroll', 'dodge', 'control', 'arrow']
+        }
+    },
+    'starter-maze': {
+        id: 'starter-maze',
+        followUpLabel: 'Maze Starter',
+        text: 'The Maze Starter project shows how to navigate a ball through a maze using arrow keys and color-touching detection for wall collisions!',
+        tags: ['game', 'sensing', 'events', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/10128431_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/10128431/',
+        queries: [
+            'how do I make a maze game',
+            'color touching collision detection',
+            'arrow key movement game',
+            'navigate through walls'
+        ],
+        followUps: ['starter-make-it-fly', 'starter-pong', 'starter-hide-seek'],
+        relevance: {
+            keywords: ['maze', 'wall', 'collision', 'color', 'touching', 'arrow', 'navigate']
+        }
+    },
+    'starter-dress-up': {
+        id: 'starter-dress-up',
+        followUpLabel: 'Dress Up Tera',
+        text: 'The Dress Up Tera project shows how to make sprites draggable and use touching detection to create an interactive dress-up game!',
+        tags: ['game', 'sensing', 'looks', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1105678528_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1105678528/',
+        queries: [
+            'how do I make a dress up game',
+            'how do I make sprites draggable',
+            'touching detection game',
+            'character customization game'
+        ],
+        followUps: ['starter-make-it-fly', 'starter-maze', 'starter-hide-seek'],
+        relevance: {
+            keywords: ['dress', 'drag', 'draggable', 'costume', 'touching', 'customize', 'layer']
+        }
+    },
+    'starter-pong': {
+        id: 'starter-pong',
+        followUpLabel: 'Pong Starter',
+        text: 'The Pong Starter project shows how to make a simple game including mouse movement, ball bouncing, collisions, and sound effects!',
+        tags: ['game', 'motion', 'sensing', 'sound', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/10128515_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/10128515/',
+        queries: [
+            'how do I make pong',
+            'bouncing ball game',
+            'paddle game with mouse',
+            'how do I make a ball bounce'
+        ],
+        followUps: ['starter-make-it-fly', 'starter-maze', 'starter-hide-seek'],
+        relevance: {
+            keywords: ['pong', 'paddle', 'bounce', 'ball', 'mouse', 'score', 'random', 'angle']
+        }
+    },
+    'starter-hide-seek': {
+        id: 'starter-hide-seek',
+        followUpLabel: 'Hide and Seek',
+        text: 'The Hide and Seek project shows how to make a clicking game with a score variable, random positioning, and show/hide!',
+        tags: ['game', 'variables', 'looks', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/10128368_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/10128368/',
+        queries: [
+            'how do I make a clicking game',
+            'hide and seek game',
+            'score variable game',
+            'random position game'
+        ],
+        followUps: ['starter-make-it-fly', 'starter-maze', 'starter-pong'],
+        relevance: {
+            keywords: ['hide', 'seek', 'click', 'score', 'variable', 'random', 'show', 'disappear']
+        }
+    },
+
+    // --- Interactive Art ---
+    'starter-stamp-studio': {
+        id: 'starter-stamp-studio',
+        followUpLabel: 'Stamp Studio',
+        text: 'The Stamp Studio project shows how to use the pen stamp block with if-then conditions to draw colorful patterns that follow your mouse!',
+        tags: ['art', 'pen', 'sensing', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1111541829_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1111541829/',
+        queries: [
+            'how do I make a stamp tool',
+            'drawing program in Scratch',
+            'pen stamp art',
+            'create a painting app'
+        ],
+        followUps: ['starter-parallax', 'starter-soundflower', 'starter-spin-art'],
+        relevance: {
+            keywords: ['stamp', 'draw', 'art', 'mouse', 'pen', 'pattern', 'tool']
+        }
+    },
+    'starter-parallax': {
+        id: 'starter-parallax',
+        followUpLabel: 'Interactive Parallax',
+        text: 'The Interactive Parallax project shows how to use math operators and mouse sensing to move layers at different speeds for a depth effect!',
+        tags: ['art', 'operators', 'sensing', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1105131011_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1105131011/',
+        queries: [
+            'how do I make a parallax effect',
+            'moving background layers',
+            'depth illusion with layers',
+            'interactive background art'
+        ],
+        followUps: ['starter-stamp-studio', 'starter-art-alive', 'starter-spin-art'],
+        relevance: {
+            keywords: ['parallax', 'layer', 'depth', 'mouse', 'background', 'operator', 'divide']
+        }
+    },
+    'starter-soundflower': {
+        id: 'starter-soundflower',
+        followUpLabel: 'Soundflower',
+        text: 'The Soundflower project shows how to use the loudness sensor and multiply blocks to make a flower that responds to your microphone!',
+        tags: ['art', 'sensing', 'operators', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1111537402_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1111537402/',
+        queries: [
+            'how do I make art with sound',
+            'microphone art project',
+            'sound reactive animation',
+            'generative art with loudness'
+        ],
+        followUps: ['starter-stamp-studio', 'starter-art-alive', 'starter-spin-art'],
+        relevance: {
+            keywords: ['sound', 'microphone', 'loudness', 'flower', 'generative', 'art', 'react']
+        }
+    },
+    'starter-art-alive': {
+        id: 'starter-art-alive',
+        followUpLabel: 'Make Art Come Alive',
+        text: 'The Make Art Come Alive project shows how to use click events, broadcasts, and glide blocks to animate parts of a painting!',
+        tags: ['art', 'events', 'motion', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106198418_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106198418/',
+        queries: [
+            'how do I make animated art',
+            'broadcast messages for animation',
+            'interactive artwork',
+            'make a painting come alive'
+        ],
+        followUps: ['starter-stamp-studio', 'starter-parallax', 'starter-spin-art'],
+        relevance: {
+            keywords: ['art', 'alive', 'broadcast', 'animate', 'painting', 'click', 'glide']
+        }
+    },
+    'starter-spin-art': {
+        id: 'starter-spin-art',
+        followUpLabel: 'Spin Art',
+        text: 'The Spin Art project shows how to use slider variables, the stamp block, and move-and-turn to create mesmerizing spiral patterns!',
+        tags: ['art', 'pen', 'variables', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1105521187_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1105521187/',
+        queries: [
+            'how do I make spin art',
+            'spiral drawing with pen',
+            'slider variables for art',
+            'spirograph pattern'
+        ],
+        followUps: ['starter-stamp-studio', 'starter-parallax', 'starter-soundflower'],
+        relevance: {
+            keywords: ['spin', 'spiral', 'rotate', 'pen', 'stamp', 'pattern', 'slider', 'variable']
+        }
+    },
+
+    // --- Music ---
+    'starter-dj': {
+        id: 'starter-dj',
+        followUpLabel: 'DJ Scratch Cat',
+        text: 'The DJ Scratch Cat project shows how to use key press events and sound blocks to make a DJ mixing board with a looping beat!',
+        tags: ['music', 'sound', 'events', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/11640429_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/11640429/',
+        queries: [
+            'how do I make a DJ app',
+            'music mixing with keys',
+            'sound buttons game',
+            'beat maker project'
+        ],
+        followUps: ['starter-piano', 'starter-fur-elise', 'starter-drum-sequencer'],
+        relevance: {
+            keywords: ['DJ', 'mix', 'beat', 'sound', 'key', 'music', 'loop']
+        }
+    },
+    'starter-piano': {
+        id: 'starter-piano',
+        followUpLabel: 'Piano',
+        text: 'The Piano project shows how to build a playable instrument with clickable key sprites using the Music extension\'s play-note block!',
+        tags: ['music', 'extensions', 'events', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106245381_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106245381/',
+        queries: [
+            'how do I make a piano',
+            'play notes in Scratch',
+            'music extension instrument',
+            'clickable piano keys'
+        ],
+        followUps: ['starter-dj', 'starter-fur-elise', 'starter-drum-sequencer'],
+        relevance: {
+            keywords: ['piano', 'note', 'key', 'music', 'instrument', 'play', 'extension']
+        }
+    },
+    'starter-fish-pitch': {
+        id: 'starter-fish-pitch',
+        followUpLabel: 'Catch the Fish',
+        text: 'The Catch the Fish project shows how to use cloning, a score variable, and the pitch effect to make music play higher as you score!',
+        tags: ['music', 'clones', 'variables', 'sound', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106268602_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106268602/',
+        queries: [
+            'sound pitch effect game',
+            'cloning game with sound',
+            'how do I change pitch',
+            'music and game combined'
+        ],
+        followUps: ['starter-dj', 'starter-piano', 'starter-drum-sequencer'],
+        relevance: {
+            keywords: ['pitch', 'catch', 'fish', 'sound', 'clone', 'score', 'variable', 'game']
+        }
+    },
+    'starter-fur-elise': {
+        id: 'starter-fur-elise',
+        followUpLabel: 'Fur Elise',
+        text: 'The Fur Elise project shows how to use custom My Blocks to organize a song into reusable sections with the Music extension!',
+        tags: ['music', 'extensions', 'myblocks', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106259376_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106259376/',
+        queries: [
+            'how do I compose music in Scratch',
+            'custom my blocks for music',
+            'music extension song',
+            'write a song with play note'
+        ],
+        followUps: ['starter-dj', 'starter-piano', 'starter-drum-sequencer'],
+        relevance: {
+            keywords: ['compose', 'melody', 'note', 'music', 'song', 'my blocks', 'custom', 'tempo']
+        }
+    },
+    'starter-drum-sequencer': {
+        id: 'starter-drum-sequencer',
+        followUpLabel: 'Drum Sequencer',
+        text: 'The Drum Sequencer project shows how to use cloning for a button grid and color-sensing on a moving play head to make a drum machine!',
+        tags: ['music', 'clones', 'sensing', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1111562971_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1111562971/',
+        queries: [
+            'how do I make a drum machine',
+            'beat sequencer project',
+            'drum patterns with clones',
+            'rhythm loop maker'
+        ],
+        followUps: ['starter-dj', 'starter-piano', 'starter-fish-pitch'],
+        relevance: {
+            keywords: ['drum', 'sequencer', 'rhythm', 'loop', 'clone', 'grid', 'beat', 'pattern']
+        }
+    },
+
+    // --- Stories ---
+    'starter-story': {
+        id: 'starter-story',
+        followUpLabel: 'Story Starter',
+        text: 'The Story Starter project shows how to tell a story with multiple characters using broadcasts to coordinate dialogue and sound!',
+        tags: ['story', 'events', 'looks', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1110565816_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1110565816/',
+        queries: [
+            'how do I make a story',
+            'character dialogue with broadcasts',
+            'tell a story in Scratch',
+            'make characters talk to each other'
+        ],
+        followUps: ['starter-fill-blanks', 'starter-stop-motion', 'starter-adventure'],
+        relevance: {
+            keywords: ['story', 'dialogue', 'broadcast', 'character', 'talk', 'scene', 'narrative']
+        }
+    },
+    'starter-random-facts': {
+        id: 'starter-random-facts',
+        followUpLabel: 'Random Facts',
+        text: 'The 5 Random Facts About Me project shows how to create a slideshow presentation using backdrops and key press events!',
+        tags: ['story', 'events', 'looks', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/10014866_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/10014866/',
+        queries: [
+            'how do I make a presentation',
+            'slideshow with backdrops',
+            'about me project',
+            'flip through pages'
+        ],
+        followUps: ['starter-story', 'starter-fill-blanks', 'starter-stop-motion'],
+        relevance: {
+            keywords: ['slideshow', 'presentation', 'backdrop', 'about', 'facts', 'page', 'key']
+        }
+    },
+    'starter-fill-blanks': {
+        id: 'starter-fill-blanks',
+        followUpLabel: 'Fill in the Blanks',
+        text: 'The Fill in the Blanks project shows how to make a mad-libs story using ask blocks, variables, and the join operator!',
+        tags: ['story', 'sensing', 'variables', 'operators', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1110571119_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1110571119/',
+        queries: [
+            'how do I make mad libs',
+            'ask block for user input',
+            'join operator for sentences',
+            'word game with variables'
+        ],
+        followUps: ['starter-story', 'starter-random-facts', 'starter-adventure'],
+        relevance: {
+            keywords: ['mad libs', 'ask', 'input', 'join', 'variable', 'blanks', 'word', 'sentence']
+        }
+    },
+    'starter-stop-motion': {
+        id: 'starter-stop-motion',
+        followUpLabel: 'Stop Motion',
+        text: 'The Stop Motion Animation project shows how to create a flipbook-style animation by switching costumes in a forever loop!',
+        tags: ['story', 'animation', 'looks', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1105521591_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1105521591/',
+        queries: [
+            'how do I make stop motion',
+            'frame by frame animation',
+            'make a movie in Scratch',
+            'flipbook animation'
+        ],
+        followUps: ['starter-story', 'starter-random-facts', 'starter-adventure'],
+        relevance: {
+            keywords: ['stop', 'motion', 'frame', 'movie', 'costume', 'animate', 'flipbook']
+        }
+    },
+    'starter-adventure': {
+        id: 'starter-adventure',
+        followUpLabel: 'Adventure Game',
+        text: 'The Adventure with Scratch Cat project shows how to build an interactive adventure with collision detection and broadcast-driven scene changes!',
+        tags: ['story', 'game', 'sensing', 'events', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1107181129_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1107181129/',
+        queries: [
+            'how do I make a choose your own adventure',
+            'interactive story game',
+            'collision detection adventure',
+            'branching story with broadcasts'
+        ],
+        followUps: ['starter-story', 'starter-fill-blanks', 'starter-stop-motion'],
+        relevance: {
+            keywords: ['adventure', 'choice', 'broadcast', 'collision', 'mouse', 'hidden', 'scene']
+        }
+    },
+
+    // --- Math & Science ---
+    'starter-gravity': {
+        id: 'starter-gravity',
+        followUpLabel: 'Gravity Example',
+        text: 'The Gravity Example project shows how to simulate gravity with velocity variables and conditionals for ground collision!',
+        tags: ['math', 'variables', 'control', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1111567332_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1111567332/',
+        queries: [
+            'how do I simulate gravity',
+            'falling with acceleration',
+            'physics in Scratch',
+            'velocity variable for gravity'
+        ],
+        followUps: ['starter-sound-graph', 'starter-math-game', 'starter-coordinates'],
+        relevance: {
+            keywords: ['gravity', 'physics', 'fall', 'acceleration', 'velocity', 'variable', 'collision']
+        }
+    },
+    'starter-sound-graph': {
+        id: 'starter-sound-graph',
+        followUpLabel: 'Sound Graph',
+        text: 'The Sound Graph project shows how to visualize microphone input as a graph using pen blocks, loudness sensing, and math operators!',
+        tags: ['math', 'pen', 'sensing', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1105532968_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1105532968/',
+        queries: [
+            'how do I graph sound',
+            'microphone visualizer',
+            'draw a graph with pen',
+            'loudness graph project'
+        ],
+        followUps: ['starter-gravity', 'starter-math-game', 'starter-circuit'],
+        relevance: {
+            keywords: ['graph', 'sound', 'microphone', 'loudness', 'pen', 'visualize', 'draw', 'volume']
+        }
+    },
+    'starter-math-game': {
+        id: 'starter-math-game',
+        followUpLabel: 'Math Game',
+        text: 'The Math Game project shows how to make a quiz with random number variables, ask blocks for input, and if-else to check answers!',
+        tags: ['math', 'variables', 'sensing', 'operators', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106220358_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106220358/',
+        queries: [
+            'how do I make a math quiz',
+            'random math problems game',
+            'quiz game with ask and answer',
+            'educational math game'
+        ],
+        followUps: ['starter-gravity', 'starter-circuit', 'starter-coordinates'],
+        relevance: {
+            keywords: ['math', 'quiz', 'random', 'answer', 'ask', 'education', 'if-else', 'check']
+        }
+    },
+    'starter-circuit': {
+        id: 'starter-circuit',
+        followUpLabel: 'Circuit Simulation',
+        text: 'The Simple Circuit Simulation project shows how to use draggable sprites, color-touching detection, and boolean logic to simulate a circuit!',
+        tags: ['math', 'sensing', 'variables', 'operators', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106279050_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106279050/',
+        queries: [
+            'circuit simulation project',
+            'electricity in Scratch',
+            'boolean logic project',
+            'draggable science simulation'
+        ],
+        followUps: ['starter-gravity', 'starter-sound-graph', 'starter-coordinates'],
+        relevance: {
+            keywords: ['circuit', 'electricity', 'boolean', 'switch', 'simulation', 'science', 'drag']
+        }
+    },
+    'starter-coordinates': {
+        id: 'starter-coordinates',
+        followUpLabel: 'X and Y Coordinates',
+        text: 'The X and Y Coordinates project shows how the Scratch coordinate system works by letting you drag a sprite and see its position update!',
+        tags: ['math', 'motion', 'sensing', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106739913_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106739913/',
+        queries: [
+            'how do coordinates work in Scratch',
+            'x and y position explained',
+            'coordinate system project',
+            'learn about stage coordinates'
+        ],
+        followUps: ['starter-gravity', 'starter-math-game', 'starter-circuit'],
+        relevance: {
+            keywords: ['coordinates', 'x', 'y', 'position', 'stage', 'drag', 'ask']
+        }
+    },
+
+    // --- Extensions ---
+    'starter-text-speech': {
+        id: 'starter-text-speech',
+        followUpLabel: 'Text to Speech',
+        text: 'The Text to Speech project shows how to use the Text-to-Speech extension and broadcasts to make characters have a spoken conversation!',
+        tags: ['extensions', 'sound', 'events', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106234816_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106234816/',
+        queries: [
+            'how do I use text to speech',
+            'make sprites talk out loud',
+            'speech extension project',
+            'talking characters'
+        ],
+        followUps: ['starter-pen-flower', 'starter-translate', 'starter-face-filter'],
+        relevance: {
+            keywords: ['speech', 'talk', 'voice', 'extension', 'text', 'speak', 'broadcast']
+        }
+    },
+    'starter-pen-flower': {
+        id: 'starter-pen-flower',
+        followUpLabel: 'Pen Flower',
+        text: 'The Pen Flower project shows how to use nested repeat loops and pen blocks to draw a colorful pattern of rotating squares!',
+        tags: ['extensions', 'pen', 'control', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106765499_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106765499/',
+        queries: [
+            'how do I draw with pen blocks',
+            'pen flower pattern',
+            'geometric pattern with loops',
+            'nested loops pen art'
+        ],
+        followUps: ['starter-text-speech', 'starter-musical-droplets', 'starter-translate'],
+        relevance: {
+            keywords: ['pen', 'flower', 'draw', 'pattern', 'loop', 'nested', 'rotate', 'geometric']
+        }
+    },
+    'starter-musical-droplets': {
+        id: 'starter-musical-droplets',
+        followUpLabel: 'Musical Droplets',
+        text: 'The Musical Droplets project shows how to use clones, the Music extension, and math to turn mouse position into musical notes!',
+        tags: ['extensions', 'music', 'clones', 'operators', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1111576868_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1111576868/',
+        queries: [
+            'music extension with clones',
+            'mouse position to music notes',
+            'musical animation project',
+            'interactive music art'
+        ],
+        followUps: ['starter-text-speech', 'starter-pen-flower', 'starter-face-filter'],
+        relevance: {
+            keywords: ['music', 'droplet', 'clone', 'note', 'mouse', 'extension', 'math']
+        }
+    },
+    'starter-translate': {
+        id: 'starter-translate',
+        followUpLabel: 'Translate This!',
+        text: 'The Translate This! project shows how to use the Translate extension to make characters speak in different languages!',
+        tags: ['extensions', 'looks', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1110579465_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1110579465/',
+        queries: [
+            'how do I use the translate extension',
+            'change language in Scratch',
+            'translate words between languages',
+            'multilingual project'
+        ],
+        followUps: ['starter-text-speech', 'starter-pen-flower', 'starter-face-filter'],
+        relevance: {
+            keywords: ['translate', 'language', 'extension', 'French', 'Italian', 'multilingual']
+        }
+    },
+    'starter-face-filter': {
+        id: 'starter-face-filter',
+        followUpLabel: 'Face Filter',
+        text: 'The Face Filter project shows how to use the Face Sensing extension to make hats and glasses follow your face in real time!',
+        tags: ['extensions', 'sensing', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1208621527_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1208621527/',
+        queries: [
+            'how do I use face sensing',
+            'face filter with camera',
+            'augmented reality in Scratch',
+            'face tracking project'
+        ],
+        followUps: ['starter-text-speech', 'starter-musical-droplets', 'starter-translate'],
+        relevance: {
+            keywords: ['face', 'filter', 'camera', 'sensing', 'tilt', 'track', 'augmented']
+        }
+    },
+
+    // --- Community Kindness ---
+    'starter-greeting-card': {
+        id: 'starter-greeting-card',
+        followUpLabel: 'Greeting Card',
+        text: 'The Greeting Card project shows how to make an interactive card with backdrop switches, glide animations, and sound effects!',
+        tags: ['kindness', 'events', 'looks', 'sound', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/11806234_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/11806234/',
+        queries: [
+            'how do I make a greeting card',
+            'birthday card project',
+            'interactive card with sound',
+            'animated greeting'
+        ],
+        followUps: ['starter-quiz', 'starter-trophy', 'starter-kindness'],
+        relevance: {
+            keywords: ['card', 'greeting', 'birthday', 'message', 'animation', 'sound', 'glide']
+        }
+    },
+    'starter-quiz': {
+        id: 'starter-quiz',
+        followUpLabel: 'Community Quiz',
+        text: 'The Community Quiz project shows how to build a quiz with custom blocks, ask-and-wait input, if-else logic, and Text-to-Speech!',
+        tags: ['kindness', 'myblocks', 'sensing', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106806960_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106806960/',
+        queries: [
+            'how do I make a quiz',
+            'trivia game with ask blocks',
+            'custom blocks for a quiz',
+            'check answers with if-else'
+        ],
+        followUps: ['starter-greeting-card', 'starter-trophy', 'starter-paper-plane'],
+        relevance: {
+            keywords: ['quiz', 'trivia', 'ask', 'answer', 'custom', 'my blocks', 'if-else', 'check']
+        }
+    },
+    'starter-trophy': {
+        id: 'starter-trophy',
+        followUpLabel: 'Small Wins Trophy',
+        text: 'The Small Wins Trophy project shows how to click on sprite parts to cycle through costumes and design a custom award!',
+        tags: ['kindness', 'looks', 'events', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1106823880_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1106823880/',
+        queries: [
+            'trophy customization project',
+            'click to change costumes',
+            'celebration animation',
+            'design an award'
+        ],
+        followUps: ['starter-greeting-card', 'starter-quiz', 'starter-kindness'],
+        relevance: {
+            keywords: ['trophy', 'celebration', 'costume', 'click', 'customize', 'award', 'win']
+        }
+    },
+    'starter-kindness': {
+        id: 'starter-kindness',
+        followUpLabel: 'Acts of Kindness',
+        text: 'The Random Acts of Kindness project shows how to pick a random item from a list using broadcasts and the pick-random operator!',
+        tags: ['kindness', 'data', 'operators', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1110573738_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1110573738/',
+        queries: [
+            'how do I pick random from a list',
+            'kindness generator project',
+            'random suggestion picker',
+            'list and pick random'
+        ],
+        followUps: ['starter-greeting-card', 'starter-quiz', 'starter-paper-plane'],
+        relevance: {
+            keywords: ['kindness', 'random', 'list', 'pick', 'suggestion', 'broadcast']
+        }
+    },
+    'starter-paper-plane': {
+        id: 'starter-paper-plane',
+        followUpLabel: 'Paper Plane Tutorial',
+        text: 'The Paper Plane Tutorial project shows how to make a step-by-step guide with broadcasts, repeat-until loops, and costume switching!',
+        tags: ['kindness', 'control', 'events', 'starter-project'],
+        thumbnail: 'https://uploads.scratch.mit.edu/get_image/project/1111552152_480x360.png',
+        projectUrl: 'https://scratch.mit.edu/projects/1111552152/',
+        queries: [
+            'how do I make a tutorial in Scratch',
+            'step by step instruction project',
+            'repeat until loop project',
+            'broadcast for steps'
+        ],
+        followUps: ['starter-greeting-card', 'starter-trophy', 'starter-kindness'],
+        relevance: {
+            keywords: ['tutorial', 'step', 'teach', 'instruction', 'broadcast', 'repeat', 'until']
+        }
     }
 };
 /* eslint-enable @stylistic/max-len */

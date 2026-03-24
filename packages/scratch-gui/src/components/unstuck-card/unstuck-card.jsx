@@ -185,7 +185,8 @@ const TAG_COLORS = {
     sensing: '#5CB1D6',
     operators: '#59C059',
     variables: '#FF8C1A',
-    pen: '#0fBD8C'
+    pen: '#0fBD8C',
+    'starter-project': '#FF6680'
 };
 
 const getTagColor = tag => TAG_COLORS[tag] || '#888';
@@ -227,25 +228,42 @@ class SearchResults extends React.Component {
                             style={{animationDelay: `${index * 60}ms`}}
                             onClick={this.handleResultClick}
                         >
-                            <div className={styles.resultCardText}>
-                                {tip.text}
-                            </div>
+                            {tip.thumbnail ? (
+                                <div className={styles.resultCardRow}>
+                                    <img
+                                        className={styles.resultThumb}
+                                        draggable={false}
+                                        src={tip.thumbnail}
+                                    />
+                                    <div className={styles.resultCardText}>
+                                        {tip.text}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className={styles.resultCardText}>
+                                    {tip.text}
+                                </div>
+                            )}
                             <div className={styles.resultTags}>
+                                {tip.thumbnail ? (
+                                    <span className={styles.starterBadge}>
+                                        {'Starter project'}
+                                    </span>
+                                ) : null}
                                 {tip.tutorialId ? (
                                     <span className={styles.tutorialBadge}>
                                         {'\u25B6 Tutorial'}
                                     </span>
                                 ) : null}
-                                {tip.tags && tip.tags.length > 0 ? (
-                                    tip.tags.filter(tag => tag !== 'tutorial').slice(0, 4).map(tag => (
-                                        <span
-                                            className={styles.resultTag}
-                                            key={tag}
-                                            style={{backgroundColor: getTagColor(tag)}}
-                                        >
-                                            {tag}
-                                        </span>
-                                    ))
+                                {tip.pointers && tip.pointers.length > 0 ? (
+                                    <span className={styles.showMeBadge}>
+                                        {'Show me'}
+                                    </span>
+                                ) : null}
+                                {tip.blockExample ? (
+                                    <span className={styles.tryCodeBadge}>
+                                        {'Try this code'}
+                                    </span>
                                 ) : null}
                             </div>
                         </button>
@@ -297,6 +315,32 @@ class TipDisplay extends React.Component {
                 <div className={styles.tipText}>
                     {tip.text}
                 </div>
+
+                {tip.thumbnail ? (
+                    <div className={styles.starterProject}>
+                        <a
+                            className={styles.thumbnailLink}
+                            href={tip.projectUrl}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                        >
+                            <img
+                                className={styles.thumbnail}
+                                draggable={false}
+                                src={tip.thumbnail}
+                            />
+                        </a>
+                        <a
+                            className={styles.openProjectButton}
+                            href={tip.projectUrl}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                        >
+                            {'Open project'}
+                            <span className={styles.openProjectArrow}>{'\u2197'}</span>
+                        </a>
+                    </div>
+                ) : null}
 
                 {hasPointers ? (
                     <button
@@ -379,6 +423,8 @@ TipDisplay.propTypes = {
     tip: PropTypes.shape({
         text: PropTypes.string.isRequired,
         blockExample: PropTypes.string,
+        thumbnail: PropTypes.string,
+        projectUrl: PropTypes.string,
         pointers: PropTypes.arrayOf(PropTypes.shape({
             label: PropTypes.string.isRequired,
             target: PropTypes.string.isRequired
