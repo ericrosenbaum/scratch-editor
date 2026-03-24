@@ -1,0 +1,97 @@
+@import "../../css/colors.css";
+
+.chunk-card {
+    background: $ui-primary;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    overflow: hidden;
+    border-left: 3px solid transparent;
+}
+
+.chunk-card-coding {
+    border-left-color: $motion-primary;
+}
+.chunk-card-drawing {
+    border-left-color: $looks-secondary;
+}
+.chunk-card-sound {
+    border-left-color: $sound-primary;
+}
+.chunk-card-testing {
+    border-left-color: $ui-orange;
+}
+.chunk-card-debugging {
+    border-left-color: $red-primary;
+    background: hsla(20, 100%, 97%, 1);
+}
+.chunk-card-exploring {
+    border-left-color: $pen-primary;
+}
+
+.chunk-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    cursor: pointer;
+    gap: 8px;
+}
+
+.chunk-header:hover {
+    background: hsla(0, 0%, 0%, 0.03);
+}
+
+.chunk-thumbnail {
+    width: 48px;
+    height: 36px;
+    border-radius: 3px;
+    object-fit: cover;
+    background: $ui-secondary;
+    flex-shrink: 0;
+}
+
+.chunk-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.chunk-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.classification-badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    color: $ui-white;
+    flex-shrink: 0;
+}
+
+.badge-coding { background: $motion-primary; }
+.badge-drawing { background: $looks-secondary; }
+.badge-sound { background: $sound-primary; }
+.badge-testing { background: $ui-orange; }
+.badge-debugging { background: $red-primary; }
+.badge-exploring { background: $pen-primary; }
+
+.chunk-label {
+    font-size: 12px;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chunk-meta {
+    font-size: 10px;
+    color: $text-primary-transparent;
+}
+
+.chunk-body {
+    padding: 0 10px 8px;
+}

@@ -1,0 +1,168 @@
+@import "../../css/units.css";
+@import "../../css/colors.css";
+
+/* Slide-out panel */
+.process-view-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 420px;
+    max-width: 100vw;
+    background: $ui-white;
+    box-shadow: -4px 0 20px hsla(0, 0%, 0%, 0.15);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: $motion-primary;
+    color: $ui-white;
+    flex-shrink: 0;
+}
+
+.header-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.header-stats {
+    font-size: 11px;
+    opacity: 0.85;
+    margin-top: 2px;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: $ui-white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+.close-button:hover {
+    background: hsla(0, 0%, 100%, 0.2);
+}
+
+/* Filter bar */
+.filter-bar {
+    display: flex;
+    gap: 6px;
+    padding: 8px 16px;
+    border-bottom: 1px solid $ui-tertiary;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.filter-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid $ui-tertiary;
+    background: $ui-white;
+    cursor: pointer;
+    color: $text-primary;
+    transition: all 0.15s;
+}
+
+.filter-pill-active {
+    border-color: transparent;
+    color: $ui-white;
+}
+
+.filter-pill-coding {
+    background: $motion-primary;
+}
+.filter-pill-drawing {
+    background: $looks-secondary;
+}
+.filter-pill-sound {
+    background: $sound-primary;
+}
+.filter-pill-testing {
+    background: $ui-orange;
+}
+.filter-pill-debugging {
+    background: $red-primary;
+}
+.filter-pill-exploring {
+    background: $pen-primary;
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 16px;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.toolbar-button {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid $ui-tertiary;
+    background: $ui-white;
+    color: $text-primary;
+    cursor: pointer;
+}
+
+.toolbar-button:hover {
+    background: $ui-primary;
+}
+
+/* Session list */
+.session-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: $text-primary-transparent;
+    font-size: 14px;
+}
+
+/* Toggle button (outside the panel) */
+.toggle-button {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: $motion-primary;
+    color: $ui-white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px hsla(0, 0%, 0%, 0.2);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 499;
+    transition: transform 0.15s;
+}
+
+.toggle-button:hover {
+    transform: scale(1.1);
+}
+
+.toggle-button-active {
+    background: $motion-tertiary;
+}

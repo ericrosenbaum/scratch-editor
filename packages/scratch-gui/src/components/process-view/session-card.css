@@ -1,0 +1,93 @@
+@import "../../css/colors.css";
+
+.session-card {
+    background: $ui-white;
+    border: 1px solid $ui-tertiary;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.session-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    cursor: pointer;
+    gap: 10px;
+    transition: background 0.1s;
+}
+
+.session-header:hover {
+    background: $ui-primary;
+}
+
+.session-thumbnail {
+    width: 80px;
+    height: 60px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: $ui-secondary;
+    flex-shrink: 0;
+}
+
+.session-thumbnail-placeholder {
+    width: 80px;
+    height: 60px;
+    border-radius: 4px;
+    background: $ui-secondary;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $text-primary-transparent;
+    font-size: 24px;
+}
+
+.session-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.session-date {
+    font-size: 12px;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: 2px;
+}
+
+.session-label {
+    font-size: 13px;
+    color: $text-primary;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.session-stats {
+    display: flex;
+    gap: 10px;
+    font-size: 10px;
+    color: $text-primary-transparent;
+}
+
+.session-stat {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.expand-icon {
+    color: $text-primary-transparent;
+    font-size: 14px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.expand-icon-open {
+    transform: rotate(90deg);
+}
+
+.session-body {
+    padding: 0 12px 12px;
+}

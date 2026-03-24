@@ -31,6 +31,8 @@ import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
+import ProcessView from '../../containers/process-view.jsx';
+import processViewStyles from '../process-view/process-view.css';
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
 import {resolveStageSize} from '../../lib/screen-utils';
@@ -202,7 +204,7 @@ const GUIComponent = props => {
         hideTutorialProjects,
         vm,
         ...componentProps
-    } = omit(props, 'dispatch', 'setPlatform');
+    } = omit(props, 'dispatch', 'setPlatform', 'processRecorder');
     if (children) {
         return <Box {...componentProps}>{children}</Box>;
     }
@@ -564,6 +566,18 @@ const GUIComponent = props => {
                     </Box>
                 </Box>
                 <DragLayer />
+                <ProcessView
+                    processStorage={props.processStorage}
+                />
+                <button
+                    className={`${processViewStyles['toggle-button']} ${
+                        props.processViewVisible ? processViewStyles['toggle-button-active'] : ''
+                    }`}
+                    onClick={props.onToggleProcessView}
+                    title="Process View"
+                >
+                    {'\u231A'}
+                </button>
             </Box>
         );
     }}</MediaQuery>);
@@ -638,8 +652,11 @@ GUIComponent.propTypes = {
     onTelemetryModalOptIn: PropTypes.func,
     onTelemetryModalOptOut: PropTypes.func,
     onToggleLoginOpen: PropTypes.func,
+    onToggleProcessView: PropTypes.func,
     onUpdateProjectThumbnail: PropTypes.func,
     platform: PropTypes.oneOf(Object.keys(PLATFORM)),
+    processStorage: PropTypes.object,
+    processViewVisible: PropTypes.bool,
     renderLogin: PropTypes.func,
     setTheme: PropTypes.func.isRequired,
     showComingSoon: PropTypes.bool,

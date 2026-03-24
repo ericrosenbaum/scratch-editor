@@ -28,6 +28,7 @@ import timeTravelReducer, {timeTravelInitialState} from './time-travel';
 import toolboxReducer, {toolboxInitialState} from './toolbox';
 import vmReducer, {vmInitialState} from './vm';
 import vmStatusReducer, {vmStatusInitialState} from './vm-status';
+import processViewReducer, {processViewInitialState} from './process-view';
 import workspaceMetricsReducer, {workspaceMetricsInitialState} from './workspace-metrics';
 import throttle from 'redux-throttle';
 
@@ -65,6 +66,7 @@ const buildInitialState = (config: GUIConfig) => ({
     timeout: timeoutInitialState,
     timeTravel: timeTravelInitialState,
     toolbox: toolboxInitialState,
+    processView: processViewInitialState,
     vm: vmInitialState(config),
     vmStatus: vmStatusInitialState,
     workspaceMetrics: workspaceMetricsInitialState
@@ -174,6 +176,7 @@ const guiReducer = combineReducers({
     timeout: timeoutReducer,
     timeTravel: timeTravelReducer,
     toolbox: toolboxReducer,
+    processView: processViewReducer,
     vm: vmReducer,
     vmStatus: vmStatusReducer,
     workspaceMetrics: workspaceMetricsReducer

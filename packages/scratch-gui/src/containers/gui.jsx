@@ -28,6 +28,7 @@ import {
 } from '../reducers/modals';
 
 import {setPlatform} from '../reducers/platform';
+import {toggleProcessView} from '../reducers/process-view';
 
 import FontLoaderHOC from '../lib/font-loader-hoc.jsx';
 import LocalizationHOC from '../lib/localization-hoc.jsx';
@@ -40,6 +41,7 @@ import vmListenerHOC from '../lib/vm-listener-hoc.jsx';
 import vmManagerHOC from '../lib/vm-manager-hoc.jsx';
 import cloudManagerHOC from '../lib/cloud-manager-hoc.jsx';
 import systemPreferencesHOC from '../lib/system-preferences-hoc.jsx';
+import processRecorderHOC from '../lib/process-view/process-recorder-hoc.jsx';
 import {PLATFORM} from '../lib/platform.js';
 
 import GUIComponent from '../components/gui/gui.jsx';
@@ -184,6 +186,7 @@ const mapStateToProps = (state, ownProps) => {
         ),
         telemetryModalVisible: state.scratchGui.modals.telemetryModal,
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
+        processViewVisible: state.scratchGui.processView.visible,
         vm: state.scratchGui.vm
     };
 };
@@ -197,7 +200,8 @@ const mapDispatchToProps = dispatch => ({
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
     onRequestCloseDebugModal: () => dispatch(closeDebugModal()),
-    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal())
+    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal()),
+    onToggleProcessView: () => dispatch(toggleProcessView())
 });
 
 const ConnectedGUI = injectIntl(connect(
@@ -218,6 +222,7 @@ const WrappedGui = compose(
     ProjectSaverHOC,
     vmListenerHOC,
     vmManagerHOC,
+    processRecorderHOC,
     SBFileUploaderHOC,
     cloudManagerHOC,
     systemPreferencesHOC
