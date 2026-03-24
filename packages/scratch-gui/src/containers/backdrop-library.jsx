@@ -8,6 +8,7 @@ import {costumeShape} from '../lib/assets-prop-types.js';
 import VM from '@scratch/scratch-vm';
 import mergeDynamicAssets from '../lib/merge-dynamic-assets.js';
 
+import log from '../lib/log';
 import backdropLibraryContent from '../lib/libraries/backdrops.json';
 import backdropTags from '../lib/libraries/backdrop-tags';
 import LibraryComponent from '../components/library/library.jsx';
@@ -39,7 +40,10 @@ class BackdropLibrary extends React.Component {
             skinId: null
         };
         // Do not switch to stage, just add the backdrop
-        this.props.vm.addBackdrop(item.md5ext, vmBackdrop);
+        this.props.vm.addBackdrop(item.md5ext, vmBackdrop)
+            .catch(e => {
+                log.error('Failed to add backdrop from library:', e);
+            });
     }
     mergeDynamicAssets () {
         if (this.processedBackdrops.source === this.props.dynamicBackdrops) {
