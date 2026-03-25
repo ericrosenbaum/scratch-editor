@@ -149,11 +149,8 @@ class Blocks extends React.Component {
             this.setLocale();
         }
 
-        window.addEventListener('load-extension', () => {
-            this.props.vm.extensionManager.loadExtensionURL('faceSensing').then(() => {
-                this.handleCategorySelected('faceSensing');
-            });
-        });
+        this._pendingExtensionScroll = 'teachableClassifier';
+        this.props.vm.extensionManager.loadExtensionURL('teachableClassifier');
     }
     shouldComponentUpdate (nextProps, nextState) {
         return (
@@ -251,6 +248,15 @@ class Blocks extends React.Component {
             this.workspace.toolbox_.setFlyoutScrollPos(currentCategoryPos + offset);
         } else {
             this.workspace.toolbox_.setFlyoutScrollPos(currentCategoryPos);
+        }
+
+        if (this._pendingExtensionScroll) {
+            const categoryId = this._pendingExtensionScroll;
+            if (this.workspace.toolbox_.getCategoryPositionById(categoryId) >= 0) {
+                this._pendingExtensionScroll = null;
+                this.handleCategorySelected(categoryId);
+                this.props.onOpenTeachableMachineModal();
+            }
         }
 
         const queue = this.toolboxUpdateQueue;
