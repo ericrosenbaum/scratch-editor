@@ -43,6 +43,7 @@ import styles from './gui.css';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
+import processIcon from './icon--process.svg';
 import DebugModal from '../debug-modal/debug-modal.jsx';
 import {setPlatform} from '../../reducers/platform.js';
 import {setTheme} from '../../reducers/settings.js';
@@ -467,7 +468,10 @@ const GUIComponent = props => {
                                         role="tab"
                                         tabIndex="0"
                                     >
-                                        {'\u231A'}
+                                        <img
+                                            draggable={false}
+                                            src={processIcon}
+                                        />
                                         <FormattedMessage
                                             defaultMessage="Process"
                                             description="Button to get to the process view panel"
