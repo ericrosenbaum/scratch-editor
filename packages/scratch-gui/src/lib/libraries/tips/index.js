@@ -3545,7 +3545,7 @@ const tips = {
 const quickPicks = [
     {label: 'Starting your project', query: 'nothing happens when I click green flag', color: '#FFBF00'},
     {label: 'Moving a sprite', query: 'how do I make my sprite move', color: '#4C97FF'},
-    {label: 'My sprite disappeared', query: 'I can\'t see my sprite it disappeared', color: '#9966FF'},
+    {label: 'Animation', query: 'how do I animate my sprite', color: '#9966FF'},
     {label: 'Adding sounds', query: 'how do I add a sound', color: '#CF63CF'},
     {label: 'Making a game', query: 'how do I make a game', color: '#FFAB19'},
     {label: 'Making art', query: 'how do I draw and make art', color: '#0FBD8C'},

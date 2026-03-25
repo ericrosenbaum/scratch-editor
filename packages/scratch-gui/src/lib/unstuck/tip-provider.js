@@ -136,7 +136,7 @@ class KeywordTipProvider {
             }
         }
         results.sort((a, b) => b.score - a.score);
-        return Promise.resolve(results.slice(0, 5));
+        return Promise.resolve(results.slice(0, 10));
     }
 }
 

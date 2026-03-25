@@ -80,6 +80,7 @@ import {PLATFORM} from '../../lib/platform';
 import styles from './menu-bar.css';
 
 import helpIcon from '../../lib/assets/icon--tutorials.svg';
+import tipsIcon from '../../lib/assets/icon--tips.svg';
 import mystuffIcon from './icon--mystuff.png';
 import profileIcon from './icon--profile.png';
 import remixIcon from './icon--remix.svg';
@@ -113,8 +114,8 @@ const ariaMessages = defineMessages({
     },
     unstuck: {
         id: 'gui.menuBar.unstuck',
-        defaultMessage: 'Get Unstuck',
-        description: 'accessibility text for the get unstuck help button'
+        defaultMessage: 'Tips',
+        description: 'accessibility text for the tips help button'
     }
 });
 
@@ -752,7 +753,7 @@ class MenuBar extends React.Component {
                         >
                             <img
                                 className={styles.helpIcon}
-                                src={helpIcon}
+                                src={tipsIcon}
                             />
                             <span className={styles.unstuckLabel}>
                                 <FormattedMessage {...ariaMessages.unstuck} />

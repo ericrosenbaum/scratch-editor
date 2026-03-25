@@ -59,7 +59,7 @@ const UnstuckCardHeader = ({
             </button>
         );
     } else {
-        headerContent = <span>{'Need help?'}</span>;
+        headerContent = <span>{'Tips'}</span>;
     }
 
     return (

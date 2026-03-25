@@ -14,7 +14,7 @@ const SET_BROWSE_ALL = 'scratch-gui/unstuck/SET_BROWSE_ALL';
 const SET_BROWSE_FILTER = 'scratch-gui/unstuck/SET_BROWSE_FILTER';
 
 const initialState = {
-    visible: false,
+    visible: true,
     activeTipId: null,
     searchResults: [],
     query: '',

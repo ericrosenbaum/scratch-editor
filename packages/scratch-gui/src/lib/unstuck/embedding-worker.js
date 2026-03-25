@@ -161,7 +161,7 @@ self.onmessage = async function (event) {
             results.sort(function (a, b) { return b.score - a.score; });
             self.postMessage({
                 type: 'results',
-                results: results.slice(0, 5),
+                results: results.slice(0, 10),
                 queryId: queryId
             });
         } catch (error) {

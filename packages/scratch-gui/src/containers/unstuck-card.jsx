@@ -134,7 +134,7 @@ class UnstuckCard extends React.Component {
         queryTips(context, query)
             .then(results => {
                 if (results.length > 0) {
-                    this.props.onSetSearchResults(results.slice(0, 3));
+                    this.props.onSetSearchResults(results);
                 } else {
                     this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
                 }
@@ -152,7 +152,7 @@ class UnstuckCard extends React.Component {
             queryTips(context, query)
                 .then(results => {
                     if (results.length > 0) {
-                        this.props.onSetSearchResults(results.slice(0, 3));
+                        this.props.onSetSearchResults(results);
                     }
                 });
         }, 0);
@@ -233,7 +233,7 @@ class UnstuckCard extends React.Component {
                 queryTips(context, transcript)
                     .then(results => {
                         if (results.length > 0) {
-                            this.props.onSetSearchResults(results.slice(0, 3));
+                            this.props.onSetSearchResults(results);
                         } else {
                             this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
                         }
