@@ -87,29 +87,29 @@ class Scratch3ConstrainedAIBlocks {
                     blockType: BlockType.REPORTER,
                 },
                 '---',
-                // Constrained Chat
-                {
-                    opcode: "askAIAndWait",
-                    text: "ask AI [INPUT] using [LIST]",
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        INPUT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "What is Scratch?",
-                        },
-                        LIST: {
-                            type: ArgumentType.STRING,
-                            menu: "responseListMenu",
-                            defaultValue: "scratch facts",
-                        },
-                    },
-                },
-                {
-                    opcode: "getConstrainedAnswer",
-                    text: "AI Answer from list",
-                    blockType: BlockType.REPORTER,
-                },
-                '---',
+                // // Constrained Chat
+                // {
+                //     opcode: "askAIAndWait",
+                //     text: "ask AI [INPUT] using [LIST]",
+                //     blockType: BlockType.COMMAND,
+                //     arguments: {
+                //         INPUT: {
+                //             type: ArgumentType.STRING,
+                //             defaultValue: "What is Scratch?",
+                //         },
+                //         LIST: {
+                //             type: ArgumentType.STRING,
+                //             menu: "responseListMenu",
+                //             defaultValue: "scratch facts",
+                //         },
+                //     },
+                // },
+                // {
+                //     opcode: "getConstrainedAnswer",
+                //     text: "AI Answer from list",
+                //     blockType: BlockType.REPORTER,
+                // },
+                // '---',
                 // Vision Chat
                 {
                     opcode: "askAboutStage",
