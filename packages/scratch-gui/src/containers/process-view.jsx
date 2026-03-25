@@ -66,24 +66,23 @@ class ProcessView extends React.Component {
             for (const session of sessions) {
                 const events = await processStorage.getEventsForSession(session.id);
 
-                // Check if chunks already exist in storage
-                let chunks = await processStorage.getChunksForSession(session.id);
-
-                if (chunks.length === 0 && events.length > 0) {
-                    // Generate chunks on the fly
+                // Always regenerate chunks from current events so new
+                // events recorded since the last open are included.
+                let chunks = [];
+                if (events.length > 0) {
                     chunks = detectChunks(session.id, events);
                     if (chunks.length > 0) {
                         await processStorage.saveChunks(chunks);
                     }
+                }
 
-                    // Generate session label
-                    if (!session.heuristicLabel) {
-                        const label = generateSessionLabel(chunks, events);
-                        await processStorage.updateSession(session.id, {
-                            heuristicLabel: label
-                        });
-                        session.heuristicLabel = label;
-                    }
+                // Generate session label
+                if (!session.heuristicLabel && chunks.length > 0) {
+                    const label = generateSessionLabel(chunks, events);
+                    await processStorage.updateSession(session.id, {
+                        heuristicLabel: label
+                    });
+                    session.heuristicLabel = label;
                 }
 
                 sessionChunksMap[session.id] = chunks;
