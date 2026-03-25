@@ -744,7 +744,20 @@ class MenuBar extends React.Component {
                             className={classNames(styles.menuBarItem, styles.noOffset, styles.hoverable)}
                             onClick={this.props.onOpenStructureView}
                         >
-                            <span className={styles.debugLabel}>
+                            <svg
+                                className={styles.helpIcon}
+                                width="20"
+                                height="20"
+                                viewBox="0 0 20 20"
+                            >
+                                <circle cx="5" cy="5" r="2.5" fill="white" />
+                                <circle cx="15" cy="5" r="2.5" fill="white" />
+                                <circle cx="10" cy="15" r="2.5" fill="white" />
+                                <line x1="5" y1="7" x2="10" y2="13" stroke="white" strokeWidth="1.5" />
+                                <line x1="15" y1="7" x2="10" y2="13" stroke="white" strokeWidth="1.5" />
+                                <line x1="7" y1="5" x2="13" y2="5" stroke="white" strokeWidth="1.5" />
+                            </svg>
+                            <span className={styles.collapsibleLabel}>
                                 {'Structure'}
                             </span>
                         </div>
