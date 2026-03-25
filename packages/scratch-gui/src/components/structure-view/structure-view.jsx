@@ -40,40 +40,74 @@ function getEventColor (type) {
     }
 }
 
+// ── Helpers ───────────────────────────────────────────────
+
+/**
+ * Find where a line from (fx, fy) to the center of a rect
+ * intersects the rect boundary. Returns the intersection point.
+ */
+const rectEdgePoint = (fromX, fromY, rect) => {
+    const cx = rect.centerX;
+    const cy = rect.centerY;
+    const hw = rect.width / 2;
+    const hh = rect.height / 2;
+    const dx = fromX - cx;
+    const dy = fromY - cy;
+    if (dx === 0 && dy === 0) return {x: cx, y: cy};
+    // Scale factor to reach the rect edge
+    const sx = dx !== 0 ? hw / Math.abs(dx) : Infinity;
+    const sy = dy !== 0 ? hh / Math.abs(dy) : Infinity;
+    const s = Math.min(sx, sy);
+    return {x: cx + (dx * s), y: cy + (dy * s)};
+};
+
+/**
+ * Evaluate a point on a quadratic Bezier at parameter t.
+ */
+const bezierPoint = (t, p0, cp, p1) => ({
+    x: ((1 - t) * (1 - t) * p0.x) +
+        (2 * (1 - t) * t * cp.x) + (t * t * p1.x),
+    y: ((1 - t) * (1 - t) * p0.y) +
+        (2 * (1 - t) * t * cp.y) + (t * t * p1.y)
+});
+
 // ── SVG Curved Arrow ───────────────────────────────────────
 const CurvedArrow = ({
-    x1, y1, x2, y2, color, dashed, opacity, strokeWidth, arrowHead, curveOffset
+    x1, y1, x2, y2, color, dashed, opacity, strokeWidth,
+    arrowHead, arrowSize, curveOffset
 }) => {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const midX = (x1 + x2) / 2;
     const midY = (y1 + y2) / 2;
     // Perpendicular offset for curve
-    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const len = Math.sqrt((dx * dx) + (dy * dy)) || 1;
     const nx = -dy / len;
     const ny = dx / len;
     const offset = curveOffset || len * 0.15;
-    const cx = midX + nx * offset;
-    const cy = midY + ny * offset;
+    const cx = midX + (nx * offset);
+    const cy = midY + (ny * offset);
 
     const d = `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
 
-    // Arrowhead
+    // Arrowhead — drawn at the endpoint using curve tangent
     let arrowD = '';
     if (arrowHead) {
+        const size = arrowSize || 6;
+        // Sample a point just before the end to get tangent
         const t = 0.95;
-        const ax = (1 - t) * (1 - t) * x1 + 2 * (1 - t) * t * cx + t * t * x2;
-        const ay = (1 - t) * (1 - t) * y1 + 2 * (1 - t) * t * cy + t * t * y2;
-        const adx = x2 - ax;
-        const ady = y2 - ay;
-        const aLen = Math.sqrt(adx * adx + ady * ady) || 1;
+        const near = bezierPoint(
+            t, {x: x1, y: y1}, {x: cx, y: cy}, {x: x2, y: y2}
+        );
+        const adx = x2 - near.x;
+        const ady = y2 - near.y;
+        const aLen = Math.sqrt((adx * adx) + (ady * ady)) || 1;
         const ux = adx / aLen;
         const uy = ady / aLen;
-        const size = 6;
-        const p1x = x2 - ux * size - uy * size * 0.4;
-        const p1y = y2 - uy * size + ux * size * 0.4;
-        const p2x = x2 - ux * size + uy * size * 0.4;
-        const p2y = y2 - uy * size - ux * size * 0.4;
+        const p1x = x2 - (ux * size) - (uy * size * 0.45);
+        const p1y = y2 - (uy * size) + (ux * size * 0.45);
+        const p2x = x2 - (ux * size) + (uy * size * 0.45);
+        const p2y = y2 - (uy * size) - (ux * size * 0.45);
         arrowD = `M ${x2} ${y2} L ${p1x} ${p1y} L ${p2x} ${p2y} Z`;
     }
 
@@ -108,6 +142,7 @@ CurvedArrow.propTypes = {
     opacity: PropTypes.number,
     strokeWidth: PropTypes.number,
     arrowHead: PropTypes.bool,
+    arrowSize: PropTypes.number,
     curveOffset: PropTypes.number
 };
 
@@ -621,9 +656,12 @@ const StructureView = ({isOpen, onClose, vm}) => {
     const [hoverTarget, setHoverTarget] = useState(null);
     const [selectedSprite, setSelectedSprite] = useState(null);
     const [zoom, setZoom] = useState(1);
+    const [pan, setPan] = useState({x: 0, y: 0});
     const [positionOverrides, setPositionOverrides] = useState({});
     const [draggingSpriteId, setDraggingSpriteId] = useState(null);
+    const [isPanning, setIsPanning] = useState(false);
     const dragRef = useRef(null);
+    const panRef = useRef(null);
     const svgRef = useRef(null);
 
     // Re-analyze when opened
@@ -636,7 +674,15 @@ const StructureView = ({isOpen, onClose, vm}) => {
 
     const layout = useMemo(() => {
         if (!structure) return null;
-        return computeLayout(structure);
+        // Exclude broadcast-receive events from layout —
+        // broadcasts are shown as sprite-to-sprite arrows
+        const filteredStructure = {
+            ...structure,
+            events: structure.events.filter(
+                e => e.type !== 'event_whenbroadcastreceived'
+            )
+        };
+        return computeLayout(filteredStructure);
     }, [structure]);
 
     // Extract thumbnail URLs from VM targets
@@ -667,6 +713,7 @@ const StructureView = ({isOpen, onClose, vm}) => {
             setHoverTarget(null);
             setSelectedSprite(null);
             setZoom(1);
+            setPan({x: 0, y: 0});
             setPositionOverrides({});
         }
     }, [isOpen]);
@@ -754,6 +801,7 @@ const StructureView = ({isOpen, onClose, vm}) => {
 
     const handleZoomReset = useCallback(() => {
         setZoom(1);
+        setPan({x: 0, y: 0});
     }, []);
 
     // ── Drag helpers ──
@@ -782,59 +830,138 @@ const StructureView = ({isOpen, onClose, vm}) => {
         setDraggingSpriteId(spriteId);
     }, [screenToSVG]);
 
-    const handleMouseMove = useCallback(e => {
-        if (!dragRef.current) return;
-        const svgPt = screenToSVG(e.clientX, e.clientY);
-        const dx = svgPt.x - dragRef.current.startX;
-        const dy = svgPt.y - dragRef.current.startY;
-        if (!dragRef.current.hasMoved &&
-            (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
-            dragRef.current.hasMoved = true;
-        }
-        if (!dragRef.current.hasMoved) return;
-        const {spriteId} = dragRef.current;
-        setPositionOverrides(prev => ({
-            ...prev,
-            [spriteId]: {
-                dx: (prev[spriteId] ? prev[spriteId].prevDx : 0) + dx,
-                dy: (prev[spriteId] ? prev[spriteId].prevDy : 0) + dy,
-                prevDx: prev[spriteId] ? prev[spriteId].prevDx : 0,
-                prevDy: prev[spriteId] ? prev[spriteId].prevDy : 0
-            }
+    // ── Pan helpers ──
+    const handlePanStart = useCallback(e => {
+        // Only start pan on left-click directly on SVG background
+        if (e.button !== 0) return;
+        e.preventDefault();
+        panRef.current = {
+            startClientX: e.clientX,
+            startClientY: e.clientY,
+            startPanX: pan.x,
+            startPanY: pan.y,
+            hasMoved: false
+        };
+        setIsPanning(true);
+    }, [pan]);
+
+    const handleWheel = useCallback(e => {
+        e.preventDefault();
+        // Convert screen-space scroll deltas to SVG-space
+        const svg = svgRef.current;
+        if (!svg) return;
+        const ctm = svg.getScreenCTM();
+        if (!ctm) return;
+        // Scale factor: how many SVG units per screen pixel
+        const scale = 1 / ctm.a;
+        setPan(prev => ({
+            x: prev.x - (e.deltaX * scale),
+            y: prev.y - (e.deltaY * scale)
         }));
+    }, []);
+
+    // Attach wheel handler to SVG container (needs {passive:false})
+    const svgContainerRef = useRef(null);
+    useEffect(() => {
+        const el = svgContainerRef.current;
+        if (!el) return () => {};
+        el.addEventListener('wheel', handleWheel, {passive: false});
+        return () => {
+            el.removeEventListener('wheel', handleWheel);
+        };
+    }, [handleWheel]);
+
+    const handleMouseMove = useCallback(e => {
+        // Handle sprite drag
+        if (dragRef.current) {
+            const svgPt = screenToSVG(e.clientX, e.clientY);
+            const dx = svgPt.x - dragRef.current.startX;
+            const dy = svgPt.y - dragRef.current.startY;
+            if (!dragRef.current.hasMoved &&
+                (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+                dragRef.current.hasMoved = true;
+            }
+            if (!dragRef.current.hasMoved) return;
+            const {spriteId} = dragRef.current;
+            setPositionOverrides(prev => ({
+                ...prev,
+                [spriteId]: {
+                    dx: (prev[spriteId] ?
+                        prev[spriteId].prevDx : 0) + dx,
+                    dy: (prev[spriteId] ?
+                        prev[spriteId].prevDy : 0) + dy,
+                    prevDx: prev[spriteId] ?
+                        prev[spriteId].prevDx : 0,
+                    prevDy: prev[spriteId] ?
+                        prev[spriteId].prevDy : 0
+                }
+            }));
+            return;
+        }
+        // Handle background pan (use screen-space deltas)
+        if (panRef.current) {
+            const dxScreen = e.clientX - panRef.current.startClientX;
+            const dyScreen = e.clientY - panRef.current.startClientY;
+            if (!panRef.current.hasMoved &&
+                (Math.abs(dxScreen) > 3 || Math.abs(dyScreen) > 3)) {
+                panRef.current.hasMoved = true;
+            }
+            if (!panRef.current.hasMoved) return;
+            // Convert screen pixels to SVG units
+            const svg = svgRef.current;
+            if (!svg) return;
+            const ctm = svg.getScreenCTM();
+            if (!ctm) return;
+            const scale = 1 / ctm.a;
+            setPan({
+                x: panRef.current.startPanX + (dxScreen * scale),
+                y: panRef.current.startPanY + (dyScreen * scale)
+            });
+        }
     }, [screenToSVG]);
 
     const handleMouseUp = useCallback(() => {
-        if (!dragRef.current) return;
-        const {spriteId, hasMoved} = dragRef.current;
-        if (hasMoved) {
-            // Commit the final position
-            setPositionOverrides(prev => {
-                const cur = prev[spriteId];
-                if (!cur) return prev;
-                return {
-                    ...prev,
-                    [spriteId]: {
-                        dx: cur.dx,
-                        dy: cur.dy,
-                        prevDx: cur.dx,
-                        prevDy: cur.dy
-                    }
-                };
-            });
-            // Keep hasMoved flag so click handler can check it,
-            // then clear on next tick (click fires between mouseup
-            // and the timeout)
-            setTimeout(() => {
+        // Finish sprite drag
+        if (dragRef.current) {
+            const {spriteId, hasMoved} = dragRef.current;
+            if (hasMoved) {
+                setPositionOverrides(prev => {
+                    const cur = prev[spriteId];
+                    if (!cur) return prev;
+                    return {
+                        ...prev,
+                        [spriteId]: {
+                            dx: cur.dx,
+                            dy: cur.dy,
+                            prevDx: cur.dx,
+                            prevDy: cur.dy
+                        }
+                    };
+                });
+                // Keep hasMoved flag so click handler can check
+                // it; clear on next tick (click fires between
+                // mouseup and the timeout)
+                setTimeout(() => {
+                    dragRef.current = null;
+                }, 0);
+            } else {
                 dragRef.current = null;
-            }, 0);
-        } else {
-            dragRef.current = null;
+            }
+            setDraggingSpriteId(null);
         }
-        setDraggingSpriteId(null);
+        // Finish pan
+        if (panRef.current) {
+            const wasPanning = panRef.current.hasMoved;
+            panRef.current = null;
+            setIsPanning(false);
+            if (wasPanning) {
+                // Suppress the click that follows mouseup
+                setTimeout(() => {}, 0);
+            }
+        }
     }, []);
 
-    // Attach document-level mouse handlers for drag
+    // Attach document-level mouse handlers for drag/pan
     useEffect(() => {
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
@@ -845,6 +972,8 @@ const StructureView = ({isOpen, onClose, vm}) => {
     }, [handleMouseMove, handleMouseUp]);
 
     const handleBackgroundClick = useCallback(() => {
+        // Don't deselect if we just finished panning
+        if (panRef.current && panRef.current.hasMoved) return;
         setSelectedSprite(null);
     }, []);
 
@@ -917,7 +1046,10 @@ const StructureView = ({isOpen, onClose, vm}) => {
 
             {/* Body */}
             <div className={styles.modalBody}>
-                <div className={styles.svgContainer}>
+                <div
+                    ref={svgContainerRef}
+                    className={styles.svgContainer}
+                >
                     {(!structure || structure.sprites.length === 0) ? (
                         <div className={styles.emptyState}>
                             <div className={styles.emptyStateIcon}>🔍</div>
@@ -958,12 +1090,17 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                 const vbW = layout.viewBox.width / zoom;
                                 const vbH = layout.viewBox.height / zoom;
                                 const vbX = layout.viewBox.x +
-                                    (layout.viewBox.width - vbW) / 2;
+                                    ((layout.viewBox.width - vbW) / 2) -
+                                    pan.x;
                                 const vbY = layout.viewBox.y +
-                                    (layout.viewBox.height - vbH) / 2;
+                                    ((layout.viewBox.height - vbH) / 2) -
+                                    pan.y;
                                 return `${vbX} ${vbY} ${vbW} ${vbH}`;
                             })()}
                             preserveAspectRatio="xMidYMid meet"
+                            style={{cursor: isPanning ?
+                                'grabbing' : 'grab'}}
+                            onMouseDown={handlePanStart}
                             onClick={handleBackgroundClick}
                         >
                             {/* Zone labels */}
@@ -999,8 +1136,9 @@ const StructureView = ({isOpen, onClose, vm}) => {
 
                             {/* ── Connection layer (below nodes) ── */}
 
-                            {/* Event → Sprite arrows */}
+                            {/* Event → Sprite arrows (skip broadcasts — shown as sprite-to-sprite) */}
                             {structure.events.map(event => {
+                                if (event.type === 'event_whenbroadcastreceived') return null;
                                 const ePos = layout.eventPositions[event.id];
                                 if (!ePos) return null;
                                 const eventOpacity = getOpacity('events', event.id);
@@ -1056,6 +1194,22 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                         const curveOff = isSelfLoop ? 40 :
                                             (bcIdx * 8) + (rIdx * 4);
 
+                                        // Compute edge points so arrows
+                                        // start/end at tile boundaries
+                                        const startPt = rectEdgePoint(
+                                            rPos.centerX, rPos.centerY, sPos
+                                        );
+                                        const endPt = isSelfLoop ?
+                                            {
+                                                x: rPos.centerX,
+                                                y: rPos.centerY - 20
+                                            } :
+                                            rectEdgePoint(
+                                                sPos.centerX,
+                                                sPos.centerY,
+                                                rPos
+                                            );
+
                                         return (
                                             <g
                                                 key={`bc-${bc.message}-${sender.sprite}-${receiver}`}
@@ -1066,16 +1220,15 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                                 onMouseLeave={() => setHoverTarget(null)}
                                             >
                                                 <CurvedArrow
-                                                    x1={sPos.centerX}
-                                                    y1={sPos.centerY}
-                                                    x2={rPos.centerX}
-                                                    y2={isSelfLoop ?
-                                                        rPos.centerY - 20 :
-                                                        rPos.centerY}
+                                                    x1={startPt.x}
+                                                    y1={startPt.y}
+                                                    x2={endPt.x}
+                                                    y2={endPt.y}
                                                     color={COLORS.broadcastArrow}
                                                     dashed={!isHighlighted}
                                                     opacity={bcOpacity}
                                                     arrowHead
+                                                    arrowSize={10}
                                                     strokeWidth={
                                                         isHighlighted ? 2.5 : 1.5
                                                     }
@@ -1229,8 +1382,9 @@ const StructureView = ({isOpen, onClose, vm}) => {
 
                             {/* ── Node layer (above connections) ── */}
 
-                            {/* Event bubbles */}
+                            {/* Event bubbles (skip broadcasts — shown as sprite-to-sprite) */}
                             {structure.events.map(event => {
+                                if (event.type === 'event_whenbroadcastreceived') return null;
                                 const pos = layout.eventPositions[event.id];
                                 if (!pos) return null;
                                 return (
