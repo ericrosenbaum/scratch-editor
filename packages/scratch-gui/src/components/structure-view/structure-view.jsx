@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useCallback, useEffect} from 'react';
+import React, {useState, useMemo, useCallback, useEffect, useRef} from 'react';
 import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
 import classNames from 'classnames';
@@ -111,9 +111,49 @@ CurvedArrow.propTypes = {
     curveOffset: PropTypes.number
 };
 
+// eslint-disable-next-line require-jsdoc, func-style
+const GREEN_FLAG_PATH = [
+    'M.75,2A6.44,6.44,0,0,1,8.44,2h0a6.44,',
+    '6.44,0,0,0,7.69,0V12.4a6.44,6.44,0,0,',
+    '1-7.69,0h0a6.44,6.44,0,0,0-7.69,0'
+].join('');
+
+// ── Green Flag Icon (inline SVG path) ─────────────────────
+const GreenFlagIcon = ({x, y, size}) => {
+    const scale = size / 17.5;
+    return (
+        <g transform={`translate(${x}, ${y}) scale(${scale})`}>
+            <path
+                d={GREEN_FLAG_PATH}
+                fill="#fff"
+                stroke="rgba(255,255,255,0.6)"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <line
+                x1="0.75"
+                y1="16.75"
+                x2="0.75"
+                y2="0.75"
+                stroke="rgba(255,255,255,0.6)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </g>
+    );
+};
+
+GreenFlagIcon.propTypes = {
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+    size: PropTypes.number.isRequired
+};
+
 // ── Event Bubble ───────────────────────────────────────────
 const EventBubble = ({event, pos, opacity, onMouseEnter, onMouseLeave}) => {
     const color = getEventColor(event.type);
+    const isGreenFlag = event.type === 'event_whenflagclicked';
     return (
         <g
             opacity={opacity}
@@ -131,19 +171,27 @@ const EventBubble = ({event, pos, opacity, onMouseEnter, onMouseLeave}) => {
                 stroke={opacity >= 0.9 ? color : 'none'}
                 strokeWidth={opacity >= 0.9 ? 1.5 : 0}
             />
-            <text
-                x={pos.centerX}
-                y={pos.centerY + 1}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="#fff"
-                fontSize="11"
-                fontWeight="600"
-                fontFamily="sans-serif"
-                pointerEvents="none"
-            >
-                {event.shortLabel.length > 8 ? `${event.shortLabel.slice(0, 7)}…` : event.shortLabel}
-            </text>
+            {isGreenFlag ? (
+                <GreenFlagIcon
+                    x={pos.centerX - 8}
+                    y={pos.centerY - 8}
+                    size={16}
+                />
+            ) : (
+                <text
+                    x={pos.centerX}
+                    y={pos.centerY + 1}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#fff"
+                    fontSize="11"
+                    fontWeight="600"
+                    fontFamily="sans-serif"
+                    pointerEvents="none"
+                >
+                    {event.shortLabel.length > 8 ? `${event.shortLabel.slice(0, 7)}…` : event.shortLabel}
+                </text>
+            )}
         </g>
     );
 };
@@ -157,12 +205,16 @@ EventBubble.propTypes = {
 };
 
 // ── Sprite Node ────────────────────────────────────────────
-const SpriteNode = ({sprite, pos, opacity, isSelected, onMouseEnter, onMouseLeave, onClick}) => {
+const SpriteNode = ({sprite, pos, opacity, isSelected, onMouseEnter, onMouseLeave, onClick, thumbnailUrl, onDragStart, isDragging}) => {
     const borderColor = isSelected ? '#4C97FF' : '#ccc';
     const borderWidth = isSelected ? 2.5 : 1;
-    // Use first letter as avatar fallback
     const initial = sprite.name.charAt(0).toUpperCase();
     const bgColor = sprite.isStage ? '#F0E68C' : '#E3F2FD';
+    const thumbWidth = 56;
+    const thumbHeight = 42;
+    const thumbX = pos.centerX - thumbWidth / 2;
+    const thumbY = pos.y + 4;
+    const clipId = `thumb-clip-${sprite.id}`;
 
     return (
         <g
@@ -170,7 +222,8 @@ const SpriteNode = ({sprite, pos, opacity, isSelected, onMouseEnter, onMouseLeav
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
             onClick={onClick}
-            style={{cursor: 'pointer'}}
+            onMouseDown={onDragStart}
+            style={{cursor: isDragging ? 'grabbing' : 'grab'}}
         >
             <rect
                 x={pos.x}
@@ -182,31 +235,66 @@ const SpriteNode = ({sprite, pos, opacity, isSelected, onMouseEnter, onMouseLeav
                 stroke={borderColor}
                 strokeWidth={borderWidth}
             />
-            {/* Avatar circle */}
-            <circle
-                cx={pos.centerX}
-                cy={pos.y + 28}
-                r={18}
-                fill={sprite.isStage ? '#DAA520' : '#4C97FF'}
-                opacity={0.8}
-            />
-            <text
-                x={pos.centerX}
-                y={pos.y + 29}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="#fff"
-                fontSize="16"
-                fontWeight="700"
-                fontFamily="sans-serif"
-                pointerEvents="none"
-            >
-                {initial}
-            </text>
+            {/* Thumbnail or fallback initial */}
+            <defs>
+                <clipPath id={clipId}>
+                    <rect
+                        x={thumbX}
+                        y={thumbY}
+                        width={thumbWidth}
+                        height={thumbHeight}
+                        rx={6}
+                    />
+                </clipPath>
+            </defs>
+            {thumbnailUrl ? (
+                <React.Fragment>
+                    <rect
+                        x={thumbX}
+                        y={thumbY}
+                        width={thumbWidth}
+                        height={thumbHeight}
+                        rx={6}
+                        fill="#fff"
+                    />
+                    <image
+                        href={thumbnailUrl}
+                        x={thumbX}
+                        y={thumbY}
+                        width={thumbWidth}
+                        height={thumbHeight}
+                        preserveAspectRatio="xMidYMid meet"
+                        clipPath={`url(#${clipId})`}
+                    />
+                </React.Fragment>
+            ) : (
+                <React.Fragment>
+                    <circle
+                        cx={pos.centerX}
+                        cy={pos.y + 25}
+                        r={18}
+                        fill={sprite.isStage ? '#DAA520' : '#4C97FF'}
+                        opacity={0.8}
+                    />
+                    <text
+                        x={pos.centerX}
+                        y={pos.y + 26}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="#fff"
+                        fontSize="16"
+                        fontWeight="700"
+                        fontFamily="sans-serif"
+                        pointerEvents="none"
+                    >
+                        {initial}
+                    </text>
+                </React.Fragment>
+            )}
             {/* Name */}
             <text
                 x={pos.centerX}
-                y={pos.y + 56}
+                y={pos.y + 58}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fill="#333"
@@ -241,7 +329,10 @@ SpriteNode.propTypes = {
     isSelected: PropTypes.bool,
     onMouseEnter: PropTypes.func,
     onMouseLeave: PropTypes.func,
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
+    thumbnailUrl: PropTypes.string,
+    onDragStart: PropTypes.func,
+    isDragging: PropTypes.bool
 };
 
 // ── Global Bubble ──────────────────────────────────────────
@@ -314,7 +405,7 @@ const DetailPanel = ({hoverTarget, structure}) => {
                         <span className={classNames(styles.detailPill, styles.pillAmber)}>Variable</span>
                         {' / '}
                         <span className={classNames(styles.detailPill, styles.pillPurple)}>List</span>
-                        {' shared state'}
+                        {' shared across sprites'}
                     </div>
                 </div>
             </div>
@@ -394,7 +485,7 @@ const DetailPanel = ({hoverTarget, structure}) => {
                 )}
                 {(readGlobals.length > 0 || writtenGlobals.length > 0) && (
                     <div className={styles.detailSection}>
-                        <div className={styles.detailSectionHeader}>Shared State</div>
+                        <div className={styles.detailSectionHeader}>Variables</div>
                         {writtenGlobals.map(g => (
                             <div key={g.id} className={styles.detailItem}>
                                 writes {g.type === 'list' ? '☰' : '𝑥'} {g.name}
@@ -529,26 +620,54 @@ DetailPanel.propTypes = {
 const StructureView = ({isOpen, onClose, vm}) => {
     const [hoverTarget, setHoverTarget] = useState(null);
     const [selectedSprite, setSelectedSprite] = useState(null);
-    const [refreshKey, setRefreshKey] = useState(0);
+    const [zoom, setZoom] = useState(1);
+    const [positionOverrides, setPositionOverrides] = useState({});
+    const [draggingSpriteId, setDraggingSpriteId] = useState(null);
+    const dragRef = useRef(null);
+    const svgRef = useRef(null);
 
-    // Re-analyze when opened or refreshed
+    // Re-analyze when opened
     const structure = useMemo(() => {
         if (!isOpen || !vm) return null;
         const targets = vm.runtime ? vm.runtime.targets : [];
         return analyzeProject(targets);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen, vm, refreshKey]);
+    }, [isOpen, vm]);
 
     const layout = useMemo(() => {
         if (!structure) return null;
         return computeLayout(structure);
     }, [structure]);
 
+    // Extract thumbnail URLs from VM targets
+    const thumbnails = useMemo(() => {
+        if (!isOpen || !vm || !vm.runtime) return {};
+        const result = {};
+        for (const target of vm.runtime.targets) {
+            const costumes = target.sprite ? target.sprite.costumes : target.costumes;
+            if (costumes && costumes.length > 0) {
+                const currentIndex = target.currentCostume || 0;
+                const costume = costumes[currentIndex];
+                if (costume && costume.asset) {
+                    try {
+                        result[target.id] = costume.asset.encodeDataURI();
+                    } catch (e) {
+                        // fallback — no thumbnail
+                    }
+                }
+            }
+        }
+        return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, vm, structure]);
+
     // Clear selection when closing
     useEffect(() => {
         if (!isOpen) {
             setHoverTarget(null);
             setSelectedSprite(null);
+            setZoom(1);
+            setPositionOverrides({});
         }
     }, [isOpen]);
 
@@ -625,13 +744,129 @@ const StructureView = ({isOpen, onClose, vm}) => {
         return result;
     }, [hoverTarget, selectedSprite, structure]);
 
-    const handleRefresh = useCallback(() => {
-        setRefreshKey(k => k + 1);
+    const handleZoomIn = useCallback(() => {
+        setZoom(z => Math.min(z * 1.25, 4));
     }, []);
+
+    const handleZoomOut = useCallback(() => {
+        setZoom(z => Math.max(z / 1.25, 0.25));
+    }, []);
+
+    const handleZoomReset = useCallback(() => {
+        setZoom(1);
+    }, []);
+
+    // ── Drag helpers ──
+    const screenToSVG = useCallback((clientX, clientY) => {
+        const svg = svgRef.current;
+        if (!svg) return {x: 0, y: 0};
+        const ctm = svg.getScreenCTM();
+        if (!ctm) return {x: 0, y: 0};
+        const inv = ctm.inverse();
+        return {
+            x: (inv.a * clientX) + (inv.c * clientY) + inv.e,
+            y: (inv.b * clientX) + (inv.d * clientY) + inv.f
+        };
+    }, []);
+
+    const handleSpriteDragStart = useCallback((e, spriteId) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const svgPt = screenToSVG(e.clientX, e.clientY);
+        dragRef.current = {
+            spriteId,
+            startX: svgPt.x,
+            startY: svgPt.y,
+            hasMoved: false
+        };
+        setDraggingSpriteId(spriteId);
+    }, [screenToSVG]);
+
+    const handleMouseMove = useCallback(e => {
+        if (!dragRef.current) return;
+        const svgPt = screenToSVG(e.clientX, e.clientY);
+        const dx = svgPt.x - dragRef.current.startX;
+        const dy = svgPt.y - dragRef.current.startY;
+        if (!dragRef.current.hasMoved &&
+            (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+            dragRef.current.hasMoved = true;
+        }
+        if (!dragRef.current.hasMoved) return;
+        const {spriteId} = dragRef.current;
+        setPositionOverrides(prev => ({
+            ...prev,
+            [spriteId]: {
+                dx: (prev[spriteId] ? prev[spriteId].prevDx : 0) + dx,
+                dy: (prev[spriteId] ? prev[spriteId].prevDy : 0) + dy,
+                prevDx: prev[spriteId] ? prev[spriteId].prevDx : 0,
+                prevDy: prev[spriteId] ? prev[spriteId].prevDy : 0
+            }
+        }));
+    }, [screenToSVG]);
+
+    const handleMouseUp = useCallback(() => {
+        if (!dragRef.current) return;
+        const {spriteId, hasMoved} = dragRef.current;
+        if (hasMoved) {
+            // Commit the final position
+            setPositionOverrides(prev => {
+                const cur = prev[spriteId];
+                if (!cur) return prev;
+                return {
+                    ...prev,
+                    [spriteId]: {
+                        dx: cur.dx,
+                        dy: cur.dy,
+                        prevDx: cur.dx,
+                        prevDy: cur.dy
+                    }
+                };
+            });
+            // Keep hasMoved flag so click handler can check it,
+            // then clear on next tick (click fires between mouseup
+            // and the timeout)
+            setTimeout(() => {
+                dragRef.current = null;
+            }, 0);
+        } else {
+            dragRef.current = null;
+        }
+        setDraggingSpriteId(null);
+    }, []);
+
+    // Attach document-level mouse handlers for drag
+    useEffect(() => {
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [handleMouseMove, handleMouseUp]);
 
     const handleBackgroundClick = useCallback(() => {
         setSelectedSprite(null);
     }, []);
+
+    // Get effective position with drag overrides applied
+    const getEffectivePos = useCallback((spriteId, basePos) => {
+        const override = positionOverrides[spriteId];
+        if (!override) return basePos;
+        return {
+            ...basePos,
+            x: basePos.x + override.dx,
+            y: basePos.y + override.dy,
+            centerX: basePos.centerX + override.dx,
+            centerY: basePos.centerY + override.dy
+        };
+    }, [positionOverrides]);
+
+    // Look up sprite position with drag overrides applied
+    const getSpritePos = useCallback(spriteId => {
+        const base = layout ? layout.spritePositions[spriteId] : null;
+        if (!base) return null;
+        return getEffectivePos(spriteId, base);
+    }, [layout, getEffectivePos]);
 
     const getOpacity = useCallback((type, key) => {
         if (!highlighted) return COLORS.normal;
@@ -657,17 +892,11 @@ const StructureView = ({isOpen, onClose, vm}) => {
                     <span>Structure View</span>
                     {structure && (
                         <span className={styles.headerStats}>
-                            {`${structure.sprites.length} sprites · ${structure.events.length} events · ${structure.broadcasts.length} broadcasts · ${structure.globals.length} globals`}
+                            {`${structure.sprites.length} sprites · ${structure.events.length} events · ${structure.broadcasts.length} broadcasts · ${structure.globals.length} variables`}
                         </span>
                     )}
                 </div>
                 <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-                    <button
-                        className={styles.refreshButton}
-                        onClick={handleRefresh}
-                    >
-                        Refresh
-                    </button>
                     <button
                         className={styles.closeButton}
                         onClick={onClose}
@@ -695,9 +924,45 @@ const StructureView = ({isOpen, onClose, vm}) => {
                             <div>No sprites found in project</div>
                         </div>
                     ) : (
+                        <React.Fragment>
+                        <div className={styles.zoomControls}>
+                            <button
+                                className={styles.zoomButton}
+                                onClick={handleZoomIn}
+                                title="Zoom in"
+                            >
+                                +
+                            </button>
+                            <button
+                                className={classNames(
+                                    styles.zoomButton,
+                                    styles.zoomLabel
+                                )}
+                                onClick={handleZoomReset}
+                                title="Reset zoom"
+                            >
+                                {`${Math.round(zoom * 100)}%`}
+                            </button>
+                            <button
+                                className={styles.zoomButton}
+                                onClick={handleZoomOut}
+                                title="Zoom out"
+                            >
+                                −
+                            </button>
+                        </div>
                         <svg
+                            ref={svgRef}
                             className={styles.svgCanvas}
-                            viewBox={`${layout.viewBox.x} ${layout.viewBox.y} ${layout.viewBox.width} ${layout.viewBox.height}`}
+                            viewBox={(() => {
+                                const vbW = layout.viewBox.width / zoom;
+                                const vbH = layout.viewBox.height / zoom;
+                                const vbX = layout.viewBox.x +
+                                    (layout.viewBox.width - vbW) / 2;
+                                const vbY = layout.viewBox.y +
+                                    (layout.viewBox.height - vbH) / 2;
+                                return `${vbX} ${vbY} ${vbW} ${vbH}`;
+                            })()}
                             preserveAspectRatio="xMidYMid meet"
                             onClick={handleBackgroundClick}
                         >
@@ -714,7 +979,7 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                     x={12}
                                     y={layout.zones.sharedStateY - 8}
                                 >
-                                    SHARED STATE
+                                    VARIABLES
                                 </text>
                             )}
 
@@ -744,7 +1009,7 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                         s => s.name === spriteName
                                     );
                                     if (!sprite) return null;
-                                    const sPos = layout.spritePositions[sprite.id];
+                                    const sPos = getSpritePos(sprite.id);
                                     if (!sPos) return null;
                                     const spriteOpacity = getOpacity('sprites', spriteName);
                                     const arrowOpacity = Math.min(eventOpacity, spriteOpacity);
@@ -775,7 +1040,7 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                         s => s.name === sender.sprite
                                     );
                                     if (!senderSprite) return null;
-                                    const sPos = layout.spritePositions[senderSprite.id];
+                                    const sPos = getSpritePos(senderSprite.id);
                                     if (!sPos) return null;
 
                                     return bc.receivers.map((receiver, rIdx) => {
@@ -783,7 +1048,7 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                             s => s.name === receiver
                                         );
                                         if (!recvSprite) return null;
-                                        const rPos = layout.spritePositions[recvSprite.id];
+                                        const rPos = getSpritePos(recvSprite.id);
                                         if (!rPos) return null;
 
                                         // Self-loop
@@ -852,7 +1117,7 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                                 s => s.name === writerName
                                             );
                                             if (!sprite) return null;
-                                            const sPos = layout.spritePositions[sprite.id];
+                                            const sPos = getSpritePos(sprite.id);
                                             if (!sPos) return null;
                                             return (
                                                 <CurvedArrow
@@ -873,7 +1138,7 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                                 s => s.name === readerName
                                             );
                                             if (!sprite) return null;
-                                            const sPos = layout.spritePositions[sprite.id];
+                                            const sPos = getSpritePos(sprite.id);
                                             if (!sPos) return null;
                                             return (
                                                 <CurvedArrow
@@ -902,8 +1167,8 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                     s => s.name === clone.target
                                 );
                                 if (!creatorSprite || !targetSprite) return null;
-                                const cPos = layout.spritePositions[creatorSprite.id];
-                                const tPos = layout.spritePositions[targetSprite.id];
+                                const cPos = getSpritePos(creatorSprite.id);
+                                const tPos = getSpritePos(targetSprite.id);
                                 if (!cPos || !tPos) return null;
                                 const cOpacity = Math.min(
                                     getOpacity('sprites', clone.creator),
@@ -939,8 +1204,8 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                     s => s.name === sense.target
                                 );
                                 if (!sensorSprite || !targetSprite) return null;
-                                const sPos = layout.spritePositions[sensorSprite.id];
-                                const tPos = layout.spritePositions[targetSprite.id];
+                                const sPos = getSpritePos(sensorSprite.id);
+                                const tPos = getSpritePos(targetSprite.id);
                                 if (!sPos || !tPos) return null;
                                 const sOpacity = Math.min(
                                     getOpacity('sprites', sense.sensor),
@@ -985,25 +1250,36 @@ const StructureView = ({isOpen, onClose, vm}) => {
 
                             {/* Sprite nodes */}
                             {structure.sprites.map(sprite => {
-                                const pos = layout.spritePositions[sprite.id];
+                                const pos = getSpritePos(sprite.id);
                                 if (!pos) return null;
                                 return (
                                     <SpriteNode
                                         key={sprite.id}
                                         sprite={sprite}
                                         pos={pos}
+                                        thumbnailUrl={thumbnails[sprite.id]}
                                         opacity={getOpacity('sprites', sprite.name)}
                                         isSelected={
                                             selectedSprite &&
                                             selectedSprite.name === sprite.name
+                                        }
+                                        isDragging={
+                                            draggingSpriteId === sprite.id
                                         }
                                         onMouseEnter={() => setHoverTarget({
                                             type: 'sprite',
                                             data: sprite
                                         })}
                                         onMouseLeave={() => setHoverTarget(null)}
+                                        onDragStart={e => handleSpriteDragStart(
+                                            e, sprite.id
+                                        )}
                                         onClick={e => {
                                             e.stopPropagation();
+                                            if (dragRef.current &&
+                                                dragRef.current.hasMoved) {
+                                                return;
+                                            }
                                             setSelectedSprite(
                                                 selectedSprite &&
                                                 selectedSprite.name === sprite.name ?
@@ -1033,6 +1309,7 @@ const StructureView = ({isOpen, onClose, vm}) => {
                                 );
                             })}
                         </svg>
+                        </React.Fragment>
                     )}
                 </div>
 

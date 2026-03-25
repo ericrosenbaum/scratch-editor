@@ -44,9 +44,34 @@ function computeLayout (structure, options = {}) {
         (globalCount * (GLOBAL_BUBBLE_WIDTH + 16)) + PADDING * 2
     );
 
-    const spriteZoneCenter = SPRITE_ZONE_Y_START + SPRITE_NODE_HEIGHT / 2;
-    const sharedStateY = spriteZoneCenter + SHARED_STATE_ZONE_Y_OFFSET;
-    const contentHeight = Math.max(MIN_VIEWBOX_HEIGHT, sharedStateY + 80);
+    // --- Layout events across the top ---
+    const eventPositions = layoutHorizontalRow(
+        events, contentWidth, EVENT_ZONE_Y, EVENT_BUBBLE_WIDTH, 20
+    );
+
+    // --- Layout sprites in the middle zone ---
+    const rawSpritePositions = layoutSprites(
+        sprites, broadcasts, structure.globals, contentWidth, SPRITE_ZONE_Y_START
+    );
+
+    // Find the bottom edge of all sprites to place variables below
+    let maxSpriteBottom = SPRITE_ZONE_Y_START + SPRITE_NODE_HEIGHT;
+    for (const pos of rawSpritePositions) {
+        if (pos) {
+            maxSpriteBottom = Math.max(maxSpriteBottom, pos.y + SPRITE_NODE_HEIGHT);
+        }
+    }
+
+    // --- Layout variables across the bottom, always below sprites ---
+    const sharedStateY = maxSpriteBottom + 60;
+    const globalPositions = layoutHorizontalRow(
+        globals, contentWidth, sharedStateY, GLOBAL_BUBBLE_WIDTH, 16
+    );
+
+    const contentHeight = Math.max(
+        MIN_VIEWBOX_HEIGHT,
+        globalCount > 0 ? sharedStateY + GLOBAL_BUBBLE_HEIGHT + 40 : maxSpriteBottom + 40
+    );
 
     const viewBox = {
         x: 0,
@@ -55,25 +80,10 @@ function computeLayout (structure, options = {}) {
         height: contentHeight
     };
 
-    // --- Layout events across the top ---
-    const eventPositions = layoutHorizontalRow(
-        events, contentWidth, EVENT_ZONE_Y, EVENT_BUBBLE_WIDTH, 20
-    );
-
-    // --- Layout sprites in the middle zone ---
-    const spritePositions = layoutSprites(
-        sprites, broadcasts, structure.globals, contentWidth, SPRITE_ZONE_Y_START
-    );
-
-    // --- Layout shared state across the bottom ---
-    const globalPositions = layoutHorizontalRow(
-        globals, contentWidth, sharedStateY, GLOBAL_BUBBLE_WIDTH, 16
-    );
-
     return {
         viewBox,
         eventPositions: mapPositions(events, eventPositions, EVENT_BUBBLE_WIDTH, EVENT_BUBBLE_HEIGHT),
-        spritePositions: mapPositions(sprites, spritePositions, SPRITE_NODE_WIDTH, SPRITE_NODE_HEIGHT),
+        spritePositions: mapPositions(sprites, rawSpritePositions, SPRITE_NODE_WIDTH, SPRITE_NODE_HEIGHT),
         globalPositions: mapPositions(globals, globalPositions, GLOBAL_BUBBLE_WIDTH, GLOBAL_BUBBLE_HEIGHT),
         zones: {
             eventY: EVENT_ZONE_Y,

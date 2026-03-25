@@ -198,6 +198,46 @@
     background: rgba(255, 255, 255, 0.3);
 }
 
+.zoom-controls {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.zoom-button {
+    width: 32px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s;
+    padding: 0;
+    line-height: 1;
+}
+
+.zoom-button:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.zoom-label {
+    font-size: 9px;
+    font-weight: 500;
+}
+
 .empty-state {
     display: flex;
     flex-direction: column;
