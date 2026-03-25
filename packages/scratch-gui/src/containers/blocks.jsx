@@ -188,6 +188,9 @@ class Blocks extends React.Component {
                 this.handleCategorySelected('faceSensing');
             });
         });
+
+        this._pendingExtensionScroll = 'speech2text';
+        this.props.vm.extensionManager.loadExtensionURL('speech2text');
     }
     shouldComponentUpdate (nextProps, nextState) {
         return (
@@ -312,6 +315,14 @@ class Blocks extends React.Component {
         });
         this.workspace.getToolbox().forceRerender();
         this._renderedToolboxXML = this.props.toolboxXML;
+
+        if (this._pendingExtensionScroll) {
+            const categoryId = this._pendingExtensionScroll;
+            if (this.workspace.getToolbox().getToolboxItemById(categoryId)) {
+                this._pendingExtensionScroll = null;
+                this.handleCategorySelected(categoryId);
+            }
+        }
 
         const queue = this.toolboxUpdateQueue;
         this.toolboxUpdateQueue = [];
