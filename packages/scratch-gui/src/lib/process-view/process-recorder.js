@@ -381,6 +381,10 @@ class ProcessRecorder {
 
         const prev = this._prevTargetState;
 
+        // Update state synchronously before any async work to prevent
+        // duplicate events when targetsUpdate fires multiple times rapidly.
+        this._prevTargetState = newState;
+
         // Detect sprite additions
         for (const id of Object.keys(newState)) {
             if (!prev[id] && !newState[id].isStage) {
@@ -486,7 +490,6 @@ class ProcessRecorder {
             }
         }
 
-        this._prevTargetState = newState;
     }
 
     // ---- Block change debouncing ----
