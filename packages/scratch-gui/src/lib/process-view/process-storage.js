@@ -219,6 +219,18 @@ class ProcessStorage {
         return totalRecords; // Returns count; true byte estimation requires reading all data
     }
 
+    async clearAll () {
+        const db = await this._getDB();
+        for (const storeName of ['sessions', 'events', 'chunks']) {
+            const tx = db.transaction(storeName, 'readwrite');
+            tx.objectStore(storeName).clear();
+            await new Promise((resolve, reject) => {
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+    }
+
     close () {
         if (this._db) {
             this._db.close();

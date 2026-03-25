@@ -16,7 +16,8 @@ import {
     activateTab,
     BLOCKS_TAB_INDEX,
     COSTUMES_TAB_INDEX,
-    SOUNDS_TAB_INDEX
+    SOUNDS_TAB_INDEX,
+    PROCESS_TAB_INDEX
 } from '../reducers/editor-tab';
 
 import {
@@ -28,7 +29,6 @@ import {
 } from '../reducers/modals';
 
 import {setPlatform} from '../reducers/platform';
-import {toggleProcessView} from '../reducers/process-view';
 
 import FontLoaderHOC from '../lib/font-loader-hoc.jsx';
 import LocalizationHOC from '../lib/localization-hoc.jsx';
@@ -186,7 +186,7 @@ const mapStateToProps = (state, ownProps) => {
         ),
         telemetryModalVisible: state.scratchGui.modals.telemetryModal,
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
-        processViewVisible: state.scratchGui.processView.visible,
+        processTabVisible: state.scratchGui.editorTab.activeTabIndex === PROCESS_TAB_INDEX,
         vm: state.scratchGui.vm
     };
 };
@@ -200,8 +200,7 @@ const mapDispatchToProps = dispatch => ({
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
     onRequestCloseDebugModal: () => dispatch(closeDebugModal()),
-    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal()),
-    onToggleProcessView: () => dispatch(toggleProcessView())
+    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal())
 });
 
 const ConnectedGUI = injectIntl(connect(

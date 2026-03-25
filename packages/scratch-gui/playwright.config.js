@@ -23,11 +23,12 @@ module.exports = defineConfig({
             use: {
                 browserName: 'chromium',
                 launchOptions: {
-                    executablePath: '/root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome',
                     args: [
-                        '--disable-gpu',
                         '--no-sandbox',
-                        '--disable-web-security'
+                        '--disable-web-security',
+                        '--use-gl=angle',
+                        '--use-angle=swiftshader',
+                        '--enable-webgl'
                     ]
                 }
             }

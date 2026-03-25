@@ -5,7 +5,6 @@ import {connect} from 'react-redux';
 
 import ProcessViewComponent from '../components/process-view/process-view.jsx';
 import {
-    toggleProcessView,
     toggleSession,
     toggleChunk,
     setFilter,
@@ -18,12 +17,13 @@ class ProcessView extends React.Component {
     constructor (props) {
         super(props);
         bindAll(this, [
-            'handleClose',
             'handleToggleSession',
             'handleToggleChunk',
             'handleSetFilter',
             'handleExpandAll',
             'handleCollapseAll',
+            'handleClearHistory',
+            'handleDeleteSession',
             'loadData'
         ]);
 
@@ -37,15 +37,7 @@ class ProcessView extends React.Component {
     }
 
     componentDidMount () {
-        if (this.props.visible) {
-            this.loadData();
-        }
-    }
-
-    componentDidUpdate (prevProps) {
-        if (this.props.visible && !prevProps.visible) {
-            this.loadData();
-        }
+        this.loadData();
     }
 
     componentWillUnmount () {
@@ -96,15 +88,16 @@ class ProcessView extends React.Component {
                 }
             }
 
-            this.setState({sessions, sessionChunksMap, chunkEventsMap});
+            // Hide sessions that have no chunks or events
+            const visibleSessions = sessions.filter(s =>
+                (sessionChunksMap[s.id] || []).length > 0
+            );
+
+            this.setState({sessions: visibleSessions, sessionChunksMap, chunkEventsMap});
         } catch (e) {
             // eslint-disable-next-line no-console
             console.warn('ProcessView: failed to load data', e);
         }
-    }
-
-    handleClose () {
-        this.props.onToggleProcessView();
     }
 
     handleToggleSession (sessionId) {
@@ -131,34 +124,58 @@ class ProcessView extends React.Component {
         this.props.onCollapseAll();
     }
 
+    async handleClearHistory () {
+        // eslint-disable-next-line no-alert
+        if (!window.confirm('Clear all process history? This cannot be undone.')) return;
+        const {processStorage} = this.props;
+        if (!processStorage) return;
+        await processStorage.clearAll();
+        this.setState({sessions: [], sessionChunksMap: {}, chunkEventsMap: {}});
+    }
+
+    async handleDeleteSession (sessionId) {
+        const {processStorage} = this.props;
+        if (!processStorage) return;
+        await processStorage.deleteSession(sessionId);
+        this.setState(prevState => {
+            const sessions = prevState.sessions.filter(s => s.id !== sessionId);
+            const sessionChunksMap = Object.assign({}, prevState.sessionChunksMap);
+            const chunkEventsMap = Object.assign({}, prevState.chunkEventsMap);
+            const chunks = sessionChunksMap[sessionId] || [];
+            for (const chunk of chunks) {
+                delete chunkEventsMap[chunk.id];
+            }
+            delete sessionChunksMap[sessionId];
+            return {sessions, sessionChunksMap, chunkEventsMap};
+        });
+    }
+
     render () {
         return (
             <ProcessViewComponent
-                visible={this.props.visible}
                 sessions={this.state.sessions}
                 sessionChunksMap={this.state.sessionChunksMap}
                 chunkEventsMap={this.state.chunkEventsMap}
                 expandedSessions={this.props.expandedSessions}
                 expandedChunks={this.props.expandedChunks}
                 filters={this.props.filters}
-                onClose={this.handleClose}
                 onToggleSession={this.handleToggleSession}
                 onToggleChunk={this.handleToggleChunk}
                 onSetFilter={this.handleSetFilter}
                 onExpandAll={this.handleExpandAll}
                 onCollapseAll={this.handleCollapseAll}
+                onClearHistory={this.handleClearHistory}
+                onDeleteSession={this.handleDeleteSession}
             />
         );
     }
 }
 
 ProcessView.propTypes = {
-    visible: PropTypes.bool.isRequired,
     expandedSessions: PropTypes.object.isRequired,
     expandedChunks: PropTypes.object.isRequired,
     filters: PropTypes.object.isRequired,
     processStorage: PropTypes.object,
-    onToggleProcessView: PropTypes.func.isRequired,
     onToggleSession: PropTypes.func.isRequired,
     onToggleChunk: PropTypes.func.isRequired,
     onSetFilter: PropTypes.func.isRequired,
@@ -167,14 +184,12 @@ ProcessView.propTypes = {
 };
 
 const mapStateToProps = state => ({
-    visible: state.scratchGui.processView.visible,
     expandedSessions: state.scratchGui.processView.expandedSessions,
     expandedChunks: state.scratchGui.processView.expandedChunks,
     filters: state.scratchGui.processView.filters
 });
 
 const mapDispatchToProps = dispatch => ({
-    onToggleProcessView: () => dispatch(toggleProcessView()),
     onToggleSession: sessionId => dispatch(toggleSession(sessionId)),
     onToggleChunk: chunkId => dispatch(toggleChunk(chunkId)),
     onSetFilter: (name, value) => dispatch(setFilter(name, value)),

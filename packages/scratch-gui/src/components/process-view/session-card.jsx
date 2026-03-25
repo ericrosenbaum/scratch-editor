@@ -26,7 +26,7 @@ const formatDuration = (startTime, endTime) => {
 
 const SessionCard = ({
     session, chunks, chunkEventsMap, expanded,
-    expandedChunks, onToggle, onToggleChunk
+    expandedChunks, onToggle, onToggleChunk, onDelete
 }) => {
     const thumbnail = session.stageSnapshotEnd || session.stageSnapshotStart;
     const label = session.aiLabel || session.heuristicLabel || 'Editing session';
@@ -69,6 +69,16 @@ const SessionCard = ({
                         </span>
                     </div>
                 </div>
+                <button
+                    className={styles['session-delete-button']}
+                    onClick={e => {
+                        e.stopPropagation();
+                        onDelete();
+                    }}
+                    title="Delete session"
+                >
+                    {'\uD83D\uDDD1'}
+                </button>
             </div>
             {expanded && (
                 <div className={styles['session-body']}>
@@ -107,7 +117,8 @@ SessionCard.propTypes = {
     expanded: PropTypes.bool.isRequired,
     expandedChunks: PropTypes.object.isRequired,
     onToggle: PropTypes.func.isRequired,
-    onToggleChunk: PropTypes.func.isRequired
+    onToggleChunk: PropTypes.func.isRequired,
+    onDelete: PropTypes.func.isRequired
 };
 
 export default SessionCard;

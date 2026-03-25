@@ -32,7 +32,6 @@ import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
 import ProcessView from '../../containers/process-view.jsx';
-import processViewStyles from '../process-view/process-view.css';
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
 import {resolveStageSize} from '../../lib/screen-utils';
@@ -191,6 +190,7 @@ const GUIComponent = props => {
         onUpdateProjectThumbnail,
         showComingSoon,
         showNewFeatureCallouts,
+        processTabVisible,
         soundsTabVisible,
         stageSizeMode,
         targetIsStage,
@@ -462,6 +462,18 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
+                                    <Tab
+                                        className={tabClassNames.tab}
+                                        role="tab"
+                                        tabIndex="0"
+                                    >
+                                        {'\u231A'}
+                                        <FormattedMessage
+                                            defaultMessage="Process"
+                                            description="Button to get to the process view panel"
+                                            id="gui.gui.processTab"
+                                        />
+                                    </Tab>
                                 </TabList>
                             </Box>
                             <TabPanel
@@ -525,6 +537,14 @@ const GUIComponent = props => {
                                         vm={vm}
                                     /> : null}
                             </TabPanel>
+                            <TabPanel
+                                className={tabClassNames.tabPanel}
+                                role="tabpanel"
+                            >
+                                {processTabVisible ? <ProcessView
+                                    processStorage={props.processStorage}
+                                /> : null}
+                            </TabPanel>
                         </Tabs>
                         {backpackVisible ? (
                             <Backpack
@@ -566,18 +586,6 @@ const GUIComponent = props => {
                     </Box>
                 </Box>
                 <DragLayer />
-                <ProcessView
-                    processStorage={props.processStorage}
-                />
-                <button
-                    className={`${processViewStyles['toggle-button']} ${
-                        props.processViewVisible ? processViewStyles['toggle-button-active'] : ''
-                    }`}
-                    onClick={props.onToggleProcessView}
-                    title="Process View"
-                >
-                    {'\u231A'}
-                </button>
             </Box>
         );
     }}</MediaQuery>);
@@ -652,11 +660,10 @@ GUIComponent.propTypes = {
     onTelemetryModalOptIn: PropTypes.func,
     onTelemetryModalOptOut: PropTypes.func,
     onToggleLoginOpen: PropTypes.func,
-    onToggleProcessView: PropTypes.func,
+    processTabVisible: PropTypes.bool,
     onUpdateProjectThumbnail: PropTypes.func,
     platform: PropTypes.oneOf(Object.keys(PLATFORM)),
     processStorage: PropTypes.object,
-    processViewVisible: PropTypes.bool,
     renderLogin: PropTypes.func,
     setTheme: PropTypes.func.isRequired,
     showComingSoon: PropTypes.bool,

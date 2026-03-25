@@ -1,5 +1,3 @@
-const TOGGLE_PROCESS_VIEW = 'scratch-gui/process-view/TOGGLE_PROCESS_VIEW';
-const SET_PROCESS_VIEW_VISIBLE = 'scratch-gui/process-view/SET_PROCESS_VIEW_VISIBLE';
 const TOGGLE_SESSION = 'scratch-gui/process-view/TOGGLE_SESSION';
 const TOGGLE_CHUNK = 'scratch-gui/process-view/TOGGLE_CHUNK';
 const SET_FILTER = 'scratch-gui/process-view/SET_FILTER';
@@ -7,7 +5,6 @@ const EXPAND_ALL = 'scratch-gui/process-view/EXPAND_ALL';
 const COLLAPSE_ALL = 'scratch-gui/process-view/COLLAPSE_ALL';
 
 const processViewInitialState = {
-    visible: false,
     expandedSessions: {},
     expandedChunks: {},
     filters: {
@@ -24,10 +21,6 @@ const reducer = function (state, action) {
     if (typeof state === 'undefined') state = processViewInitialState;
 
     switch (action.type) {
-    case TOGGLE_PROCESS_VIEW:
-        return Object.assign({}, state, {visible: !state.visible});
-    case SET_PROCESS_VIEW_VISIBLE:
-        return Object.assign({}, state, {visible: action.visible});
     case TOGGLE_SESSION: {
         const expanded = Object.assign({}, state.expandedSessions);
         expanded[action.sessionId] = !expanded[action.sessionId];
@@ -65,8 +58,6 @@ const reducer = function (state, action) {
     }
 };
 
-const toggleProcessView = () => ({type: TOGGLE_PROCESS_VIEW});
-const setProcessViewVisible = visible => ({type: SET_PROCESS_VIEW_VISIBLE, visible});
 const toggleSession = sessionId => ({type: TOGGLE_SESSION, sessionId});
 const toggleChunk = chunkId => ({type: TOGGLE_CHUNK, chunkId});
 const setFilter = (filterName, value) => ({type: SET_FILTER, filterName, value});
@@ -76,8 +67,6 @@ const collapseAll = () => ({type: COLLAPSE_ALL});
 export {
     reducer as default,
     processViewInitialState,
-    toggleProcessView,
-    setProcessViewVisible,
     toggleSession,
     toggleChunk,
     setFilter,

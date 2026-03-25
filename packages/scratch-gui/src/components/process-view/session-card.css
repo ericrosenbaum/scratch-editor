@@ -88,6 +88,29 @@
     transform: rotate(90deg);
 }
 
+.session-delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0;
+    filter: grayscale(1);
+    transition: opacity 0.15s;
+}
+
+.session-header:hover .session-delete-button {
+    opacity: 0.5;
+}
+
+.session-delete-button:hover {
+    opacity: 1 !important;
+    filter: none;
+}
+
 .session-body {
     padding: 0 12px 12px;
 }

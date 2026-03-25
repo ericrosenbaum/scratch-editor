@@ -14,38 +14,51 @@ const FILTER_LABELS = {
 };
 
 const ProcessViewComponent = ({
-    visible, sessions, sessionChunksMap, chunkEventsMap,
+    sessions, sessionChunksMap, chunkEventsMap,
     expandedSessions, expandedChunks, filters,
-    onClose, onToggleSession, onToggleChunk,
-    onSetFilter, onExpandAll, onCollapseAll
+    onToggleSession, onToggleChunk,
+    onSetFilter, onExpandAll, onCollapseAll,
+    onClearHistory, onDeleteSession
 }) => {
-    if (!visible) return null;
-
     const totalSessions = sessions.length;
     const totalChunks = Object.values(sessionChunksMap)
         .reduce((sum, chunks) => sum + chunks.length, 0);
 
     return (
-        <div className={styles['process-view-overlay']}>
+        <div className={styles['process-view-panel']}>
             <div className={styles.header}>
-                <div>
-                    <div className={styles['header-title']}>Process View</div>
-                    <div className={styles['header-stats']}>
-                        {totalSessions} session{totalSessions !== 1 ? 's' : ''}
-                        {' \u00B7 '}
-                        {totalChunks} chunk{totalChunks !== 1 ? 's' : ''}
-                    </div>
+                <div className={styles['header-stats']}>
+                    {totalSessions} session{totalSessions !== 1 ? 's' : ''}
+                    {' \u00B7 '}
+                    {totalChunks} chunk{totalChunks !== 1 ? 's' : ''}
                 </div>
                 <button
-                    className={styles['close-button']}
-                    onClick={onClose}
-                    title="Close"
+                    className={styles['header-trash-button']}
+                    onClick={onClearHistory}
+                    title="Clear all history"
                 >
-                    {'\u2715'}
+                    {'\uD83D\uDDD1'}
                 </button>
             </div>
 
             <div className={styles['filter-bar']}>
+                {(() => {
+                    const allOn = Object.values(filters).every(Boolean);
+                    return (
+                        <button
+                            className={`${styles['filter-pill']} ${
+                                allOn ? `${styles['filter-pill-active']} ${styles['filter-pill-all']}` : ''
+                            }`}
+                            onClick={() => {
+                                const keys = Object.keys(FILTER_LABELS);
+                                const newValue = !allOn;
+                                keys.forEach(k => onSetFilter(k, newValue));
+                            }}
+                        >
+                            All
+                        </button>
+                    );
+                })()}
                 {Object.entries(FILTER_LABELS).map(([key, label]) => {
                     const activeClass = filters[key] ?
                         `${styles['filter-pill-active']} ${styles[`filter-pill-${key}`]}` : '';
@@ -98,6 +111,7 @@ const ProcessViewComponent = ({
                                 expandedChunks={expandedChunks}
                                 onToggle={() => onToggleSession(session.id)}
                                 onToggleChunk={onToggleChunk}
+                                onDelete={() => onDeleteSession(session.id)}
                             />
                         );
                     })
@@ -108,19 +122,19 @@ const ProcessViewComponent = ({
 };
 
 ProcessViewComponent.propTypes = {
-    visible: PropTypes.bool.isRequired,
     sessions: PropTypes.arrayOf(PropTypes.object).isRequired,
     sessionChunksMap: PropTypes.object.isRequired,
     chunkEventsMap: PropTypes.object.isRequired,
     expandedSessions: PropTypes.object.isRequired,
     expandedChunks: PropTypes.object.isRequired,
     filters: PropTypes.object.isRequired,
-    onClose: PropTypes.func.isRequired,
     onToggleSession: PropTypes.func.isRequired,
     onToggleChunk: PropTypes.func.isRequired,
     onSetFilter: PropTypes.func.isRequired,
     onExpandAll: PropTypes.func.isRequired,
-    onCollapseAll: PropTypes.func.isRequired
+    onCollapseAll: PropTypes.func.isRequired,
+    onClearHistory: PropTypes.func.isRequired,
+    onDeleteSession: PropTypes.func.isRequired
 };
 
 export default ProcessViewComponent;
