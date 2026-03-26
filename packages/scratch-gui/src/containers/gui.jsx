@@ -27,6 +27,8 @@ import {
     closeDebugModal
 } from '../reducers/modals';
 
+import {openAiSuggestions, closeAiSuggestions} from '../reducers/ai-code-suggestions';
+import {generateCodeSuggestion, addBlocksToWorkspace} from '../lib/ai-code-suggestions';
 import {setPlatform} from '../reducers/platform';
 
 import FontLoaderHOC from '../lib/font-loader-hoc.jsx';
@@ -182,6 +184,11 @@ const mapStateToProps = (state, ownProps) => {
             state.scratchGui.targets.stage &&
             state.scratchGui.targets.stage.id === state.scratchGui.targets.editingTarget
         ),
+        aiSuggestionsVisible: state.scratchGui.aiCodeSuggestions.isOpen,
+        aiSuggestionsStatus: state.scratchGui.aiCodeSuggestions.status,
+        aiSuggestionsPreviewText: state.scratchGui.aiCodeSuggestions.previewText,
+        aiSuggestionsError: state.scratchGui.aiCodeSuggestions.error,
+        aiSuggestionsBlocks: state.scratchGui.aiCodeSuggestions.generatedBlocks,
         telemetryModalVisible: state.scratchGui.modals.telemetryModal,
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
         vm: state.scratchGui.vm
@@ -197,7 +204,19 @@ const mapDispatchToProps = dispatch => ({
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
     onRequestCloseDebugModal: () => dispatch(closeDebugModal()),
-    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal())
+    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal()),
+    onOpenAiSuggestions: () => dispatch(openAiSuggestions()),
+    onCloseAiSuggestions: () => dispatch(closeAiSuggestions()),
+    onGenerateAiSuggestion: (vm, userPrompt) => {
+        if (vm) generateCodeSuggestion(vm, userPrompt, dispatch);
+    },
+    onAddAiSuggestion: (vm, blocks) => {
+        if (vm && blocks) {
+            addBlocksToWorkspace(vm, blocks).then(() => {
+                dispatch(closeAiSuggestions());
+            });
+        }
+    }
 });
 
 const ConnectedGUI = injectIntl(connect(

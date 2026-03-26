@@ -42,6 +42,8 @@ import styles from './gui.css';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
+import AiSuggestButton from '../ai-suggest-button/ai-suggest-button.jsx';
+import AiSuggestionsModal from '../ai-suggestions-modal/ai-suggestions-modal.jsx';
 import DebugModal from '../debug-modal/debug-modal.jsx';
 import {setPlatform} from '../../reducers/platform.js';
 import {setTheme} from '../../reducers/settings.js';
@@ -115,6 +117,15 @@ const GUIComponent = props => {
         accountMenuOptions,
         accountNavOpen,
         activeTabIndex,
+        aiSuggestionsVisible,
+        aiSuggestionsStatus,
+        aiSuggestionsPreviewText,
+        aiSuggestionsError,
+        aiSuggestionsBlocks,
+        onCloseAiSuggestions,
+        onOpenAiSuggestions,
+        onGenerateAiSuggestion: onGenerateAiSuggestionRaw,
+        onAddAiSuggestion: onAddAiSuggestionRaw,
         alertsVisible,
         authorId,
         authorThumbnailUrl,
@@ -242,6 +253,14 @@ const GUIComponent = props => {
         onRequestCloseDebugModal();
     }, [onDebugModalClose, onRequestCloseDebugModal]);
 
+    const onGenerateAiSuggestion = useCallback(userPrompt => {
+        onGenerateAiSuggestionRaw(vm, userPrompt);
+    }, [vm, onGenerateAiSuggestionRaw]);
+
+    const onAddAiSuggestion = useCallback(() => {
+        onAddAiSuggestionRaw(vm, aiSuggestionsBlocks);
+    }, [vm, aiSuggestionsBlocks, onAddAiSuggestionRaw]);
+
     if (isRendererSupported === null) {
         isRendererSupported = Renderer.isSupported();
     }
@@ -324,6 +343,18 @@ const GUIComponent = props => {
                     isOpen={debugModalVisible}
                     onClose={onCloseDebugModal}
                 />}
+                {aiSuggestionsVisible ? (
+                    <AiSuggestionsModal
+                        isOpen={aiSuggestionsVisible}
+                        status={aiSuggestionsStatus}
+                        previewText={aiSuggestionsPreviewText}
+                        error={aiSuggestionsError}
+                        onClose={onCloseAiSuggestions}
+                        onGenerate={onGenerateAiSuggestion}
+                        onAdd={onAddAiSuggestion}
+                        onRegenerate={onGenerateAiSuggestion}
+                    />
+                ) : null}
                 {backdropLibraryVisible ? (
                     <BackdropLibrary
                         vm={vm}
@@ -488,6 +519,9 @@ const GUIComponent = props => {
                                         username={username}
                                     />
                                 </Box>
+                                <AiSuggestButton
+                                    onClick={onOpenAiSuggestions}
+                                />
                                 <ExtensionsButton
                                     activeTabIndex={activeTabIndex}
                                     intl={intl}
@@ -577,6 +611,11 @@ GUIComponent.propTypes = {
     authorThumbnailUrl: PropTypes.string,
     authorUsername: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]), // can be false
     authorAvatarBadge: PropTypes.number,
+    aiSuggestionsVisible: PropTypes.bool,
+    aiSuggestionsStatus: PropTypes.string,
+    aiSuggestionsPreviewText: PropTypes.string,
+    aiSuggestionsError: PropTypes.string,
+    aiSuggestionsBlocks: PropTypes.arrayOf(PropTypes.object),
     backdropLibraryVisible: PropTypes.bool,
     backpackHost: PropTypes.string,
     backpackVisible: PropTypes.bool,
@@ -614,6 +653,10 @@ GUIComponent.propTypes = {
     logo: PropTypes.string,
     manuallySaveThumbnails: PropTypes.bool,
     menuBarHidden: PropTypes.bool,
+    onAddAiSuggestion: PropTypes.func,
+    onCloseAiSuggestions: PropTypes.func,
+    onGenerateAiSuggestion: PropTypes.func,
+    onOpenAiSuggestions: PropTypes.func,
     onActivateCostumesTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
     onActivateTab: PropTypes.func,

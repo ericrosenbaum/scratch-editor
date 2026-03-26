@@ -1,0 +1,49 @@
+@import "../../css/units.css";
+@import "../../css/colors.css";
+@import "../../css/z-index.css";
+
+.ai-suggest-button-container {
+    position: absolute;
+    bottom: calc(3.25rem + 2px); /* above the extension button (3.25rem + border) */
+    left: 0;
+    width: 3.75rem;
+    height: 3.25rem;
+    z-index: $z-index-extension-button;
+    background: linear-gradient(135deg, #855cd6, #4c97ff);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-sizing: content-box;
+}
+
+$fade-out-distance: 10px;
+
+.ai-suggest-button-container:before {
+    content: "";
+    position: absolute;
+    top: calc(calc(-1 * $fade-out-distance) - 1px);
+    left: -1px;
+    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
+    height: $fade-out-distance;
+    width: calc(100% + 0.5px);
+}
+
+.ai-suggest-button {
+    background: none;
+    border: none;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.15s;
+}
+
+.ai-suggest-button:hover {
+    opacity: 0.85;
+}
+
+.ai-suggest-button-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+}
