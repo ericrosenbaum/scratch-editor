@@ -12,6 +12,8 @@ const getEventDescription = event => {
     const d = event.data || {};
     switch (event.type) {
     case 'blocks_changed': {
+        // Use rich summary if available, else fall back to count
+        if (d.summary) return d.summary;
         const count = Math.abs(d.blockCount || 0);
         if (d.action === 'added') return `Added ${count} block${count !== 1 ? 's' : ''}`;
         if (d.action === 'deleted') return `Deleted ${count} block${count !== 1 ? 's' : ''}`;
@@ -54,6 +56,23 @@ const getEventDescription = event => {
         return '\u23F9 Clicked stop';
     case 'ui_stack_click':
         return '\u25B6 Clicked a block stack';
+    case 'variable_created': {
+        const varLabel = d.varType === 'list' ? 'list' : 'variable';
+        const scope = d.isCloud ? ' (cloud)' : d.isLocal ? ' (local)' : '';
+        return `Created ${varLabel} "${d.varName}"${scope}`;
+    }
+    case 'variable_renamed':
+        return `Renamed variable "${d.oldName}" to "${d.newName}"`;
+    case 'variable_deleted':
+        return `Deleted ${d.varType === 'list' ? 'list' : 'variable'} "${d.varName}"`;
+    case 'extension_added':
+        return `Added extension "${d.extensionName || d.extensionId}"`;
+    case 'tab_switched':
+        return `Switched to ${d.toTab} tab`;
+    case 'comment_added':
+        return 'Added a comment';
+    case 'comment_deleted':
+        return 'Deleted a comment';
     default:
         return event.type;
     }

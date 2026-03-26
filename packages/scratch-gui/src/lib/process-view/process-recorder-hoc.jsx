@@ -6,6 +6,8 @@ import VM from '@scratch/scratch-vm';
 
 import ProcessRecorder from './process-recorder';
 import ProcessStorage from './process-storage';
+import {installSimulator} from './process-simulator';
+import {installDataChecker} from './process-data-checker';
 
 /**
  * Higher Order Component that initializes the ProcessRecorder
@@ -22,10 +24,15 @@ const processRecorderHOC = function (WrappedComponent) {
 
             this.storage = new ProcessStorage('local');
             this.recorder = new ProcessRecorder(props.vm, this.storage);
+
+            // Attach recorder to VM so blocks.jsx can call setWorkspace
+            props.vm.processRecorder = this.recorder;
         }
 
         componentDidMount () {
             this.recorder.start();
+            installSimulator(this.props.vm, this.storage);
+            installDataChecker(this.storage);
         }
 
         componentDidUpdate (prevProps) {
@@ -37,6 +44,9 @@ const processRecorderHOC = function (WrappedComponent) {
         componentWillUnmount () {
             this.recorder.stop();
             this.storage.close();
+            delete this.props.vm.processRecorder;
+            delete window.__processSimulator;
+            delete window.__processDataChecker;
         }
 
         getProcessRecorder () {

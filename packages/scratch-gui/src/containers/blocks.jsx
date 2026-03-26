@@ -141,6 +141,12 @@ class Blocks extends React.Component {
         addFunctionListener(this.workspace, 'zoom', this.onWorkspaceMetricsChange);
 
         this.attachVM();
+
+        // Give process recorder access to the workspace for fine-grained event capture
+        if (this.props.vm.processRecorder) {
+            this.props.vm.processRecorder.setWorkspace(this.workspace);
+        }
+
         // Only update blocks/vm locale when visible to avoid sizing issues
         // If locale changes while not visible it will get handled in didUpdate
         if (this.props.isVisible) {

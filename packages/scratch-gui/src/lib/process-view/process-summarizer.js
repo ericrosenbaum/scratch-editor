@@ -7,6 +7,7 @@
  */
 
 import {generateId} from './snapshot-utils';
+import {getBlockName} from './block-summary';
 
 const CHUNK_GAP_MS = 30000; // 30s gap → chunk boundary
 const SPRITE_SWITCH_GAP_MS = 5000; // 5s gap + sprite change → boundary
@@ -83,6 +84,9 @@ const getEventCategory = type => {
     if (type.startsWith('costume_') || type.startsWith('backdrop_')) return 'costumes';
     if (type.startsWith('sound_')) return 'sounds';
     if (type.startsWith('sprite_')) return 'sprites';
+    if (type.startsWith('variable_') || type.startsWith('comment_')) return 'blocks';
+    if (type === 'extension_added') return 'blocks';
+    if (type === 'tab_switched') return 'other';
     if (type === 'execution_started' || type === 'execution_stopped' ||
         type === 'ui_green_flag' || type === 'ui_stop_button' || type === 'ui_stack_click') {
         return 'execution';
@@ -126,7 +130,8 @@ const classifyChunk = events => {
     const counts = {blocks: 0, costumes: 0, sounds: 0, execution: 0, sprites: 0};
 
     for (const e of events) {
-        if (e.type.startsWith('blocks_')) counts.blocks++;
+        if (e.type.startsWith('blocks_') || e.type.startsWith('variable_') ||
+            e.type.startsWith('comment_') || e.type === 'extension_added') counts.blocks++;
         if (e.type.startsWith('costume_') || e.type.startsWith('backdrop_')) counts.costumes++;
         if (e.type.startsWith('sound_')) counts.sounds++;
         if (e.type === 'execution_started' || e.type === 'execution_stopped') counts.execution++;
@@ -174,9 +179,18 @@ const generateLabel = (classification, events) => {
 
     switch (classification) {
     case 'coding': {
-        const netBlocks = events
-            .filter(e => e.type === 'blocks_changed')
+        // Collect opcodes from rich block events for a better label
+        const blockEvents = events.filter(e => e.type === 'blocks_changed');
+        const allOpcodes = blockEvents
+            .flatMap(e => (e.data.opcodes || []))
+            .filter((v, i, a) => a.indexOf(v) === i);
+        const netBlocks = blockEvents
             .reduce((n, e) => n + Math.abs(e.data.blockCount || 0), 0);
+
+        if (allOpcodes.length > 0 && allOpcodes.length <= 3) {
+            const names = allOpcodes.map(o => getBlockName(o));
+            return `Coded "${names.join('", "')}" on ${spriteStr}`;
+        }
         return `Added ${netBlocks} block${netBlocks !== 1 ? 's' : ''} to ${spriteStr}`;
     }
     case 'drawing': {
