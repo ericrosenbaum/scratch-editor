@@ -152,6 +152,9 @@ class Blocks extends React.Component {
                 this.handleCategorySelected('faceSensing');
             });
         });
+
+        this._pendingExtensionScroll = 'AIBlocks';
+        this.props.vm.extensionManager.loadExtensionURL('AIBlocks');
     }
     shouldComponentUpdate (nextProps, nextState) {
         return (
@@ -249,6 +252,14 @@ class Blocks extends React.Component {
             this.workspace.toolbox_.setFlyoutScrollPos(currentCategoryPos + offset);
         } else {
             this.workspace.toolbox_.setFlyoutScrollPos(currentCategoryPos);
+        }
+
+        if (this._pendingExtensionScroll) {
+            const categoryId = this._pendingExtensionScroll;
+            if (this.props.toolboxXML.indexOf(`id="${categoryId}"`) !== -1) {
+                this._pendingExtensionScroll = null;
+                this.handleCategorySelected(categoryId);
+            }
         }
 
         const queue = this.toolboxUpdateQueue;
