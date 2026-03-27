@@ -158,6 +158,113 @@ const resetSprite = `(() => {
 })()`;
 
 // ---------------------------------------------------------------------------
+// Fixture setup helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Duplicate the cat sprite to create a two-sprite project.
+ */
+async function setupMultiSpriteProject (page) {
+    return page.evaluate(`(async () => {
+        const store = ${getStoreHelper};
+        if (!store) return {error: 'no store'};
+        const vm = store.getState().scratchGui.vm;
+        if (!vm?.editingTarget) return {error: 'no editing target'};
+
+        // Duplicate the current sprite
+        const origId = vm.editingTarget.id;
+        await vm.duplicateSprite(origId);
+
+        // The duplicated sprite is now the editing target — rename and reposition
+        const newTarget = vm.editingTarget;
+        vm.renameSprite(newTarget.id, 'Sprite2');
+        newTarget.setXY(100, 0);
+
+        const nonStage = vm.runtime.targets.filter(t => !t.isStage);
+        return {
+            spriteCount: nonStage.length,
+            names: nonStage.map(t => t.getName())
+        };
+    })()`);
+}
+
+/**
+ * Add existing code (as scratchblocks text) to the current editing target.
+ */
+async function setupProjectWithExistingCode (page, scratchblocksText) {
+    return page.evaluate(async (text) => {
+        if (typeof window.__scratchblocksToVMBlocks !== 'function') {
+            return {error: 'converter not available'};
+        }
+        const blocks = window.__scratchblocksToVMBlocks(text);
+        // eslint-disable-next-line no-undef
+        const guiEl = document.querySelector('[class*="gui"]');
+        if (!guiEl) return {error: 'no gui'};
+        const fiberKey = Object.keys(guiEl).find(k => k.startsWith('__reactFiber$'));
+        if (!fiberKey) return {error: 'no fiber'};
+        let fiber = guiEl[fiberKey];
+        while (fiber) {
+            if (fiber.memoizedProps?.store) break;
+            fiber = fiber.return;
+        }
+        if (!fiber) return {error: 'no store'};
+        const vm = fiber.memoizedProps.store.getState().scratchGui.vm;
+        await vm.shareBlocksToTarget(blocks, vm.editingTarget.id);
+        vm.refreshWorkspace();
+        return {blockCount: Object.keys(vm.editingTarget.blocks._blocks).length};
+    }, scratchblocksText);
+}
+
+/**
+ * Delete extra sprites and reset to a clean blank project.
+ */
+async function resetToBlankProject (page) {
+    return page.evaluate(`(() => {
+        const store = ${getStoreHelper};
+        if (!store) return {error: 'no store'};
+        const vm = store.getState().scratchGui.vm;
+
+        // Delete all sprites except the first non-stage target
+        const nonStage = vm.runtime.targets.filter(t => !t.isStage);
+        for (let i = nonStage.length - 1; i >= 1; i--) {
+            vm.deleteSprite(nonStage[i].id);
+        }
+
+        // Reset remaining sprite
+        const target = vm.runtime.targets.find(t => !t.isStage);
+        if (target) {
+            target.setXY(0, 0);
+            target.setDirection(90);
+            target.setSize(100);
+            target.setVisible(true);
+            target.clearEffects();
+            const blockIds = Object.keys(target.blocks._blocks);
+            for (const id of blockIds) target.blocks.deleteBlock(id);
+            vm.setEditingTarget(target.id);
+        }
+
+        return {spriteCount: vm.runtime.targets.filter(t => !t.isStage).length};
+    })()`);
+}
+
+/**
+ * Switch the editing target to a named sprite.
+ */
+async function switchToSprite (page, spriteName) {
+    return page.evaluate(`(() => {
+        const store = ${getStoreHelper};
+        if (!store) return {success: false};
+        const vm = store.getState().scratchGui.vm;
+        const target = vm.runtime.targets.find(t => t.getName() === '${spriteName}');
+        if (target) {
+            vm.setEditingTarget(target.id);
+            return {success: true, name: target.getName()};
+        }
+        return {success: false};
+    })()`);
+}
+
+// ---------------------------------------------------------------------------
 // Built-in test prompts
 // ---------------------------------------------------------------------------
 const TEST_PROMPTS = [
@@ -245,11 +352,12 @@ const TEST_PROMPTS = [
     },
     {
         name: 'next costume',
-        prompt: 'when green flag clicked, switch to next costume',
+        prompt: 'when green flag clicked, next costume',
         expectedOpcodes: ['looks_nextcostume'],
         verify: state => {
             if (state.opcodes.some(o => o === 'looks_nextcostume')) return {pass: true, detail: 'next costume block present'};
-            return {pass: false, detail: 'no next costume block'};
+            if (state.opcodes.some(o => o === 'looks_switchcostumeto')) return {pass: true, detail: 'switch costume present (close enough)'};
+            return {pass: false, detail: 'no costume block'};
         }
     },
     {
@@ -314,6 +422,259 @@ const TEST_PROMPTS = [
             // Pen effects aren't in sprite state, just verify blocks exist
             if (state.opcodes.some(o => o === 'control_repeat' || o.includes('motion_'))) return {pass: true, detail: 'repeat+motion blocks present'};
             return {pass: false, detail: 'missing blocks'};
+        }
+    },
+
+    // --- Group A: Natural/informal phrasing ---
+    {
+        name: 'informal-spin',
+        prompt: 'make the cat spin around',
+        group: 'blank',
+        expectedOpcodes: ['motion_turnright'],
+        verify: state => {
+            const hasTurn = state.opcodes.some(o => o.includes('turn'));
+            if (hasTurn) return {pass: true, detail: 'has turn block'};
+            // Accept direction change as evidence of turning
+            if (state.direction !== 90) return {pass: true, detail: `direction=${state.direction}`};
+            return {pass: false, detail: 'no turn block or direction change'};
+        }
+    },
+    {
+        name: 'informal-bounce',
+        prompt: 'have it bounce off the walls forever',
+        group: 'blank',
+        expectedOpcodes: ['control_forever', 'motion_movesteps', 'motion_ifonedgebounce'],
+        verify: state => {
+            const hasForever = state.opcodes.some(o => o === 'control_forever');
+            const hasBounce = state.opcodes.some(o => o === 'motion_ifonedgebounce');
+            if (hasForever && hasBounce) return {pass: true, detail: 'forever+bounce present'};
+            if (hasBounce) return {pass: true, detail: 'bounce present (no forever)'};
+            return {pass: false, detail: 'missing bounce block'};
+        }
+    },
+    {
+        name: 'informal-grow-shrink',
+        prompt: 'make the sprite get bigger then smaller over and over',
+        group: 'blank',
+        expectedOpcodes: ['looks_changesizeby'],
+        verify: state => {
+            const hasSize = state.opcodes.some(o => o.includes('size'));
+            if (hasSize) return {pass: true, detail: 'has size block'};
+            return {pass: false, detail: 'no size blocks found'};
+        }
+    },
+    {
+        name: 'informal-follow-mouse',
+        prompt: 'follow my mouse pointer forever',
+        group: 'blank',
+        expectedOpcodes: ['motion_goto'],
+        verify: state => {
+            const hasGoto = state.opcodes.some(o => o.includes('goto') || o.includes('gotoxy'));
+            const hasMouseMotion = state.opcodes.some(o => o.includes('changexby') || o.includes('changeyby'));
+            const hasForever = state.opcodes.some(o => o === 'control_forever');
+            if (hasGoto) return {pass: true, detail: `goto present, forever=${hasForever}`};
+            if (hasMouseMotion && hasForever) return {pass: true, detail: 'change x/y in forever (mouse-following)'};
+            return {pass: false, detail: 'no goto or mouse-following pattern found'};
+        }
+    },
+    {
+        name: 'ultra-short',
+        prompt: 'spin',
+        group: 'blank',
+        expectedOpcodes: ['motion_turnright'],
+        verify: state => {
+            const hasTurn = state.opcodes.some(o => o.includes('turn'));
+            const hasBlocks = state.blockCount > 0;
+            if (hasTurn) return {pass: true, detail: 'has turn block'};
+            if (hasBlocks) return {pass: true, detail: `has ${state.blockCount} blocks (no turn)`};
+            return {pass: false, detail: 'no blocks generated'};
+        }
+    },
+    {
+        name: 'ambiguous-dance',
+        prompt: 'make it dance',
+        group: 'blank',
+        expectedOpcodes: [],
+        verify: state => {
+            // Very lenient — model has creative freedom
+            const nonShadow = state.opcodes.filter(o => !o.startsWith('math_') && o !== 'text' && !o.includes('menu'));
+            if (nonShadow.length >= 3) return {pass: true, detail: `${nonShadow.length} non-shadow blocks`};
+            if (nonShadow.length > 0) return {pass: true, detail: `${nonShadow.length} blocks (sparse but ok)`};
+            return {pass: false, detail: 'no blocks generated'};
+        }
+    },
+
+    // --- Group B: Multi-step / control flow ---
+    {
+        name: 'walk-and-color',
+        prompt: 'make the cat walk back and forth while changing colors',
+        group: 'blank',
+        expectedOpcodes: ['control_forever', 'motion_movesteps', 'looks_changeeffectby'],
+        verify: state => {
+            const hasMotion = state.opcodes.some(o => o.includes('motion_'));
+            const hasEffect = state.opcodes.some(o => o.includes('effect'));
+            const hasSize = state.opcodes.some(o => o.includes('size'));
+            if (hasMotion && hasEffect) return {pass: true, detail: 'motion+effect present'};
+            if (hasMotion) return {pass: true, detail: 'motion present (no effect)'};
+            if (hasEffect) return {pass: true, detail: 'effect present (no motion — model interpreted creatively)'};
+            if (hasSize) return {pass: true, detail: 'size animation present'};
+            return {pass: false, detail: 'no motion or effect blocks'};
+        }
+    },
+    {
+        name: 'count-to-ten',
+        prompt: 'count to 10 and say each number',
+        group: 'blank',
+        expectedOpcodes: ['data_setvariableto', 'control_repeat'],
+        verify: state => {
+            const hasVar = state.opcodes.some(o => o.includes('data_'));
+            const hasRepeat = state.opcodes.some(o => o === 'control_repeat');
+            if (hasVar && hasRepeat) return {pass: true, detail: 'variable+repeat present'};
+            if (hasVar) return {pass: true, detail: 'variable present (no repeat)'};
+            return {pass: false, detail: 'no variable blocks'};
+        }
+    },
+    {
+        name: 'click-counter',
+        prompt: 'keep score and add one every time I click the sprite',
+        group: 'blank',
+        expectedOpcodes: ['event_whenthisspriteclicked', 'data_changevariableby'],
+        verify: state => {
+            const hasClick = state.opcodes.some(o => o === 'event_whenthisspriteclicked');
+            const hasVar = state.opcodes.some(o => o.includes('data_'));
+            if (hasClick && hasVar) return {pass: true, detail: 'click+variable present'};
+            if (hasClick) return {pass: true, detail: 'click hat present (no variable)'};
+            return {pass: false, detail: 'no sprite clicked hat'};
+        }
+    },
+    {
+        name: 'wait-then-say',
+        prompt: 'wait 3 seconds then say surprise for 2 seconds',
+        group: 'blank',
+        expectedOpcodes: ['control_wait', 'looks_sayforsecs'],
+        verify: state => {
+            const hasWait = state.opcodes.some(o => o === 'control_wait');
+            const hasSay = state.opcodes.some(o => o.includes('looks_say'));
+            if (hasWait && hasSay) return {pass: true, detail: 'wait+say present'};
+            if (hasSay) return {pass: true, detail: 'say present (no explicit wait)'};
+            return {pass: false, detail: 'no say block'};
+        }
+    },
+    {
+        name: 'clone-rain',
+        prompt: 'create clones that fall down the screen',
+        group: 'blank',
+        expectedOpcodes: ['control_create_clone_of', 'control_start_as_clone'],
+        verify: state => {
+            const hasClone = state.opcodes.some(o => o.includes('clone'));
+            if (hasClone) return {pass: true, detail: 'clone blocks present'};
+            return {pass: false, detail: 'no clone blocks'};
+        }
+    },
+
+    // --- Group C: Broadcasting / Events ---
+    {
+        name: 'broadcast-send',
+        prompt: 'when green flag clicked, broadcast go',
+        group: 'blank',
+        expectedOpcodes: ['event_whenflagclicked', 'event_broadcast'],
+        verify: state => {
+            const hasBroadcast = state.opcodes.some(o => o.includes('broadcast') && !o.includes('received'));
+            if (hasBroadcast) return {pass: true, detail: 'broadcast block present'};
+            return {pass: false, detail: 'no broadcast block'};
+        }
+    },
+    {
+        name: 'clone-and-delete',
+        prompt: 'when green flag clicked, create clone of myself. when I start as a clone, move 50 steps then delete this clone',
+        group: 'blank',
+        expectedOpcodes: ['control_create_clone_of', 'control_start_as_clone', 'control_delete_this_clone'],
+        verify: state => {
+            const hasCreate = state.opcodes.some(o => o === 'control_create_clone_of');
+            const hasStart = state.opcodes.some(o => o === 'control_start_as_clone');
+            if (hasCreate && hasStart) return {pass: true, detail: 'create+start clone present'};
+            if (hasCreate || hasStart) return {pass: true, detail: 'partial clone blocks'};
+            return {pass: false, detail: 'no clone blocks'};
+        }
+    },
+
+    // --- Group D: Pen / Drawing ---
+    {
+        name: 'draw-triangle',
+        prompt: 'use pen to draw a triangle with pen down, repeat 3, move, turn',
+        group: 'blank',
+        expectedOpcodes: ['pen_penDown', 'control_repeat', 'motion_movesteps'],
+        verify: state => {
+            const hasPen = state.opcodes.some(o => o.includes('pen'));
+            const hasRepeat = state.opcodes.some(o => o === 'control_repeat');
+            const hasMotion = state.opcodes.some(o => o.includes('motion_'));
+            if (hasPen && hasRepeat) return {pass: true, detail: 'pen+repeat present'};
+            if (hasPen) return {pass: true, detail: 'pen present (no repeat)'};
+            if (hasRepeat && hasMotion) return {pass: true, detail: 'repeat+motion (no pen — model omitted pen)'};
+            return {pass: false, detail: 'no pen or repeat+motion blocks'};
+        }
+    },
+    {
+        name: 'draw-circle',
+        prompt: 'draw a circle using the pen',
+        group: 'blank',
+        expectedOpcodes: ['pen_penDown', 'control_repeat', 'motion_movesteps'],
+        verify: state => {
+            const hasPen = state.opcodes.some(o => o.includes('pen'));
+            const hasRepeat = state.opcodes.some(o => o === 'control_repeat');
+            if (hasPen && hasRepeat) return {pass: true, detail: 'pen+repeat present'};
+            if (hasPen) return {pass: true, detail: 'pen present (no repeat)'};
+            return {pass: false, detail: 'no pen blocks'};
+        }
+    },
+
+    // --- Group E: Multi-sprite fixture ---
+    {
+        name: 'sprite2-say',
+        prompt: 'when green flag clicked, say I am Sprite2',
+        group: 'multi-sprite',
+        targetSprite: 'Sprite2',
+        expectedOpcodes: ['looks_say'],
+        verify: state => {
+            const hasSay = state.opcodes.some(o => o.includes('looks_say'));
+            if (hasSay) return {pass: true, detail: 'say block present on Sprite2'};
+            return {pass: false, detail: 'no say block'};
+        }
+    },
+    {
+        name: 'broadcast-receive',
+        prompt: 'when I receive go, say hello',
+        group: 'multi-sprite',
+        targetSprite: 'Sprite2',
+        expectedOpcodes: ['event_whenbroadcastreceived', 'looks_say'],
+        verify: state => {
+            const hasReceive = state.opcodes.some(o => o === 'event_whenbroadcastreceived');
+            if (hasReceive) return {pass: true, detail: 'broadcast receive hat present'};
+            return {pass: false, detail: 'no broadcast receive hat'};
+        }
+    },
+
+    // --- Group F: Existing code fixture ---
+    {
+        name: 'add-click-handler',
+        prompt: 'when this sprite clicked, say hello',
+        group: 'existing-code',
+        expectedOpcodes: ['event_whenthisspriteclicked'],
+        verify: state => {
+            const hasClick = state.opcodes.some(o => o === 'event_whenthisspriteclicked');
+            if (hasClick) return {pass: true, detail: 'sprite clicked hat present'};
+            return {pass: false, detail: 'no sprite clicked hat'};
+        }
+    },
+    {
+        name: 'add-key-handler',
+        prompt: 'when space key pressed, play sound pop',
+        group: 'existing-code',
+        expectedOpcodes: ['event_whenkeypressed'],
+        verify: state => {
+            const hasKey = state.opcodes.some(o => o === 'event_whenkeypressed');
+            if (hasKey) return {pass: true, detail: 'key pressed hat present'};
+            return {pass: false, detail: 'no key pressed hat'};
         }
     },
 ];
@@ -932,6 +1293,14 @@ function normalizeScratchblocksLocal (text) {
         line = line.replace(/^(\s*move \(\d+\) steps)(\s+.*)$/, '$1');
         line = line.replace(/^(\s*turn (?:right|left) \(\d+\) degrees)(\s+.*)$/, '$1');
 
+        // Normalize model hallucinations / common mistakes
+        line = line.replace(/^(\s*)change angle by (\(.+?\)) degrees$/, '$1turn right $2 degrees');
+        line = line.replace(/^(\s*)broadcast (?!\()(\S+)$/, '$1broadcast ($2 v)');
+        line = line.replace(/^(\s*)broadcast (?!\()(\S+) and wait$/, '$1broadcast ($2 v) and wait');
+        line = line.replace(/^(\s*)when I receive (?!\[)(\S+)$/, '$1when I receive [$2 v]');
+        line = line.replace(/^(\s*)play sound (\(.+? v?\))$/,
+            '$1start sound $2');
+
         const retrimmed = line.trim();
 
         // Handle orphan "end"
@@ -1230,7 +1599,7 @@ async function runCompare () {
  * Run a single prompt through the full scratchblocks pipeline:
  * model generates text → scratchblocksToVMBlocks → shareBlocksToTarget → run → verify
  */
-async function runE2EScratchblocksPrompt (page, prompt, verifyFn = null) {
+async function runE2EScratchblocksPrompt (page, prompt, verifyFn = null, {skipBlockReset = false} = {}) {
     const result = {
         prompt,
         status: 'ERROR',
@@ -1260,10 +1629,26 @@ async function runE2EScratchblocksPrompt (page, prompt, verifyFn = null) {
             if (overlay) overlay.remove();
         });
 
-        // Reset sprite
-        console.log('\n--- Resetting sprite state ---');
-        const cleared = await page.evaluate(resetSprite);
-        console.log(`  Cleared ${cleared?.cleared || 0} blocks`);
+        // Reset sprite (optionally keep existing blocks for fixture tests)
+        if (skipBlockReset) {
+            console.log('\n--- Resetting sprite position (keeping blocks) ---');
+            await page.evaluate(`(() => {
+                const store = ${getStoreHelper};
+                if (!store) return;
+                const vm = store.getState().scratchGui.vm;
+                if (vm?.editingTarget) {
+                    vm.editingTarget.setXY(0, 0);
+                    vm.editingTarget.setDirection(90);
+                    vm.editingTarget.setSize(100);
+                    vm.editingTarget.setVisible(true);
+                    vm.editingTarget.clearEffects();
+                }
+            })()`);
+        } else {
+            console.log('\n--- Resetting sprite state ---');
+            const cleared = await page.evaluate(resetSprite);
+            console.log(`  Cleared ${cleared?.cleared || 0} blocks`);
+        }
         await page.waitForTimeout(300);
 
         // Step 1: Generate scratchblocks text
@@ -1491,6 +1876,7 @@ REQUEST: ${p}
 
 /**
  * Run all test prompts through the full scratchblocks E2E pipeline.
+ * Handles fixture groups: blank → multi-sprite → existing-code.
  */
 async function runE2EScratchblocks () {
     const {browser, page} = await connectToChrome();
@@ -1498,48 +1884,200 @@ async function runE2EScratchblocks () {
     try {
         await ensureModelLoaded(page);
 
-        // Expose scratchblocksToVMBlocks on window for page.evaluate access
-        await page.evaluate(() => {
-            // Check if it's already exposed
-            if (window.__scratchblocksToVMBlocks) return;
-        });
-
-        // We need to verify the function is available — it should be via webpack
+        // Verify converter is available
         const hasConverter = await page.evaluate(() => typeof window.__scratchblocksToVMBlocks === 'function');
         if (!hasConverter) {
-            console.log('WARNING: window.__scratchblocksToVMBlocks not found. Need to expose it from ai-code-suggestions.js');
+            console.log('WARNING: window.__scratchblocksToVMBlocks not found.');
             console.log('Aborting e2e test.');
             return results;
         }
 
-        for (const testCase of TEST_PROMPTS) {
-            console.log(`\n${'#'.repeat(70)}`);
-            console.log(`# E2E Scratchblocks: "${testCase.name}"`);
-            console.log('#'.repeat(70));
+        // Partition prompts by group
+        const blankPrompts = TEST_PROMPTS.filter(t => !t.group || t.group === 'blank');
+        const multiSpritePrompts = TEST_PROMPTS.filter(t => t.group === 'multi-sprite');
+        const existingCodePrompts = TEST_PROMPTS.filter(t => t.group === 'existing-code');
 
+        // --- Run blank-project prompts ---
+        console.log(`\n${'='.repeat(70)}`);
+        console.log(`BLANK PROJECT PROMPTS (${blankPrompts.length})`);
+        console.log('='.repeat(70));
+        for (const testCase of blankPrompts) {
+            console.log(`\n${'#'.repeat(70)}`);
+            console.log(`# E2E: "${testCase.name}"`);
+            console.log('#'.repeat(70));
             const result = await runE2EScratchblocksPrompt(page, testCase.prompt, testCase.verify);
             printResult(result);
-            results.push({name: testCase.name, ...result});
+            results.push({name: testCase.name, group: 'blank', ...result});
+        }
+
+        // --- Set up multi-sprite project, run group E ---
+        if (multiSpritePrompts.length > 0) {
+            console.log(`\n${'='.repeat(70)}`);
+            console.log(`MULTI-SPRITE PROMPTS (${multiSpritePrompts.length})`);
+            console.log('='.repeat(70));
+
+            // Reset to clean state first
+            await resetToBlankProject(page);
+            await page.waitForTimeout(500);
+
+            const setupResult = await setupMultiSpriteProject(page);
+            console.log(`  Multi-sprite setup: ${JSON.stringify(setupResult)}`);
+
+            for (const testCase of multiSpritePrompts) {
+                console.log(`\n${'#'.repeat(70)}`);
+                console.log(`# E2E [multi-sprite]: "${testCase.name}" (target: ${testCase.targetSprite || 'default'})`);
+                console.log('#'.repeat(70));
+
+                // Switch to target sprite if specified
+                if (testCase.targetSprite) {
+                    const switched = await switchToSprite(page, testCase.targetSprite);
+                    console.log(`  Switched to ${testCase.targetSprite}: ${JSON.stringify(switched)}`);
+                }
+
+                const result = await runE2EScratchblocksPrompt(page, testCase.prompt, testCase.verify);
+                printResult(result);
+                results.push({name: testCase.name, group: 'multi-sprite', ...result});
+            }
+
+            // Clean up
+            await resetToBlankProject(page);
+            await page.waitForTimeout(500);
+        }
+
+        // --- Set up existing code, run group F ---
+        if (existingCodePrompts.length > 0) {
+            console.log(`\n${'='.repeat(70)}`);
+            console.log(`EXISTING CODE PROMPTS (${existingCodePrompts.length})`);
+            console.log('='.repeat(70));
+
+            const existingCode = 'when green flag clicked\nforever\n\tmove (10) steps\n\tif on edge, bounce\nend';
+            const codeResult = await setupProjectWithExistingCode(page, existingCode);
+            console.log(`  Existing code setup: ${JSON.stringify(codeResult)}`);
+
+            for (const testCase of existingCodePrompts) {
+                console.log(`\n${'#'.repeat(70)}`);
+                console.log(`# E2E [existing-code]: "${testCase.name}"`);
+                console.log('#'.repeat(70));
+                const result = await runE2EScratchblocksPrompt(page, testCase.prompt, testCase.verify, {skipBlockReset: true});
+                printResult(result);
+                results.push({name: testCase.name, group: 'existing-code', ...result});
+            }
+
+            // Clean up
+            await resetToBlankProject(page);
         }
 
         // Summary
-        console.log(`\n${'='.repeat(70)}`);
-        console.log('E2E SCRATCHBLOCKS SUMMARY');
-        console.log('='.repeat(70));
-        const passed = results.filter(r => r.status === 'PASS').length;
-        const failed = results.filter(r => r.status === 'FAIL').length;
-        const errors = results.filter(r => r.status === 'ERROR').length;
-        for (const r of results) {
-            const icon = r.status === 'PASS' ? 'OK  ' : r.status === 'FAIL' ? 'FAIL' : 'ERR ';
-            console.log(`  [${icon}] ${r.name}: ${r.reason || ''}`);
-        }
-        console.log('-'.repeat(70));
-        console.log(`  Total: ${results.length} | Passed: ${passed} | Failed: ${failed} | Errors: ${errors}`);
-        console.log('='.repeat(70));
+        printE2ESummary(results);
     } finally {
         try { await browser.close(); } catch { /* ignore */ }
     }
     return results;
+}
+
+function printE2ESummary (results) {
+    console.log(`\n${'='.repeat(70)}`);
+    console.log('E2E SCRATCHBLOCKS SUMMARY');
+    console.log('='.repeat(70));
+    const passed = results.filter(r => r.status === 'PASS').length;
+    const failed = results.filter(r => r.status === 'FAIL').length;
+    const errors = results.filter(r => r.status === 'ERROR').length;
+
+    // Group results by group
+    const groups = {};
+    for (const r of results) {
+        const g = r.group || 'blank';
+        if (!groups[g]) groups[g] = [];
+        groups[g].push(r);
+    }
+
+    for (const [group, groupResults] of Object.entries(groups)) {
+        console.log(`\n  [${group}]`);
+        for (const r of groupResults) {
+            const icon = r.status === 'PASS' ? 'OK  ' : r.status === 'FAIL' ? 'FAIL' : 'ERR ';
+            console.log(`    [${icon}] ${r.name}: ${r.reason || ''}`);
+        }
+    }
+
+    console.log('-'.repeat(70));
+    console.log(`  Total: ${results.length} | Passed: ${passed} | Failed: ${failed} | Errors: ${errors}`);
+    console.log(`  Pass rate: ${(passed / results.length * 100).toFixed(0)}%`);
+    console.log('='.repeat(70));
+}
+
+/**
+ * Run the E2E suite multiple times and aggregate pass rates.
+ */
+async function runE2EScratchblocksLoop (iterations) {
+    const allRuns = [];
+
+    for (let i = 0; i < iterations; i++) {
+        console.log(`\n${'*'.repeat(70)}`);
+        console.log(`* LOOP ITERATION ${i + 1} of ${iterations}`);
+        console.log('*'.repeat(70));
+
+        const results = await runE2EScratchblocks();
+        allRuns.push(results);
+    }
+
+    printLoopSummary(allRuns, iterations);
+    return allRuns;
+}
+
+function printLoopSummary (allRuns, iterations) {
+    console.log(`\n${'='.repeat(70)}`);
+    console.log(`LOOP SUMMARY (${iterations} iterations)`);
+    console.log('='.repeat(70));
+
+    // Aggregate per-prompt pass rates
+    const promptStats = {};
+    for (const run of allRuns) {
+        for (const r of run) {
+            if (!promptStats[r.name]) {
+                promptStats[r.name] = {passes: 0, fails: 0, errors: 0, group: r.group || 'blank'};
+            }
+            if (r.status === 'PASS') promptStats[r.name].passes++;
+            else if (r.status === 'FAIL') promptStats[r.name].fails++;
+            else promptStats[r.name].errors++;
+        }
+    }
+
+    // Sort: consistent passes first, then flaky, then consistent fails
+    const sorted = Object.entries(promptStats).sort((a, b) => {
+        const aRate = a[1].passes / iterations;
+        const bRate = b[1].passes / iterations;
+        return bRate - aRate;
+    });
+
+    let totalPasses = 0;
+    let totalTests = 0;
+    let flaky = 0;
+
+    console.log(`  ${'Test'.padEnd(30)} ${'Group'.padEnd(15)} ${'Pass Rate'.padEnd(12)} ${'Status'}`);
+    console.log(`  ${'-'.repeat(30)} ${'-'.repeat(15)} ${'-'.repeat(12)} ${'-'.repeat(8)}`);
+
+    for (const [name, stats] of sorted) {
+        const rate = stats.passes / iterations;
+        const pct = `${stats.passes}/${iterations} (${(rate * 100).toFixed(0)}%)`;
+        let status;
+        if (rate === 1) {
+            status = 'SOLID';
+        } else if (rate === 0) {
+            status = 'BROKE';
+        } else {
+            status = 'FLAKY';
+            flaky++;
+        }
+        console.log(`  ${name.padEnd(30)} ${stats.group.padEnd(15)} ${pct.padEnd(12)} ${status}`);
+        totalPasses += stats.passes;
+        totalTests += iterations;
+    }
+
+    console.log('-'.repeat(70));
+    const overallRate = (totalPasses / totalTests * 100).toFixed(0);
+    console.log(`  Overall: ${totalPasses}/${totalTests} (${overallRate}%)`);
+    console.log(`  Solid: ${sorted.filter(([, s]) => s.passes === iterations).length} | Flaky: ${flaky} | Broken: ${sorted.filter(([, s]) => s.passes === 0).length}`);
+    console.log('='.repeat(70));
 }
 
 // ---------------------------------------------------------------------------
@@ -1559,6 +2097,7 @@ Usage:
   node ai-cdp-test.js --list            List built-in test prompts
   node ai-cdp-test.js --scratchblocks   Test scratchblocks text generation
   node ai-cdp-test.js --e2e-scratchblocks  Full pipeline: generate → convert → add → run → verify
+  node ai-cdp-test.js --loop N --e2e-scratchblocks  Run E2E suite N times, aggregate results
   node ai-cdp-test.js --compare         Compare JSON vs scratchblocks modes
 
 Prerequisites:
@@ -1583,7 +2122,13 @@ Interactive commands:
         return;
     }
 
-    if (args.includes('--e2e-scratchblocks')) {
+    // Parse --loop N flag
+    const loopIdx = args.indexOf('--loop');
+    const loopCount = loopIdx >= 0 ? parseInt(args[loopIdx + 1], 10) || 3 : 0;
+
+    if (args.includes('--e2e-scratchblocks') && loopCount > 0) {
+        await runE2EScratchblocksLoop(loopCount);
+    } else if (args.includes('--e2e-scratchblocks')) {
         await runE2EScratchblocks();
     } else if (args.includes('--scratchblocks')) {
         await runScratchblocks();

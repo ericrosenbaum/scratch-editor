@@ -1,35 +1,6 @@
 import {isLoaded, getLlmInference, generate, showLoadModal} from './ai-model-manager';
 import {setGenerating, setResult, setError} from '../reducers/ai-code-suggestions';
 
-// Blocks that are reporters or booleans — they produce values and cannot have "next".
-const REPORTER_OPCODES = new Set([
-    'math_number', 'text', 'colour_picker', 'math_angle', 'math_integer', 'math_whole_number',
-    'math_positive_number', 'note',
-    'operator_add', 'operator_subtract', 'operator_multiply', 'operator_divide',
-    'operator_random', 'operator_mod', 'operator_round', 'operator_mathop',
-    'operator_join', 'operator_letter_of', 'operator_length', 'operator_contains',
-    'operator_gt', 'operator_lt', 'operator_equals',
-    'operator_and', 'operator_or', 'operator_not',
-    'sensing_touchingobject', 'sensing_touchingcolor', 'sensing_coloristouchingcolor',
-    'sensing_distanceto', 'sensing_keypressed', 'sensing_mousedown',
-    'sensing_mousex', 'sensing_mousey', 'sensing_loudness', 'sensing_timer',
-    'sensing_of', 'sensing_current', 'sensing_dayssince2000', 'sensing_username',
-    'sensing_answer',
-    'data_variable', 'data_listcontents',
-    'data_itemoflist', 'data_itemnumoflist', 'data_lengthoflist', 'data_listcontainsitem',
-    'looks_costumenumbername', 'looks_backdropnumbername', 'looks_size',
-    'sound_volume',
-    'motion_xposition', 'motion_yposition', 'motion_direction'
-]);
-
-// Menu shadow blocks — also reporters, cannot have "next".
-const MENU_OPCODE_RE = /menu$/i;
-
-// "Cap" blocks that end a script — cannot have "next".
-const CAP_OPCODES = new Set([
-    'control_forever', 'control_delete_this_clone', 'control_stop'
-]);
-
 /**
  * Resolve which generate function to use, loading the model if needed.
  * Reuses pattern from explain-code.js.
@@ -80,541 +51,6 @@ let _idCounter = 0;
 const uid = () => `ai_${Date.now().toString(36)}_${(++_idCounter).toString(36)}`;
 
 /**
- * Build the LLM prompt with few-shot examples.
- */
-const buildPrompt = (userPrompt, blocksText, targetName, isStage) => {
-    const entity = isStage ? 'the Stage' : `sprite "${targetName}"`;
-
-    return `You are a Scratch coding assistant. Generate Scratch blocks as a JSON array.
-
-IMPORTANT RULES:
-1. Keep scripts SHORT and simple (under 15 blocks). Use the SIMPLEST approach possible.
-2. Do EXACTLY what is requested — nothing more, nothing less.
-3. Your response must start with \`\`\`json and contain ONLY the JSON array. No explanations.
-
-Each block object has these fields:
-- "id": unique string
-- "opcode": the Scratch block opcode (e.g. "event_whenflagclicked", "motion_movesteps")
-- "next": id of next block or null
-- "parent": id of parent block or null
-- "inputs": object of inputs, each input is {"name": "NAME", "block": blockId, "shadow": blockId}
-- "fields": object of fields, each field is {"name": "NAME", "value": "value"}
-- "topLevel": true for the first block in a stack, false otherwise
-- "shadow": true for shadow/value blocks, false for regular blocks
-- "x": 0, "y": 0
-
-EXAMPLE 1 - "move forward when green flag clicked":
-[
-  {"id":"a1","opcode":"event_whenflagclicked","next":"a2","parent":null,"inputs":{},"fields":{},"topLevel":true,"shadow":false,"x":0,"y":0},
-  {"id":"a2","opcode":"motion_movesteps","next":null,"parent":"a1","inputs":{"STEPS":{"name":"STEPS","block":"a3","shadow":"a3"}},"fields":{},"topLevel":false,"shadow":false},
-  {"id":"a3","opcode":"math_number","next":null,"parent":"a2","inputs":{},"fields":{"NUM":{"name":"NUM","value":"10"}},"topLevel":false,"shadow":true}
-]
-
-EXAMPLE 2 - "forever move and bounce":
-[
-  {"id":"b1","opcode":"event_whenflagclicked","next":"b2","parent":null,"inputs":{},"fields":{},"topLevel":true,"shadow":false,"x":0,"y":0},
-  {"id":"b2","opcode":"control_forever","next":null,"parent":"b1","inputs":{"SUBSTACK":{"name":"SUBSTACK","block":"b3","shadow":null}},"fields":{},"topLevel":false,"shadow":false},
-  {"id":"b3","opcode":"motion_movesteps","next":"b4","parent":"b2","inputs":{"STEPS":{"name":"STEPS","block":"b5","shadow":"b5"}},"fields":{},"topLevel":false,"shadow":false},
-  {"id":"b5","opcode":"math_number","next":null,"parent":"b3","inputs":{},"fields":{"NUM":{"name":"NUM","value":"10"}},"topLevel":false,"shadow":true},
-  {"id":"b4","opcode":"motion_ifonedgebounce","next":null,"parent":"b3","inputs":{},"fields":{},"topLevel":false,"shadow":false}
-]
-
-EXAMPLE 3 - "say hello for 2 seconds":
-[
-  {"id":"c1","opcode":"event_whenflagclicked","next":"c2","parent":null,"inputs":{},"fields":{},"topLevel":true,"shadow":false,"x":0,"y":0},
-  {"id":"c2","opcode":"looks_sayforsecs","next":null,"parent":"c1","inputs":{"MESSAGE":{"name":"MESSAGE","block":"c3","shadow":"c3"},"SECS":{"name":"SECS","block":"c4","shadow":"c4"}},"fields":{},"topLevel":false,"shadow":false},
-  {"id":"c3","opcode":"text","next":null,"parent":"c2","inputs":{},"fields":{"TEXT":{"name":"TEXT","value":"Hello!"}},"topLevel":false,"shadow":true},
-  {"id":"c4","opcode":"math_number","next":null,"parent":"c2","inputs":{},"fields":{"NUM":{"name":"NUM","value":"2"}},"topLevel":false,"shadow":true}
-]
-
-EXAMPLE 4 - "if touching edge, play sound":
-[
-  {"id":"d1","opcode":"event_whenflagclicked","next":"d2","parent":null,"inputs":{},"fields":{},"topLevel":true,"shadow":false,"x":0,"y":0},
-  {"id":"d2","opcode":"control_forever","next":null,"parent":"d1","inputs":{"SUBSTACK":{"name":"SUBSTACK","block":"d3","shadow":null}},"fields":{},"topLevel":false,"shadow":false},
-  {"id":"d3","opcode":"control_if","next":null,"parent":"d2","inputs":{"CONDITION":{"name":"CONDITION","block":"d4","shadow":null},"SUBSTACK":{"name":"SUBSTACK","block":"d5","shadow":null}},"fields":{},"topLevel":false,"shadow":false},
-  {"id":"d4","opcode":"sensing_touchingobject","next":null,"parent":"d3","inputs":{"TOUCHINGOBJECTMENU":{"name":"TOUCHINGOBJECTMENU","block":"d6","shadow":"d6"}},"fields":{},"topLevel":false,"shadow":false},
-  {"id":"d6","opcode":"sensing_touchingobjectmenu","next":null,"parent":"d4","inputs":{},"fields":{"TOUCHINGOBJECTMENU":{"name":"TOUCHINGOBJECTMENU","value":"_edge_"}},"topLevel":false,"shadow":true},
-  {"id":"d5","opcode":"sound_play","next":null,"parent":"d3","inputs":{"SOUND_MENU":{"name":"SOUND_MENU","block":"d7","shadow":"d7"}},"fields":{},"topLevel":false,"shadow":false},
-  {"id":"d7","opcode":"sound_sounds_menu","next":null,"parent":"d5","inputs":{},"fields":{"SOUND_MENU":{"name":"SOUND_MENU","value":"pop"}},"topLevel":false,"shadow":true}
-]
-
-BLOCK TYPES:
-Stack blocks (can have "next"): event_whenflagclicked, event_whenkeypressed, control_repeat, control_if, control_if_else, control_wait, motion_movesteps, motion_turnright, motion_turnleft, motion_gotoxy, motion_glidesecstoxy, motion_pointindirection, motion_changexby, motion_changeyby, motion_setx, motion_sety, motion_ifonedgebounce, looks_say, looks_sayforsecs, looks_think, looks_switchcostumeto, looks_nextcostume, looks_changesizeby, looks_setsizeto, looks_show, looks_hide, looks_changeeffectby, sound_play, sound_playuntildone, sensing_askandwait, data_setvariableto, data_changevariableby
-Cap blocks (CANNOT have "next"): control_forever, control_delete_this_clone, control_stop
-Reporter blocks (values only, CANNOT have "next", used inside inputs): math_number, text, operator_add, operator_subtract, operator_multiply, operator_random, sensing_distanceto, sensing_mousex, sensing_mousey, sensing_answer, sensing_timer, looks_size, data_variable, motion_xposition, motion_yposition
-Boolean blocks (true/false only, CANNOT have "next", used inside inputs): sensing_touchingobject, sensing_keypressed, sensing_mousedown, operator_gt, operator_lt, operator_equals, operator_and, operator_or, operator_not
-
-CURRENT CODE FOR ${entity}:
-${blocksText}
-
-USER REQUEST: ${userPrompt}
-
-\`\`\`json`;
-};
-
-/**
- * Parse the model's JSON output into an array of block objects.
- * Attempts to extract JSON from the response even if there's surrounding text.
- */
-const parseGeneratedBlocks = modelOutput => {
-    // Try to find a JSON array in the output
-    let jsonStr = modelOutput.trim();
-
-    // Strip markdown code fences from the output.
-    // The model may output fences in various configurations:
-    //   - Full fences: ```json ... ```
-    //   - Opening fence only (truncated output): ```json ...
-    //   - Closing fence only (when prompt ends with ```json): ... ```
-    //   - No fences at all
-
-    // First, strip any trailing closing fence
-    jsonStr = jsonStr.replace(/```\s*$/, '').trim();
-
-    // Then handle opening fences
-    const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (fenceMatch) {
-        jsonStr = fenceMatch[1].trim();
-    } else {
-        const openFence = jsonStr.match(/```(?:json)?\s*([\s\S]*)/);
-        if (openFence) {
-            jsonStr = openFence[1].trim();
-        }
-    }
-
-    // Try to find array brackets
-    const startIdx = jsonStr.indexOf('[');
-    const endIdx = jsonStr.lastIndexOf(']');
-    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-        jsonStr = jsonStr.substring(startIdx, endIdx + 1);
-    }
-
-    let blocks;
-    try {
-        blocks = JSON.parse(jsonStr);
-    } catch (e) {
-        // If JSON is truncated, salvage complete top-level objects from the array.
-        // We track brace depth to find the end of each complete object.
-        if (startIdx === -1) throw e;
-
-        const arrayContent = jsonStr.substring(startIdx);
-        let depth = 0;
-        let inString = false;
-        let escape = false;
-        let lastCompleteObjectEnd = -1;
-
-        for (let i = 0; i < arrayContent.length; i++) {
-            const ch = arrayContent[i];
-            if (escape) {
-                escape = false;
-                continue;
-            }
-            if (ch === '\\' && inString) {
-                escape = true;
-                continue;
-            }
-            if (ch === '"') {
-                inString = !inString;
-                continue;
-            }
-            if (inString) continue;
-
-            if (ch === '[' || ch === '{') depth++;
-            else if (ch === ']' || ch === '}') {
-                depth--;
-                // depth 1 means we just closed a top-level object in the array
-                if (depth === 1 && ch === '}') {
-                    lastCompleteObjectEnd = i;
-                }
-            }
-        }
-
-        if (lastCompleteObjectEnd > 0) {
-            // First try: use only the fully complete objects
-            let salvaged = arrayContent.substring(0, lastCompleteObjectEnd + 1) + ']';
-
-            // Second try: also attempt to complete the next truncated object
-            // by closing any open braces/brackets
-            const remainder = arrayContent.substring(lastCompleteObjectEnd + 1).trim();
-            if (remainder.startsWith(',')) {
-                const partial = remainder.substring(1).trim();
-                if (partial.startsWith('{')) {
-                    // Count unclosed braces in the partial object
-                    let partialDepth = 0;
-                    let partialInString = false;
-                    let partialEscape = false;
-                    for (let j = 0; j < partial.length; j++) {
-                        const ch2 = partial[j];
-                        if (partialEscape) { partialEscape = false; continue; }
-                        if (ch2 === '\\' && partialInString) { partialEscape = true; continue; }
-                        if (ch2 === '"') { partialInString = !partialInString; continue; }
-                        if (partialInString) continue;
-                        if (ch2 === '{') partialDepth++;
-                        else if (ch2 === '}') partialDepth--;
-                    }
-                    // Close unclosed braces and try to parse with the partial object
-                    if (partialDepth > 0) {
-                        const closed = partial + '}'.repeat(partialDepth);
-                        const withPartial = arrayContent.substring(0, lastCompleteObjectEnd + 1) +
-                            ',' + closed + ']';
-                        try {
-                            blocks = JSON.parse(withPartial);
-                            // eslint-disable-next-line no-console
-                            console.log('[ai-code-suggestions] salvaged truncated JSON including partial last object');
-                        } catch {
-                            // Fall back to only complete objects
-                        }
-                    }
-                }
-            }
-
-            if (!blocks) {
-                // eslint-disable-next-line no-console
-                console.log('[ai-code-suggestions] salvaging truncated JSON, keeping', lastCompleteObjectEnd, 'chars');
-                blocks = JSON.parse(salvaged);
-            }
-        } else {
-            throw e;
-        }
-    }
-
-    if (!Array.isArray(blocks)) {
-        throw new Error('Expected a JSON array of blocks');
-    }
-
-    // Assign fresh unique IDs and fix up references
-    const idMap = {};
-    for (const block of blocks) {
-        const newId = uid();
-        idMap[block.id] = newId;
-        block.id = newId;
-    }
-
-    // Remap all id references
-    for (const block of blocks) {
-        if (block.next && idMap[block.next]) block.next = idMap[block.next];
-        else if (block.next && !blocks.find(b => b.id === block.next)) block.next = null;
-
-        if (block.parent && idMap[block.parent]) block.parent = idMap[block.parent];
-        else if (block.parent && !blocks.find(b => b.id === block.parent)) block.parent = null;
-
-        if (block.inputs) {
-            for (const key of Object.keys(block.inputs)) {
-                const inp = block.inputs[key];
-                if (inp.block && idMap[inp.block]) inp.block = idMap[inp.block];
-                if (inp.shadow && idMap[inp.shadow]) inp.shadow = idMap[inp.shadow];
-            }
-        }
-    }
-
-    // Validate required fields
-    for (const block of blocks) {
-        if (!block.opcode) throw new Error(`Block ${block.id} missing opcode`);
-        if (typeof block.inputs !== 'object') block.inputs = {};
-        if (typeof block.fields !== 'object') block.fields = {};
-        if (typeof block.shadow !== 'boolean') block.shadow = false;
-        if (typeof block.topLevel !== 'boolean') block.topLevel = false;
-        if (block.next === undefined) block.next = null;
-        if (block.parent === undefined) block.parent = null;
-    }
-
-    // Fix misplaced fields: the model sometimes puts field values in "inputs" instead of "fields".
-    // Known cases: math_number.NUM, text.TEXT, and menu blocks with their menu field.
-    const FIELD_NAMES_BY_OPCODE = {
-        math_number: 'NUM', math_angle: 'NUM', math_integer: 'NUM',
-        math_whole_number: 'NUM', math_positive_number: 'NUM',
-        text: 'TEXT', colour_picker: 'COLOUR', note: 'NOTE'
-    };
-    for (const block of blocks) {
-        const expectedField = FIELD_NAMES_BY_OPCODE[block.opcode];
-        if (expectedField && block.inputs[expectedField] && !block.fields[expectedField]) {
-            // Move from inputs to fields
-            const misplaced = block.inputs[expectedField];
-            block.fields[expectedField] = {
-                name: expectedField,
-                value: misplaced.value || misplaced.block || '0'
-            };
-            delete block.inputs[expectedField];
-        }
-        // Also handle menu blocks: move value-only entries from inputs to fields
-        if (MENU_OPCODE_RE.test(block.opcode)) {
-            for (const [key, val] of Object.entries(block.inputs)) {
-                if (val && val.value !== undefined && !block.fields[key]) {
-                    block.fields[key] = {name: key, value: val.value};
-                    delete block.inputs[key];
-                }
-            }
-        }
-    }
-
-    // Fix incorrect input names that the model sometimes generates.
-    const INPUT_NAME_FIXES = {
-        looks_changeeffectby: {EFFECTCHANGE: 'CHANGE'},
-        looks_seteffectto: {EFFECTVALUE: 'VALUE'},
-        motion_pointindirection: {DIRECTIONMENU: 'DIRECTION'},
-        looks_setsizeto: {PERCENT: 'SIZE'}
-    };
-    for (const block of blocks) {
-        const fixes = INPUT_NAME_FIXES[block.opcode];
-        if (fixes) {
-            for (const [wrong, right] of Object.entries(fixes)) {
-                if (block.inputs[wrong] && !block.inputs[right]) {
-                    block.inputs[right] = block.inputs[wrong];
-                    block.inputs[right].name = right;
-                    delete block.inputs[wrong];
-                }
-            }
-        }
-    }
-
-    // Add default fields for blocks that require them but the model didn't provide.
-    const DEFAULT_FIELDS = {
-        looks_changeeffectby: {EFFECT: {name: 'EFFECT', value: 'COLOR'}},
-        looks_seteffectto: {EFFECT: {name: 'EFFECT', value: 'COLOR'}},
-        control_stop: {STOP_OPTION: {name: 'STOP_OPTION', value: 'all'}},
-        event_whenkeypressed: {KEY_OPTION: {name: 'KEY_OPTION', value: 'space'}},
-        sensing_keypressed: {KEY_OPTION: {name: 'KEY_OPTION', value: 'space'}},
-        motion_setrotationstyle: {STYLE: {name: 'STYLE', value: 'left-right'}},
-        looks_setsizeto: {SIZE: undefined} // SIZE is an input, not a field — handled elsewhere
-    };
-    for (const block of blocks) {
-        const defaults = DEFAULT_FIELDS[block.opcode];
-        if (defaults) {
-            for (const [key, val] of Object.entries(defaults)) {
-                if (val && (!block.fields[key] || !block.fields[key].value)) {
-                    block.fields[key] = val;
-                }
-            }
-        }
-    }
-
-    // Create default shadow blocks for inputs that reference missing blocks.
-    // This handles cases where the model output was truncated and shadow blocks were lost.
-    const DEFAULT_SHADOW = {
-        STEPS: {opcode: 'math_number', field: 'NUM', value: '10'},
-        DEGREES: {opcode: 'math_number', field: 'NUM', value: '15'},
-        SECS: {opcode: 'math_number', field: 'NUM', value: '1'},
-        DURATION: {opcode: 'math_number', field: 'NUM', value: '0.25'},
-        DX: {opcode: 'math_number', field: 'NUM', value: '10'},
-        DY: {opcode: 'math_number', field: 'NUM', value: '10'},
-        X: {opcode: 'math_number', field: 'NUM', value: '0'},
-        Y: {opcode: 'math_number', field: 'NUM', value: '0'},
-        SIZE: {opcode: 'math_number', field: 'NUM', value: '10'},
-        CHANGE: {opcode: 'math_number', field: 'NUM', value: '25'},
-        VALUE: {opcode: 'math_number', field: 'NUM', value: '0'},
-        TIMES: {opcode: 'math_number', field: 'NUM', value: '10'},
-        DIRECTION: {opcode: 'math_number', field: 'NUM', value: '90'},
-        MESSAGE: {opcode: 'text', field: 'TEXT', value: 'hello'},
-        NUM1: {opcode: 'math_number', field: 'NUM', value: '0'},
-        NUM2: {opcode: 'math_number', field: 'NUM', value: '0'},
-        OPERAND: {opcode: 'math_number', field: 'NUM', value: '50'},
-        OPERAND1: {opcode: 'math_number', field: 'NUM', value: '0'},
-        OPERAND2: {opcode: 'math_number', field: 'NUM', value: '50'},
-        VOLUME: {opcode: 'math_number', field: 'NUM', value: '100'},
-        QUESTION: {opcode: 'text', field: 'TEXT', value: "What's your name?"}
-    };
-
-    const existingIds = new Set(blocks.map(b => b.id));
-    for (const block of blocks) {
-        if (!block.inputs) continue;
-        for (const key of Object.keys(block.inputs)) {
-            const inp = block.inputs[key];
-            const refId = inp.block || inp.shadow;
-            if (refId && !existingIds.has(refId)) {
-                // Referenced block is missing — create a default shadow
-                const defaults = DEFAULT_SHADOW[key] || {opcode: 'math_number', field: 'NUM', value: '0'};
-                const shadowId = uid();
-                const shadowBlock = {
-                    id: shadowId,
-                    opcode: defaults.opcode,
-                    next: null,
-                    parent: block.id,
-                    inputs: {},
-                    fields: {[defaults.field]: {name: defaults.field, value: defaults.value}},
-                    topLevel: false,
-                    shadow: true
-                };
-                blocks.push(shadowBlock);
-                existingIds.add(shadowId);
-                inp.block = shadowId;
-                inp.shadow = shadowId;
-                // eslint-disable-next-line no-console
-                console.log(`[ai-code-suggestions] created default shadow for missing input ${key} (${defaults.value})`);
-            }
-        }
-    }
-
-    // Fix structural issues: reporters, booleans, shadows, menus, and caps cannot have "next".
-    const byId = {};
-    for (const b of blocks) byId[b.id] = b;
-
-    for (const block of blocks) {
-        const isReporter = REPORTER_OPCODES.has(block.opcode) || MENU_OPCODE_RE.test(block.opcode);
-        const isCap = CAP_OPCODES.has(block.opcode);
-
-        if ((block.shadow || isReporter || isCap) && block.next) {
-            // The dangling "next" block should no longer claim this block as parent
-            const orphan = byId[block.next];
-            if (orphan) orphan.parent = null;
-            block.next = null;
-        }
-
-        // Also fix: if a stack block's "next" points to a shadow/reporter,
-        // that block should be an input, not a next. Clear the bad pointer.
-        if (block.next) {
-            const nextBlock = byId[block.next];
-            if (nextBlock) {
-                const nextIsReporter = REPORTER_OPCODES.has(nextBlock.opcode) ||
-                    MENU_OPCODE_RE.test(nextBlock.opcode) || nextBlock.shadow;
-                if (nextIsReporter) {
-                    block.next = null;
-                }
-            }
-        }
-    }
-
-    // Drop orphaned blocks (no parent and not topLevel) that resulted from fixups
-    const reachable = new Set();
-    const markReachable = id => {
-        if (!id || reachable.has(id)) return;
-        reachable.add(id);
-        const b = byId[id];
-        if (!b) return;
-        if (b.next) markReachable(b.next);
-        for (const inp of Object.values(b.inputs)) {
-            if (inp.block) markReachable(inp.block);
-            if (inp.shadow && inp.shadow !== inp.block) markReachable(inp.shadow);
-        }
-    };
-    for (const b of blocks) {
-        if (b.topLevel) markReachable(b.id);
-    }
-
-    return blocks.filter(b => reachable.has(b.id));
-};
-
-/**
- * Convert block array to a human-readable preview string.
- */
-const blocksToPreviewText = blocks => {
-    const lines = [];
-    const indent = depth => '  '.repeat(depth);
-
-    // Build a lookup by id
-    const byId = {};
-    for (const b of blocks) byId[b.id] = b;
-
-    // Simple opcode-to-text mapping for common blocks
-    const opcodeText = block => {
-        const op = block.opcode;
-        const fieldVal = (name) => {
-            const f = block.fields[name];
-            return f ? f.value : '';
-        };
-
-        // Map common opcodes to readable text
-        const map = {
-            event_whenflagclicked: 'when green flag clicked',
-            event_whenkeypressed: `when [${fieldVal('KEY_OPTION')}] key pressed`,
-            event_whenthisspriteclicked: 'when this sprite clicked',
-            control_forever: 'forever',
-            control_repeat: 'repeat',
-            control_if: 'if <...> then',
-            control_if_else: 'if <...> then ... else',
-            control_wait: 'wait ... seconds',
-            control_repeat_until: 'repeat until <...>',
-            control_stop: `stop [${fieldVal('STOP_OPTION')}]`,
-            control_start_as_clone: 'when I start as a clone',
-            control_create_clone_of: 'create clone of ...',
-            control_delete_this_clone: 'delete this clone',
-            motion_movesteps: 'move ... steps',
-            motion_turnright: 'turn right ... degrees',
-            motion_turnleft: 'turn left ... degrees',
-            motion_gotoxy: 'go to x: ... y: ...',
-            motion_goto: 'go to ...',
-            motion_glidesecstoxy: 'glide ... secs to x: ... y: ...',
-            motion_pointindirection: 'point in direction ...',
-            motion_changexby: 'change x by ...',
-            motion_changeyby: 'change y by ...',
-            motion_setx: 'set x to ...',
-            motion_sety: 'set y to ...',
-            motion_ifonedgebounce: 'if on edge, bounce',
-            motion_setrotationstyle: `set rotation style [${fieldVal('STYLE')}]`,
-            looks_sayforsecs: 'say ... for ... seconds',
-            looks_say: 'say ...',
-            looks_thinkforsecs: 'think ... for ... seconds',
-            looks_think: 'think ...',
-            looks_switchcostumeto: 'switch costume to ...',
-            looks_nextcostume: 'next costume',
-            looks_changesizeby: 'change size by ...',
-            looks_setsizeto: 'set size to ...%',
-            looks_show: 'show',
-            looks_hide: 'hide',
-            looks_changeeffectby: 'change ... effect by ...',
-            looks_seteffectto: 'set ... effect to ...',
-            looks_cleargraphiceffects: 'clear graphic effects',
-            sound_play: 'start sound ...',
-            sound_playuntildone: 'play sound ... until done',
-            sound_stopallsounds: 'stop all sounds',
-            sound_changevolumeby: 'change volume by ...',
-            sound_setvolumeto: 'set volume to ...%',
-            sensing_touchingobject: 'touching ...?',
-            sensing_askandwait: 'ask ... and wait',
-            sensing_keypressed: 'key ... pressed?',
-            sensing_mousedown: 'mouse down?',
-            sensing_resettimer: 'reset timer',
-            operator_add: '... + ...',
-            operator_subtract: '... - ...',
-            operator_multiply: '... * ...',
-            operator_divide: '... / ...',
-            operator_random: 'pick random ... to ...',
-            data_setvariableto: 'set ... to ...',
-            data_changevariableby: 'change ... by ...',
-            data_addtolist: 'add ... to ...',
-            data_deleteoflist: 'delete ... of ...'
-        };
-
-        return map[op] || op.replace(/_/g, ' ');
-    };
-
-    // Walk the block chain starting from top-level blocks
-    const walkChain = (blockId, depth) => {
-        let current = blockId;
-        while (current) {
-            const block = byId[current];
-            if (!block || block.shadow) {
-                current = null;
-                continue;
-            }
-            const text = opcodeText(block);
-            lines.push(`${indent(depth)}${text}`);
-
-            // Handle substacks (forever, repeat, if, etc.)
-            if (block.inputs.SUBSTACK && block.inputs.SUBSTACK.block) {
-                walkChain(block.inputs.SUBSTACK.block, depth + 1);
-            }
-            if (block.inputs.SUBSTACK2 && block.inputs.SUBSTACK2.block) {
-                lines.push(`${indent(depth)}else`);
-                walkChain(block.inputs.SUBSTACK2.block, depth + 1);
-            }
-            if (block.inputs.SUBSTACK || block.inputs.SUBSTACK2) {
-                lines.push(`${indent(depth)}end`);
-            }
-
-            current = block.next;
-        }
-    };
-
-    for (const block of blocks) {
-        if (block.topLevel && !block.shadow) {
-            walkChain(block.id, 0);
-            lines.push(''); // blank line between scripts
-        }
-    }
-
-    return lines.join('\n').trim() || '(no blocks generated)';
-};
-
-/**
  * Main entry point: generate a code suggestion.
  */
 const generateCodeSuggestion = async (vm, userPrompt, dispatch) => {
@@ -655,10 +91,24 @@ const generateCodeSuggestion = async (vm, userPrompt, dispatch) => {
             console.warn('[ai-code-suggestions] warnings:', parsed.validation.warnings);
         }
 
-        const blocks = scratchblocksToVMBlocks(parsed.text);
-        const previewText = blocksToPreviewText(blocks);
+        if (parsed.text.trim().length === 0) {
+            dispatch(setError('The AI returned an empty response. Please try rephrasing your request.'));
+            return;
+        }
 
-        dispatch(setResult(blocks, previewText));
+        const blocks = scratchblocksToVMBlocks(parsed.text);
+
+        if (blocks.filter(b => !b.shadow).length === 0) {
+            dispatch(setError(
+                'Could not convert the AI output into blocks. ' +
+                (parsed.validation.warnings.length > 0
+                    ? `Unrecognized: ${parsed.validation.warnings[0]}`
+                    : 'Please try rephrasing your request.')
+            ));
+            return;
+        }
+
+        dispatch(setResult(blocks, parsed.text));
     } catch (err) {
         // eslint-disable-next-line no-console
         console.error('[ai-code-suggestions] error:', err);
@@ -680,12 +130,12 @@ const addBlocksToWorkspace = (vm, blocks) => {
 };
 
 // ==========================================
-// Scratchblocks text format (Phase 1 experiment)
+// Scratchblocks prompt, parsing, and conversion
 // ==========================================
 
 /**
  * Build a compact prompt asking the model to generate scratchblocks text.
- * ~400-500 tokens vs ~2600 for the JSON prompt.
+ * ~400-500 tokens vs ~2600 for the old JSON prompt.
  */
 const buildScratchblocksPrompt = (userPrompt, blocksText, targetName, isStage) => {
     const entity = isStage ? 'the Stage' : `sprite "${targetName}"`;
@@ -804,7 +254,7 @@ const BLOCK_PATTERNS = [
     /^think \[.*\] for \(.+\) seconds$/, /^think \[.*\]$/,
     /^switch costume to \(.+ v?\)$/, /^next costume$/,
     /^switch backdrop to \(.+ v?\)$/, /^next backdrop$/,
-    /^change size by \(.+\)$/, /^set size to \(.+\) ?%?$/,
+    /^change size by \(.+\) ?%?$/, /^set size to \(.+\) ?%?$/,
     /^change \[.+ v?\] effect by \(.+\)$/, /^set \[.+ v?\] effect to \(.+\)$/,
     /^clear graphic effects$/, /^show$/, /^hide$/,
     /^go to \[.+\] layer$/, /^go \[.+\] \(.+\) layers?$/,
@@ -974,6 +424,19 @@ const normalizeScratchblocks = text => {
         // e.g. "turn right (15) degrees clockwise" → "turn right (15) degrees"
         line = line.replace(/^(\s*turn (?:right|left) \(\d+\) degrees)(\s+.*)$/, '$1');
 
+        // 3. Normalize model hallucinations / common mistakes
+        // "change angle by (15) degrees" → "turn right (15) degrees"
+        line = line.replace(/^(\s*)change angle by (\(.+?\)) degrees$/, '$1turn right $2 degrees');
+        // "broadcast go" → "broadcast (go v)" (missing parens)
+        line = line.replace(/^(\s*)broadcast (?!\()(\S+)$/, '$1broadcast ($2 v)');
+        // "broadcast go and wait" → "broadcast (go v) and wait"
+        line = line.replace(/^(\s*)broadcast (?!\()(\S+) and wait$/, '$1broadcast ($2 v) and wait');
+        // "when I receive go" → "when I receive [go v]" (missing brackets)
+        line = line.replace(/^(\s*)when I receive (?!\[)(\S+)$/, '$1when I receive [$2 v]');
+        // "play sound (pop v)" → "start sound (pop v)" (missing "until done" or "start")
+        line = line.replace(/^(\s*)play sound (\(.+? v?\))$/,
+            '$1start sound $2');
+
         const retrimmed = line.trim();
 
         // 3. Handle orphan "end" — only push if we have a matching opener
@@ -1035,7 +498,7 @@ const parseScratchblocksOutput = modelOutput => {
 };
 
 // ==========================================
-// Scratchblocks → VM Blocks converter (Phase 2)
+// Scratchblocks → VM Blocks converter
 // ==========================================
 
 /**
@@ -1439,8 +902,6 @@ if (typeof window !== 'undefined') {
 export {
     generateCodeSuggestion,
     addBlocksToWorkspace,
-    blocksToPreviewText,
-    parseGeneratedBlocks,
     buildScratchblocksPrompt,
     validateScratchblocks,
     parseScratchblocksOutput,
