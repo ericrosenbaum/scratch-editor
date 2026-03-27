@@ -1,6 +1,9 @@
 import {isLoaded, getLlmInference, generate, showLoadModal} from './ai-model-manager';
 import {setGenerating, setResult, setError} from '../reducers/ai-code-suggestions';
 
+// eslint-disable-next-line no-undef
+const {buildPrompt: buildPromptTemplate} = require('./ai-prompt-template');
+
 /**
  * Resolve which generate function to use, loading the model if needed.
  * Reuses pattern from explain-code.js.
@@ -139,85 +142,7 @@ const addBlocksToWorkspace = (vm, blocks) => {
  */
 const buildScratchblocksPrompt = (userPrompt, blocksText, targetName, isStage) => {
     const entity = isStage ? 'the Stage' : `sprite "${targetName}"`;
-
-    return `You are a Scratch coding assistant. Generate Scratch code in scratchblocks text format.
-
-RULES:
-1. Keep scripts SHORT (under 15 blocks). Use the SIMPLEST approach.
-2. Do EXACTLY what is requested — nothing more. Do NOT add extra blocks or explanations.
-3. Use ONLY blocks from the COMMON BLOCKS list below. Do NOT invent or modify block names.
-4. Your response must start with \`\`\`scratchblocks and contain ONLY code. No explanations.
-
-SYNTAX:
-- Numbers: (10), (0.5)
-- Strings: [Hello!], [What's your name?]
-- Dropdowns: (mouse-pointer v), [color v]
-- Booleans: <touching (mouse-pointer v) ?>
-- Nesting: indent with tab, close with "end"
-- ONLY use "end" to close forever, repeat, if...then, or repeat until. Never use "end" alone.
-
-EXAMPLE 1 - "move forward":
-when green flag clicked
-move (10) steps
-
-EXAMPLE 2 - "forever move and bounce":
-when green flag clicked
-forever
-\tmove (10) steps
-\tif on edge, bounce
-end
-
-EXAMPLE 3 - "say hello for 2 seconds":
-when green flag clicked
-say [Hello!] for (2) seconds
-
-EXAMPLE 4 - "if touching edge, play sound":
-when green flag clicked
-forever
-\tif <touching (edge v) ?> then
-\t\tstart sound (pop v)
-\tend
-end
-
-EXAMPLE 5 - "hide":
-when green flag clicked
-hide
-
-COMMON BLOCKS:
-move (10) steps | turn right (15) degrees | turn left (15) degrees
-go to x: (0) y: (0) | glide (1) secs to x: (0) y: (0)
-point in direction (90) | if on edge, bounce
-change x by (10) | set x to (0) | change y by (10) | set y to (0)
-say [Hello!] for (2) seconds | say [Hello!] | think [Hmm...] for (2) seconds
-switch costume to (costume1 v) | next costume | switch backdrop to (backdrop1 v)
-change size by (10) | set size to (100) %
-change [color v] effect by (25) | set [color v] effect to (0) | clear graphic effects
-show | hide
-play sound (pop v) until done | start sound (pop v) | stop all sounds
-change volume by (-10) | set volume to (100) %
-when green flag clicked | when [space v] key pressed | when this sprite clicked
-when I receive [message1 v] | broadcast (message1 v) | broadcast (message1 v) and wait
-wait (1) seconds | repeat (10) ... end | forever ... end
-if <> then ... end | if <> then ... else ... end
-wait until <> | repeat until <> ... end
-stop [all v]
-create clone of (myself v) | when I start as a clone | delete this clone
-ask [What's your name?] and wait | (answer)
-<touching (mouse-pointer v) ?> | <touching color [#ff0000] ?> | <key (space v) pressed?>
-(distance to (mouse-pointer v)) | (mouse x) | (mouse y) | <mouse down?>
-(timer) | reset timer
-set [my variable v] to (0) | change [my variable v] by (1) | (my variable)
-add [thing] to [my list v] | delete (1) of [my list v] | insert [thing] at (1) of [my list v]
-(item (1) of [my list v]) | (length of [my list v])
-erase all | stamp | pen down | pen up | set pen color to [#0000ff]
-set pen size to (1) | change pen size by (1)
-
-CURRENT CODE FOR ${entity}:
-${blocksText}
-
-REQUEST: ${userPrompt}
-
-\`\`\`scratchblocks`;
+    return buildPromptTemplate(userPrompt, blocksText, entity);
 };
 
 /**
@@ -433,6 +358,8 @@ const normalizeScratchblocks = text => {
         line = line.replace(/^(\s*)broadcast (?!\()(\S+) and wait$/, '$1broadcast ($2 v) and wait');
         // "when I receive go" → "when I receive [go v]" (missing brackets)
         line = line.replace(/^(\s*)when I receive (?!\[)(\S+)$/, '$1when I receive [$2 v]');
+        // "when space key pressed" → "when [space v] key pressed" (missing brackets)
+        line = line.replace(/^(\s*)when (?!\[)(\S+) key pressed$/, '$1when [$2 v] key pressed');
         // "play sound (pop v)" → "start sound (pop v)" (missing "until done" or "start")
         line = line.replace(/^(\s*)play sound (\(.+? v?\))$/,
             '$1start sound $2');
@@ -484,6 +411,9 @@ const parseScratchblocksOutput = modelOutput => {
 
     // Strip any leading/trailing blank lines
     text = text.replace(/^\n+|\n+$/g, '');
+
+    // Strip echoed prompt fragments (model sometimes echoes "code" or "scratchblocks")
+    text = text.replace(/^(?:code|scratchblocks)\s*\n/, '');
 
     // Lightweight normalization of common model quirks
     text = normalizeScratchblocks(text);
