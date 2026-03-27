@@ -9,6 +9,7 @@ module.exports = defineConfig({
         timeout: 10000
     },
     fullyParallel: false,
+    workers: 1,
     retries: 0,
     reporter: 'list',
     use: {
@@ -21,7 +22,17 @@ module.exports = defineConfig({
         {
             name: 'chromium',
             use: {
-                browserName: 'chromium'
+                browserName: 'chromium',
+                launchOptions: {
+                    args: [
+                        // Enable WebGPU for MediaPipe LlmInference (AI model tests)
+                        '--enable-unsafe-webgpu',
+                        '--enable-features=Vulkan',
+                        '--use-vulkan=swiftshader',
+                        '--enable-gpu-rasterization',
+                        '--disable-gpu-sandbox'
+                    ]
+                }
             }
         }
     ]
