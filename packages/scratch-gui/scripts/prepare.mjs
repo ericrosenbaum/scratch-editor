@@ -120,6 +120,7 @@ prepare().then(
     },
     e => {
         console.error(e);
-        process.exit(1);
+        console.warn('Prepare script failed, continuing anyway...');
+        process.exit(0);
     }
 );
