@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm ls:*)",
+      "Bash(node_modules/.bin/playwright test:*)",
+      "Bash(node_modules/.bin/playwright --help)",
+      "Bash(npm install:*)",
+      "Bash(curl -L \"https://storage.googleapis.com/gemma-3n/gemma-3n-E2B-it-int4-Web.litertlm\" -o /tmp/gemma-model.bin --progress-bar)",
+      "Read(//Users/ericrosenbaum/Documents/scratch-editor/**)",
+      "Bash(grep -E '\"\"build\"\"' package.json)",
+      "Bash(grep -r \"MODEL_URL\\\\|OPFS\\\\|Gemma\" /Users/ericrosenbaum/Documents/scratch-editor/packages/scratch-gui/src --include=*.js --include=*.jsx)",
+      "Bash(curl -s http://127.0.0.1:9222/json/version)"
+    ]
+  }
+}

@@ -35,10 +35,15 @@
   "devDependencies": {
     "@commitlint/cli": "17.8.1",
     "@commitlint/config-conventional": "17.8.1",
+    "@playwright/test": "^1.58.2",
     "cross-env": "7.0.3",
     "globals": "16.5.0",
     "husky": "8.0.3",
     "npm": "10.9.4",
     "ts-node": "10.9.2"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-genai": "^0.10.26",
+    "sb-edit": "^0.14.0"
   }
 }

@@ -54,6 +54,18 @@ const generate = async prompt => {
     return _llmInference.generateResponse(prompt);
 };
 
+// Expose for testing (CDP test harness)
+if (typeof window !== 'undefined') {
+    Object.defineProperty(window, '__aiGenerate', {
+        get: () => _modelLoaded ? generate : null,
+        configurable: true
+    });
+    Object.defineProperty(window, '__aiModelLoaded', {
+        get: () => _modelLoaded,
+        configurable: true
+    });
+}
+
 // ---------------------------------------------------------------------------
 // OPFS helpers
 // ---------------------------------------------------------------------------

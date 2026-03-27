@@ -1,0 +1,22 @@
+[
+  {
+    "name": "change color effect",
+    "prompt": "when green flag clicked, change color effect by 25",
+    "status": "ERROR",
+    "reason": "locator.waitFor: Timeout 600000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=Suggested code:') to be visible\u001b[22m\n",
+    "previewText": null,
+    "opcodes": null,
+    "consoleErrors": [],
+    "blockCount": 0
+  },
+  {
+    "name": "wait then move",
+    "prompt": "when green flag clicked, wait 0.1 seconds then move 30 steps",
+    "status": "ERROR",
+    "reason": "locator.waitFor: Timeout 600000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=Suggested code:') to be visible\u001b[22m\n",
+    "previewText": null,
+    "opcodes": null,
+    "consoleErrors": [],
+    "blockCount": 0
+  }
+]
