@@ -3536,6 +3536,1203 @@ const tips = {
         relevance: {
             keywords: ['tutorial', 'step', 'teach', 'instruction', 'broadcast', 'repeat', 'until']
         }
+    },
+
+    // ──────────────────────────────────────────────
+    // CATEGORY 8: Kid Questions — Basketball / Sports
+    // ──────────────────────────────────────────────
+
+    'follow-another-sprite': {
+        id: 'follow-another-sprite',
+        followUpLabel: 'Follow a sprite',
+        text: 'Use "go to [sprite]" inside a "forever" loop to make one sprite follow another — like a basketball following the cat!',
+        tags: ['motion', 'game', 'sports'],
+        queries: [
+            'how do I make the cat dribble a basketball',
+            'show me the code to make the basketball follow the cat',
+            'how do I make one sprite follow another',
+            'how do I make the ball follow the player',
+            'how do I make a sprite chase another sprite'
+        ],
+        followUps: ['follow-with-offset', 'bounce-up-down', 'forever-loop'],
+        blockExample: 'followMouse',
+        pointers: [
+            {
+                label: 'Drag "go to" into your code',
+                blockOpcode: 'motion_goto',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['follow', 'chase', 'dribble', 'basketball', 'ball', 'go to', 'sprite']
+        }
+    },
+    'follow-with-offset': {
+        id: 'follow-with-offset',
+        followUpLabel: 'Follow with offset',
+        text: 'To make a sprite follow below another, use "go to [sprite]" then "change y by -30" — the negative number puts it lower!',
+        tags: ['motion', 'position'],
+        queries: [
+            'what if I want the basketball to be a little below the cat',
+            'how do I make a sprite follow but a little lower',
+            'how do I offset a following sprite',
+            'make the ball stay below the player'
+        ],
+        followUps: ['follow-another-sprite', 'change-xy-position'],
+        pointers: [
+            {
+                label: 'Drag "change y by" into your code',
+                blockOpcode: 'motion_changeyby',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['below', 'offset', 'lower', 'above', 'next to', 'beside', 'follow']
+        }
+    },
+    'bounce-up-down': {
+        id: 'bounce-up-down',
+        followUpLabel: 'Bounce up & down',
+        text: 'Make a sprite bounce! Use "repeat 10: change y by 5" then "repeat 10: change y by -5" inside a forever loop.',
+        tags: ['motion', 'animation', 'sports'],
+        queries: [
+            'how do I make the basketball bounce up and down',
+            'how do I make a sprite bounce up and down',
+            'how do I make a bouncing animation',
+            'I want my sprite to go up and down'
+        ],
+        followUps: ['bounce-speed', 'bounce-height', 'forever-loop'],
+        blockExample: 'bounceUpDown',
+        pointers: [
+            {
+                label: 'Drag "change y by" into your code',
+                blockOpcode: 'motion_changeyby',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['bounce', 'up and down', 'basketball', 'ball', 'hop', 'spring']
+        }
+    },
+    'bounce-speed': {
+        id: 'bounce-speed',
+        followUpLabel: 'Bounce speed',
+        text: 'To change bounce speed, adjust the "repeat" number — fewer repeats = faster bounce, more repeats = slower bounce!',
+        tags: ['motion', 'animation'],
+        queries: [
+            'how can I make the bounce faster or slower',
+            'how do I change the bounce speed',
+            'my bounce is too slow',
+            'I want the ball to bounce faster'
+        ],
+        followUps: ['bounce-up-down', 'bounce-height', 'too-fast'],
+        relevance: {
+            keywords: ['faster', 'slower', 'speed', 'bounce', 'quick', 'tempo']
+        }
+    },
+    'bounce-height': {
+        id: 'bounce-height',
+        followUpLabel: 'Bounce height',
+        text: 'To change how high the bounce goes, change the number in "change y by" — bigger number = higher bounce!',
+        tags: ['motion', 'animation'],
+        queries: [
+            'how do I change the height of the bounce',
+            'I want a higher bounce',
+            'how do I make the ball bounce lower',
+            'make the bounce taller or shorter'
+        ],
+        followUps: ['bounce-up-down', 'bounce-speed'],
+        relevance: {
+            keywords: ['height', 'high', 'low', 'bounce', 'tall', 'short', 'bigger']
+        }
+    },
+    'shoot-at-target': {
+        id: 'shoot-at-target',
+        followUpLabel: 'Shoot at a target',
+        text: 'Use "glide 0.5 secs to x: y:" to make a sprite fly toward a target — set x and y to where the hoop or goal is!',
+        tags: ['motion', 'game', 'sports'],
+        queries: [
+            'how do I make the cat shoot the ball into the hoop',
+            'how do I make a sprite fly toward a target',
+            'how do I throw a ball at something',
+            'how do I make a shooting animation'
+        ],
+        followUps: ['glide-to-position', 'detect-collision', 'follow-another-sprite'],
+        blockExample: 'glideTo',
+        pointers: [
+            {
+                label: 'Drag "glide" into your code',
+                blockOpcode: 'motion_glidesecstoxy',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['shoot', 'throw', 'hoop', 'basket', 'goal', 'target', 'aim', 'launch']
+        }
+    },
+
+    // ──────────────────────────────────────────────
+    // CATEGORY 9: Kid Questions — Sprite Animation
+    // ──────────────────────────────────────────────
+
+    'sprite-hop-jump': {
+        id: 'sprite-hop-jump',
+        followUpLabel: 'Make it hop',
+        text: 'Press space to hop! Use "change y by 50", "wait 0.3 seconds", then "change y by -50" — that\'s up, pause, and back down!',
+        tags: ['motion', 'animation', 'beginner'],
+        queries: [
+            'how to make the chick hop',
+            'how do I make a sprite hop',
+            'how do I make my sprite jump',
+            'I want my character to hop up and down',
+            'how to make the movement more smooth and make my character jump'
+        ],
+        followUps: ['bounce-up-down', 'move-with-keys', 'sprite-walk-animate'],
+        blockExample: 'hopJump',
+        pointers: [
+            {
+                label: 'Drag "change y by" into your code',
+                blockOpcode: 'motion_changeyby',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['hop', 'jump', 'leap', 'spring', 'chick', 'bunny', 'frog']
+        }
+    },
+    'sprite-walk-animate': {
+        id: 'sprite-walk-animate',
+        followUpLabel: 'Make it walk',
+        text: 'To make a sprite walk, use "next costume" with "move 10 steps" inside a forever loop — the costume changes make it look like walking!',
+        tags: ['motion', 'looks', 'animation', 'beginner'],
+        queries: [
+            'how to make chick walk',
+            'how do I make a sprite walk',
+            'how do I make my character walk across the screen',
+            'show me the code for the cat\'s movement',
+            'I want my sprite to look like it\'s walking'
+        ],
+        followUps: ['animate-costume', 'move-sprite', 'sprite-hop-jump'],
+        blockExample: 'foreverNextCostume',
+        pointers: [
+            {
+                label: 'Drag "next costume" into your code',
+                blockOpcode: 'looks_nextcostume',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['walk', 'chick', 'step', 'animate', 'movement', 'cat', 'character']
+        }
+    },
+    'sprite-backflip': {
+        id: 'sprite-backflip',
+        followUpLabel: 'Do a backflip',
+        text: 'Make a sprite do a backflip! Use "change y by 50", then "repeat 10: turn 36 degrees", then "change y by -50" to jump, spin, and land!',
+        tags: ['motion', 'animation', 'fun'],
+        queries: [
+            'how do I make my sprite do a backflip',
+            'how to make a sprite flip in the air',
+            'I want my character to do a trick',
+            'how do I make a spinning jump'
+        ],
+        followUps: ['sprite-hop-jump', 'spinning', 'repeat-loop'],
+        blockExample: 'backflipSpin',
+        pointers: [
+            {
+                label: 'Drag "turn" into your code',
+                blockOpcode: 'motion_turnright',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['backflip', 'flip', 'trick', 'spin', 'somersault', 'acrobat']
+        }
+    },
+    'sprite-lay-down': {
+        id: 'sprite-lay-down',
+        followUpLabel: 'Lay down',
+        text: 'Use "point in direction 0" to make a sprite lay down (facing up), or "point in direction 180" to face down — set rotation style to "all around" first!',
+        tags: ['motion', 'looks', 'animation'],
+        queries: [
+            'how can I make singer1 lay down',
+            'how do I make a sprite lay down',
+            'how to make a sprite lie flat',
+            'how do I rotate my sprite sideways'
+        ],
+        followUps: ['rotation-style-vs-turn', 'face-without-flip'],
+        pointers: [
+            {
+                label: 'Drag "point in direction" into your code',
+                blockOpcode: 'motion_pointindirection',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['lay down', 'lie', 'flat', 'horizontal', 'sideways', 'rotate', 'sleep']
+        }
+    },
+    'crowd-surf-effect': {
+        id: 'crowd-surf-effect',
+        followUpLabel: 'Crowd surf',
+        text: 'Make a sprite crowd surf! Use "glide 2 secs to x:240 y:50" to slide across, and add "change y by 5" then "change y by -5" in a loop for a bobbing effect!',
+        tags: ['motion', 'animation', 'fun'],
+        queries: [
+            'how to make singer1 crowd surf',
+            'how do I make a sprite slide across the screen',
+            'how do I make a floating movement'
+        ],
+        followUps: ['glide-to-position', 'bounce-up-down', 'make-dance-party'],
+        blockExample: 'glideTo',
+        pointers: [
+            {
+                label: 'Drag "glide" into your code',
+                blockOpcode: 'motion_glidesecstoxy',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['crowd surf', 'surf', 'float', 'slide', 'concert', 'singer']
+        }
+    },
+
+    // ──────────────────────────────────────────────
+    // CATEGORY 10: Kid Questions — Sprite Management
+    // ──────────────────────────────────────────────
+
+    'duplicate-code-to-sprite': {
+        id: 'duplicate-code-to-sprite',
+        followUpLabel: 'Copy code to sprite',
+        text: 'Yes! Drag your code stack from the workspace onto another sprite\'s thumbnail in the sprite pane — it copies the whole stack!',
+        tags: ['sprites', 'meta', 'beginner'],
+        queries: [
+            'can you duplicate the code stack to other sprites',
+            'how do I copy code to another sprite',
+            'how do I share blocks between sprites',
+            'I want the same code on a different sprite'
+        ],
+        followUps: ['sprite-has-own-code', 'right-click-duplicate', 'add-sprite'],
+        pointers: [
+            {
+                label: 'Drag code onto a sprite thumbnail to copy it',
+                target: '[class*="sprite-selector_sprite-selector"]',
+                side: 'left'
+            }
+        ],
+        relevance: {
+            keywords: ['duplicate', 'copy', 'code', 'stack', 'other sprite', 'share', 'transfer']
+        }
+    },
+    'explore-sprite-abilities': {
+        id: 'explore-sprite-abilities',
+        followUpLabel: 'What can it do?',
+        text: 'Every sprite can move, change costumes, play sounds, and run code! Click the Costumes tab to see its different looks, and the Sounds tab for its sounds.',
+        tags: ['sprites', 'beginner', 'meta'],
+        queries: [
+            'what can the egg do',
+            'what can this sprite do',
+            'what are all the things my sprite can do',
+            'what is this sprite for'
+        ],
+        followUps: ['access-other-costumes', 'add-sound', 'move-sprite'],
+        pointers: [
+            {
+                label: 'Click Costumes to see its looks',
+                target: '[class*="tab-list"] [class*="tab"]:nth-child(2)',
+                side: 'bottom'
+            }
+        ],
+        relevance: {
+            keywords: ['what can', 'do', 'abilities', 'features', 'egg', 'sprite']
+        }
+    },
+    'access-other-costumes': {
+        id: 'access-other-costumes',
+        followUpLabel: 'See all costumes',
+        text: 'Click the Costumes tab at the top to see all the costumes your sprite has — you can switch between them with "switch costume to" or "next costume"!',
+        tags: ['costumes', 'beginner'],
+        queries: [
+            'how do I get to the other egg costumes',
+            'where are the other costumes',
+            'how do I see all my sprite\'s costumes',
+            'how do I find the costume list'
+        ],
+        followUps: ['change-costume', 'animate-costume', 'add-costume'],
+        pointers: [
+            {
+                label: 'Click the Costumes tab',
+                target: '[class*="tab-list"] [class*="tab"]:nth-child(2)',
+                side: 'bottom'
+            }
+        ],
+        relevance: {
+            keywords: ['costume', 'other', 'list', 'tab', 'find', 'see', 'switch']
+        }
+    },
+    'find-sprite-in-library': {
+        id: 'find-sprite-in-library',
+        followUpLabel: 'Find a sprite',
+        text: 'Click the cat button below the stage to open the sprite library, then use the search bar to find any sprite by name!',
+        tags: ['sprites', 'beginner'],
+        queries: [
+            'where can I find Dan B',
+            'how do I find a specific sprite',
+            'how do I search for a sprite',
+            'where is the sprite library'
+        ],
+        followUps: ['add-sprite', 'add-many-same-sprite'],
+        pointers: [
+            {
+                label: 'Add a new sprite here',
+                target: '[class*="sprite-selector_sprite-selector"] [class*="add-button"]',
+                side: 'top'
+            }
+        ],
+        relevance: {
+            keywords: ['find', 'search', 'library', 'Dan', 'sprite', 'where', 'look for']
+        }
+    },
+    'add-many-same-sprite': {
+        id: 'add-many-same-sprite',
+        followUpLabel: 'Add more copies',
+        text: 'To add more copies of a sprite, right-click the sprite in the sprite pane and choose "duplicate" — or add it again from the library! For lots of copies, try cloning.',
+        tags: ['sprites', 'beginner'],
+        queries: [
+            'how do I make more than three dans',
+            'how do I add more of the same sprite',
+            'I want multiple copies of a sprite',
+            'can I duplicate a sprite'
+        ],
+        followUps: ['clone-sprite', 'find-sprite-in-library', 'add-sprite'],
+        pointers: [
+            {
+                label: 'Right-click a sprite to duplicate',
+                target: '[class*="sprite-selector_sprite-selector"]',
+                side: 'left'
+            }
+        ],
+        relevance: {
+            keywords: ['more', 'copies', 'duplicate', 'multiple', 'same', 'another', 'three']
+        }
+    },
+
+    // ──────────────────────────────────────────────
+    // CATEGORY 11: Kid Questions — Movement Patterns
+    // ──────────────────────────────────────────────
+
+    'move-side-to-side': {
+        id: 'move-side-to-side',
+        followUpLabel: 'Move side to side',
+        text: 'Use "move 5 steps" with "if on edge, bounce" inside a forever loop to make a sprite go back and forth automatically!',
+        tags: ['motion', 'animation'],
+        queries: [
+            'how to make the egg move side to side',
+            'how do I make a sprite go left and right',
+            'I want my sprite to move back and forth',
+            'how do I make something go side to side automatically'
+        ],
+        followUps: ['waddle-side-to-side', 'forever-loop', 'bouncing-around'],
+        blockExample: 'moveSideToSide',
+        pointers: [
+            {
+                label: 'Drag "if on edge, bounce" into your code',
+                blockOpcode: 'motion_ifonedgebounce',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['side to side', 'left and right', 'back and forth', 'patrol', 'pace']
+        }
+    },
+    'waddle-side-to-side': {
+        id: 'waddle-side-to-side',
+        followUpLabel: 'Waddle effect',
+        text: 'Make a sprite waddle! Use "turn right 10" then "wait 0.1" then "turn left 10" then "wait 0.1" inside a forever loop.',
+        tags: ['motion', 'animation', 'fun'],
+        queries: [
+            'how to make the egg waddle side to side',
+            'how do I make a waddle animation',
+            'how do I make my sprite wobble',
+            'I want my sprite to rock back and forth'
+        ],
+        followUps: ['move-side-to-side', 'fix-upright-rotation', 'forever-loop'],
+        blockExample: 'waddleTurn',
+        pointers: [
+            {
+                label: 'Drag "turn" into your code',
+                blockOpcode: 'motion_turnright',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['waddle', 'wobble', 'rock', 'sway', 'penguin', 'egg', 'tilt']
+        }
+    },
+    'fix-upright-rotation': {
+        id: 'fix-upright-rotation',
+        followUpLabel: 'Stay upright',
+        text: 'Use "point in direction 90" to make your sprite sit upright, or set rotation style to "don\'t rotate" so it always stays right-side up!',
+        tags: ['motion', 'looks'],
+        queries: [
+            'how to make the egg sit upright',
+            'how do I make my sprite stay right side up',
+            'my sprite is tilted how do I fix it',
+            'I want my sprite to face straight up'
+        ],
+        followUps: ['face-without-flip', 'rotation-style-vs-turn'],
+        pointers: [
+            {
+                label: 'Check rotation style in sprite info',
+                target: '[class*="sprite-info"]',
+                side: 'left'
+            }
+        ],
+        relevance: {
+            keywords: ['upright', 'straight', 'fix', 'rotation', 'tilt', 'direction', 'reset']
+        }
+    },
+    'face-without-flip': {
+        id: 'face-without-flip',
+        followUpLabel: 'Face left (no flip)',
+        text: 'Set rotation style to "left-right" in the sprite info area — then your sprite will mirror horizontally without flipping upside down!',
+        tags: ['motion', 'looks', 'beginner'],
+        queries: [
+            'how do I make the monkey face left without flipping upside down',
+            'my sprite flips upside down when it turns',
+            'how do I mirror my sprite left and right',
+            'how do I stop my sprite from going upside down'
+        ],
+        followUps: ['rotation-style-vs-turn', 'fix-upright-rotation'],
+        pointers: [
+            {
+                label: 'Set rotation style in sprite info',
+                target: '[class*="sprite-info"]',
+                side: 'left'
+            }
+        ],
+        relevance: {
+            keywords: ['face', 'left', 'flip', 'upside down', 'mirror', 'rotation style', 'left-right']
+        }
+    },
+    'continuous-key-hold': {
+        id: 'continuous-key-hold',
+        followUpLabel: 'Hold key to move',
+        text: 'Use "forever: if key pressed then change x by 5" instead of "when key pressed" — this way holding the key gives smooth, continuous movement!',
+        tags: ['motion', 'events', 'control'],
+        queries: [
+            'how do I make it so that when I hold down the arrow keys it continuously moves in that direction',
+            'holding the key should keep moving',
+            'I want smooth continuous movement when holding a key',
+            'how do I make my sprite move while holding a key'
+        ],
+        followUps: ['move-with-keys', 'forever-loop', 'wasd-controls'],
+        blockExample: 'foreverIfKeySmooth',
+        pointers: [
+            {
+                label: 'Drag "key pressed?" from Sensing',
+                blockOpcode: 'sensing_keypressed',
+                category: 'sensing',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['hold', 'continuous', 'smooth', 'key pressed', 'keep moving', 'arrow', 'direction']
+        }
+    },
+    'wasd-controls': {
+        id: 'wasd-controls',
+        followUpLabel: 'WASD controls',
+        text: 'For WASD movement, use "forever: if key w pressed, change y by 5 / if key a pressed, change x by -5" and so on for each letter!',
+        tags: ['motion', 'events', 'control'],
+        queries: [
+            'how do I make my sprite move using wasd',
+            'how do I use wasd keys for movement',
+            'I want to use the letter keys to move',
+            'wasd keyboard controls'
+        ],
+        followUps: ['continuous-key-hold', 'move-with-keys', 'change-xy-position'],
+        blockExample: 'foreverIfKeySmooth',
+        pointers: [
+            {
+                label: 'Drag "key pressed?" from Sensing',
+                blockOpcode: 'sensing_keypressed',
+                category: 'sensing',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['wasd', 'w a s d', 'letter keys', 'keyboard', 'controls']
+        }
+    },
+    'sprite-return-to-position': {
+        id: 'sprite-return-to-position',
+        followUpLabel: 'Go back to start',
+        text: 'Use "go to x: -200 y: 0" to send a sprite back to a specific position — great for resetting enemies or obstacles!',
+        tags: ['motion', 'game'],
+        queries: [
+            'how do I get the crab to go back to the left',
+            'how do I reset a sprite to its starting position',
+            'how do I make a sprite go back to the start',
+            'I want the enemy to come back after it goes off screen'
+        ],
+        followUps: ['reset-at-start', 'go-to-position'],
+        blockExample: 'goToCenter',
+        pointers: [
+            {
+                label: 'Drag "go to x: y:" into your code',
+                blockOpcode: 'motion_gotoxy',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['go back', 'return', 'reset', 'start', 'left', 'beginning', 'reappear']
+        }
+    },
+    'move-multiple-sprites': {
+        id: 'move-multiple-sprites',
+        followUpLabel: 'Move both sprites',
+        text: 'Each sprite needs its own code! Click a sprite in the sprite pane, then add movement blocks to it — do this for each sprite you want to move.',
+        tags: ['sprites', 'motion', 'beginner'],
+        queries: [
+            'how do I make both sprites move',
+            'how do I control two sprites',
+            'only one sprite is moving',
+            'I want all my sprites to move'
+        ],
+        followUps: ['sprite-has-own-code', 'wrong-sprite-selected', 'move-with-keys'],
+        pointers: [
+            {
+                label: 'Click a sprite to add code to it',
+                target: '[class*="sprite-selector_sprite-selector"]',
+                side: 'left'
+            }
+        ],
+        relevance: {
+            keywords: ['both', 'two', 'multiple', 'all', 'sprites', 'move', 'each']
+        }
+    },
+
+    // ──────────────────────────────────────────────
+    // CATEGORY 12: Kid Questions — Sound
+    // ──────────────────────────────────────────────
+
+    'find-specific-sound': {
+        id: 'find-specific-sound',
+        followUpLabel: 'Find a sound',
+        text: 'Click the Sounds tab, then click the speaker button to open the sound library — use the search bar to look for sounds like "chirp", "bird", or any sound you want!',
+        tags: ['sound', 'beginner'],
+        queries: [
+            'is there a cheeping sound',
+            'how do I find a specific sound',
+            'is there a bird sound',
+            'where do I search for sounds',
+            'I\'m looking for a particular sound effect'
+        ],
+        followUps: ['add-sound', 'record-sound', 'silly-sounds'],
+        pointers: [
+            {
+                label: 'Click the Sounds tab',
+                target: '[class*="tab-list"] [class*="tab"]:nth-child(3)',
+                side: 'bottom'
+            }
+        ],
+        relevance: {
+            keywords: ['find', 'search', 'specific', 'cheep', 'chirp', 'bird', 'sound', 'particular']
+        }
+    },
+    'insert-audio-file': {
+        id: 'insert-audio-file',
+        followUpLabel: 'Upload a sound',
+        text: 'To add your own audio file, go to the Sounds tab, hover over the speaker button, and choose "Upload Sound" to pick a file from your computer!',
+        tags: ['sound', 'beginner'],
+        queries: [
+            'how do I insert an audio',
+            'how do I upload my own sound file',
+            'can I add an mp3 to my project',
+            'I want to use my own music file'
+        ],
+        followUps: ['add-sound', 'record-sound', 'play-vs-play-until-done'],
+        pointers: [
+            {
+                label: 'Click the Sounds tab',
+                target: '[class*="tab-list"] [class*="tab"]:nth-child(3)',
+                side: 'bottom'
+            }
+        ],
+        relevance: {
+            keywords: ['insert', 'upload', 'audio', 'file', 'mp3', 'import', 'own sound']
+        }
+    },
+    'debug-sound-on-collision': {
+        id: 'debug-sound-on-collision',
+        followUpLabel: 'Fix sound on touch',
+        text: 'If your sound isn\'t playing when sprites touch, make sure the "if touching" and "play sound" are both inside a "forever" loop — and use "play sound until done" so it doesn\'t restart every frame!',
+        tags: ['sound', 'debugging', 'sensing'],
+        queries: [
+            'look at my code, why is my sound not playing when it hits the volleyball sprite',
+            'my sound doesn\'t play when sprites touch',
+            'why isn\'t the sound working on collision',
+            'sound not playing when touching another sprite'
+        ],
+        followUps: ['detect-collision', 'play-vs-play-until-done', 'if-not-forever'],
+        pointers: [
+            {
+                label: 'Drag "play sound until done" into your code',
+                blockOpcode: 'sound_playuntildone',
+                category: 'sound',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['sound', 'not playing', 'touch', 'collision', 'hit', 'volleyball', 'play']
+        }
+    },
+
+    // ──────────────────────────────────────────────
+    // CATEGORY 13: Kid Questions — Game Mechanics
+    // ──────────────────────────────────────────────
+
+    'solid-wall-collision': {
+        id: 'solid-wall-collision',
+        followUpLabel: 'Solid walls',
+        text: 'To stop a sprite from going through walls, use "if touching color [wall color] then move back" — put it in a forever loop so it\'s always checking!',
+        tags: ['sensing', 'game', 'collision'],
+        queries: [
+            'how do I make my cat not able to go through the green pillars',
+            'how do I make solid walls my sprite can\'t walk through',
+            'my sprite goes through obstacles',
+            'how do I stop a sprite from going through things'
+        ],
+        followUps: ['touching-color', 'detect-collision', 'obstacle-course-game'],
+        blockExample: 'touchingColorGoto',
+        pointers: [
+            {
+                label: 'Drag "touching color?" into your code',
+                blockOpcode: 'sensing_touchingcolor',
+                category: 'sensing',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['wall', 'solid', 'through', 'pillar', 'barrier', 'block', 'stop', 'can\'t pass']
+        }
+    },
+    'obstacle-course-game': {
+        id: 'obstacle-course-game',
+        followUpLabel: 'Obstacle course',
+        text: 'Make an obstacle course! Draw obstacles on the backdrop, then use "if touching color" to detect them. Add keyboard controls and a "go to start" reset!',
+        tags: ['game', 'project-ideas'],
+        queries: [
+            'how do I make an obstacle course',
+            'I want to make an obstacle game',
+            'how do I make a game with obstacles to dodge',
+            'how do I make a maze or obstacle course game'
+        ],
+        followUps: ['solid-wall-collision', 'color-touch-restart', 'move-with-keys', 'countdown-timer-variable'],
+        blockExample: 'touchingColorGoto',
+        pointers: [
+            {
+                label: 'Drag "touching color?" into your code',
+                blockOpcode: 'sensing_touchingcolor',
+                category: 'sensing',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['obstacle', 'course', 'dodge', 'avoid', 'maze', 'platformer']
+        }
+    },
+    'score-on-event': {
+        id: 'score-on-event',
+        followUpLabel: 'Score points',
+        text: 'Make a "score" variable, set it to 0 at the start, then use "if touching [sprite]" with "change score by 1" inside a forever loop to score when sprites meet!',
+        tags: ['variables', 'game', 'sensing'],
+        queries: [
+            'how do I put a score for every time the sprite jumps over the crab',
+            'how do I add points when something happens',
+            'how do I score when sprites touch',
+            'how do put the score up',
+            'I want to keep score in my game'
+        ],
+        followUps: ['use-variables', 'detect-collision', 'change-variable'],
+        pointers: [
+            {
+                label: 'Make a Variable here',
+                target: '.blocklyToolboxCategory#variables',
+                preAction: 'switchToCodeTab',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['score', 'points', 'count', 'track', 'jump over', 'collect', 'earn']
+        }
+    },
+    'countdown-timer-variable': {
+        id: 'countdown-timer-variable',
+        followUpLabel: 'Countdown timer',
+        text: 'Make a "timer" variable, set it to 30, then use "repeat 30: wait 1 second, change timer by -1" — when it hits 0, stop the game!',
+        tags: ['variables', 'game', 'control'],
+        queries: [
+            'how do I make a 30 second timer',
+            'how do I make a countdown timer',
+            'I want a timer that counts down in my game',
+            'how do I set a time limit'
+        ],
+        followUps: ['use-variables', 'timer-block', 'make-game'],
+        pointers: [
+            {
+                label: 'Make a Variable here',
+                target: '.blocklyToolboxCategory#variables',
+                preAction: 'switchToCodeTab',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['countdown', 'timer', 'seconds', 'time limit', '30', 'clock', 'stopwatch']
+        }
+    },
+    'color-touch-restart': {
+        id: 'color-touch-restart',
+        followUpLabel: 'Color = restart',
+        text: 'Use "forever: if touching color [pick a color] then go to x: y:" — this sends your sprite back to the start whenever it touches that color!',
+        tags: ['sensing', 'game', 'control'],
+        queries: [
+            'how do I make it so that if a sprite touches a color it restart',
+            'touching a color should restart the game',
+            'if my sprite touches red it should go back',
+            'how do I make a color that resets you'
+        ],
+        followUps: ['touching-color', 'solid-wall-collision', 'reset-at-start'],
+        blockExample: 'touchingColorGoto',
+        pointers: [
+            {
+                label: 'Drag "touching color?" into your code',
+                blockOpcode: 'sensing_touchingcolor',
+                category: 'sensing',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['touch color', 'restart', 'reset', 'go back', 'start over', 'die']
+        }
+    },
+    'kill-brick-game-over': {
+        id: 'kill-brick-game-over',
+        followUpLabel: 'Game over trigger',
+        text: 'To make a sprite end the game when touched, use "forever: if touching [sprite] then stop all" — you can also broadcast "game over" to show a message first!',
+        tags: ['game', 'control', 'sensing'],
+        queries: [
+            'how do I make button 3 a kill brick',
+            'how do I make a sprite that ends the game when you touch it',
+            'how do I make a death block',
+            'how do I make game over when touching a sprite'
+        ],
+        followUps: ['detect-collision', 'broadcast-message', 'make-game'],
+        blockExample: 'foreverIfTouching',
+        pointers: [
+            {
+                label: 'Drag "stop all" into your code',
+                blockOpcode: 'control_stop',
+                category: 'control',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['kill', 'death', 'game over', 'end', 'stop', 'lose', 'brick', 'danger']
+        }
+    },
+    'ball-bounce-off-sprite': {
+        id: 'ball-bounce-off-sprite',
+        followUpLabel: 'Bounce off sprite',
+        text: 'To make a ball bounce off a player, use "if touching [player]" inside a forever loop, then "point in direction (pick random)" or "turn 180 degrees" to reverse it!',
+        tags: ['motion', 'sensing', 'game', 'sports'],
+        queries: [
+            'how can I make the ball bounce off a player',
+            'how do I make a ball bounce off a sprite',
+            'I want the ball to ricochet when it hits something',
+            'how do I make things bounce off each other'
+        ],
+        followUps: ['detect-collision', 'bouncing-around', 'volleyball-game'],
+        blockExample: 'foreverIfTouching',
+        pointers: [
+            {
+                label: 'Drag "touching?" into your code',
+                blockOpcode: 'sensing_touchingobject',
+                category: 'sensing',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['bounce off', 'deflect', 'ricochet', 'hit', 'ball', 'player', 'rebound']
+        }
+    },
+    'falling-obstacle': {
+        id: 'falling-obstacle',
+        followUpLabel: 'Falling obstacles',
+        text: 'To make a sprite fall from the sky, start it at the top with "go to x:0 y:180" then use "forever: change y by -5" to make it fall down!',
+        tags: ['motion', 'game'],
+        queries: [
+            'how do I make a sprite fall from the sky',
+            'how do I make things fall down',
+            'I want obstacles to drop from the top',
+            'how do I make the broom fall from the sky'
+        ],
+        followUps: ['solid-wall-collision', 'detect-collision', 'clone-sprite'],
+        blockExample: 'fallingFromSky',
+        pointers: [
+            {
+                label: 'Drag "change y by" into your code',
+                blockOpcode: 'motion_changeyby',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['fall', 'drop', 'sky', 'rain', 'obstacle', 'top', 'down', 'broom']
+        }
+    },
+
+    // ──────────────────────────────────────────────
+    // CATEGORY 14: Kid Questions — Project Ideas & Concepts
+    // ──────────────────────────────────────────────
+
+    'game-types-overview': {
+        id: 'game-types-overview',
+        followUpLabel: 'Game ideas',
+        text: 'You can make so many games! Maze games, chase games, platformers, clicker games, pong, quiz games, dodge games, catching games, and more — pick one that sounds fun!',
+        tags: ['project-ideas', 'game'],
+        queries: [
+            'what kind of games can I create',
+            'what kinds of games can you make in Scratch',
+            'what are some game ideas',
+            'what games can I build'
+        ],
+        followUps: ['make-game', 'make-platformer', 'obstacle-course-game', 'volleyball-game'],
+        relevance: {
+            keywords: ['kinds', 'types', 'games', 'create', 'build', 'what', 'ideas']
+        }
+    },
+    'advanced-scratch-examples': {
+        id: 'advanced-scratch-examples',
+        followUpLabel: 'Amazing Scratch projects',
+        text: 'People have made incredible things in Scratch — 3D engines, full RPG games, music studios, and even working computers! Start with something simple and keep building your skills.',
+        tags: ['project-ideas', 'inspiration'],
+        queries: [
+            'what is the most advanced complicated game that was made on Scratch',
+            'what is the coolest Scratch project ever',
+            'what amazing things can you make in Scratch',
+            'can you make advanced games in Scratch'
+        ],
+        followUps: ['game-types-overview', 'make-game', 'project-idea-suggestion'],
+        relevance: {
+            keywords: ['advanced', 'complicated', 'complex', 'amazing', 'best', 'coolest', 'impressive']
+        }
+    },
+    'project-idea-suggestion': {
+        id: 'project-idea-suggestion',
+        followUpLabel: 'Get an idea',
+        text: 'How about making a game where your sprite dodges falling objects? Or an animation of your favorite animal? Or a music machine? Start small — you can always add more!',
+        tags: ['project-ideas', 'beginner'],
+        queries: [
+            'give me an idea of what I should make',
+            'I don\'t know what to make',
+            'what should I create in Scratch',
+            'I need inspiration for a project'
+        ],
+        followUps: ['game-types-overview', 'make-game', 'make-animation', 'make-music-project'],
+        relevance: {
+            keywords: ['idea', 'suggestion', 'what to make', 'inspire', 'don\'t know', 'create']
+        }
+    },
+    'make-tetris-game': {
+        id: 'make-tetris-game',
+        followUpLabel: 'Tetris-style game',
+        text: 'Tetris is an advanced project! Start by making one block that falls and stops at the bottom, then add keyboard controls to move it left and right. Build up from there!',
+        tags: ['project-ideas', 'game', 'advanced'],
+        queries: [
+            'I want to make a tetris game',
+            'how do I make tetris in Scratch',
+            'how do I make falling block game',
+            'can I make tetris'
+        ],
+        followUps: ['falling-obstacle', 'continuous-key-hold', 'use-variables'],
+        blockExample: 'fallingFromSky',
+        pointers: [
+            {
+                label: 'Drag "change y by" into your code',
+                blockOpcode: 'motion_changeyby',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['tetris', 'falling blocks', 'puzzle', 'block game', 'stack']
+        }
+    },
+    'volleyball-game': {
+        id: 'volleyball-game',
+        followUpLabel: 'Volleyball game',
+        text: 'For a volleyball game, make a ball sprite that bounces, two player sprites with keyboard controls, and use "if touching" to make the ball bounce off the players!',
+        tags: ['project-ideas', 'game', 'sports'],
+        queries: [
+            'how can I make a volleyball game',
+            'I want to make a volleyball game',
+            'how do I make a two player sports game',
+            'how can I make the ball move'
+        ],
+        followUps: ['ball-bounce-off-sprite', 'move-with-keys', 'bouncing-around'],
+        blockExample: 'foreverBounce',
+        pointers: [
+            {
+                label: 'Drag "if on edge, bounce" into your code',
+                blockOpcode: 'motion_ifonedgebounce',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['volleyball', 'sports', 'ball', 'player', 'two player', 'net']
+        }
+    },
+    'make-game-more-interesting': {
+        id: 'make-game-more-interesting',
+        followUpLabel: 'Improve your game',
+        text: 'Try adding: a score variable, sound effects when things happen, a timer, extra levels with backdrops, or power-ups using clones — these all make games more exciting!',
+        tags: ['project-ideas', 'game'],
+        queries: [
+            'what else should I add to make the game more interesting',
+            'how do I make my game better',
+            'my game needs more features',
+            'what can I add to my game'
+        ],
+        followUps: ['use-variables', 'add-sound', 'countdown-timer-variable', 'clone-sprite'],
+        relevance: {
+            keywords: ['interesting', 'better', 'improve', 'features', 'more', 'fun', 'exciting', 'add']
+        }
+    },
+
+    // ──────────────────────────────────────────────
+    // CATEGORY 15: Kid Questions — Stage & Backdrops
+    // ──────────────────────────────────────────────
+
+    'scrolling-backdrop': {
+        id: 'scrolling-backdrop',
+        followUpLabel: 'Scrolling background',
+        text: 'For a continuously moving backdrop, make two copies of the background as sprites. Move both left in a forever loop — when one goes off screen, jump it to the right side!',
+        tags: ['motion', 'game', 'advanced'],
+        queries: [
+            'how to make the backdrop continuously moving',
+            'how do I make a scrolling background',
+            'I want the background to keep moving',
+            'how do I make an infinite scrolling backdrop'
+        ],
+        followUps: ['change-backdrop', 'forever-loop', 'make-platformer'],
+        blockExample: 'moveSideToSide',
+        pointers: [
+            {
+                label: 'Drag "change x by" into your code',
+                blockOpcode: 'motion_changexby',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['scrolling', 'backdrop', 'background', 'moving', 'continuous', 'infinite', 'parallax']
+        }
+    },
+    'multiple-backdrops': {
+        id: 'multiple-backdrops',
+        followUpLabel: 'Multiple backdrops',
+        text: 'Click the backdrop area below the stage and add more backdrops! Use "switch backdrop to" or "next backdrop" blocks to switch between them in your code.',
+        tags: ['looks', 'backdrop', 'beginner'],
+        queries: [
+            'how do I have 2 backgrounds',
+            'how do I add multiple backdrops',
+            'I want different backgrounds for different levels',
+            'how do I switch between backgrounds'
+        ],
+        followUps: ['change-backdrop', 'backdrop-events', 'broadcast-for-levels'],
+        pointers: [
+            {
+                label: 'Add a backdrop here',
+                target: '[class*="stage-selector"] [class*="add-button"]',
+                side: 'top'
+            }
+        ],
+        relevance: {
+            keywords: ['two', 'multiple', 'backgrounds', 'backdrops', 'switch', 'different', 'levels']
+        }
+    },
+
+    // ──────────────────────────────────────────────
+    // CATEGORY 16: Kid Questions — Misc / Meta
+    // ──────────────────────────────────────────────
+
+    'find-sprite-x-position': {
+        id: 'find-sprite-x-position',
+        followUpLabel: 'Find X position',
+        text: 'Hover over a sprite on the stage to see its x and y position in the sprite info area below, or use the "x position" reporter block from Motion!',
+        tags: ['motion', 'sensing', 'coordinates'],
+        queries: [
+            'where is the x position of crab',
+            'how do I find a sprite\'s x position',
+            'what is my sprite\'s position',
+            'how do I see the coordinates of a sprite'
+        ],
+        followUps: ['change-xy-explanation', 'go-to-position'],
+        pointers: [
+            {
+                label: 'Find "x position" in Motion',
+                blockOpcode: 'motion_xposition',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['x position', 'y position', 'coordinate', 'where', 'location', 'find']
+        }
+    },
+    'other-turn-options': {
+        id: 'other-turn-options',
+        followUpLabel: 'Turn options',
+        text: 'You can "turn right" or "turn left" by any number of degrees, or use "point in direction" to face a specific way (90=right, -90=left, 0=up, 180=down)!',
+        tags: ['motion', 'beginner'],
+        queries: [
+            'are there other turn options',
+            'what other ways can I turn my sprite',
+            'how do I point my sprite in a direction',
+            'what are the different turn blocks'
+        ],
+        followUps: ['spinning', 'rotation-style-vs-turn', 'face-without-flip'],
+        pointers: [
+            {
+                label: 'Drag "point in direction" into your code',
+                blockOpcode: 'motion_pointindirection',
+                category: 'motion',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['turn', 'rotate', 'direction', 'options', 'degrees', 'point', 'face']
+        }
+    },
+    'forever-block-explained': {
+        id: 'forever-block-explained',
+        followUpLabel: 'Why use forever?',
+        text: 'Without "forever", your code runs once and stops! The "forever" loop keeps repeating your blocks over and over — that\'s why your sprite stops moving when you remove it.',
+        tags: ['control', 'meta', 'beginner'],
+        queries: [
+            'why when I take out the forever block, my sprite stops moving',
+            'why do I need a forever block',
+            'what does the forever block do',
+            'my code stops after running once'
+        ],
+        followUps: ['forever-loop', 'repeat-loop', 'if-not-forever'],
+        blockExample: 'foreverMove',
+        relevance: {
+            keywords: ['forever', 'why', 'stops', 'once', 'need', 'remove', 'take out']
+        }
+    },
+    'no-code-interactions': {
+        id: 'no-code-interactions',
+        followUpLabel: 'Without code',
+        text: 'You can drag sprites around the stage with your mouse, draw costumes, record sounds, and change the backdrop — all without any code! But code is what makes things interactive.',
+        tags: ['meta', 'beginner'],
+        queries: [
+            'can I do that without code',
+            'do I need code to do this',
+            'what can I do without coding',
+            'is there a way to do it without blocks'
+        ],
+        followUps: ['drag-blocks-to-workspace', 'add-costume', 'add-sound'],
+        relevance: {
+            keywords: ['without code', 'no code', 'don\'t code', 'manually', 'drag', 'mouse']
+        }
+    },
+    'green-flag-not-moving': {
+        id: 'green-flag-not-moving',
+        followUpLabel: 'Nothing moves',
+        text: 'If clicking the green flag does nothing, check: do you have a "when green flag clicked" block on top of your code? Is your code connected in a stack? Is it on the right sprite?',
+        tags: ['debugging', 'events', 'beginner'],
+        queries: [
+            'I\'m clicking the green flag and it doesn\'t move what do I do',
+            'green flag doesn\'t work',
+            'nothing happens when I press play',
+            'I click start but nothing moves'
+        ],
+        followUps: ['nothing-happens', 'wrong-sprite-selected', 'add-event-block'],
+        blockExample: 'whenFlagMove',
+        pointers: [
+            {
+                label: 'Drag "when green flag clicked" into your code',
+                blockOpcode: 'event_whenflagclicked',
+                category: 'events',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['green flag', 'not moving', 'doesn\'t move', 'click', 'nothing', 'start']
+        }
+    },
+    'make-sprite-bigger': {
+        id: 'make-sprite-bigger',
+        followUpLabel: 'Make it bigger',
+        text: 'Use "set size to 200%" from Looks to make your sprite bigger — 100% is normal, higher numbers make it larger!',
+        tags: ['looks', 'size', 'beginner'],
+        queries: [
+            'how do I make the broom size bigger',
+            'how do I make a sprite larger',
+            'my sprite is too small I want it bigger',
+            'how do I increase the size of my sprite'
+        ],
+        followUps: ['change-size', 'sprite-too-small'],
+        blockExample: 'setSizeTo100',
+        pointers: [
+            {
+                label: 'Drag "set size to" into your code',
+                blockOpcode: 'looks_setsizeto',
+                category: 'looks',
+                side: 'right'
+            }
+        ],
+        relevance: {
+            keywords: ['bigger', 'larger', 'size', 'increase', 'grow', 'broom', 'scale up']
+        }
+    },
+    'costume-masking': {
+        id: 'costume-masking',
+        followUpLabel: 'Edit part of costume',
+        text: 'Scratch doesn\'t have masking, but you can select just part of a costume to edit! In the Costumes tab, use the select tool to click and drag around the area you want to change.',
+        tags: ['costumes', 'drawing'],
+        queries: [
+            'can I mask a costume so that when I edit it only edits what\'s inside the mask',
+            'how do I edit just part of a costume',
+            'how do I select a portion of my costume to edit',
+            'is there a mask tool in Scratch'
+        ],
+        followUps: ['add-costume', 'change-costume'],
+        pointers: [
+            {
+                label: 'Click the Costumes tab',
+                target: '[class*="tab-list"] [class*="tab"]:nth-child(2)',
+                side: 'bottom'
+            }
+        ],
+        relevance: {
+            keywords: ['mask', 'select', 'part', 'portion', 'edit', 'area', 'crop']
+        }
     }
 };
 /* eslint-enable @stylistic/max-len */

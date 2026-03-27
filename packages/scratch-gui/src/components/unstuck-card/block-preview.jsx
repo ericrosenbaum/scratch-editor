@@ -747,6 +747,253 @@ const BLOCK_XML = {
                     </block>
                 </next>
             </block>
+        </xml>`,
+    hopJump: `
+        <xml>
+            <block type="event_whenkeypressed" x="10" y="10">
+                <field name="KEY_OPTION">space</field>
+                <next>
+                    <block type="motion_changeyby">
+                        <value name="DY">
+                            <shadow type="math_number"><field name="NUM">50</field></shadow>
+                        </value>
+                        <next>
+                            <block type="control_wait">
+                                <value name="DURATION">
+                                    <shadow type="math_positive_number">
+                                        <field name="NUM">0.3</field>
+                                    </shadow>
+                                </value>
+                                <next>
+                                    <block type="motion_changeyby">
+                                        <value name="DY">
+                                            <shadow type="math_number"><field name="NUM">-50</field></shadow>
+                                        </value>
+                                    </block>
+                                </next>
+                            </block>
+                        </next>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    foreverIfKeySmooth: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="control_if">
+                                <value name="CONDITION">
+                                    <block type="sensing_keypressed">
+                                        <value name="KEY_OPTION">
+                                            <shadow type="sensing_keyoptions">
+                                                <field name="KEY_OPTION">right arrow</field>
+                                            </shadow>
+                                        </value>
+                                    </block>
+                                </value>
+                                <statement name="SUBSTACK">
+                                    <block type="motion_changexby">
+                                        <value name="DX">
+                                            <shadow type="math_number"><field name="NUM">5</field></shadow>
+                                        </value>
+                                    </block>
+                                </statement>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    bounceUpDown: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="control_repeat">
+                                <value name="TIMES">
+                                    <shadow type="math_whole_number"><field name="NUM">10</field></shadow>
+                                </value>
+                                <statement name="SUBSTACK">
+                                    <block type="motion_changeyby">
+                                        <value name="DY">
+                                            <shadow type="math_number"><field name="NUM">5</field></shadow>
+                                        </value>
+                                    </block>
+                                </statement>
+                                <next>
+                                    <block type="control_repeat">
+                                        <value name="TIMES">
+                                            <shadow type="math_whole_number"><field name="NUM">10</field></shadow>
+                                        </value>
+                                        <statement name="SUBSTACK">
+                                            <block type="motion_changeyby">
+                                                <value name="DY">
+                                                    <shadow type="math_number"><field name="NUM">-5</field></shadow>
+                                                </value>
+                                            </block>
+                                        </statement>
+                                    </block>
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    moveSideToSide: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="motion_movesteps">
+                                <value name="STEPS">
+                                    <shadow type="math_number"><field name="NUM">5</field></shadow>
+                                </value>
+                                <next>
+                                    <block type="motion_ifonedgebounce" />
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    waddleTurn: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="motion_turnright">
+                                <value name="DEGREES">
+                                    <shadow type="math_number"><field name="NUM">10</field></shadow>
+                                </value>
+                                <next>
+                                    <block type="control_wait">
+                                        <value name="DURATION">
+                                            <shadow type="math_positive_number">
+                                                <field name="NUM">0.1</field>
+                                            </shadow>
+                                        </value>
+                                        <next>
+                                            <block type="motion_turnleft">
+                                                <value name="DEGREES">
+                                                    <shadow type="math_number"><field name="NUM">10</field></shadow>
+                                                </value>
+                                                <next>
+                                                    <block type="control_wait">
+                                                        <value name="DURATION">
+                                                            <shadow type="math_positive_number">
+                                                                <field name="NUM">0.1</field>
+                                                            </shadow>
+                                                        </value>
+                                                    </block>
+                                                </next>
+                                            </block>
+                                        </next>
+                                    </block>
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    fallingFromSky: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="motion_gotoxy">
+                        <value name="X">
+                            <shadow type="math_number"><field name="NUM">0</field></shadow>
+                        </value>
+                        <value name="Y">
+                            <shadow type="math_number"><field name="NUM">180</field></shadow>
+                        </value>
+                        <next>
+                            <block type="control_forever">
+                                <statement name="SUBSTACK">
+                                    <block type="motion_changeyby">
+                                        <value name="DY">
+                                            <shadow type="math_number"><field name="NUM">-5</field></shadow>
+                                        </value>
+                                    </block>
+                                </statement>
+                            </block>
+                        </next>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    touchingColorGoto: `
+        <xml>
+            <block type="event_whenflagclicked" x="10" y="10">
+                <next>
+                    <block type="control_forever">
+                        <statement name="SUBSTACK">
+                            <block type="control_if">
+                                <value name="CONDITION">
+                                    <block type="sensing_touchingcolor">
+                                        <value name="COLOR">
+                                            <shadow type="colour_picker">
+                                                <field name="COLOUR">#ff0000</field>
+                                            </shadow>
+                                        </value>
+                                    </block>
+                                </value>
+                                <statement name="SUBSTACK">
+                                    <block type="motion_gotoxy">
+                                        <value name="X">
+                                            <shadow type="math_number"><field name="NUM">0</field></shadow>
+                                        </value>
+                                        <value name="Y">
+                                            <shadow type="math_number"><field name="NUM">0</field></shadow>
+                                        </value>
+                                    </block>
+                                </statement>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`,
+    backflipSpin: `
+        <xml>
+            <block type="event_whenkeypressed" x="10" y="10">
+                <field name="KEY_OPTION">space</field>
+                <next>
+                    <block type="motion_changeyby">
+                        <value name="DY">
+                            <shadow type="math_number"><field name="NUM">50</field></shadow>
+                        </value>
+                        <next>
+                            <block type="control_repeat">
+                                <value name="TIMES">
+                                    <shadow type="math_whole_number"><field name="NUM">10</field></shadow>
+                                </value>
+                                <statement name="SUBSTACK">
+                                    <block type="motion_turnright">
+                                        <value name="DEGREES">
+                                            <shadow type="math_number"><field name="NUM">36</field></shadow>
+                                        </value>
+                                    </block>
+                                </statement>
+                                <next>
+                                    <block type="motion_changeyby">
+                                        <value name="DY">
+                                            <shadow type="math_number"><field name="NUM">-50</field></shadow>
+                                        </value>
+                                    </block>
+                                </next>
+                            </block>
+                        </next>
+                    </block>
+                </next>
+            </block>
         </xml>`
 };
 

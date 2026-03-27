@@ -3024,6 +3024,1053 @@ const broadcastLevels = [
     }
 ];
 
+/**
+ * Template: when [space] key pressed → change y by 50 → wait 0.3 → change y by -50
+ * Simple hop/jump effect.
+ */
+const hopJump = [
+    {
+        id: 'unstuck_hop_1',
+        opcode: 'event_whenkeypressed',
+        next: 'unstuck_hop_2',
+        parent: null,
+        inputs: {},
+        fields: {
+            KEY_OPTION: {
+                name: 'KEY_OPTION',
+                value: 'space'
+            }
+        },
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_hop_2',
+        opcode: 'motion_changeyby',
+        next: 'unstuck_hop_3',
+        parent: 'unstuck_hop_1',
+        inputs: {
+            DY: {
+                name: 'DY',
+                block: 'unstuck_hop_2_dy',
+                shadow: 'unstuck_hop_2_dy'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_hop_2_dy',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_hop_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '50'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_hop_3',
+        opcode: 'control_wait',
+        next: 'unstuck_hop_4',
+        parent: 'unstuck_hop_2',
+        inputs: {
+            DURATION: {
+                name: 'DURATION',
+                block: 'unstuck_hop_3_dur',
+                shadow: 'unstuck_hop_3_dur'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_hop_3_dur',
+        opcode: 'math_positive_number',
+        next: null,
+        parent: 'unstuck_hop_3',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '0.3'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_hop_4',
+        opcode: 'motion_changeyby',
+        next: null,
+        parent: 'unstuck_hop_3',
+        inputs: {
+            DY: {
+                name: 'DY',
+                block: 'unstuck_hop_4_dy',
+                shadow: 'unstuck_hop_4_dy'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_hop_4_dy',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_hop_4',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '-50'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag → forever { if <key [right arrow] pressed?> then { change x by 5 } }
+ * Smooth continuous key movement.
+ */
+const foreverIfKeySmooth = [
+    {
+        id: 'unstuck_smooth_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_smooth_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_smooth_2',
+        opcode: 'control_forever',
+        next: null,
+        parent: 'unstuck_smooth_1',
+        inputs: {
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_smooth_3',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_smooth_3',
+        opcode: 'control_if',
+        next: null,
+        parent: 'unstuck_smooth_2',
+        inputs: {
+            CONDITION: {
+                name: 'CONDITION',
+                block: 'unstuck_smooth_4',
+                shadow: null
+            },
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_smooth_5',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_smooth_4',
+        opcode: 'sensing_keypressed',
+        next: null,
+        parent: 'unstuck_smooth_3',
+        inputs: {
+            KEY_OPTION: {
+                name: 'KEY_OPTION',
+                block: 'unstuck_smooth_4_menu',
+                shadow: 'unstuck_smooth_4_menu'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_smooth_4_menu',
+        opcode: 'sensing_keyoptions',
+        next: null,
+        parent: 'unstuck_smooth_4',
+        inputs: {},
+        fields: {
+            KEY_OPTION: {
+                name: 'KEY_OPTION',
+                value: 'right arrow'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_smooth_5',
+        opcode: 'motion_changexby',
+        next: null,
+        parent: 'unstuck_smooth_3',
+        inputs: {
+            DX: {
+                name: 'DX',
+                block: 'unstuck_smooth_5_dx',
+                shadow: 'unstuck_smooth_5_dx'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_smooth_5_dx',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_smooth_5',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '5'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag → forever { repeat 10 { change y by 5 } → repeat 10 { change y by -5 } }
+ * Bounce up and down effect.
+ */
+const bounceUpDown = [
+    {
+        id: 'unstuck_bnc_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_bnc_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_bnc_2',
+        opcode: 'control_forever',
+        next: null,
+        parent: 'unstuck_bnc_1',
+        inputs: {
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_bnc_3',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bnc_3',
+        opcode: 'control_repeat',
+        next: 'unstuck_bnc_5',
+        parent: 'unstuck_bnc_2',
+        inputs: {
+            TIMES: {
+                name: 'TIMES',
+                block: 'unstuck_bnc_3_times',
+                shadow: 'unstuck_bnc_3_times'
+            },
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_bnc_4',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bnc_3_times',
+        opcode: 'math_whole_number',
+        next: null,
+        parent: 'unstuck_bnc_3',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '10'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bnc_4',
+        opcode: 'motion_changeyby',
+        next: null,
+        parent: 'unstuck_bnc_3',
+        inputs: {
+            DY: {
+                name: 'DY',
+                block: 'unstuck_bnc_4_dy',
+                shadow: 'unstuck_bnc_4_dy'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bnc_4_dy',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_bnc_4',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '5'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bnc_5',
+        opcode: 'control_repeat',
+        next: null,
+        parent: 'unstuck_bnc_3',
+        inputs: {
+            TIMES: {
+                name: 'TIMES',
+                block: 'unstuck_bnc_5_times',
+                shadow: 'unstuck_bnc_5_times'
+            },
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_bnc_6',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bnc_5_times',
+        opcode: 'math_whole_number',
+        next: null,
+        parent: 'unstuck_bnc_5',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '10'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bnc_6',
+        opcode: 'motion_changeyby',
+        next: null,
+        parent: 'unstuck_bnc_5',
+        inputs: {
+            DY: {
+                name: 'DY',
+                block: 'unstuck_bnc_6_dy',
+                shadow: 'unstuck_bnc_6_dy'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_bnc_6_dy',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_bnc_6',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '-5'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag → forever { move 5 steps → if on edge, bounce }
+ * Simple side-to-side movement.
+ */
+const moveSideToSide = [
+    {
+        id: 'unstuck_side_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_side_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_side_2',
+        opcode: 'control_forever',
+        next: null,
+        parent: 'unstuck_side_1',
+        inputs: {
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_side_3',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_side_3',
+        opcode: 'motion_movesteps',
+        next: 'unstuck_side_4',
+        parent: 'unstuck_side_2',
+        inputs: {
+            STEPS: {
+                name: 'STEPS',
+                block: 'unstuck_side_3_steps',
+                shadow: 'unstuck_side_3_steps'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_side_3_steps',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_side_3',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '5'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_side_4',
+        opcode: 'motion_ifonedgebounce',
+        next: null,
+        parent: 'unstuck_side_3',
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag → forever { turn right 10, wait 0.1, turn left 10, wait 0.1 }
+ * Waddle/wobble effect.
+ */
+const waddleTurn = [
+    {
+        id: 'unstuck_waddle_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_waddle_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_waddle_2',
+        opcode: 'control_forever',
+        next: null,
+        parent: 'unstuck_waddle_1',
+        inputs: {
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_waddle_3',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_waddle_3',
+        opcode: 'motion_turnright',
+        next: 'unstuck_waddle_4',
+        parent: 'unstuck_waddle_2',
+        inputs: {
+            DEGREES: {
+                name: 'DEGREES',
+                block: 'unstuck_waddle_3_deg',
+                shadow: 'unstuck_waddle_3_deg'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_waddle_3_deg',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_waddle_3',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '10'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_waddle_4',
+        opcode: 'control_wait',
+        next: 'unstuck_waddle_5',
+        parent: 'unstuck_waddle_3',
+        inputs: {
+            DURATION: {
+                name: 'DURATION',
+                block: 'unstuck_waddle_4_dur',
+                shadow: 'unstuck_waddle_4_dur'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_waddle_4_dur',
+        opcode: 'math_positive_number',
+        next: null,
+        parent: 'unstuck_waddle_4',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '0.1'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_waddle_5',
+        opcode: 'motion_turnleft',
+        next: 'unstuck_waddle_6',
+        parent: 'unstuck_waddle_4',
+        inputs: {
+            DEGREES: {
+                name: 'DEGREES',
+                block: 'unstuck_waddle_5_deg',
+                shadow: 'unstuck_waddle_5_deg'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_waddle_5_deg',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_waddle_5',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '10'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_waddle_6',
+        opcode: 'control_wait',
+        next: null,
+        parent: 'unstuck_waddle_5',
+        inputs: {
+            DURATION: {
+                name: 'DURATION',
+                block: 'unstuck_waddle_6_dur',
+                shadow: 'unstuck_waddle_6_dur'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_waddle_6_dur',
+        opcode: 'math_positive_number',
+        next: null,
+        parent: 'unstuck_waddle_6',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '0.1'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag → go to x:0 y:180 → forever { change y by -5 }
+ * Sprite falling from the top of the stage.
+ */
+const fallingFromSky = [
+    {
+        id: 'unstuck_fall_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_fall_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_fall_2',
+        opcode: 'motion_gotoxy',
+        next: 'unstuck_fall_3',
+        parent: 'unstuck_fall_1',
+        inputs: {
+            X: {
+                name: 'X',
+                block: 'unstuck_fall_2_x',
+                shadow: 'unstuck_fall_2_x'
+            },
+            Y: {
+                name: 'Y',
+                block: 'unstuck_fall_2_y',
+                shadow: 'unstuck_fall_2_y'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_fall_2_x',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_fall_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '0'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_fall_2_y',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_fall_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '180'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_fall_3',
+        opcode: 'control_forever',
+        next: null,
+        parent: 'unstuck_fall_2',
+        inputs: {
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_fall_4',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_fall_4',
+        opcode: 'motion_changeyby',
+        next: null,
+        parent: 'unstuck_fall_3',
+        inputs: {
+            DY: {
+                name: 'DY',
+                block: 'unstuck_fall_4_dy',
+                shadow: 'unstuck_fall_4_dy'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_fall_4_dy',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_fall_4',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '-5'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when flag → forever { if <touching color?> then { go to x:0 y:0 } }
+ * Reset position when touching a color.
+ */
+const touchingColorGoto = [
+    {
+        id: 'unstuck_tcg_1',
+        opcode: 'event_whenflagclicked',
+        next: 'unstuck_tcg_2',
+        parent: null,
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_tcg_2',
+        opcode: 'control_forever',
+        next: null,
+        parent: 'unstuck_tcg_1',
+        inputs: {
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_tcg_3',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tcg_3',
+        opcode: 'control_if',
+        next: null,
+        parent: 'unstuck_tcg_2',
+        inputs: {
+            CONDITION: {
+                name: 'CONDITION',
+                block: 'unstuck_tcg_4',
+                shadow: null
+            },
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_tcg_5',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tcg_4',
+        opcode: 'sensing_touchingcolor',
+        next: null,
+        parent: 'unstuck_tcg_3',
+        inputs: {
+            COLOR: {
+                name: 'COLOR',
+                block: 'unstuck_tcg_4_color',
+                shadow: 'unstuck_tcg_4_color'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tcg_4_color',
+        opcode: 'colour_picker',
+        next: null,
+        parent: 'unstuck_tcg_4',
+        inputs: {},
+        fields: {
+            COLOUR: {
+                name: 'COLOUR',
+                value: '#ff0000'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tcg_5',
+        opcode: 'motion_gotoxy',
+        next: null,
+        parent: 'unstuck_tcg_3',
+        inputs: {
+            X: {
+                name: 'X',
+                block: 'unstuck_tcg_5_x',
+                shadow: 'unstuck_tcg_5_x'
+            },
+            Y: {
+                name: 'Y',
+                block: 'unstuck_tcg_5_y',
+                shadow: 'unstuck_tcg_5_y'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tcg_5_x',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_tcg_5',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '0'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_tcg_5_y',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_tcg_5',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '0'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
+/**
+ * Template: when [space] key pressed → change y by 50 → repeat 10 { turn 36 } → change y by -50
+ * Backflip/spin jump effect.
+ */
+const backflipSpin = [
+    {
+        id: 'unstuck_flip_1',
+        opcode: 'event_whenkeypressed',
+        next: 'unstuck_flip_2',
+        parent: null,
+        inputs: {},
+        fields: {
+            KEY_OPTION: {
+                name: 'KEY_OPTION',
+                value: 'space'
+            }
+        },
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0
+    },
+    {
+        id: 'unstuck_flip_2',
+        opcode: 'motion_changeyby',
+        next: 'unstuck_flip_3',
+        parent: 'unstuck_flip_1',
+        inputs: {
+            DY: {
+                name: 'DY',
+                block: 'unstuck_flip_2_dy',
+                shadow: 'unstuck_flip_2_dy'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_flip_2_dy',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_flip_2',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '50'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_flip_3',
+        opcode: 'control_repeat',
+        next: 'unstuck_flip_5',
+        parent: 'unstuck_flip_2',
+        inputs: {
+            TIMES: {
+                name: 'TIMES',
+                block: 'unstuck_flip_3_times',
+                shadow: 'unstuck_flip_3_times'
+            },
+            SUBSTACK: {
+                name: 'SUBSTACK',
+                block: 'unstuck_flip_4',
+                shadow: null
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_flip_3_times',
+        opcode: 'math_whole_number',
+        next: null,
+        parent: 'unstuck_flip_3',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '10'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_flip_4',
+        opcode: 'motion_turnright',
+        next: null,
+        parent: 'unstuck_flip_3',
+        inputs: {
+            DEGREES: {
+                name: 'DEGREES',
+                block: 'unstuck_flip_4_deg',
+                shadow: 'unstuck_flip_4_deg'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_flip_4_deg',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_flip_4',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '36'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_flip_5',
+        opcode: 'motion_changeyby',
+        next: null,
+        parent: 'unstuck_flip_3',
+        inputs: {
+            DY: {
+                name: 'DY',
+                block: 'unstuck_flip_5_dy',
+                shadow: 'unstuck_flip_5_dy'
+            }
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false
+    },
+    {
+        id: 'unstuck_flip_5_dy',
+        opcode: 'math_number',
+        next: null,
+        parent: 'unstuck_flip_5',
+        inputs: {},
+        fields: {
+            NUM: {
+                name: 'NUM',
+                value: '-50'
+            }
+        },
+        shadow: true,
+        topLevel: false
+    }
+];
+
 const blockTemplates = {
     whenFlagMove,
     whenKeyMoveRight,
@@ -3060,7 +4107,15 @@ const blockTemplates = {
     cloneCreateAndBehave,
     cloneBasicsPair,
     twoFlagStacks,
-    broadcastLevels
+    broadcastLevels,
+    hopJump,
+    foreverIfKeySmooth,
+    bounceUpDown,
+    moveSideToSide,
+    waddleTurn,
+    fallingFromSky,
+    touchingColorGoto,
+    backflipSpin
 };
 
 export {blockTemplates as default};
