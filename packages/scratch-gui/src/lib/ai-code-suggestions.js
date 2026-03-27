@@ -4,6 +4,23 @@ import {setGenerating, setResult, setError} from '../reducers/ai-code-suggestion
 // eslint-disable-next-line no-undef
 const {buildPrompt: buildPromptTemplate} = require('./ai-prompt-template');
 
+// Cloud AI endpoint (Vercel proxy for Claude API)
+const CLOUD_ENDPOINT = 'https://scratch-ai-proxy.vercel.app/api/generate';
+
+const cloudGenerate = async prompt => {
+    const res = await fetch(CLOUD_ENDPOINT, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt})
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Cloud AI error (${res.status})`);
+    }
+    const data = await res.json();
+    return data.text;
+};
+
 /**
  * Resolve which generate function to use, loading the model if needed.
  * Reuses pattern from explain-code.js.
@@ -56,7 +73,7 @@ const uid = () => `ai_${Date.now().toString(36)}_${(++_idCounter).toString(36)}`
 /**
  * Main entry point: generate a code suggestion.
  */
-const generateCodeSuggestion = async (vm, userPrompt, dispatch) => {
+const generateCodeSuggestion = async (vm, userPrompt, dispatch, mode = 'device') => {
     const target = vm.editingTarget;
     if (!target) {
         dispatch(setError('No sprite or stage selected'));
@@ -66,8 +83,13 @@ const generateCodeSuggestion = async (vm, userPrompt, dispatch) => {
     const targetName = target.getName();
     const isStage = target.isStage;
 
-    const generateFn = await resolveGenerateFn(vm);
-    if (!generateFn) return; // user cancelled model load
+    let generateFn;
+    if (mode === 'cloud') {
+        generateFn = cloudGenerate;
+    } else {
+        generateFn = await resolveGenerateFn(vm);
+        if (!generateFn) return; // user cancelled model load
+    }
 
     dispatch(setGenerating());
 

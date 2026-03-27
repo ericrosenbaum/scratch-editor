@@ -207,8 +207,8 @@ const mapDispatchToProps = dispatch => ({
     onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal()),
     onOpenAiSuggestions: () => dispatch(openAiSuggestions()),
     onCloseAiSuggestions: () => dispatch(closeAiSuggestions()),
-    onGenerateAiSuggestion: (vm, userPrompt) => {
-        if (vm) generateCodeSuggestion(vm, userPrompt, dispatch);
+    onGenerateAiSuggestion: (vm, userPrompt, mode) => {
+        if (vm) generateCodeSuggestion(vm, userPrompt, dispatch, mode);
     },
     onAddAiSuggestion: (vm, blocks) => {
         if (vm && blocks) {

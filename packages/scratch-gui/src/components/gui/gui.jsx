@@ -253,8 +253,8 @@ const GUIComponent = props => {
         onRequestCloseDebugModal();
     }, [onDebugModalClose, onRequestCloseDebugModal]);
 
-    const onGenerateAiSuggestion = useCallback(userPrompt => {
-        onGenerateAiSuggestionRaw(vm, userPrompt);
+    const onGenerateAiSuggestion = useCallback((userPrompt, mode) => {
+        onGenerateAiSuggestionRaw(vm, userPrompt, mode);
     }, [vm, onGenerateAiSuggestionRaw]);
 
     const onAddAiSuggestion = useCallback(() => {

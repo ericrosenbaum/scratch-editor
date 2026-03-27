@@ -10,7 +10,8 @@
       "Bash(grep -E '\"\"build\"\"' package.json)",
       "Bash(grep -r \"MODEL_URL\\\\|OPFS\\\\|Gemma\" /Users/ericrosenbaum/Documents/scratch-editor/packages/scratch-gui/src --include=*.js --include=*.jsx)",
       "Bash(curl -s http://127.0.0.1:9222/json/version)",
-      "Bash(grep -E \"\\\\.\\(js|ts|json\\)$\")"
+      "Bash(grep -E \"\\\\.\\(js|ts|json\\)$\")",
+      "Read(//Users/ericrosenbaum/Documents/scratch-gui/src/lib/**)"
     ]
   }
 }

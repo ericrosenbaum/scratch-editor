@@ -14,6 +14,7 @@ const AiSuggestionsModal = ({
     onRegenerate
 }) => {
     const [prompt, setPrompt] = useState('');
+    const [aiMode, setAiMode] = useState('device');
     const [offset, setOffset] = useState({dx: 0, dy: 0});
     const dragRef = useRef(null);
     const inputRef = useRef(null);
@@ -63,9 +64,9 @@ const AiSuggestionsModal = ({
     const handleSubmit = useCallback(e => {
         if (e) e.preventDefault();
         if (prompt.trim() && status !== 'generating') {
-            onGenerate(prompt.trim());
+            onGenerate(prompt.trim(), aiMode);
         }
-    }, [prompt, status, onGenerate]);
+    }, [prompt, status, onGenerate, aiMode]);
 
     const handleKeyDown = useCallback(e => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -76,9 +77,9 @@ const AiSuggestionsModal = ({
 
     const handleRegenerate = useCallback(() => {
         if (prompt.trim()) {
-            onRegenerate(prompt.trim());
+            onRegenerate(prompt.trim(), aiMode);
         }
-    }, [prompt, onRegenerate]);
+    }, [prompt, onRegenerate, aiMode]);
 
     if (!isOpen) return null;
 
@@ -111,9 +112,27 @@ const AiSuggestionsModal = ({
             </div>
             <div className={styles.body}>
                 <div className={styles.promptSection}>
-                    <label className={styles.promptLabel}>
-                        {'What do you want this sprite to do?'}
-                    </label>
+                    <div className={styles.promptHeader}>
+                        <label className={styles.promptLabel}>
+                            {'What do you want this sprite to do?'}
+                        </label>
+                        <div className={styles.modeToggle}>
+                            <span className={aiMode === 'device' ? styles.modeActive : styles.modeInactive}>
+                                {'On-Device'}
+                            </span>
+                            <button
+                                className={styles.toggleSwitch}
+                                data-active={aiMode === 'cloud'}
+                                onClick={() => setAiMode(aiMode === 'device' ? 'cloud' : 'device')}
+                                disabled={isGenerating}
+                            >
+                                <div className={styles.toggleKnob} />
+                            </button>
+                            <span className={aiMode === 'cloud' ? styles.modeActive : styles.modeInactive}>
+                                {'Cloud'}
+                            </span>
+                        </div>
+                    </div>
                     <div className={styles.promptRow}>
                         <input
                             ref={inputRef}
@@ -139,7 +158,7 @@ const AiSuggestionsModal = ({
                     <div className={styles.loadingContainer}>
                         <div className={styles.spinner} />
                         <div className={styles.loadingText}>
-                            {'Gemma is writing code...'}
+                            {aiMode === 'cloud' ? 'Claude is writing code...' : 'Gemma is writing code...'}
                         </div>
                     </div>
                 )}
