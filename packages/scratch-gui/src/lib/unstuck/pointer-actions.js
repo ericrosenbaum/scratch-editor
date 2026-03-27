@@ -231,18 +231,50 @@ const highlightElement = function (pointer, dispatch) {
                 return;
             }
 
-            // Lower the main Blockly workspace so it doesn't paint over the overlay.
-            // There may be multiple .injectionDiv elements (block preview + main workspace),
-            // so we target the one inside the blocks component.
-            const injectionDivs = document.querySelectorAll('.injectionDiv');
+            // Lower Blockly's high-z-index overlays so they don't paint over driver.js.
+            // blocklyWidgetDiv (99999) and blocklyTooltipDiv (100000) sit above the
+            // driver overlay (10000), so we temporarily bring them below it.
+            const blocklyOverlays = document.querySelectorAll(
+                '.blocklyWidgetDiv, .blocklyTooltipDiv, .blocklyDropDownDiv'
+            );
             const cleanups = [];
-            injectionDivs.forEach(div => {
+            blocklyOverlays.forEach(div => {
                 const prevZIndex = div.style.zIndex;
-                div.style.zIndex = '-1';
+                div.style.zIndex = '0';
                 cleanups.push(() => {
                     div.style.zIndex = prevZIndex;
                 });
             });
+
+            // Tabs overlap via negative margins, so sibling tabs bleed
+            // through the driver.js spotlight cutout. Raise the target
+            // above the overlay (z-index 10000) so it covers everything
+            // in the cutout, and hide overlapping siblings so they don't
+            // show through the spotlight padding area.
+            const prevTargetZIndex = element.style.zIndex;
+            const prevTargetPosition = element.style.position;
+            element.style.zIndex = '10001';
+            element.style.position = 'relative';
+            cleanups.push(() => {
+                element.style.zIndex = prevTargetZIndex;
+                element.style.position = prevTargetPosition;
+            });
+
+            // Hide sibling tabs that overlap into the spotlight cutout.
+            // Only applies when the target is inside a tab list (tabs
+            // overlap via negative margins).
+            const tabList = element.closest('[class*="tab-list"]');
+            if (tabList) {
+                Array.from(tabList.children).forEach(sibling => {
+                    if (sibling === element) return;
+                    const prevVisibility = sibling.style.visibility;
+                    sibling.style.visibility = 'hidden';
+                    cleanups.push(() => {
+                        sibling.style.visibility = prevVisibility;
+                    });
+                });
+            }
+
             if (cleanups.length) {
                 highlightCleanup = () => cleanups.forEach(fn => fn());
             }

@@ -43,7 +43,7 @@ const clickShowMe = async page => {
 
 test.describe('Tab highlight overlay covers blocks area', () => {
 
-    test('all injectionDivs have lowered z-index during tab highlight', async ({page}) => {
+    test('blockly overlay divs have lowered z-index during tab highlight', async ({page}) => {
         await waitForEditor(page);
         await goToTip(page, 'add-costume');
         await clickShowMe(page);
@@ -52,23 +52,37 @@ test.describe('Tab highlight overlay covers blocks area', () => {
         const overlay = page.locator('.driver-overlay');
         await expect(overlay).toBeVisible({timeout: 5000});
 
-        // All injectionDivs (block preview + main workspace) should be lowered
+        // Blockly's high-z-index overlay divs should be lowered below driver overlay (10000)
         const zIndices = await page.evaluate(() =>
-            Array.from(document.querySelectorAll('.injectionDiv'))
-                .map(div => div.style.zIndex)
+            Array.from(document.querySelectorAll(
+                '.blocklyWidgetDiv, .blocklyTooltipDiv, .blocklyDropDownDiv'
+            ))
+                .filter(div => div.style.zIndex !== '')
+                .map(div => parseInt(div.style.zIndex, 10))
         );
         expect(zIndices.length).toBeGreaterThanOrEqual(1);
         for (const z of zIndices) {
-            expect(z).toBe('-1');
+            expect(z).toBeLessThan(10000);
+        }
+
+        // injectionDiv should NOT be modified (workspace should remain visible)
+        const injectionZIndices = await page.evaluate(() =>
+            Array.from(document.querySelectorAll('.injectionDiv'))
+                .map(div => div.style.zIndex)
+        );
+        for (const z of injectionZIndices) {
+            expect(z).not.toBe('-1');
         }
     });
 
-    test('injectionDiv z-index is restored after highlight close', async ({page}) => {
+    test('blockly overlay z-indices are restored after highlight close', async ({page}) => {
         await waitForEditor(page);
 
-        // Record original z-indices
+        // Record original z-indices of blockly overlay divs
         const originalZIndices = await page.evaluate(() =>
-            Array.from(document.querySelectorAll('.injectionDiv'))
+            Array.from(document.querySelectorAll(
+                '.blocklyWidgetDiv, .blocklyTooltipDiv, .blocklyDropDownDiv'
+            ))
                 .map(div => div.style.zIndex)
         );
 
@@ -91,7 +105,9 @@ test.describe('Tab highlight overlay covers blocks area', () => {
 
         // z-indices should be restored
         const restoredZIndices = await page.evaluate(() =>
-            Array.from(document.querySelectorAll('.injectionDiv'))
+            Array.from(document.querySelectorAll(
+                '.blocklyWidgetDiv, .blocklyTooltipDiv, .blocklyDropDownDiv'
+            ))
                 .map(div => div.style.zIndex)
         );
         expect(restoredZIndices).toEqual(originalZIndices);
