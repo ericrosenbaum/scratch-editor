@@ -99,6 +99,10 @@ const baseConfig = new ScratchWebpackConfigBuilder(
             {
                 from: '../../node_modules/@mediapipe/face_detection',
                 to: 'chunks/mediapipe/face_detection'
+            },
+            {
+                from: '../../node_modules/@mediapipe/hands',
+                to: 'chunks/mediapipe/hands'
             }
         ]
     }));
