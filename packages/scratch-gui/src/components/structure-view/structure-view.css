@@ -1,0 +1,263 @@
+@import "../../css/colors.css";
+@import "../../css/units.css";
+
+.structure-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 510;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.structure-modal-container {
+    background-color: #fff;
+    border-radius: 12px;
+    width: 90vw;
+    height: 85vh;
+    max-width: 1200px;
+    max-height: 800px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #4C97FF 0%, #4280D7 100%);
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.header-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.header-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: opacity 0.15s;
+}
+
+.close-button:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.close-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.modal-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.svg-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    background: #f9fafb;
+}
+
+.svg-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.detail-panel {
+    width: 220px;
+    border-left: 1px solid #e0e0e0;
+    background: #fff;
+    padding: 16px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.detail-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.detail-section {
+    margin-bottom: 12px;
+}
+
+.detail-section-header {
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.detail-item {
+    font-size: 12px;
+    color: #555;
+    padding: 2px 0;
+}
+
+.detail-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin: 2px 2px;
+    color: #fff;
+}
+
+.pill-green { background: #4CAF50; }
+.pill-purple { background: #9C27B0; }
+.pill-blue { background: #2196F3; }
+.pill-orange { background: #FF9800; }
+.pill-amber { background: #FFC107; color: #333; }
+.pill-teal { background: #009688; }
+
+.legend-container {
+    padding: 12px 16px;
+    background: #f5f5f5;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #666;
+}
+
+.legend-line {
+    width: 20px;
+    height: 2px;
+}
+
+.legend-line-dashed {
+    width: 20px;
+    height: 0;
+    border-top: 2px dashed;
+}
+
+.refresh-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.15s;
+}
+
+.refresh-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.zoom-controls {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.zoom-button {
+    width: 32px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s;
+    padding: 0;
+    line-height: 1;
+}
+
+.zoom-button:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.zoom-label {
+    font-size: 9px;
+    font-weight: 500;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #999;
+    font-size: 14px;
+    gap: 8px;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    opacity: 0.5;
+}
+
+/* Zone labels */
+.zone-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    fill: #bbb;
+    text-anchor: start;
+}

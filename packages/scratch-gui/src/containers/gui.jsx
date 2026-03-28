@@ -24,7 +24,9 @@ import {
     closeBackdropLibrary,
     closeTelemetryModal,
     openExtensionLibrary,
-    closeDebugModal
+    closeDebugModal,
+    openStructureView,
+    closeStructureView
 } from '../reducers/modals';
 
 import {setPlatform} from '../reducers/platform';
@@ -168,6 +170,7 @@ const mapStateToProps = (state, ownProps) => {
         costumeLibraryVisible: state.scratchGui.modals.costumeLibrary,
         costumesTabVisible: state.scratchGui.editorTab.activeTabIndex === COSTUMES_TAB_INDEX,
         debugModalVisible: state.scratchGui.modals.debugModal,
+        structureViewVisible: state.scratchGui.modals.structureView,
         error: state.scratchGui.projectState.error,
         isError: getIsError(loadingState),
         isFullScreen: state.scratchGui.mode.isFullScreen,
@@ -197,7 +200,9 @@ const mapDispatchToProps = dispatch => ({
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
     onRequestCloseDebugModal: () => dispatch(closeDebugModal()),
-    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal())
+    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal()),
+    onOpenStructureView: () => dispatch(openStructureView()),
+    onRequestCloseStructureView: () => dispatch(closeStructureView())
 });
 
 const ConnectedGUI = injectIntl(connect(
