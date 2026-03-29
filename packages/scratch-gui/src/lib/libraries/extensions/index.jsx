@@ -49,6 +49,9 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
+import physicsIconURL from './physics/physics.svg';
+import physicsInsetIconURL from './physics/physics-small.svg';
+
 export default [
     {
         name: (
@@ -126,6 +129,26 @@ export default [
                 defaultMessage="Sense faces with the camera."
                 description="Description for the 'Face Sensing' extension"
                 id="gui.extension.faceSensing.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Physics"
+                description="Name for the 'Physics' extension"
+                id="gui.extension.physics.name"
+            />
+        ),
+        extensionId: 'physics',
+        iconURL: physicsIconURL,
+        insetIconURL: physicsInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Make sprites fall, bounce, and collide."
+                description="Description for the 'Physics' extension"
+                id="gui.extension.physics.description"
             />
         ),
         featured: true

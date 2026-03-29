@@ -1,0 +1,22 @@
+<svg width="600" height="372" viewBox="0 0 600 372" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5BA3E6"/>
+      <stop offset="100%" stop-color="#3A7BC8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="372" rx="16" fill="url(#bg)"/>
+  <!-- Ball with motion trail -->
+  <circle cx="300" cy="140" r="50" fill="none" stroke="#fff" stroke-width="4" opacity="0.3"/>
+  <circle cx="300" cy="180" r="50" fill="none" stroke="#fff" stroke-width="4" opacity="0.5"/>
+  <circle cx="300" cy="220" r="50" fill="none" stroke="#fff" stroke-width="4" opacity="0.8"/>
+  <circle cx="300" cy="220" r="6" fill="#fff"/>
+  <!-- Gravity arrow -->
+  <line x1="300" y1="145" x2="300" y2="210" stroke="#FFDD57" stroke-width="4" stroke-linecap="round"/>
+  <polygon points="290,205 300,220 310,205" fill="#FFDD57"/>
+  <!-- Ground -->
+  <line x1="100" y1="310" x2="500" y2="310" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <!-- Small bounced positions -->
+  <circle cx="180" cy="290" r="20" fill="none" stroke="#fff" stroke-width="2" opacity="0.4"/>
+  <circle cx="420" cy="280" r="25" fill="none" stroke="#fff" stroke-width="2" opacity="0.4"/>
+</svg>

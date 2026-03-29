@@ -145,6 +145,7 @@
     "core-js": "2.6.12",
     "css-loader": "5.2.7",
     "dapjs": "2.3.0",
+    "matter-js": "0.20.0",
     "driver.js": "1.4.0",
     "es6-object-assign": "1.1.0",
     "fastestsmallesttextencoderdecoder": "1.0.22",
