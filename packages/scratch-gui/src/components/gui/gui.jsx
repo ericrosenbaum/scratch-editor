@@ -30,6 +30,7 @@ import Cards from '../../containers/cards.jsx';
 import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
+import AudioClassifierModal from '../../containers/audio-classifier-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
@@ -141,6 +142,7 @@ const GUIComponent = props => {
         canShare,
         canUseCloud,
         children,
+        audioClassifierModalVisible,
         connectionModalVisible,
         costumeLibraryVisible,
         costumesTabVisible,
@@ -314,6 +316,11 @@ const GUIComponent = props => {
                     {connectionModalVisible ? (
                         <ConnectionModal
                             useExternalPeripheralList={useExternalPeripheralList}
+                            vm={vm}
+                        />
+                    ) : null}
+                    {audioClassifierModalVisible ? (
+                        <AudioClassifierModal
                             vm={vm}
                         />
                     ) : null}
@@ -597,6 +604,7 @@ GUIComponent.propTypes = {
     canUseCloud: PropTypes.bool,
     cardsVisible: PropTypes.bool,
     children: PropTypes.node,
+    audioClassifierModalVisible: PropTypes.bool,
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
     debugModalVisible: PropTypes.bool,
