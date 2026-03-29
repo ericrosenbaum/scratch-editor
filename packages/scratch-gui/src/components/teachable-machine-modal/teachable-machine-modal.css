@@ -580,6 +580,16 @@
     margin-bottom: 0.5rem;
 }
 
+@keyframes pulse-opacity {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.dashboard-status-training {
+    color: $motion-primary;
+    animation: pulse-opacity 1.5s ease-in-out infinite;
+}
+
 .label-card-list {
     display: flex;
     flex-direction: column;

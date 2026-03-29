@@ -28,14 +28,34 @@ const loadMLLibraries = () => {
     });
 };
 
+/**
+ * Minimum number of examples per label before training is triggered.
+ * @type {number}
+ */
+const MIN_EXAMPLES_FOR_TRAINING = 5;
+
+/**
+ * Dense head training hyperparameters.
+ */
+const DENSE_UNITS = 100;
+const LEARNING_RATE = 0.001;
+const TRAINING_EPOCHS = 20;
+const TRAINING_BATCH_SIZE = 16;
+const VALIDATION_SPLIT = 0.15;
+const AUGMENTATION_COPIES = 2;
+const AUGMENTATION_NOISE_STD = 0.01;
+const AUGMENTATION_DROPOUT_RATE = 0.05;
+
 // eslint-disable-next-line max-len
 const menuIconURI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzRjOTdmZiIvPjxjaXJjbGUgY3g9IjIwIiBjeT0iMTgiIHI9IjciIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjEuNSIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjE2IiByPSIxLjUiIGZpbGw9IndoaXRlIi8+PHBhdGggZD0iTTE2IDIxIHEyIDMgOCAwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHJlY3QgeD0iOCIgeT0iMjgiIHdpZHRoPSIyNCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIvPjwvc3ZnPg==';
 // eslint-disable-next-line max-len
 const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjE4IiByPSI3IiBmaWxsPSJub25lIiBzdHJva2U9IiM0YzllZmYiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjEuNSIgZmlsbD0iIzRjOTdmZiIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTYiIHI9IjEuNSIgZmlsbD0iIzRjOTdmZiIvPjxwYXRoIGQ9Ik0xNiAyMSBxMiAzIDggMCIgc3Ryb2tlPSIjNGM5N2ZmIiBzdHJva2Utd2lkdGg9IjEuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHJlY3QgeD0iNiIgeT0iMjkiIHdpZHRoPSIyOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iIzRjOTdmZiIgb3BhY2l0eT0iMC43Ii8+PC9zdmc+';
 
 /**
- * Teachable Classifier: uses webcam + MobileNet + KNN to let users train
- * custom image classifiers and trigger hat blocks in real time.
+ * Teachable Classifier: uses webcam + MobileNet feature extraction + a dense
+ * neural-network head (transfer learning) to let users train custom image
+ * classifiers and trigger hat blocks in real time.  Falls back to KNN while
+ * the dense model is training.
  */
 class Scratch3TeachableClassifierBlocks {
     /**
@@ -52,6 +72,15 @@ class Scratch3TeachableClassifierBlocks {
      */
     static get LABEL_SAMPLES_SIZE () {
         return 3;
+    }
+
+    /**
+     * Minimum confidence (0-1) to accept a prediction.
+     * Below this, the prediction is treated as uncertain.
+     * @type {number}
+     */
+    static get CONFIDENCE_THRESHOLD () {
+        return 0.5;
     }
 
     /**
@@ -90,6 +119,12 @@ class Scratch3TeachableClassifierBlocks {
         this.mobilenetModule = null;
         this.classifier = null;
 
+        // Dense head transfer-learning model (Phase 2)
+        this._denseModel = null;
+        this._isTraining = false;
+        this._modelStale = true;
+        this._trainingStatus = 'needs-data'; // 'needs-data' | 'training' | 'ready'
+
         // Listen for project reload
         this.runtime.on('PROJECT_LOADED', () => {
             this._clearLocal();
@@ -117,7 +152,7 @@ class Scratch3TeachableClassifierBlocks {
         loadMLLibraries()
             .then(() => {
                 this.classifier = knnClassifierModule.create();
-                return mobilenet.load({version: 2, alpha: 0.5});
+                return mobilenet.load({version: 2, alpha: 1.0});
             })
             .then(net => {
                 this.mobilenetModule = net;
@@ -134,6 +169,7 @@ class Scratch3TeachableClassifierBlocks {
 
     /**
      * Periodically sample the webcam frame and run classification.
+     * Uses the dense model when available, falling back to KNN.
      * @private
      */
     _loop () {
@@ -142,37 +178,268 @@ class Scratch3TeachableClassifierBlocks {
             Math.max(this.runtime.currentStepTime, Scratch3TeachableClassifierBlocks.INTERVAL)
         );
 
-        if (this.classifier && this.classifier.getNumClasses() > 0) {
-            const frame = this.runtime.ioDevices.video.getFrame({
-                format: Video.FORMAT_IMAGE_DATA,
-                dimensions: Scratch3TeachableClassifierBlocks.DIMENSIONS
-            });
-            if (!frame) return;
-            const input = this.mobilenetModule.infer(frame);
+        const hasKnnData = this.classifier && this.classifier.getNumClasses() > 0;
+        const hasDenseModel = this._denseModel && !this._modelStale;
+
+        if (!hasKnnData && !hasDenseModel) {
+            this.predictedLabel = '';
+            this.predictedConfidence = 0;
+            this.labelSamples = [];
+            return;
+        }
+
+        // Auto-train the dense model if stale and enough data exists
+        if (this._modelStale && !this._isTraining) {
+            this._maybeTrainModel();
+        }
+
+        const frame = this.runtime.ioDevices.video.getFrame({
+            format: Video.FORMAT_IMAGE_DATA,
+            dimensions: Scratch3TeachableClassifierBlocks.DIMENSIONS
+        });
+        if (!frame) return;
+
+        const input = this.mobilenetModule.infer(frame);
+
+        const handleResult = result => {
+            const conf = result.confidences[result.label];
+            const confidence = conf !== undefined ? conf : 0;
+
+            // Phase 1A: Confidence threshold — treat low-confidence as uncertain
+            const effectiveLabel = confidence >= Scratch3TeachableClassifierBlocks.CONFIDENCE_THRESHOLD ?
+                result.label : '';
+
+            // Phase 1B: Majority-vote sliding window
+            this.labelSamples.unshift({label: effectiveLabel, confidence});
+            if (this.labelSamples.length > Scratch3TeachableClassifierBlocks.LABEL_SAMPLES_SIZE) {
+                this.labelSamples.length = Scratch3TeachableClassifierBlocks.LABEL_SAMPLES_SIZE;
+            }
+
+            if (this.labelSamples.length === Scratch3TeachableClassifierBlocks.LABEL_SAMPLES_SIZE) {
+                // Count occurrences of each non-empty label
+                const counts = {};
+                for (const sample of this.labelSamples) {
+                    if (sample.label) {
+                        counts[sample.label] = (counts[sample.label] || 0) + 1;
+                    }
+                }
+                // Find label with highest count
+                let bestLabel = '';
+                let bestCount = 0;
+                for (const l in counts) {
+                    if (counts[l] > bestCount) {
+                        bestCount = counts[l];
+                        bestLabel = l;
+                    }
+                }
+                // Require majority (at least 2 out of 3)
+                if (bestCount >= 2) {
+                    this.predictedLabel = bestLabel;
+                    // Average confidence of matching samples
+                    let confSum = 0;
+                    let confN = 0;
+                    for (const sample of this.labelSamples) {
+                        if (sample.label === bestLabel) {
+                            confSum += sample.confidence;
+                            confN++;
+                        }
+                    }
+                    this.predictedConfidence = confN > 0 ? confSum / confN : 0;
+                }
+                // On tie or all uncertain, keep current prediction unchanged
+            }
+        };
+
+        // Prefer dense model, fall back to KNN
+        if (hasDenseModel) {
+            try {
+                const result = this._predictWithDenseModel(input);
+                input.dispose();
+                handleResult(result);
+            } catch (err) {
+                input.dispose();
+                log.warn('Teachable Classifier: dense model prediction error', err);
+            }
+        } else {
             this.classifier.predictClass(input)
                 .then(result => {
                     input.dispose();
-                    // Sliding window debounce: accumulate up to LABEL_SAMPLES_SIZE predictions
-                    this.labelSamples.unshift(result.label);
-                    if (this.labelSamples.length > Scratch3TeachableClassifierBlocks.LABEL_SAMPLES_SIZE) {
-                        this.labelSamples.length = Scratch3TeachableClassifierBlocks.LABEL_SAMPLES_SIZE;
-                    }
-                    if (this.labelSamples.length === Scratch3TeachableClassifierBlocks.LABEL_SAMPLES_SIZE &&
-                        this.labelSamples.every((v, i, arr) => v === arr[0])) {
-                        this.predictedLabel = result.label;
-                        const conf = result.confidences[result.label];
-                        this.predictedConfidence = conf !== undefined ? conf : 0;
-                    }
+                    handleResult(result);
                 })
                 .catch(err => {
                     input.dispose();
                     log.warn('Teachable Classifier: prediction error', err);
                 });
-        } else {
-            this.predictedLabel = '';
-            this.predictedConfidence = 0;
-            this.labelSamples = [];
         }
+    }
+
+    /**
+     * Predict using the trained dense head model (synchronous).
+     * @param {tf.Tensor} features — MobileNet feature tensor
+     * @returns {{label: string, confidence: number, confidences: Object}}
+     * @private
+     */
+    _predictWithDenseModel (features) {
+        const labels = this._denseModelLabels;
+        const prediction = tf.tidy(() => {
+            const input = features.expandDims(0);
+            return this._denseModel.predict(input);
+        });
+        const scores = prediction.dataSync();
+        prediction.dispose();
+
+        let bestIdx = 0;
+        let bestScore = scores[0];
+        const confidences = {};
+        for (let i = 0; i < labels.length; i++) {
+            confidences[labels[i]] = scores[i];
+            if (scores[i] > bestScore) {
+                bestScore = scores[i];
+                bestIdx = i;
+            }
+        }
+        return {
+            label: labels[bestIdx],
+            confidence: bestScore,
+            confidences
+        };
+    }
+
+    /**
+     * Check if we have enough data and trigger training if so.
+     * @private
+     */
+    _maybeTrainModel () {
+        const labels = Object.keys(this._classifierData);
+        if (labels.length < 2) {
+            this._setTrainingStatus('needs-data');
+            return;
+        }
+        const readyLabels = labels.filter(l => this._classifierData[l].length >= MIN_EXAMPLES_FOR_TRAINING);
+        if (readyLabels.length < 2) {
+            this._setTrainingStatus('needs-data');
+            return;
+        }
+        this._trainModel();
+    }
+
+    /**
+     * Build and train a dense head classifier on stored feature vectors.
+     * @private
+     */
+    _trainModel () {
+        if (this._isTraining || !tf) return;
+        this._isTraining = true;
+        this._setTrainingStatus('training');
+
+        const labels = Object.keys(this._classifierData).filter(
+            l => this._classifierData[l].length > 0
+        );
+        if (labels.length < 2) {
+            this._isTraining = false;
+            this._setTrainingStatus('needs-data');
+            return;
+        }
+
+        // Build training data with augmentation (Phase 3B)
+        const allFeatures = [];
+        const allLabels = [];
+        for (let classIdx = 0; classIdx < labels.length; classIdx++) {
+            const vectors = this._classifierData[labels[classIdx]];
+            for (const vec of vectors) {
+                // Original example
+                allFeatures.push(vec);
+                allLabels.push(classIdx);
+                // Augmented copies
+                for (let a = 0; a < AUGMENTATION_COPIES; a++) {
+                    const augmented = new Array(vec.length);
+                    for (let j = 0; j < vec.length; j++) {
+                        // Gaussian noise + random dropout
+                        const dropped = Math.random() < AUGMENTATION_DROPOUT_RATE;
+                        augmented[j] = dropped ? 0 :
+                            vec[j] + (AUGMENTATION_NOISE_STD * this._gaussianRandom());
+                    }
+                    allFeatures.push(augmented);
+                    allLabels.push(classIdx);
+                }
+            }
+        }
+
+        const featureDim = allFeatures[0].length;
+        const numClasses = labels.length;
+
+        // Dispose previous model if exists
+        if (this._denseModel) {
+            this._denseModel.dispose();
+            this._denseModel = null;
+        }
+
+        const model = tf.sequential();
+        model.add(tf.layers.dense({
+            inputShape: [featureDim],
+            units: DENSE_UNITS,
+            activation: 'relu',
+            kernelInitializer: 'varianceScaling'
+        }));
+        model.add(tf.layers.dense({
+            units: numClasses,
+            activation: 'softmax'
+        }));
+        model.compile({
+            optimizer: tf.train.adam(LEARNING_RATE),
+            loss: 'categoricalCrossentropy',
+            metrics: ['accuracy']
+        });
+
+        // Build tensors
+        const xs = tf.tensor2d(allFeatures, [allFeatures.length, featureDim]);
+        const oneHot = tf.oneHot(tf.tensor1d(allLabels, 'int32'), numClasses);
+
+        model.fit(xs, oneHot, {
+            epochs: TRAINING_EPOCHS,
+            batchSize: TRAINING_BATCH_SIZE,
+            shuffle: true,
+            validationSplit: allFeatures.length > 10 ? VALIDATION_SPLIT : 0
+        }).then(() => {
+            xs.dispose();
+            oneHot.dispose();
+            this._denseModel = model;
+            this._denseModelLabels = labels;
+            this._modelStale = false;
+            this._isTraining = false;
+            this._setTrainingStatus('ready');
+        }).catch(err => {
+            xs.dispose();
+            oneHot.dispose();
+            model.dispose();
+            log.error('Teachable Classifier: training failed', err);
+            this._isTraining = false;
+            this._setTrainingStatus('needs-data');
+        });
+    }
+
+    /**
+     * Generate a random number from a standard normal distribution.
+     * Uses the Box-Muller transform.
+     * @returns {number}
+     * @private
+     */
+    _gaussianRandom () {
+        let u = 0;
+        let v = 0;
+        while (u === 0) u = Math.random();
+        while (v === 0) v = Math.random();
+        return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    /**
+     * Update and emit training status.
+     * @param {string} status — 'needs-data' | 'training' | 'ready'
+     * @private
+     */
+    _setTrainingStatus (status) {
+        this._trainingStatus = status;
+        this.runtime.emit('MODEL_TRAINING_STATUS', status);
     }
 
     /**
@@ -355,6 +622,9 @@ class Scratch3TeachableClassifierBlocks {
             dataset[l].dispose();
         }
         this.classifier.setClassifierDataset(standaloneDataset);
+
+        // Mark the dense model as stale so it retrains with the new data
+        this._modelStale = true;
     }
 
     /**
@@ -383,6 +653,7 @@ class Scratch3TeachableClassifierBlocks {
         if (idx !== -1) {
             this.labelList[idx] = newName;
         }
+        this._modelStale = true;
     }
 
     /**
@@ -423,6 +694,7 @@ class Scratch3TeachableClassifierBlocks {
         } else {
             this.classifier.clearClass(label);
         }
+        this._modelStale = true;
     }
 
     /**
@@ -444,6 +716,7 @@ class Scratch3TeachableClassifierBlocks {
             this.labelListEmpty = true;
             this.labelList.push('');
         }
+        this._modelStale = true;
     }
 
     /**
@@ -453,6 +726,14 @@ class Scratch3TeachableClassifierBlocks {
         if (this.classifier) {
             this.classifier.clearAllClasses();
         }
+        if (this._denseModel) {
+            this._denseModel.dispose();
+            this._denseModel = null;
+        }
+        this._denseModelLabels = null;
+        this._modelStale = true;
+        this._isTraining = false;
+        this._setTrainingStatus('needs-data');
         this.labelList = [''];
         this.labelListEmpty = true;
         this._imageData = {};
@@ -474,10 +755,12 @@ class Scratch3TeachableClassifierBlocks {
 
     /**
      * Return serializable training data for project save.
-     * @returns {{ classifierData: object }}
+     * @returns {{ version: number, alpha: number, classifierData: object }}
      */
     getTrainingData () {
         return {
+            version: 2,
+            alpha: 1.0,
             classifierData: this._classifierData
         };
     }
@@ -503,7 +786,7 @@ class Scratch3TeachableClassifierBlocks {
             this._imageData[label] = []; // no thumbnail images after load
         }
 
-        // Restore classifier if model is ready
+        // Restore KNN classifier for immediate predictions (fallback)
         if (this.classifier && tf) {
             const dataset = {};
             for (const [label, vectors] of Object.entries(this._classifierData)) {
@@ -514,6 +797,9 @@ class Scratch3TeachableClassifierBlocks {
             this.classifier.clearAllClasses();
             this.classifier.setClassifierDataset(dataset);
         }
+
+        // Mark stale so the dense model auto-trains from restored features
+        this._modelStale = true;
     }
 
     /**

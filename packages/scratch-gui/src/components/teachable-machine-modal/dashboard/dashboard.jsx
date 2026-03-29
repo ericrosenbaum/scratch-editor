@@ -57,17 +57,28 @@ class DashboardView extends React.Component {
     handleCancelClear () {
         this.setState({confirmingClear: false});
     }
+    _getStatusText (labels) {
+        const {trainingStatus} = this.props;
+        if (labels.length < 2) {
+            return 'Add labels to train your model';
+        }
+        if (trainingStatus === 'training') {
+            return 'Training model\u2026';
+        }
+        if (trainingStatus === 'ready') {
+            return `Model ready \u2014 watching for: ${labels.join(', ')}`;
+        }
+        return `Collecting examples for: ${labels.join(', ')}`;
+    }
     render () {
         const labels = Object.keys(this.props.classifierData);
+        const statusText = this._getStatusText(labels);
+        const isTraining = this.props.trainingStatus === 'training';
 
         return (
             <Box className={styles.dashboardContainer}>
-                <div className={styles.dashboardStatus}>
-                    {labels.length >= 2 ? (
-                        `Model ready \u2014 watching for: ${labels.join(', ')}`
-                    ) : (
-                        'Add labels to train your model'
-                    )}
+                <div className={`${styles.dashboardStatus}${isTraining ? ` ${styles.dashboardStatusTraining}` : ''}`}>
+                    {statusText}
                 </div>
                 <div className={styles.labelCardList}>
                     {labels.map(label => (
@@ -192,7 +203,8 @@ DashboardView.propTypes = {
     onDeleteExample: PropTypes.func.isRequired,
     onAddLabel: PropTypes.func.isRequired,
     onClearAll: PropTypes.func.isRequired,
-    onCancel: PropTypes.func.isRequired
+    onCancel: PropTypes.func.isRequired,
+    trainingStatus: PropTypes.string
 };
 
 export default DashboardView;

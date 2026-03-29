@@ -59,15 +59,25 @@ class TeachableMachineModal extends React.Component {
             isCapturing: false,
             showFlash: false,
             countdownValue: null,
-            activeCaptureLabelName: null
+            activeCaptureLabelName: null,
+            trainingStatus: ext ? ext._trainingStatus : 'needs-data'
         };
 
         this.videoDevice = null;
         this._burstTimer = null;
         this._countdownTimer = null;
+
+        this._handleTrainingStatus = status => {
+            this.setState({trainingStatus: status});
+        };
+    }
+
+    componentDidMount () {
+        this.props.vm.runtime.on('MODEL_TRAINING_STATUS', this._handleTrainingStatus);
     }
 
     componentWillUnmount () {
+        this.props.vm.runtime.removeListener('MODEL_TRAINING_STATUS', this._handleTrainingStatus);
         if (this.videoDevice) {
             this.videoDevice.disableVideo();
         }
@@ -375,6 +385,7 @@ class TeachableMachineModal extends React.Component {
                 onDeleteExample={this.handleDeleteExample}
                 onAddLabel={this.handleAddLabel}
                 onClearAll={this.handleClearAll}
+                trainingStatus={this.state.trainingStatus}
             />
         );
     }

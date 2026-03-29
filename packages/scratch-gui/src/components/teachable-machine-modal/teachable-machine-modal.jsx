@@ -66,6 +66,7 @@ const TeachableMachineModalComponent = props => (
                     onAddLabel={props.onAddLabel}
                     onClearAll={props.onClearAll}
                     onCancel={props.onCancel}
+                    trainingStatus={props.trainingStatus}
                 />
             )}
         </Box>
@@ -104,7 +105,8 @@ TeachableMachineModalComponent.propTypes = {
     onDeleteLabel: PropTypes.func,
     onDeleteExample: PropTypes.func,
     onAddLabel: PropTypes.func,
-    onClearAll: PropTypes.func
+    onClearAll: PropTypes.func,
+    trainingStatus: PropTypes.string
 };
 
 export default TeachableMachineModalComponent;
