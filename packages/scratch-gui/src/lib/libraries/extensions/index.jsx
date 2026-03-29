@@ -49,6 +49,9 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
+import handSensingIconURL from './handSensing/handSensing.png';
+import handSensingInsetIconURL from './handSensing/handSensing-small.svg';
+
 export default [
     {
         name: (
@@ -126,6 +129,26 @@ export default [
                 defaultMessage="Sense faces with the camera."
                 description="Description for the 'Face Sensing' extension"
                 id="gui.extension.faceSensing.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Hand Sensing"
+                description="Name for the 'Hand Sensing' extension"
+                id="gui.extension.handSensing.name"
+            />
+        ),
+        extensionId: 'handSensing',
+        iconURL: handSensingIconURL,
+        insetIconURL: handSensingInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Sense hands with the camera."
+                description="Description for the 'Hand Sensing' extension"
+                id="gui.extension.handSensing.description"
             />
         ),
         featured: true
