@@ -49,6 +49,9 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
+import shapesIconURL from './shapes/shapes.svg';
+import shapesInsetIconURL from './shapes/shapes-small.svg';
+
 export default [
     {
         name: (
@@ -86,6 +89,26 @@ export default [
                 defaultMessage="Draw with your sprites."
                 description="Description for the 'Pen' extension"
                 id="gui.extension.pen.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Shapes"
+                description="Name for the 'Shapes' extension"
+                id="gui.extension.shapes.name"
+            />
+        ),
+        extensionId: 'shapes',
+        iconURL: shapesIconURL,
+        insetIconURL: shapesInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Draw shapes and text with your sprites."
+                description="Description for the 'Shapes' extension"
+                id="gui.extension.shapes.description"
             />
         ),
         featured: true
