@@ -30,6 +30,29 @@ const PARTS = {
 };
 
 /**
+ * Hand selection options.
+ * @readonly
+ * @enum {string}
+ */
+const HAND_CHOICE = {
+    LEFT: 'left',
+    RIGHT: 'right',
+    EITHER: 'either'
+};
+
+/**
+ * Gesture types.
+ * @readonly
+ * @enum {string}
+ */
+const GESTURES = {
+    PINCH: 'pinch',
+    THUMBS_UP: 'thumbs up',
+    OPEN_HAND: 'open hand',
+    PEACE: 'peace'
+};
+
+/**
  * Keypoint indices for finger-up detection.
  * For each finger: [tip index, pip/comparison joint index]
  * Thumb uses MCP (index 2) for comparison instead of PIP.
@@ -45,10 +68,22 @@ const FINGER_TIP_PIP = {
 
 /**
  * MCP joint indices used to compute palm center.
- * Indices: wrist(0), thumb_mcp(2 - actually using index 1 thumb_cmc),
- * index_finger_mcp(5), middle_finger_mcp(9), ring_finger_mcp(13), pinky_finger_mcp(17)
  */
 const PALM_INDICES = [0, 5, 9, 13, 17];
+
+/**
+ * Maximum pixel distance between thumb tip and index tip that counts as a pinch.
+ * Used for the pinch gesture hat block threshold.
+ * @type {number}
+ */
+const PINCH_THRESHOLD = 40;
+
+/**
+ * Maximum pixel distance for pinch % normalization.
+ * Distances at or above this value report 0% pinch.
+ * @type {number}
+ */
+const PINCH_MAX_DISTANCE = 150;
 
 /**
  * Class for the Hand Sensing blocks in Scratch 3.0
@@ -76,6 +111,12 @@ class Scratch3HandSensingBlocks {
         this._cachedFingersUp = 0;
 
         /**
+         * Cached value for pinch percentage
+         * @type {number}
+         */
+        this._cachedPinchPercent = 0;
+
+        /**
          * Smoothed value for whether or not a hand was detected
          * @type {boolean}
          */
@@ -90,13 +131,25 @@ class Scratch3HandSensingBlocks {
             () => false
         );
 
+        /**
+         * All detected hands from the latest frame.
+         * @type {Array.<object>}
+         */
+        this._allHands = [];
+
+        /**
+         * The currently selected hand (resolved from _allHands based on HAND_CHOICE).
+         * @type {object|null}
+         */
+        this._currentHand = null;
+
         this.runtime.emit('EXTENSION_DATA_LOADING', true);
 
         const model = HandPoseDetection.SupportedModels.MediaPipeHands;
         const detectorConfig = {
             runtime: 'mediapipe',
             solutionPath: '/chunks/mediapipe/hands',
-            maxHands: 1
+            maxHands: 2
         };
 
         HandPoseDetection.createDetector(model, detectorConfig)
@@ -104,7 +157,7 @@ class Scratch3HandSensingBlocks {
                 const fallbackConfig = {
                     runtime: 'mediapipe',
                     solutionPath: `https://cdn.jsdelivr.net/npm/@mediapipe/hands@${mediapipePackage.version}`,
-                    maxHands: 1
+                    maxHands: 2
                 };
 
                 return HandPoseDetection.createDetector(model, fallbackConfig);
@@ -209,6 +262,91 @@ class Scratch3HandSensingBlocks {
     }
 
     /**
+     * An array of info about the hand choice menu.
+     * @type {object[]}
+     */
+    get HAND_INFO () {
+        return [{
+            text: formatMessage({
+                id: 'handSensing.either',
+                default: 'any',
+                description: 'Option to detect either hand'
+            }),
+            value: HAND_CHOICE.EITHER
+        }, {
+            text: formatMessage({
+                id: 'handSensing.left',
+                default: 'left',
+                description: 'Option to detect the left hand'
+            }),
+            value: HAND_CHOICE.LEFT
+        }, {
+            text: formatMessage({
+                id: 'handSensing.right',
+                default: 'right',
+                description: 'Option to detect the right hand'
+            }),
+            value: HAND_CHOICE.RIGHT
+        }];
+    }
+
+    /**
+     * An array of info about the gesture menu.
+     * @type {object[]}
+     */
+    get GESTURE_INFO () {
+        return [{
+            text: formatMessage({
+                id: 'handSensing.gesturePinch',
+                default: 'pinch',
+                description: 'Option for pinch gesture'
+            }),
+            value: GESTURES.PINCH
+        }, {
+            text: formatMessage({
+                id: 'handSensing.gestureThumbsUp',
+                default: 'thumbs up',
+                description: 'Option for thumbs up gesture'
+            }),
+            value: GESTURES.THUMBS_UP
+        }, {
+            text: formatMessage({
+                id: 'handSensing.gestureOpenHand',
+                default: 'open hand',
+                description: 'Option for open hand gesture'
+            }),
+            value: GESTURES.OPEN_HAND
+        }, {
+            text: formatMessage({
+                id: 'handSensing.gesturePeace',
+                default: 'peace',
+                description: 'Option for peace sign gesture'
+            }),
+            value: GESTURES.PEACE
+        }];
+    }
+
+    /**
+     * Select a hand from _allHands based on the given hand choice.
+     * @param {string} handChoice - one of HAND_CHOICE values
+     * @returns {object|null} the matching hand, or null
+     * @private
+     */
+    _selectHand (handChoice) {
+        if (this._allHands.length === 0) return null;
+
+        if (handChoice === HAND_CHOICE.EITHER) {
+            return this._allHands[0];
+        }
+
+        // MediaPipe labels are from the camera's perspective (mirrored).
+        // A "Right" label from MediaPipe corresponds to the user's right hand
+        // when the video is mirrored (which Scratch does by default).
+        const targetLabel = handChoice === HAND_CHOICE.RIGHT ? 'Right' : 'Left';
+        return this._allHands.find(h => h.handedness === targetLabel) || null;
+    }
+
+    /**
      * Occasionally step a loop to sample the video, stamp it to the preview
      * skin, and add a TypedArray copy of the canvas's pixel data.
      * @private
@@ -233,8 +371,10 @@ class Scratch3HandSensingBlocks {
                         this._firstTime = true;
                         this.runtime.emit('EXTENSION_DATA_LOADING', false);
                     }
+                    this._allHands = hands;
                     this._currentHand = hands[0];
                 } else {
+                    this._allHands = [];
                     this._currentHand = null;
                 }
                 this._updateIsDetected();
@@ -286,8 +426,8 @@ class Scratch3HandSensingBlocks {
                     opcode: 'goToPart',
                     text: formatMessage({
                         id: 'handSensing.goToPart',
-                        default: 'go to [PART]',
-                        description: 'Command that moves target to [PART]'
+                        default: 'go to [PART] of [HAND] hand',
+                        description: 'Command that moves target to [PART] of [HAND] hand'
                     }),
                     blockType: BlockType.COMMAND,
                     arguments: {
@@ -295,6 +435,11 @@ class Scratch3HandSensingBlocks {
                             type: ArgumentType.STRING,
                             menu: 'PART',
                             defaultValue: PARTS.INDEX_FINGER_TIP
+                        },
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND',
+                            defaultValue: HAND_CHOICE.EITHER
                         }
                     },
                     filter: [TargetType.SPRITE]
@@ -310,6 +455,22 @@ class Scratch3HandSensingBlocks {
                     filter: [TargetType.SPRITE]
                 },
                 '---',
+                {
+                    opcode: 'whenGesture',
+                    text: formatMessage({
+                        id: 'handSensing.whenGesture',
+                        default: 'when [GESTURE] detected',
+                        description: 'Event that triggers when a gesture is detected'
+                    }),
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        GESTURE: {
+                            type: ArgumentType.STRING,
+                            menu: 'GESTURE',
+                            defaultValue: GESTURES.PINCH
+                        }
+                    }
+                },
                 {
                     opcode: 'whenSpriteTouchesPart',
                     text: formatMessage({
@@ -331,29 +492,66 @@ class Scratch3HandSensingBlocks {
                     opcode: 'whenHandDetected',
                     text: formatMessage({
                         id: 'handSensing.whenHandDetected',
-                        default: 'when a hand is detected',
+                        default: 'when [HAND] hand detected',
                         description: 'Event that triggers when a hand is detected'
                     }),
-                    blockType: BlockType.HAT
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND',
+                            defaultValue: HAND_CHOICE.EITHER
+                        }
+                    }
                 },
                 '---',
                 {
                     opcode: 'handIsDetected',
                     text: formatMessage({
                         id: 'handSensing.handDetected',
-                        default: 'a hand is detected?',
+                        default: '[HAND] hand detected?',
                         description: 'Reporter that returns whether a hand is detected'
                     }),
-                    blockType: BlockType.BOOLEAN
+                    blockType: BlockType.BOOLEAN,
+                    arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND',
+                            defaultValue: HAND_CHOICE.EITHER
+                        }
+                    }
                 },
                 {
                     opcode: 'fingersUp',
                     text: formatMessage({
                         id: 'handSensing.fingersUp',
-                        default: 'fingers up',
+                        default: 'fingers up on [HAND] hand',
                         description: 'Reporter that returns the number of fingers up'
                     }),
-                    blockType: BlockType.REPORTER
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND',
+                            defaultValue: HAND_CHOICE.EITHER
+                        }
+                    }
+                },
+                {
+                    opcode: 'pinchPercent',
+                    text: formatMessage({
+                        id: 'handSensing.pinchPercent',
+                        default: 'pinch % of [HAND] hand',
+                        description: 'Reporter that returns the pinch percentage (0-100) of a hand'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND',
+                            defaultValue: HAND_CHOICE.EITHER
+                        }
+                    }
                 },
                 {
                     opcode: 'handSize',
@@ -366,18 +564,21 @@ class Scratch3HandSensingBlocks {
                 }
             ],
             menus: {
-                PART: this.PART_INFO
+                PART: this.PART_INFO,
+                HAND: this.HAND_INFO,
+                GESTURE: this.GESTURE_INFO
             }
         };
     }
 
     /**
      * Compute the palm center as the centroid of the wrist and MCP joints.
+     * @param {object} hand - the hand object to use
      * @returns {{x: number, y: number}} Coordinates of the palm center.
      * @private
      */
-    _getPalmCenterPosition () {
-        if (!this._currentHand || !this._currentHand.keypoints) {
+    _getPalmCenterPosition (hand) {
+        if (!hand || !hand.keypoints) {
             return Scratch3HandSensingBlocks.DEFAULT_PART_POSITION;
         }
 
@@ -385,7 +586,7 @@ class Scratch3HandSensingBlocks {
         let sumY = 0;
         let count = 0;
         for (const idx of PALM_INDICES) {
-            const kp = this._currentHand.keypoints[idx];
+            const kp = hand.keypoints[idx];
             if (kp) {
                 sumX += kp.x;
                 sumY += kp.y;
@@ -400,20 +601,22 @@ class Scratch3HandSensingBlocks {
     /**
      * Get the position of a given hand keypoint.
      * @param {string} part - Part of the hand to be detected
+     * @param {object} hand - the hand object to use (defaults to _currentHand)
      * @returns {{x: number, y: number}} Coordinates of the detected keypoint.
      * @private
      */
-    _getPartPosition (part) {
+    _getPartPosition (part, hand) {
+        const h = hand || this._currentHand;
         const defaultPos = Scratch3HandSensingBlocks.DEFAULT_PART_POSITION;
 
-        if (!this._currentHand) return defaultPos;
-        if (!this._currentHand.keypoints) return defaultPos;
+        if (!h) return defaultPos;
+        if (!h.keypoints) return defaultPos;
 
         if (part === PARTS.PALM_CENTER) {
-            return this._getPalmCenterPosition();
+            return this._getPalmCenterPosition(h);
         }
 
-        const result = this._currentHand.keypoints.find(kp => kp.name === part);
+        const result = h.keypoints.find(kp => kp.name === part);
         if (result) {
             return toScratchCoords(result);
         }
@@ -421,21 +624,22 @@ class Scratch3HandSensingBlocks {
     }
 
     /**
-     * Count the number of extended fingers.
+     * Count the number of extended fingers on a given hand.
+     * @param {object} hand - the hand object to analyze
      * @returns {number} Number of fingers up (0-5).
      * @private
      */
-    _countFingersUp () {
-        if (!this._currentHand || !this._currentHand.keypoints) return this._cachedFingersUp;
+    _countFingersUpForHand (hand) {
+        if (!hand || !hand.keypoints) return 0;
 
-        const kps = this._currentHand.keypoints;
+        const kps = hand.keypoints;
         let count = 0;
 
         // Thumb: compare tip x vs ip x based on handedness
         const thumbTip = kps[FINGER_TIP_PIP.THUMB[0]];
         const thumbIp = kps[FINGER_TIP_PIP.THUMB[1]];
         if (thumbTip && thumbIp) {
-            const handedness = this._currentHand.handedness;
+            const handedness = hand.handedness;
             if (handedness === 'Right') {
                 if (thumbTip.x < thumbIp.x) count++;
             } else {
@@ -453,8 +657,124 @@ class Scratch3HandSensingBlocks {
             }
         }
 
-        this._cachedFingersUp = count;
         return count;
+    }
+
+    /**
+     * Check if a finger is extended (up) on a given hand.
+     * @param {object} hand - the hand object
+     * @param {Array.<number>} fingerPair - [tipIdx, pipIdx]
+     * @returns {boolean} true if the finger is up
+     * @private
+     */
+    _isFingerUp (hand, fingerPair) {
+        if (!hand || !hand.keypoints) return false;
+        const tip = hand.keypoints[fingerPair[0]];
+        const pip = hand.keypoints[fingerPair[1]];
+        return tip && pip && tip.y < pip.y;
+    }
+
+    /**
+     * Check if the thumb is extended on a given hand.
+     * @param {object} hand - the hand object
+     * @returns {boolean} true if thumb is up
+     * @private
+     */
+    _isThumbUp (hand) {
+        if (!hand || !hand.keypoints) return false;
+        const thumbTip = hand.keypoints[FINGER_TIP_PIP.THUMB[0]];
+        const thumbIp = hand.keypoints[FINGER_TIP_PIP.THUMB[1]];
+        if (!thumbTip || !thumbIp) return false;
+        if (hand.handedness === 'Right') {
+            return thumbTip.x < thumbIp.x;
+        }
+        return thumbTip.x > thumbIp.x;
+    }
+
+    /**
+     * Check if a finger is curled (down) on a given hand.
+     * @param {object} hand - the hand object
+     * @param {Array.<number>} fingerPair - [tipIdx, pipIdx]
+     * @returns {boolean} true if the finger is curled
+     * @private
+     */
+    _isFingerDown (hand, fingerPair) {
+        if (!hand || !hand.keypoints) return false;
+        const tip = hand.keypoints[fingerPair[0]];
+        const pip = hand.keypoints[fingerPair[1]];
+        return tip && pip && tip.y >= pip.y;
+    }
+
+    /**
+     * Get the raw pixel distance between thumb tip and index finger tip.
+     * @param {object} hand - the hand object
+     * @returns {number} distance in pixels, or -1 if unavailable
+     * @private
+     */
+    _getThumbIndexDistance (hand) {
+        if (!hand || !hand.keypoints) return -1;
+        const thumbTip = hand.keypoints[4]; // thumb_tip
+        const indexTip = hand.keypoints[8]; // index_finger_tip
+        if (!thumbTip || !indexTip) return -1;
+        const dx = thumbTip.x - indexTip.x;
+        const dy = thumbTip.y - indexTip.y;
+        return Math.sqrt((dx * dx) + (dy * dy));
+    }
+
+    /**
+     * Detect whether a specific gesture is occurring on any hand.
+     * @param {string} gesture - the gesture to detect
+     * @returns {boolean} true if the gesture is detected
+     * @private
+     */
+    _detectGesture (gesture) {
+        for (const hand of this._allHands) {
+            if (this._detectGestureOnHand(gesture, hand)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Detect whether a specific gesture is occurring on a given hand.
+     * @param {string} gesture - the gesture to detect
+     * @param {object} hand - the hand object
+     * @returns {boolean} true if the gesture is detected
+     * @private
+     */
+    _detectGestureOnHand (gesture, hand) {
+        if (!hand || !hand.keypoints) return false;
+
+        switch (gesture) {
+        case GESTURES.PINCH: {
+            const dist = this._getThumbIndexDistance(hand);
+            return dist >= 0 && dist < PINCH_THRESHOLD;
+        }
+        case GESTURES.THUMBS_UP: {
+            // Thumb extended, all other fingers curled
+            return this._isThumbUp(hand) &&
+                this._isFingerDown(hand, FINGER_TIP_PIP.INDEX) &&
+                this._isFingerDown(hand, FINGER_TIP_PIP.MIDDLE) &&
+                this._isFingerDown(hand, FINGER_TIP_PIP.RING) &&
+                this._isFingerDown(hand, FINGER_TIP_PIP.PINKY);
+        }
+        case GESTURES.OPEN_HAND: {
+            // All 5 fingers extended
+            return this._isThumbUp(hand) &&
+                this._isFingerUp(hand, FINGER_TIP_PIP.INDEX) &&
+                this._isFingerUp(hand, FINGER_TIP_PIP.MIDDLE) &&
+                this._isFingerUp(hand, FINGER_TIP_PIP.RING) &&
+                this._isFingerUp(hand, FINGER_TIP_PIP.PINKY);
+        }
+        case GESTURES.PEACE: {
+            // Index and middle up, ring and pinky curled
+            return this._isFingerUp(hand, FINGER_TIP_PIP.INDEX) &&
+                this._isFingerUp(hand, FINGER_TIP_PIP.MIDDLE) &&
+                this._isFingerDown(hand, FINGER_TIP_PIP.RING) &&
+                this._isFingerDown(hand, FINGER_TIP_PIP.PINKY);
+        }
+        default:
+            return false;
+        }
     }
 
     /**
@@ -463,9 +783,10 @@ class Scratch3HandSensingBlocks {
      * @param {BlockUtility} util - the block utility
      */
     goToPart (args, util) {
-        if (!this._currentHand) return;
+        const hand = this._selectHand(args.HAND);
+        if (!hand) return;
 
-        const pos = this._getPartPosition(args.PART);
+        const pos = this._getPartPosition(args.PART, hand);
         util.target.setXY(pos.x, pos.y);
     }
 
@@ -478,6 +799,15 @@ class Scratch3HandSensingBlocks {
         if (!this._currentHand) return;
 
         util.target.setSize(this.handSize());
+    }
+
+    /**
+     * A scratch hat block that triggers when a gesture is detected.
+     * @param {object} args - the block arguments
+     * @returns {boolean} true if the gesture is detected
+     */
+    whenGesture (args) {
+        return this._detectGesture(args.GESTURE);
     }
 
     /**
@@ -498,27 +828,53 @@ class Scratch3HandSensingBlocks {
     /**
      * A scratch hat block handle that reports whether
      * a hand is detected
+     * @param {object} args - the block arguments
      * @returns {boolean} - true a hand was detected
      */
-    whenHandDetected () {
-        return this._smoothedIsDetected;
+    whenHandDetected (args) {
+        const hand = this._selectHand(args.HAND);
+        return !!hand;
     }
 
     /**
      * A scratch boolean block handle that reports whether
      * a hand is detected
+     * @param {object} args - the block arguments
      * @returns {boolean} - true a hand was detected
      */
-    handIsDetected () {
-        return this._smoothedIsDetected;
+    handIsDetected (args) {
+        const hand = this._selectHand(args.HAND);
+        return !!hand;
     }
 
     /**
      * A scratch reporter block handle that returns the number of fingers up.
+     * @param {object} args - the block arguments
      * @returns {number} the number of fingers up (0-5)
      */
-    fingersUp () {
-        return this._countFingersUp();
+    fingersUp (args) {
+        const hand = this._selectHand(args.HAND);
+        if (!hand) return this._cachedFingersUp;
+        const count = this._countFingersUpForHand(hand);
+        this._cachedFingersUp = count;
+        return count;
+    }
+
+    /**
+     * A scratch reporter that returns the pinch percentage (0-100) for a hand.
+     * 100 means thumb and index finger are touching, 0 means fully apart.
+     * @param {object} args - the block arguments
+     * @returns {number} pinch percentage 0-100
+     */
+    pinchPercent (args) {
+        const hand = this._selectHand(args.HAND);
+        if (!hand) return this._cachedPinchPercent;
+        const dist = this._getThumbIndexDistance(hand);
+        if (dist < 0) return this._cachedPinchPercent;
+        const clamped = Math.min(Math.max(dist, 0), PINCH_MAX_DISTANCE);
+        const percent = Math.round(100 * (1 - (clamped / PINCH_MAX_DISTANCE)));
+        this._cachedPinchPercent = percent;
+        return percent;
     }
 
     /**
