@@ -5,6 +5,25 @@ import React from 'react';
 import tips, {quickPicks} from '../../lib/libraries/tips/index.js';
 import blockTemplates from '../../lib/unstuck/block-templates.js';
 import BlockPreview from '../unstuck-card/block-preview.jsx';
+import TipEditor from './tip-editor.jsx';
+import {loadMergedTips, hasOverride, deleteOverride, exportAllTips, importTips} from '../../lib/unstuck/tip-overrides.js';
+
+const CAPTURE_STATE_KEY = 'scratch-tips-editor-capture-state';
+
+const saveCaptureState = function (tipId) {
+    sessionStorage.setItem(CAPTURE_STATE_KEY, JSON.stringify({tipId}));
+};
+
+const loadCaptureState = function () {
+    try {
+        const stored = sessionStorage.getItem(CAPTURE_STATE_KEY);
+        if (stored) {
+            sessionStorage.removeItem(CAPTURE_STATE_KEY);
+            return JSON.parse(stored);
+        }
+    } catch (e) { /* ignore */ }
+    return null;
+};
 
 import styles from './tips-review.css';
 
@@ -395,16 +414,30 @@ class TipCard extends React.Component {
 class TipsReview extends React.Component {
     constructor (props) {
         super(props);
+        const pendingCapture = loadCaptureState();
         this.state = {
+            mode: pendingCapture ? 'edit' : 'review',
             searchQuery: '',
             activeTag: null,
             warningsOnly: false,
-            orphansOnly: false
+            orphansOnly: false,
+            // Edit mode state
+            editSearchQuery: '',
+            selectedTipId: pendingCapture ? pendingCapture.tipId : null,
+            pendingCapture: !!pendingCapture,
+            workingTips: loadMergedTips()
         };
         this.analysis = computeAnalysis();
         this.handleSearchChange = this.handleSearchChange.bind(this);
         this.handleTagClick = this.handleTagClick.bind(this);
         this.clearTag = this.clearTag.bind(this);
+        this.handleExport = this.handleExport.bind(this);
+        this.handleImport = this.handleImport.bind(this);
+        this.handleTipSave = this.handleTipSave.bind(this);
+        this.handleTipRevert = this.handleTipRevert.bind(this);
+        this.handleTipDelete = this.handleTipDelete.bind(this);
+        this.handleRequestCapture = this.handleRequestCapture.bind(this);
+        this.importInputRef = React.createRef();
     }
 
     handleSearchChange (e) {
@@ -421,7 +454,62 @@ class TipsReview extends React.Component {
         this.setState({activeTag: null});
     }
 
-    render () {
+    handleExport () {
+        const json = exportAllTips();
+        const blob = new Blob([json], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'tips-export.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    handleImport () {
+        this.importInputRef.current.click();
+    }
+
+    handleImportFile (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = event => {
+            try {
+                importTips(event.target.result);
+                this.setState({workingTips: loadMergedTips()});
+            } catch (err) {
+                // eslint-disable-next-line no-alert
+                alert(`Import failed: ${err.message}`);
+            }
+        };
+        reader.readAsText(file);
+        // Reset so same file can be re-imported
+        e.target.value = '';
+    }
+
+    handleTipSave (tipId, tipData) {
+        this.setState({workingTips: loadMergedTips()});
+    }
+
+    handleTipRevert (tipId) {
+        this.setState({workingTips: loadMergedTips()});
+    }
+
+    handleTipDelete (tipId) {
+        deleteOverride(tipId);
+        this.setState({
+            selectedTipId: null,
+            workingTips: loadMergedTips()
+        });
+    }
+
+    handleRequestCapture () {
+        const {selectedTipId} = this.state;
+        saveCaptureState(selectedTipId);
+        this.props.onClose();
+    }
+
+    renderReviewMode () {
         const {warnings, referencedByMap, tagCounts, stats} = this.analysis;
         const {searchQuery, activeTag, warningsOnly, orphansOnly} = this.state;
 
@@ -434,40 +522,7 @@ class TipsReview extends React.Component {
         );
 
         return (
-            <div className={styles.overlay}>
-                <div className={styles.header}>
-                    <div className={styles.title}>
-                        {'Tips Review'}
-                        <span className={styles.titleCount}>
-                            {`${filteredTips.length} / ${stats.total}`}
-                        </span>
-                    </div>
-                    <input
-                        className={styles.searchInput}
-                        placeholder="Search by ID, text, tag, keyword..."
-                        value={searchQuery}
-                        onChange={this.handleSearchChange}
-                    />
-                    <button
-                        className={`${styles.toggleButton} ${warningsOnly ? styles.toggleButtonActive : ''}`}
-                        onClick={() => this.setState(prev => ({warningsOnly: !prev.warningsOnly}))}
-                    >
-                        {`Warnings (${stats.warningCount})`}
-                    </button>
-                    <button
-                        className={`${styles.toggleButton} ${orphansOnly ? styles.toggleButtonActive : ''}`}
-                        onClick={() => this.setState(prev => ({orphansOnly: !prev.orphansOnly}))}
-                    >
-                        {'Orphans'}
-                    </button>
-                    <button
-                        className={styles.closeButton}
-                        onClick={this.props.onClose}
-                    >
-                        {'Close'}
-                    </button>
-                </div>
-
+            <React.Fragment>
                 <div className={styles.layout}>
                     <div className={styles.sidebar}>
                         <div className={styles.sidebarTitle}>{'Tags'}</div>
@@ -549,6 +604,171 @@ class TipsReview extends React.Component {
                         </div>
                     </div>
                 </div>
+            </React.Fragment>
+        );
+    }
+
+    renderEditMode () {
+        const {editSearchQuery, selectedTipId, pendingCapture, workingTips} = this.state;
+        const {vm} = this.props;
+        const allTipIds = Object.keys(workingTips);
+
+        const filteredIds = allTipIds.filter(id => {
+            if (!editSearchQuery) return true;
+            const q = editSearchQuery.toLowerCase();
+            const tip = workingTips[id];
+            const haystack = [
+                id,
+                tip.followUpLabel || '',
+                tip.text || ''
+            ].join(' ').toLowerCase();
+            return haystack.includes(q);
+        });
+
+        const selectedTip = selectedTipId ? workingTips[selectedTipId] : null;
+
+        return (
+            <div className={styles.editLayout}>
+                <div className={styles.editTipList}>
+                    <div className={styles.editTipListHeader}>
+                        <input
+                            className={styles.editTipSearch}
+                            placeholder="Filter tips..."
+                            value={editSearchQuery}
+                            onChange={e => this.setState({editSearchQuery: e.target.value})}
+                        />
+                    </div>
+                    {filteredIds.map(id => {
+                        const tip = workingTips[id];
+                        const isModified = hasOverride(id);
+                        const isActive = id === selectedTipId;
+                        return (
+                            <button
+                                className={
+                                    `${isModified ? styles.editTipItemModified : styles.editTipItem} ` +
+                                    `${isActive ? styles.editTipItemActive : ''}`
+                                }
+                                key={id}
+                                onClick={() => this.setState({selectedTipId: id})}
+                            >
+                                <span className={styles.editTipItemId}>{id}</span>
+                                <span className={styles.editTipItemLabel}>
+                                    {tip.followUpLabel || tip.text}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {selectedTip ? (
+                    <TipEditor
+                        allTipIds={allTipIds}
+                        key={selectedTipId}
+                        onCaptureConsumed={() => this.setState({pendingCapture: false})}
+                        onDelete={this.handleTipDelete}
+                        onRequestCapture={this.handleRequestCapture}
+                        onRevert={this.handleTipRevert}
+                        onSave={this.handleTipSave}
+                        pendingCapture={pendingCapture}
+                        tip={selectedTip}
+                        tipId={selectedTipId}
+                        vm={vm}
+                    />
+                ) : (
+                    <div className={styles.editorPanel}>
+                        <div className={styles.editorNoSelection}>
+                            {'Select a tip from the list to edit it'}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    render () {
+        const {mode, searchQuery} = this.state;
+        const {stats} = this.analysis;
+
+        return (
+            <div className={styles.overlay}>
+                <div className={styles.header}>
+                    <div className={styles.title}>
+                        {mode === 'review' ? 'Tips Review' : 'Tips Editor'}
+                    </div>
+
+                    <div className={styles.modeToggle}>
+                        <button
+                            className={`${styles.modeButton} ${mode === 'review' ? styles.modeButtonActive : ''}`}
+                            onClick={() => this.setState({mode: 'review'})}
+                        >
+                            {'Review'}
+                        </button>
+                        <button
+                            className={`${styles.modeButton} ${mode === 'edit' ? styles.modeButtonActive : ''}`}
+                            onClick={() => this.setState({mode: 'edit', workingTips: loadMergedTips()})}
+                        >
+                            {'Edit'}
+                        </button>
+                    </div>
+
+                    {mode === 'review' ? (
+                        <React.Fragment>
+                            <input
+                                className={styles.searchInput}
+                                placeholder="Search by ID, text, tag, keyword..."
+                                value={searchQuery}
+                                onChange={this.handleSearchChange}
+                            />
+                            <button
+                                className={`${styles.toggleButton} ${
+                                    this.state.warningsOnly ? styles.toggleButtonActive : ''
+                                }`}
+                                onClick={() => this.setState(prev => ({warningsOnly: !prev.warningsOnly}))}
+                            >
+                                {`Warnings (${stats.warningCount})`}
+                            </button>
+                            <button
+                                className={`${styles.toggleButton} ${
+                                    this.state.orphansOnly ? styles.toggleButtonActive : ''
+                                }`}
+                                onClick={() => this.setState(prev => ({orphansOnly: !prev.orphansOnly}))}
+                            >
+                                {'Orphans'}
+                            </button>
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <button
+                                className={styles.exportButton}
+                                onClick={this.handleExport}
+                            >
+                                {'Export JSON'}
+                            </button>
+                            <button
+                                className={styles.importButton}
+                                onClick={this.handleImport}
+                            >
+                                {'Import JSON'}
+                            </button>
+                            <input
+                                accept=".json"
+                                ref={this.importInputRef}
+                                style={{display: 'none'}}
+                                type="file"
+                                onChange={e => this.handleImportFile(e)}
+                            />
+                        </React.Fragment>
+                    )}
+
+                    <button
+                        className={styles.closeButton}
+                        onClick={this.props.onClose}
+                    >
+                        {'Close'}
+                    </button>
+                </div>
+
+                {mode === 'review' ? this.renderReviewMode() : this.renderEditMode()}
             </div>
         );
     }

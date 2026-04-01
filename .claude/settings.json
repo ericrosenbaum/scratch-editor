@@ -9,6 +9,9 @@
       "Bash(*)",
       "WebFetch",
       "WebSearch"
+    ],
+    "additionalDirectories": [
+      "/Users/ericrosenbaum/.claude/plans"
     ]
   }
 }

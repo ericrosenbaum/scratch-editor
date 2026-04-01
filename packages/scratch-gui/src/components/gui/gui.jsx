@@ -29,6 +29,7 @@ import TipsLibrary from '../../containers/tips-library.jsx';
 import Cards from '../../containers/cards.jsx';
 import UnstuckCard from '../../containers/unstuck-card.jsx';
 import TipsReview from '../../containers/tips-review.jsx';
+import CaptureReturnButton from '../../containers/capture-return-button.jsx';
 import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
@@ -318,6 +319,7 @@ const GUIComponent = props => {
                     {tipsReviewVisible ? (
                         <TipsReview />
                     ) : null}
+                    <CaptureReturnButton />
                     {alertsVisible ? (
                         <Alerts className={styles.alertsContainer} />
                     ) : null}

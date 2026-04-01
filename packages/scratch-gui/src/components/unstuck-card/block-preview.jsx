@@ -1005,7 +1005,8 @@ class BlockPreview extends React.Component {
     }
 
     componentDidUpdate (prevProps) {
-        if (prevProps.templateName !== this.props.templateName) {
+        if (prevProps.templateName !== this.props.templateName ||
+            prevProps.blockXml !== this.props.blockXml) {
             this.buildBlocks();
         }
     }
@@ -1061,7 +1062,7 @@ class BlockPreview extends React.Component {
         if (!this.workspace) return;
         this.workspace.clear();
 
-        const xml = BLOCK_XML[this.props.templateName];
+        const xml = this.props.blockXml || BLOCK_XML[this.props.templateName];
         if (!xml) return;
 
         try {
@@ -1170,8 +1171,9 @@ class BlockPreview extends React.Component {
 }
 
 BlockPreview.propTypes = {
+    blockXml: PropTypes.string,
     colorMode: PropTypes.string,
-    templateName: PropTypes.string.isRequired
+    templateName: PropTypes.string
 };
 
 BlockPreview.defaultProps = {
