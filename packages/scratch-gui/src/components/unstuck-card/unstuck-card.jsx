@@ -49,6 +49,17 @@ const UnstuckCardHeader = ({
                 {' New question'}
             </button>
         );
+    } else if (activeTip) {
+        // Navigated from contextual suggestion (no search results)
+        headerContent = (
+            <button
+                className={styles.backButton}
+                onClick={onBackToResults}
+            >
+                <span className={styles.backArrow}>{'\u2190'}</span>
+                {' Back'}
+            </button>
+        );
     } else if (hasResults) {
         headerContent = (
             <button
@@ -208,6 +219,65 @@ QuickPicks.propTypes = {
     })).isRequired
 };
 
+/* ===== CONTEXT SUGGESTIONS ===== */
+class ContextSuggestions extends React.Component {
+    constructor (props) {
+        super(props);
+        this.handleClick = this.handleClick.bind(this);
+    }
+    handleClick (e) {
+        this.props.onSelectResult(e.currentTarget.dataset.tipId);
+    }
+    render () {
+        const {suggestions, tips: allTips} = this.props;
+        if (!suggestions || suggestions.length === 0) return null;
+        const display = suggestions.slice(0, 3);
+        return (
+            <div className={styles.contextSuggestions}>
+                <div className={styles.contextSuggestionsLabel}>
+                    {'Suggested for you'}
+                </div>
+                {display.map((s, index) => {
+                    const tip = allTips[s.tipId];
+                    if (!tip) return null;
+                    // Use followUpLabel if available, otherwise truncate tip text
+                    const label = tip.followUpLabel || tip.text;
+                    return (
+                        <button
+                            className={styles.contextSuggestion}
+                            data-tip-id={s.tipId}
+                            key={s.tipId}
+                            style={{animationDelay: `${index * 60}ms`}}
+                            onClick={this.handleClick}
+                        >
+                            <span
+                                className={styles.quickPickDot}
+                                style={{
+                                    backgroundColor: getSuggestionDotColor(s.reason, tip),
+                                    boxShadow: `0 0 0 3px ${getSuggestionDotColor(s.reason, tip)}33`
+                                }}
+                            />
+                            <span className={styles.contextSuggestionText}>
+                                {label}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+        );
+    }
+}
+
+ContextSuggestions.propTypes = {
+    onSelectResult: PropTypes.func.isRequired,
+    suggestions: PropTypes.arrayOf(PropTypes.shape({
+        tipId: PropTypes.string.isRequired,
+        score: PropTypes.number.isRequired,
+        reason: PropTypes.string.isRequired
+    })).isRequired,
+    tips: PropTypes.object.isRequired
+};
+
 /* ===== BROWSE FILTERS ===== */
 const BROWSE_FILTERS = [
     {tag: 'tutorial', label: 'Tutorials', color: '#855CD6'},
@@ -242,6 +312,23 @@ const TAG_COLORS = {
 };
 
 const getTagColor = tag => TAG_COLORS[tag] || '#888';
+
+const SUGGESTION_DOT_COLORS = {
+    'empty-project': '#FFBF00',
+    'no-hat-blocks': '#FFBF00',
+    'costumes-tab': '#9966FF',
+    'sounds-tab': '#CF63CF',
+    'no-broadcast': '#FFBF00',
+    'no-variables': '#FF8C1A'
+};
+
+const getSuggestionDotColor = function (reason, tip) {
+    if (SUGGESTION_DOT_COLORS[reason]) return SUGGESTION_DOT_COLORS[reason];
+    if (tip && tip.tags && tip.tags.length > 0) {
+        return TAG_COLORS[tip.tags[0]] || '#4C97FF';
+    }
+    return '#4C97FF';
+};
 
 /* ===== SEARCH RESULTS ===== */
 class SearchResults extends React.Component {
@@ -609,6 +696,7 @@ const UnstuckCard = ({
     browseAll,
     browseFilter,
     codeExpanded,
+    contextSuggestions,
     expanded,
     listening,
     loading,
@@ -723,6 +811,11 @@ const UnstuckCard = ({
                                         <div className={styles.promptText}>
                                             {'What do you need help with?'}
                                         </div>
+                                        <ContextSuggestions
+                                            suggestions={contextSuggestions}
+                                            tips={tips}
+                                            onSelectResult={onSelectResult}
+                                        />
                                         <QuickPicks
                                             picks={quickPicks}
                                             onPickClick={onPickClick}
@@ -757,6 +850,7 @@ UnstuckCard.propTypes = {
     browseAll: PropTypes.bool,
     browseFilter: PropTypes.string,
     codeExpanded: PropTypes.bool,
+    contextSuggestions: PropTypes.array,
     expanded: PropTypes.bool.isRequired,
     listening: PropTypes.bool,
     loading: PropTypes.bool.isRequired,

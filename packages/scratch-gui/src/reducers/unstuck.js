@@ -12,6 +12,7 @@ const SET_SEARCH_RESULTS = 'scratch-gui/unstuck/SET_SEARCH_RESULTS';
 const CLEAR_RESULTS = 'scratch-gui/unstuck/CLEAR_RESULTS';
 const SET_BROWSE_ALL = 'scratch-gui/unstuck/SET_BROWSE_ALL';
 const SET_BROWSE_FILTER = 'scratch-gui/unstuck/SET_BROWSE_FILTER';
+const SET_CONTEXT_SUGGESTIONS = 'scratch-gui/unstuck/SET_CONTEXT_SUGGESTIONS';
 
 const initialState = {
     visible: true,
@@ -23,6 +24,7 @@ const initialState = {
     codeExpanded: false,
     browseAll: false,
     browseFilter: null,
+    contextSuggestions: [],
     x: 0,
     y: 0,
     dragging: false
@@ -40,7 +42,8 @@ const reducer = function (state, action) {
             loading: false,
             expanded: true,
             browseAll: false,
-            browseFilter: null
+            browseFilter: null,
+            contextSuggestions: []
         });
     case CLOSE_UNSTUCK:
         return Object.assign({}, state, {
@@ -92,6 +95,10 @@ const reducer = function (state, action) {
     case SET_BROWSE_FILTER:
         return Object.assign({}, state, {
             browseFilter: action.tag
+        });
+    case SET_CONTEXT_SUGGESTIONS:
+        return Object.assign({}, state, {
+            contextSuggestions: action.suggestions
         });
     case SET_LOADING:
         return Object.assign({}, state, {
@@ -171,6 +178,10 @@ const setBrowseFilter = function (tag) {
     return {type: SET_BROWSE_FILTER, tag};
 };
 
+const setContextSuggestions = function (suggestions) {
+    return {type: SET_CONTEXT_SUGGESTIONS, suggestions};
+};
+
 export {
     reducer as default,
     initialState as unstuckInitialState,
@@ -187,5 +198,6 @@ export {
     clearResults,
     toggleCodeExpanded,
     setBrowseAll,
-    setBrowseFilter
+    setBrowseFilter,
+    setContextSuggestions
 };

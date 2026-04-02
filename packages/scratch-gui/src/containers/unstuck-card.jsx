@@ -16,7 +16,8 @@ import {
     openUnstuck,
     toggleCodeExpanded,
     setBrowseAll,
-    setBrowseFilter
+    setBrowseFilter,
+    setContextSuggestions
 } from '../reducers/unstuck';
 
 import {activateDeck} from '../reducers/cards.js';
@@ -29,6 +30,7 @@ import extractProjectContext from '../lib/unstuck/context-extractor.js';
 import getProjectText from '../lib/unstuck/blocks-to-text.js';
 import buildContextQuery from '../lib/unstuck/context-query-builder.js';
 import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions.js';
+import getContextualSuggestions from '../lib/unstuck/context-suggestion-scorer.js';
 import blockTemplates from '../lib/unstuck/block-templates.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
 
@@ -79,6 +81,12 @@ class UnstuckCard extends React.Component {
         this.generateContextSuggestions();
     }
 
+    componentDidUpdate (prevProps) {
+        if (this.props.expanded && !prevProps.expanded) {
+            this.generateContextSuggestions();
+        }
+    }
+
     componentWillUnmount () {
         destroyHighlight();
     }
@@ -89,31 +97,11 @@ class UnstuckCard extends React.Component {
             this.props.activeTabIndex
         );
 
-        if (context.totalBlockCount === 0) {
-            const starterTips = [
-                {tipId: 'nothing-happens', score: 10},
-                {tipId: 'move-sprite', score: 9},
-                {tipId: 'add-sound', score: 8}
-            ].filter(t => tips[t.tipId]);
-            console.log('[Tips] Empty project — using starter tips:', starterTips.map(t => t.tipId));
-            return;
-        }
-
-        getProjectText(this.props.vm)
-            .then(scratchblocksMap => {
-                const queryText = buildContextQuery(context, scratchblocksMap);
-                console.log('[Tips] Context scratchblocks:', scratchblocksMap);
-                console.log('[Tips] Context query text:', queryText);
-                return queryTips(null, queryText);
-            })
-            .then(results => {
-                console.log('[Tips] Context suggestions:', results.slice(0, 5).map(r =>
-                    `${r.tipId} (${r.score.toFixed(1)}): ${(tips[r.tipId] && tips[r.tipId].text || '').substring(0, 60)}`
-                ));
-            })
-            .catch(err => {
-                console.warn('[Tips] Context suggestion generation failed:', err);
-            });
+        const suggestions = getContextualSuggestions(context, tips);
+        console.log('[Tips] Context suggestions:', suggestions.map(s =>
+            `${s.tipId} (${s.score}): ${s.reason}`
+        ));
+        this.props.onSetContextSuggestions(suggestions);
     }
 
     handleQueryChange (e) {
@@ -251,6 +239,7 @@ class UnstuckCard extends React.Component {
             <UnstuckCardComponent
                 activeTip={activeTip}
                 browseAll={this.props.browseAll}
+                contextSuggestions={this.props.contextSuggestions}
                 browseFilter={this.props.browseFilter}
                 codeExpanded={this.props.codeExpanded}
                 expanded={this.props.expanded}
@@ -293,6 +282,11 @@ UnstuckCard.propTypes = {
     activeTabIndex: PropTypes.number.isRequired,
     browseAll: PropTypes.bool.isRequired,
     browseFilter: PropTypes.string,
+    contextSuggestions: PropTypes.arrayOf(PropTypes.shape({
+        tipId: PropTypes.string.isRequired,
+        score: PropTypes.number.isRequired,
+        reason: PropTypes.string.isRequired
+    })).isRequired,
     onActivateDeck: PropTypes.func.isRequired,
     onBrowseAll: PropTypes.func.isRequired,
     onBrowseFilter: PropTypes.func.isRequired,
@@ -304,6 +298,7 @@ UnstuckCard.propTypes = {
     onClose: PropTypes.func.isRequired,
     onDrag: PropTypes.func.isRequired,
     onEndDrag: PropTypes.func.isRequired,
+    onSetContextSuggestions: PropTypes.func.isRequired,
     onSetLoading: PropTypes.func.isRequired,
     onSetQuery: PropTypes.func.isRequired,
     onSetSearchResults: PropTypes.func.isRequired,
@@ -326,6 +321,7 @@ const mapStateToProps = state => ({
     activeTabIndex: state.scratchGui.editorTab.activeTabIndex,
     browseAll: state.scratchGui.unstuck.browseAll,
     browseFilter: state.scratchGui.unstuck.browseFilter,
+    contextSuggestions: state.scratchGui.unstuck.contextSuggestions,
     codeExpanded: state.scratchGui.unstuck.codeExpanded,
     expanded: state.scratchGui.unstuck.expanded,
     loading: state.scratchGui.unstuck.loading,
@@ -354,7 +350,8 @@ const mapDispatchToProps = dispatch => ({
     onToggleCode: () => dispatch(toggleCodeExpanded()),
     onActivateDeck: deckId => dispatch(activateDeck(deckId)),
     onBrowseAll: () => dispatch(setBrowseAll(true)),
-    onBrowseFilter: tag => dispatch(setBrowseFilter(tag))
+    onBrowseFilter: tag => dispatch(setBrowseFilter(tag)),
+    onSetContextSuggestions: suggestions => dispatch(setContextSuggestions(suggestions))
 });
 
 export default connect(
