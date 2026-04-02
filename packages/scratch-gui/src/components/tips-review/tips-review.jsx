@@ -6,7 +6,10 @@ import tips, {quickPicks} from '../../lib/libraries/tips/index.js';
 import blockTemplates from '../../lib/unstuck/block-templates.js';
 import BlockPreview from '../unstuck-card/block-preview.jsx';
 import TipEditor from './tip-editor.jsx';
-import {loadMergedTips, hasOverride, deleteOverride, exportAllTips, importTips} from '../../lib/unstuck/tip-overrides.js';
+import {
+    loadMergedTips, hasOverride, deleteOverride,
+    exportTipsJson, exportBlockTemplatesJson, importTips
+} from '../../lib/unstuck/tip-overrides.js';
 
 const CAPTURE_STATE_KEY = 'scratch-tips-editor-capture-state';
 
@@ -431,7 +434,8 @@ class TipsReview extends React.Component {
         this.handleSearchChange = this.handleSearchChange.bind(this);
         this.handleTagClick = this.handleTagClick.bind(this);
         this.clearTag = this.clearTag.bind(this);
-        this.handleExport = this.handleExport.bind(this);
+        this.handleExportTips = this.handleExportTips.bind(this);
+        this.handleExportBlocks = this.handleExportBlocks.bind(this);
         this.handleImport = this.handleImport.bind(this);
         this.handleTipSave = this.handleTipSave.bind(this);
         this.handleTipRevert = this.handleTipRevert.bind(this);
@@ -454,13 +458,24 @@ class TipsReview extends React.Component {
         this.setState({activeTag: null});
     }
 
-    handleExport () {
-        const json = exportAllTips();
+    handleExportTips () {
+        const json = exportTipsJson(quickPicks);
         const blob = new Blob([json], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'tips-export.json';
+        a.download = 'tips.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    handleExportBlocks () {
+        const json = exportBlockTemplatesJson(blockTemplates);
+        const blob = new Blob([json], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'block-templates.json';
         a.click();
         URL.revokeObjectURL(url);
     }
@@ -740,15 +755,21 @@ class TipsReview extends React.Component {
                         <React.Fragment>
                             <button
                                 className={styles.exportButton}
-                                onClick={this.handleExport}
+                                onClick={this.handleExportTips}
                             >
-                                {'Export JSON'}
+                                {'Export tips.json'}
+                            </button>
+                            <button
+                                className={styles.exportButton}
+                                onClick={this.handleExportBlocks}
+                            >
+                                {'Export block-templates.json'}
                             </button>
                             <button
                                 className={styles.importButton}
                                 onClick={this.handleImport}
                             >
-                                {'Import JSON'}
+                                {'Import'}
                             </button>
                             <input
                                 accept=".json"

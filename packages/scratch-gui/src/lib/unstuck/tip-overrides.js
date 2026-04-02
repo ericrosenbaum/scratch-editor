@@ -116,12 +116,24 @@ const clearOverride = function (tipId) {
 };
 
 /**
- * Export all tips (merged) plus custom block templates as a JSON string.
+ * Export tips as JSON matching the tips.json format (tips + quickPicks).
  */
-const exportAllTips = function () {
+const exportTipsJson = function (quickPicks) {
     return JSON.stringify({
         tips: loadMergedTips(),
-        blockTemplates: getCustomBlockTemplates()
+        quickPicks: quickPicks || []
+    }, null, 2);
+};
+
+/**
+ * Export block templates as JSON matching block-templates.json format.
+ * Merges built-in templates with any custom captured ones.
+ */
+const exportBlockTemplatesJson = function (builtinTemplates) {
+    const custom = getCustomBlockTemplates();
+    return JSON.stringify({
+        ...builtinTemplates,
+        ...custom
     }, null, 2);
 };
 
@@ -159,7 +171,8 @@ export {
     saveBlockTemplate,
     hasOverride,
     clearOverride,
-    exportAllTips,
+    exportTipsJson,
+    exportBlockTemplatesJson,
     importTips,
     clearAllOverrides,
     getCustomBlockTemplates
