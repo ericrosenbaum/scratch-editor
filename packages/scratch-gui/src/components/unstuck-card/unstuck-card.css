@@ -68,6 +68,13 @@ body .unstuck-container {
     overflow: hidden;
 }
 
+.tips-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 0.25rem;
+}
+
 .back-button {
     cursor: pointer;
     color: white;

@@ -11,6 +11,7 @@ import closeIcon from '../cards/icon--close.svg';
 import shrinkIcon from '../cards/icon--shrink.svg';
 import expandIcon from '../cards/icon--expand.svg';
 import micIcon from './icon--mic.svg';
+import tipsIcon from '../../lib/assets/icon--tips.svg';
 
 /* ===== HEADER ===== */
 const UnstuckCardHeader = ({
@@ -59,7 +60,16 @@ const UnstuckCardHeader = ({
             </button>
         );
     } else {
-        headerContent = <span>{'Tips'}</span>;
+        headerContent = (
+            <span>
+                <img
+                    className={styles.tipsIcon}
+                    draggable={false}
+                    src={tipsIcon}
+                />
+                {'Tips'}
+            </span>
+        );
     }
 
     return (
