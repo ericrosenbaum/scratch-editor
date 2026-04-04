@@ -49,6 +49,12 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
+// Musical Timing uses inline data URI icons (no separate image files needed)
+// eslint-disable-next-line @stylistic/max-len
+const musicalTimingIconURL = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjM3MiIgdmlld0JveD0iMCAwIDYwMCAzNzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSIzNzIiIHJ4PSIyMCIgZmlsbD0iI0YyNzkyRCIvPjxnIGZpbGw9IiNmZmYiPjxyZWN0IHg9IjEyMCIgeT0iMjAwIiB3aWR0aD0iNDAiIGhlaWdodD0iMTAwIiByeD0iNCIvPjxyZWN0IHg9IjE4MCIgeT0iMTQwIiB3aWR0aD0iNDAiIGhlaWdodD0iMTYwIiByeD0iNCIvPjxyZWN0IHg9IjI0MCIgeT0iODAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMjAiIHJ4PSI0Ii8+PHJlY3QgeD0iMzAwIiB5PSIxNDAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxNjAiIHJ4PSI0Ii8+PHJlY3QgeD0iMzYwIiB5PSIyMDAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxMDAiIHJ4PSI0Ii8+PHJlY3QgeD0iNDIwIiB5PSIxNDAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxNjAiIHJ4PSI0Ii8+PC9nPjwvc3ZnPg==';
+// eslint-disable-next-line @stylistic/max-len
+const musicalTimingInsetIconURL = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHJ4PSIyIiBmaWxsPSIjRjI3OTJEIi8+PGcgZmlsbD0iI2ZmZiI+PHJlY3QgeD0iMyIgeT0iMTAiIHdpZHRoPSIyIiBoZWlnaHQ9IjYiLz48cmVjdCB4PSI2IiB5PSI3IiB3aWR0aD0iMiIgaGVpZ2h0PSI5Ii8+PHJlY3QgeD0iOSIgeT0iNCIgd2lkdGg9IjIiIGhlaWdodD0iMTIiLz48cmVjdCB4PSIxMiIgeT0iNyIgd2lkdGg9IjIiIGhlaWdodD0iOSIvPjxyZWN0IHg9IjE1IiB5PSIxMCIgd2lkdGg9IjIiIGhlaWdodD0iNiIvPjwvZz48L3N2Zz4=';
+
 export default [
     {
         name: (
@@ -412,5 +418,25 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/wedo'
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Musical Timing"
+                description="Name for the 'Musical Timing' extension"
+                id="gui.extension.musicalTiming.name"
+            />
+        ),
+        extensionId: 'musicalTiming',
+        iconURL: musicalTimingIconURL,
+        insetIconURL: musicalTimingInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Trigger scripts on steady musical beats."
+                description="Description for the 'Musical Timing' extension"
+                id="gui.extension.musicalTiming.description"
+            />
+        ),
+        featured: true
     }
 ];
