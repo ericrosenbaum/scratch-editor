@@ -11,12 +11,10 @@
 
 /**
  * URL of the hosted model file.
- * Set this to your Cloudflare R2 (or other public CDN) URL once you have uploaded
- * the Gemma 3n model file.  If null, the auto-download button will not appear
- * and users must load the file from their computer.
- * Example: 'https://pub-xxxxxxxxxxxx.r2.dev/gemma-3n-E2B-it-litert-preview.bin'
+ * Gemma 4 E2B in LiteRT web task format (~2 GB).
  */
-const MODEL_URL = 'https://storage.googleapis.com/gemma-3n/gemma-3n-E2B-it-int4-Web.litertlm';
+const MODEL_URL = 'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.task';
+const MODEL_NAME = 'Gemma 4 E2B';
 
 const OPFS_FILENAME = 'gemma-model.bin';
 
@@ -37,6 +35,8 @@ const loadModel = async url => {
         const filesetResolver = await FilesetResolver.forGenAiTasks(
             'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai@0.10.26/wasm'
         );
+        // eslint-disable-next-line no-console
+        console.log(`[ai-model-manager] Loading model: ${MODEL_NAME} from ${url.slice(0, 80)}…`);
         _llmInference = await LlmInference.createFromOptions(filesetResolver, {
             baseOptions: {modelAssetPath: url},
             maxTokens: 4096,
@@ -44,6 +44,14 @@ const loadModel = async url => {
             supportAudio: true
         });
         _modelLoaded = true;
+        // eslint-disable-next-line no-console
+        console.log(`[ai-model-manager] ${MODEL_NAME} loaded successfully`);
+        _llmInference.generateResponse('What is your name and version number? Reply in one short sentence.')
+            .then(response => {
+                // eslint-disable-next-line no-console
+                console.log(`[ai-model-manager] Model self-identification: ${response}`);
+            })
+            .catch(() => {}); // non-critical, don't block on failure
     } finally {
         _isLoading = false;
     }
@@ -231,7 +239,7 @@ const _doShowLoadModal = async () => {
 
         // ---- Close button ----
         const closeBtn = document.createElement('button');
-        closeBtn.innerText = '✕';
+        closeBtn.innerText = '\u2715';
         Object.assign(closeBtn.style, {
             position: 'absolute',
             top: '12px', right: '16px',
@@ -259,7 +267,7 @@ const _doShowLoadModal = async () => {
         descText.style.lineHeight = '1.5';
         descText.style.color = '#575e75';
         descText.innerHTML =
-            `Downloading Google's <b>Gemma 3n</b> AI model (~3 GB).<br>
+            `Downloading Google's <b>Gemma 4 E2B</b> AI model (~2 GB).<br>
              This only happens once — it will be cached for future sessions.`;
         content.appendChild(descText);
 

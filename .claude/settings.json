@@ -11,7 +11,20 @@
       "Bash(grep -r \"MODEL_URL\\\\|OPFS\\\\|Gemma\" /Users/ericrosenbaum/Documents/scratch-editor/packages/scratch-gui/src --include=*.js --include=*.jsx)",
       "Bash(curl -s http://127.0.0.1:9222/json/version)",
       "Bash(grep -E \"\\\\.\\(js|ts|json\\)$\")",
-      "Read(//Users/ericrosenbaum/Documents/scratch-gui/src/lib/**)"
+      "Read(//Users/ericrosenbaum/Documents/scratch-gui/src/lib/**)",
+      "Bash(curl -s 'https://registry.npmjs.org/@huggingface/transformers/latest')",
+      "Bash(python3 -c \"import sys,json; print\\(json.load\\(sys.stdin\\)[''''version'''']\\)\")",
+      "Bash(curl -sI 'https://cdn.jsdelivr.net/npm/@huggingface/transformers/dist/transformers.js')",
+      "Bash(curl -s 'https://huggingface.co/onnx-community/gemma-4-E2B-it-ONNX/raw/main/config.json')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''model_type:'''', d.get\\(''''model_type''''\\)\\); print\\(''''architectures:'''', d.get\\(''''architectures''''\\)\\)\")",
+      "Bash(curl -s 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1/dist/transformers.js')",
+      "Bash(grep -oP 'MODEL_FOR_CAUSAL_LM_MAPPING_NAMES = /\\\\* @__PURE__ \\\\*/ new Map\\\\\\(\\\\[.{0,3000}?\\\\]\\\\\\)')",
+      "Bash(curl -s https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1/dist/transformers.js)",
+      "Bash(curl -s 'https://huggingface.co/api/models?search=gemma-4-E2B+ONNX&limit=10')",
+      "Bash(python3 -c \"import sys,json; [print\\(m[''''id'''']\\) for m in json.load\\(sys.stdin\\)]\")",
+      "Bash(curl -s 'https://huggingface.co/api/models/onnx-community/gemma-4-E2B-it-ONNX')",
+      "Bash(curl -sI 'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.task')",
+      "Bash(npm uninstall:*)"
     ]
   }
 }
