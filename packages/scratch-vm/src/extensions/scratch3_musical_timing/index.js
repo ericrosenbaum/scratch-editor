@@ -39,8 +39,20 @@ const TEMPO_MAX = 500;
 const TEMPO_DEFAULT = 120;
 
 /**
+ * Interval (ms) for the beat-check timer, matching the VM's 60 FPS step rate.
+ * @type {number}
+ */
+const BEAT_CHECK_INTERVAL = 1000 / 60;
+
+/**
  * Class for the musical timing extension in Scratch 3.0.
  * Provides a steady temporal grid that triggers hat blocks at musical time intervals.
+ *
+ * Uses an event-driven hat approach: a setInterval timer checks beat boundaries
+ * each frame and calls runtime.startHats() with field matching to trigger all
+ * hat blocks for the relevant interval. This correctly handles multiple stacks
+ * using the same hat block, since startHats triggers every matching script.
+ *
  * @param {Runtime} runtime - the runtime instantiating this block package.
  * @class
  */
@@ -82,15 +94,21 @@ class Scratch3MusicalTimingBlocks {
 
         /**
          * Map of interval name to the last interval index that was fired.
-         * Used by the hat predicate to detect beat boundary crossings.
+         * Updated once per frame in _checkBeats, NOT in the hat predicate.
          * @type {object}
          */
         this._lastFiredInterval = {};
 
+        /**
+         * Handle for the setInterval timer that checks beat boundaries.
+         * @type {number|null}
+         */
+        this._beatCheckInterval = null;
+
         this._resetLastFired();
 
         this.runtime.on('PROJECT_STOP_ALL', () => {
-            this._running = false;
+            this._stop();
         });
     }
 
@@ -113,6 +131,64 @@ class Scratch3MusicalTimingBlocks {
         const elapsedMs = this._timer.timeElapsed();
         const beatsSinceReset = (elapsedMs / 60000) * this._tempo;
         return this._beatsAtLastReset + beatsSinceReset;
+    }
+
+    /**
+     * Start the internal beat-check timer.
+     * @private
+     */
+    _startBeatCheck () {
+        if (this._beatCheckInterval !== null) return;
+        this._beatCheckInterval = setInterval(
+            () => this._checkBeats(), BEAT_CHECK_INTERVAL
+        );
+    }
+
+    /**
+     * Stop the internal beat-check timer.
+     * @private
+     */
+    _stopBeatCheck () {
+        if (this._beatCheckInterval !== null) {
+            clearInterval(this._beatCheckInterval);
+            this._beatCheckInterval = null;
+        }
+    }
+
+    /**
+     * Check all intervals for beat boundary crossings and fire hats.
+     * Called ~60 times per second by the beat-check timer.
+     * @private
+     */
+    _checkBeats () {
+        if (!this._running) return;
+
+        const elapsedBeats = this._getElapsedBeats();
+
+        for (const interval in INTERVAL_BEATS) {
+            const beatsPerInterval = INTERVAL_BEATS[interval];
+            const currentIndex = Math.floor(elapsedBeats / beatsPerInterval);
+
+            if (currentIndex > this._lastFiredInterval[interval]) {
+                this._lastFiredInterval[interval] = currentIndex;
+                // Fire all hat blocks matching this interval.
+                // Field matching works because both sides are uppercased:
+                //   - blocks-runtime-cache.js uppercases cached field values
+                //   - runtime.startHats uppercases match field values
+                this.runtime.startHats('musicalTiming_whenBeat', {
+                    INTERVAL: interval
+                });
+            }
+        }
+    }
+
+    /**
+     * Internal stop: clear running state and stop the timer.
+     * @private
+     */
+    _stop () {
+        this._running = false;
+        this._stopBeatCheck();
     }
 
     /**
@@ -155,8 +231,8 @@ class Scratch3MusicalTimingBlocks {
                         default: 'when [INTERVAL] note',
                         description: 'Hat block that triggers on musical beat intervals'
                     }),
-                    isEdgeActivated: true,
-                    shouldRestartExistingThreads: false,
+                    isEdgeActivated: false,
+                    shouldRestartExistingThreads: true,
                     arguments: {
                         INTERVAL: {
                             type: ArgumentType.STRING,
@@ -257,37 +333,26 @@ class Scratch3MusicalTimingBlocks {
         this._beatsAtLastReset = 0;
         this._timer.start();
         this._resetLastFired();
+        this._startBeatCheck();
     }
 
     /**
      * Stop the musical timing engine.
      */
     stopBeat () {
-        this._running = false;
+        this._stop();
     }
 
     /**
-     * Hat block predicate: returns true when a beat boundary is crossed
-     * for the given interval. Edge activation ensures it fires once per crossing.
-     * @param {object} args - the block arguments.
-     * @param {string} args.INTERVAL - the interval type (whole, half, quarter, eighth, sixteenth).
-     * @returns {boolean} true if a new beat boundary was crossed.
+     * Hat predicate for whenBeat. With isEdgeActivated: false, startHats()
+     * triggers matching scripts and then execute() calls this predicate.
+     * Returning true allows the thread to proceed; returning false retires it.
+     * Field matching in startHats already ensures only the correct interval
+     * blocks are triggered, so this just gates on the running state.
+     * @returns {boolean} true if the beat engine is running.
      */
-    whenBeat (args) {
-        if (!this._running) return false;
-
-        const interval = Cast.toString(args.INTERVAL);
-        const beatsPerInterval = INTERVAL_BEATS[interval];
-        if (typeof beatsPerInterval === 'undefined') return false;
-
-        const elapsedBeats = this._getElapsedBeats();
-        const currentIntervalIndex = Math.floor(elapsedBeats / beatsPerInterval);
-
-        if (currentIntervalIndex > this._lastFiredInterval[interval]) {
-            this._lastFiredInterval[interval] = currentIntervalIndex;
-            return true;
-        }
-        return false;
+    whenBeat () {
+        return this._running;
     }
 
     /**

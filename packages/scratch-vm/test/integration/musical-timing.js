@@ -11,6 +11,9 @@ const quarterProject = readFileToBuffer(quarterUri);
 const mixedUri = path.resolve(__dirname, '../fixtures/musical-timing-mixed.sb3');
 const mixedProject = readFileToBuffer(mixedUri);
 
+const multiStackUri = path.resolve(__dirname, '../fixtures/musical-timing-multi-stack.sb3');
+const multiStackProject = readFileToBuffer(multiStackUri);
+
 /**
  * Helper to get a variable value from the stage by variable ID.
  */
@@ -25,13 +28,7 @@ const getStageVariable = (vm, varId) => {
 /**
  * Helper to get the musical timing extension instance from the runtime.
  */
-const getExtension = vm => {
-    // The extension registers itself; find it via the runtime's service infrastructure
-    // For built-in extensions loaded synchronously, the instance is stored internally.
-    // We can access extension state through ext_ on the runtime if registered,
-    // or by loading it directly.
-    return vm.runtime.ext_musicalTiming;
-};
+const getExtension = vm => vm.runtime.ext_musicalTiming;
 
 test('extension loads and provides correct block info', t => {
     const vm = new VirtualMachine();
@@ -53,6 +50,10 @@ test('extension loads and provides correct block info', t => {
         t.ok(opcodes.includes('getTempo'), 'Has getTempo block');
         t.ok(opcodes.includes('getBeatNumber'), 'Has getBeatNumber block');
 
+        const hatBlock = info.blocks.find(b => b.opcode === 'whenBeat');
+        t.equal(hatBlock.isEdgeActivated, false, 'Hat is not edge-activated');
+        t.equal(hatBlock.shouldRestartExistingThreads, true, 'Hat restarts existing threads');
+
         t.equal(info.menus.INTERVAL.items.length, 5, 'Has 5 interval menu items');
 
         vm.quit();
@@ -71,6 +72,7 @@ test('initial extension state', t => {
         t.equal(ext._tempo, 120, 'Default tempo is 120 BPM');
         t.equal(ext.getTempo(), 120, 'getTempo returns 120');
         t.equal(ext.getBeatNumber(), 0, 'Beat number is 0 when not running');
+        t.equal(ext._beatCheckInterval, null, 'No beat check timer initially');
 
         vm.quit();
         t.end();
@@ -86,10 +88,12 @@ test('start and stop beat controls', t => {
 
         ext.startBeat();
         t.equal(ext._running, true, 'Running after startBeat');
+        t.ok(ext._beatCheckInterval !== null, 'Beat check timer is active');
         t.ok(ext.getBeatNumber() >= 1, 'Beat number >= 1 after start');
 
         ext.stopBeat();
         t.equal(ext._running, false, 'Not running after stopBeat');
+        t.equal(ext._beatCheckInterval, null, 'Beat check timer cleared after stop');
         t.equal(ext.getBeatNumber(), 0, 'Beat number is 0 after stop');
 
         vm.quit();
@@ -121,62 +125,70 @@ test('setTempo clamps to valid range', t => {
     });
 });
 
-test('whenBeat predicate returns false when not running', t => {
+test('whenBeat predicate gates on running state', t => {
     const vm = new VirtualMachine();
     vm.attachStorage(makeTestStorage());
 
     vm.loadProject(quarterProject).then(() => {
         const ext = getExtension(vm);
 
-        t.equal(ext.whenBeat({INTERVAL: 'quarter'}), false,
+        // Predicate returns false when not running (prevents thread execution)
+        t.equal(ext.whenBeat(), false,
             'Predicate is false when engine not running');
+
+        ext.startBeat();
+        // Predicate returns true when running (allows thread execution)
+        t.equal(ext.whenBeat(), true,
+            'Predicate is true when engine is running');
+
+        ext.stopBeat();
+        t.equal(ext.whenBeat(), false,
+            'Predicate is false after stopping');
 
         vm.quit();
         t.end();
     });
 });
 
-test('whenBeat predicate fires on beat boundaries', t => {
+test('_checkBeats fires startHats for crossed boundaries', t => {
     const vm = new VirtualMachine();
     vm.attachStorage(makeTestStorage());
 
     vm.loadProject(quarterProject).then(() => {
         const ext = getExtension(vm);
 
-        // Set high tempo so beats come quickly: 60000 BPM = 1 beat per ms
+        // Track startHats calls
+        const hatCalls = [];
+        const originalStartHats = vm.runtime.startHats.bind(vm.runtime);
+        vm.runtime.startHats = (opcode, matchFields) => {
+            if (opcode === 'musicalTiming_whenBeat') {
+                hatCalls.push(matchFields);
+            }
+            return originalStartHats(opcode, matchFields);
+        };
+
+        // Set high tempo: 500 BPM = 1 beat per 120ms
         ext.setTempo({TEMPO: 500});
         ext.startBeat();
 
-        // At 500 BPM, one beat = 120ms. Wait a bit to cross a beat boundary.
+        // Wait for a couple of beats to be detected
         setTimeout(() => {
-            const result = ext.whenBeat({INTERVAL: 'quarter'});
-            t.equal(result, true, 'First call after beat boundary returns true');
-
-            // Immediately calling again should return false (same interval index)
-            const result2 = ext.whenBeat({INTERVAL: 'quarter'});
-            t.equal(result2, false, 'Consecutive call returns false (no new boundary)');
-
             ext.stopBeat();
+
+            t.ok(hatCalls.length >= 2, `startHats called ${hatCalls.length} times (>= 2)`);
+
+            // Verify the calls include quarter interval.
+            // Note: startHats uppercases match field values in place,
+            // so by the time we capture them, values are uppercased.
+            const quarterCalls = hatCalls.filter(
+                m => m.INTERVAL === 'quarter' || m.INTERVAL === 'QUARTER'
+            );
+            t.ok(quarterCalls.length >= 2,
+                `Quarter interval fired ${quarterCalls.length} times`);
+
             vm.quit();
             t.end();
-        }, 150);
-    });
-});
-
-test('whenBeat returns false for unknown interval', t => {
-    const vm = new VirtualMachine();
-    vm.attachStorage(makeTestStorage());
-
-    vm.loadProject(quarterProject).then(() => {
-        const ext = getExtension(vm);
-        ext.startBeat();
-
-        t.equal(ext.whenBeat({INTERVAL: 'invalid'}), false,
-            'Unknown interval returns false');
-
-        ext.stopBeat();
-        vm.quit();
-        t.end();
+        }, 300);
     });
 });
 
@@ -188,7 +200,6 @@ test('quarter note hat fires in fixture project via VM stepping', t => {
         const ext = getExtension(vm);
 
         // Set tempo to 480 BPM = 8 beats per second = 125ms per beat
-        // This means in ~600ms we should get ~4 beats
         ext._tempo = 480;
 
         // Start the VM manually
@@ -196,11 +207,12 @@ test('quarter note hat fires in fixture project via VM stepping', t => {
         vm.setCompatibilityMode(false);
         vm.setTurboMode(false);
 
-        // Green flag starts the beat engine
+        // Green flag starts the beat engine via the startBeat block
         vm.greenFlag();
 
-        // Let the VM run for ~600ms by stepping at intervals
-        const startTime = Date.now();
+        // Step the VM at intervals so threads execute.
+        // The beat-check timer (setInterval) fires independently to call startHats.
+        // _step() is needed to actually execute the threads that startHats creates.
         const intervalId = setInterval(() => {
             vm.runtime._step();
         }, Runtime.THREAD_STEP_INTERVAL);
@@ -211,7 +223,6 @@ test('quarter note hat fires in fixture project via VM stepping', t => {
             t.comment(`Beat count after ~600ms at 480 BPM: ${beatCount}`);
 
             // At 480 BPM, 1 beat = 125ms. In 600ms, expect ~4 beats.
-            // Allow tolerance for timing imprecision.
             t.ok(beatCount >= 3, `Beat count (${beatCount}) should be >= 3`);
             t.ok(beatCount <= 7, `Beat count (${beatCount}) should be <= 7`);
 
@@ -251,10 +262,49 @@ test('mixed intervals: eighth fires ~2x as often as quarter', t => {
             t.ok(quarterCount >= 2, `Quarter count (${quarterCount}) should be >= 2`);
             t.ok(eighthCount >= 4, `Eighth count (${eighthCount}) should be >= 4`);
 
-            // Eighth should be roughly 2x quarter (with some tolerance)
+            // Eighth should be roughly 2x quarter
             const ratio = eighthCount / quarterCount;
             t.ok(ratio >= 1.5, `Ratio (${ratio.toFixed(2)}) should be >= 1.5`);
             t.ok(ratio <= 2.5, `Ratio (${ratio.toFixed(2)}) should be <= 2.5`);
+
+            vm.stopAll();
+            vm.quit();
+            t.end();
+        }, 650);
+    });
+});
+
+test('multiple stacks with same hat both fire on each beat', t => {
+    const vm = new VirtualMachine();
+    vm.attachStorage(makeTestStorage());
+
+    vm.loadProject(multiStackProject).then(() => {
+        const ext = getExtension(vm);
+
+        // 480 BPM = 125ms per quarter note
+        ext._tempo = 480;
+
+        vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
+        vm.setCompatibilityMode(false);
+        vm.setTurboMode(false);
+
+        vm.greenFlag();
+
+        const intervalId = setInterval(() => {
+            vm.runtime._step();
+        }, Runtime.THREAD_STEP_INTERVAL);
+
+        setTimeout(() => {
+            clearInterval(intervalId);
+            const countA = getStageVariable(vm, 'countA');
+            const countB = getStageVariable(vm, 'countB');
+            t.comment(`countA: ${countA}, countB: ${countB}`);
+
+            // Both stacks should have fired the same number of times
+            t.ok(countA >= 3, `countA (${countA}) should be >= 3`);
+            t.ok(countB >= 3, `countB (${countB}) should be >= 3`);
+            t.equal(countA, countB,
+                'Both stacks fire the same number of times');
 
             vm.stopAll();
             vm.quit();
@@ -270,7 +320,6 @@ test('stop beat prevents further hat firing', t => {
     vm.loadProject(quarterProject).then(() => {
         const ext = getExtension(vm);
 
-        // Use very fast tempo so we get quick beats
         ext._tempo = 480;
 
         vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
@@ -296,7 +345,6 @@ test('stop beat prevents further hat firing', t => {
                 const countAfterWait = getStageVariable(vm, 'beatCount');
                 t.comment(`Count after wait: ${countAfterWait}`);
 
-                // Beat count should not have increased after stopping
                 t.equal(countAfterWait, countAtStop,
                     'Beat count did not increase after stopping');
 
@@ -320,7 +368,7 @@ test('tempo change affects beat timing', t => {
         // At 60 BPM: 1 beat per second
         ext.setTempo({TEMPO: 60});
 
-        // After 500ms at 60 BPM, elapsed beats = 0.5 (no boundary crossed yet beyond initial)
+        // After 500ms at 60 BPM, elapsed beats = 0.5
         setTimeout(() => {
             const beatsAt60 = ext._getElapsedBeats();
             t.comment(`Elapsed beats after 500ms at 60 BPM: ${beatsAt60.toFixed(2)}`);
@@ -334,7 +382,6 @@ test('tempo change affects beat timing', t => {
             setTimeout(() => {
                 const totalBeats = ext._getElapsedBeats();
                 t.comment(`Total elapsed beats: ${totalBeats.toFixed(2)}`);
-                // Should be ~0.5 (from first period) + ~2.0 (from second period) = ~2.5
                 t.ok(totalBeats >= 2.0, `Total beats (${totalBeats.toFixed(2)}) >= 2.0`);
                 t.ok(totalBeats <= 3.2, `Total beats (${totalBeats.toFixed(2)}) <= 3.2`);
 
@@ -372,7 +419,7 @@ test('beat number reporter tracks quarter notes', t => {
     });
 });
 
-test('PROJECT_STOP_ALL stops the beat engine', t => {
+test('PROJECT_STOP_ALL stops the beat engine and clears timer', t => {
     const vm = new VirtualMachine();
     vm.attachStorage(makeTestStorage());
 
@@ -381,9 +428,11 @@ test('PROJECT_STOP_ALL stops the beat engine', t => {
 
         ext.startBeat();
         t.equal(ext._running, true, 'Running after start');
+        t.ok(ext._beatCheckInterval !== null, 'Timer active after start');
 
         vm.stopAll();
         t.equal(ext._running, false, 'Stopped after PROJECT_STOP_ALL');
+        t.equal(ext._beatCheckInterval, null, 'Timer cleared after PROJECT_STOP_ALL');
 
         vm.quit();
         t.end();
