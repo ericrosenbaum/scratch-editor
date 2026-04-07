@@ -1284,6 +1284,19 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
+     * Parse SB2-format scripts and add them to a target.
+     * Used by AI code generation to load generated blocks.
+     * @param {Array} scripts - Array of [x, y, [blockList]] tuples in SB2 format.
+     * @param {string} targetId - Id of target to add blocks to.
+     * @returns {!Promise} Promise that resolves when blocks have been added.
+     */
+    shareSB2BlocksToTarget (scripts, targetId) {
+        const sb2 = require('./serialization/sb2');
+        const parsed = sb2.parseToShare(scripts, targetId);
+        return this.shareBlocksToTarget(parsed.flat(), targetId);
+    }
+
+    /**
      * Called when costumes are dragged from editing target to another target.
      * Sets the newly added costume as the current costume.
      * @param {!number} costumeIndex Index of the costume of the editing target to share.

@@ -43,6 +43,8 @@ import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
 import DebugModal from '../debug-modal/debug-modal.jsx';
+import AiCodeButton from '../ai-code-button/ai-code-button.jsx';
+import AiCodeModal from '../../containers/ai-code-modal.jsx';
 import {setPlatform} from '../../reducers/platform.js';
 import {setTheme} from '../../reducers/settings.js';
 import {PLATFORM} from '../../lib/platform.js';
@@ -116,6 +118,7 @@ const GUIComponent = props => {
         accountMenuOptions,
         accountNavOpen,
         activeTabIndex,
+        aiModelStatus,
         alertsVisible,
         authorId,
         authorThumbnailUrl,
@@ -174,6 +177,7 @@ const GUIComponent = props => {
         onActivateTab,
         onClickLogo,
         onExtensionButtonClick,
+        onOpenAiCodeModal,
         onNewSpriteClick,
         onNewLibraryCostumeClick,
         onNewLibraryBackdropClick,
@@ -323,6 +327,7 @@ const GUIComponent = props => {
                         isOpen={debugModalVisible}
                         onClose={onCloseDebugModal}
                     />}
+                    <AiCodeModal vm={vm} />
                     {backdropLibraryVisible ? (
                         <BackdropLibrary
                             vm={vm}
@@ -485,6 +490,10 @@ const GUIComponent = props => {
                                             vm={vm}
                                             colorMode={colorMode}
                                         />
+                                        <AiCodeButton
+                                            onClick={onOpenAiCodeModal}
+                                            visible={aiModelStatus === 'ready'}
+                                        />
                                     </Box>
                                     <ExtensionsButton
                                         intl={intl}
@@ -576,6 +585,7 @@ GUIComponent.propTypes = {
     accountNavOpen: PropTypes.bool,
     accountMenuOptions: AccountMenuOptionsPropTypes,
     activeTabIndex: PropTypes.number,
+    aiModelStatus: PropTypes.string,
     authorId: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]), // can be false
     authorThumbnailUrl: PropTypes.string,
     authorUsername: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]), // can be false
@@ -625,6 +635,7 @@ GUIComponent.propTypes = {
     onClickLogo: PropTypes.func,
     onCloseAccountNav: PropTypes.func,
     onExtensionButtonClick: PropTypes.func,
+    onOpenAiCodeModal: PropTypes.func,
     onLogOut: PropTypes.func,
     onNewSpriteClick: PropTypes.func,
     onNewLibraryCostumeClick: PropTypes.func,

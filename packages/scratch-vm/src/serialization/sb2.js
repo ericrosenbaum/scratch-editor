@@ -1290,6 +1290,44 @@ const parseBlock = function (sb2block, addBroadcastMsg, getVariableId, extension
     return [activeBlock, commentIndex];
 };
 
+/**
+ * Parse SB2-format scripts for sharing/adding to a target.
+ * Used by AI code generation to convert SB2 block arrays into
+ * SB3-format block objects that can be added via shareBlocksToTarget.
+ * @param {Array} scripts - Array of [x, y, [blockList]] tuples.
+ * @param {string} targetId - ID of the target to create variable IDs for.
+ * @return {Array<Array>} Array of arrays of parsed block objects.
+ */
+const parseToShare = function (scripts, targetId) {
+    const blocks = [];
+    const globalBroadcastMsgObj = globalBroadcastMsgStateGenerator(false);
+    const addBroadcastMsg = globalBroadcastMsgObj.broadcastMsgMapUpdater;
+    const getVariableId = generateVariableIdGetter(targetId, false);
+    const extensions = {
+        extensionIDs: new Set(),
+        extensionURLs: new Map()
+    };
+    for (let i = 0; i < scripts.length; i++) {
+        const script = scripts[i];
+        const scriptX = script[0];
+        const scriptY = script[1];
+        const blockList = script[2];
+        const parseState = {};
+        const [parsedBlockList] = parseBlockList(blockList, addBroadcastMsg, getVariableId, extensions,
+            parseState, null, 0);
+        if (parsedBlockList[0]) {
+            parsedBlockList[0].x = scriptX * WORKSPACE_X_SCALE;
+            parsedBlockList[0].y = scriptY * WORKSPACE_Y_SCALE;
+            parsedBlockList[0].topLevel = true;
+            parsedBlockList[0].parent = null;
+        }
+        const convertedBlocks = flatten(parsedBlockList);
+        blocks.push(convertedBlocks);
+    }
+    return blocks;
+};
+
 module.exports = {
-    deserialize: sb2import
+    deserialize: sb2import,
+    parseToShare: parseToShare
 };

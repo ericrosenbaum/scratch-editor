@@ -63,6 +63,7 @@
     "test": "npm run test:lint && npm run test:unit && npm run test:integration",
     "test:integration": "cross-env JEST_JUNIT_OUTPUT_NAME=integration-tests-results.xml jest --maxWorkers=4 test[\\\\/]integration",
     "test:lint": "eslint",
+    "test:ai": "cross-env WEBGPU_TEST=1 jest --runInBand test[\\\\/]integration[\\\\/]ai-model",
     "test:smoke": "jest --runInBand test[\\\\/]smoke",
     "test:unit": "cross-env JEST_JUNIT_OUTPUT_NAME=unit-tests-results.xml jest test[\\\\/]unit",
     "watch": "webpack --watch"
@@ -93,7 +94,8 @@
     ],
     "testEnvironment": "jsdom",
     "testPathIgnorePatterns": [
-      "src/test.js"
+      "src/test.js",
+      "test/integration/ai-model"
     ],
     "transform": {
       "^.+\\.tsx?$": [
@@ -125,6 +127,7 @@
   },
   "dependencies": {
     "@mediapipe/face_detection": "0.4.1646425229",
+    "@mediapipe/tasks-genai": "0.10.27",
     "@microbit/microbit-universal-hex": "0.2.2",
     "@radix-ui/react-context-menu": "2.2.16",
     "@scratch/scratch-render": "13.6.0",

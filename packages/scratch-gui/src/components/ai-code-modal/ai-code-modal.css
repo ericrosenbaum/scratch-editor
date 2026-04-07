@@ -1,0 +1,140 @@
+@import "../../css/units.css";
+@import "../../css/colors.css";
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: $ui-modal-overlay;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: $space;
+    width: 500px;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 0 4px $ui-black-transparent;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: $looks-secondary;
+    color: white;
+    font-weight: bold;
+    font-size: 0.875rem;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0 0.25rem;
+    line-height: 1;
+}
+
+.close-button:hover {
+    opacity: 0.8;
+}
+
+.modal-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    overflow-y: auto;
+}
+
+.prompt-input {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid $ui-black-transparent;
+    border-radius: $space;
+    font-size: 0.875rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    resize: vertical;
+    min-height: 3rem;
+    box-sizing: border-box;
+}
+
+.prompt-input:focus {
+    border-color: $looks-secondary;
+    outline: none;
+    box-shadow: 0 0 0 2px $looks-transparent;
+}
+
+.button-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.generate-button,
+.add-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: $space;
+    font-size: 0.875rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.generate-button {
+    background: $looks-secondary;
+    color: white;
+}
+
+.add-button {
+    background: $pen-primary;
+    color: white;
+}
+
+.generate-button:hover,
+.add-button:hover {
+    opacity: 0.85;
+}
+
+.generate-button:disabled,
+.add-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.code-display {
+    background: $ui-tertiary;
+    border: 1px solid $ui-black-transparent;
+    border-radius: $space;
+    padding: 0.625rem;
+    font-family: "Monaco", "Menlo", "Consolas", monospace;
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+    line-height: 1.5;
+}
+
+.status-text {
+    font-size: 0.8125rem;
+    color: $text-primary-transparent;
+    font-style: italic;
+}
+
+.error-text {
+    font-size: 0.8125rem;
+    color: $data-primary;
+}

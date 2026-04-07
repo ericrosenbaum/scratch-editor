@@ -24,7 +24,8 @@ import {
     closeBackdropLibrary,
     closeTelemetryModal,
     openExtensionLibrary,
-    closeDebugModal
+    closeDebugModal,
+    openAiCodeModal
 } from '../reducers/modals';
 
 import {setPlatform} from '../reducers/platform';
@@ -43,6 +44,7 @@ import cloudManagerHOC from '../lib/cloud-manager-hoc.jsx';
 import systemPreferencesHOC from '../lib/system-preferences-hoc.jsx';
 import {PLATFORM} from '../lib/platform.js';
 
+import * as aiModelService from '../lib/ai-model-service.js';
 import GUIComponent from '../components/gui/gui.jsx';
 import {GUIStoragePropType} from '../gui-config';
 import {AccountMenuOptionsPropTypes} from '../lib/account-menu-options';
@@ -63,6 +65,7 @@ class GUI extends React.Component {
         if (this.props.dynamicAssets) {
             this.props.onUpdateDynamicAssets(this.props.dynamicAssets);
         }
+        this.props.initAiModel();
     }
     componentDidUpdate (prevProps) {
         if (this.props.dynamicAssets !== prevProps.dynamicAssets) {
@@ -90,10 +93,11 @@ class GUI extends React.Component {
                 `Error in Scratch GUI [location=${window.location}]: ${this.props.error}`);
         }
         const {
-             
+
             assetHost,
             cloudHost,
             error,
+            initAiModel, // eslint-disable-line no-unused-vars
             isError,
             isShowingProject,
             onProjectLoaded,
@@ -102,7 +106,7 @@ class GUI extends React.Component {
             onVmInit,
             projectHost,
             projectId,
-             
+
             children,
             fetchingProject,
             isLoading,
@@ -204,11 +208,13 @@ const mapStateToProps = (state, ownProps) => {
         ),
         telemetryModalVisible: state.scratchGui.modals.telemetryModal,
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
-        vm: state.scratchGui.vm
+        vm: state.scratchGui.vm,
+        aiModelStatus: state.scratchGui.aiModel.status
     };
 };
 
 const mapDispatchToProps = dispatch => ({
+    initAiModel: () => aiModelService.init(dispatch),
     onExtensionButtonClick: () => dispatch(openExtensionLibrary()),
     onActivateTab: tab => dispatch(activateTab(tab)),
     onUpdateDynamicAssets: dynamicAssets => dispatch(setDynamicAssets(dynamicAssets)),
@@ -218,7 +224,8 @@ const mapDispatchToProps = dispatch => ({
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
     onRequestCloseDebugModal: () => dispatch(closeDebugModal()),
-    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal())
+    onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal()),
+    onOpenAiCodeModal: () => dispatch(openAiCodeModal())
 });
 
 const ConnectedGUI = injectIntl(connect(

@@ -13,6 +13,7 @@ import packageJson from '../../package.json';
 const {Button, By, until} = webdriver;
 
 const USE_HEADLESS = process.env.USE_HEADLESS !== 'no';
+const WEBGPU_TEST = process.env.WEBGPU_TEST === '1';
 
 // The main reason for this timeout is so that we can control the timeout message and report details;
 // if we hit the Jasmine default timeout then we get a terse message that we can't control.
@@ -183,7 +184,11 @@ class SeleniumHelper {
         const chromeCapabilities = webdriver.Capabilities.chrome();
         const args = [];
         if (USE_HEADLESS) {
-            args.push('--headless');
+            // Use new headless mode for WebGPU tests (supports WebGPU in Chrome 112+)
+            args.push(WEBGPU_TEST ? '--headless=new' : '--headless');
+        }
+        if (WEBGPU_TEST) {
+            args.push('--enable-unsafe-webgpu');
         }
 
         // Stub getUserMedia to always not allow access
@@ -194,9 +199,11 @@ class SeleniumHelper {
         args.push('--autoplay-policy=no-user-gesture-required');
 
         chromeCapabilities.set('chromeOptions', {args});
-        chromeCapabilities.setLoggingPrefs({
-            performance: 'ALL'
-        });
+        const loggingPrefs = {performance: 'ALL'};
+        if (WEBGPU_TEST) {
+            loggingPrefs.browser = 'ALL';
+        }
+        chromeCapabilities.setLoggingPrefs(loggingPrefs);
         this.driver = new webdriver.Builder()
             .forBrowser('chrome')
             .withCapabilities(chromeCapabilities)
