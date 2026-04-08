@@ -9,3 +9,4 @@ declare module '!raw-loader!.*' {
 }
 
 declare module 'scratch-paint';
+declare module '@scratch/scratch-vm';

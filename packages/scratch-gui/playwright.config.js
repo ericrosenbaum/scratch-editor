@@ -1,5 +1,7 @@
 const {defineConfig} = require('@playwright/test');
 
+const port = process.env.PORT || 8601;
+
 module.exports = defineConfig({
     testDir: './test/playwright',
     timeout: 60000,
@@ -7,7 +9,7 @@ module.exports = defineConfig({
         timeout: 10000
     },
     use: {
-        baseURL: 'http://localhost:8601',
+        baseURL: `http://localhost:${port}`,
         launchOptions: {
             args: [
                 '--use-fake-device-for-media-stream',
@@ -23,7 +25,7 @@ module.exports = defineConfig({
     workers: 1,
     webServer: {
         command: 'npm start',
-        url: 'http://localhost:8601',
+        url: `http://localhost:${port}`,
         reuseExistingServer: true,
         timeout: 120000
     }

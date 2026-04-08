@@ -21,7 +21,14 @@ const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53
  * The default class names for a new audio classifier.
  * @type {Array.<string>}
  */
-const DEFAULT_CLASSES = ['Class 1', 'Class 2'];
+const DEFAULT_CLASSES = ['Class 1'];
+
+/**
+ * Internal class name used for background noise samples.
+ * This class is always present but hidden from the block menu.
+ * @type {string}
+ */
+const BACKGROUND_CLASS = '_background_noise_';
 
 /**
  * Transfer model name used with the speech-commands recognizer.
@@ -129,32 +136,13 @@ class Scratch3AudioClassifierBlocks {
             color3: '#BD42BD',
             blocks: [
                 {
-                    opcode: 'openTrainer',
+                    func: 'OPEN_AUDIO_TRAINER',
+                    blockType: BlockType.BUTTON,
                     text: formatMessage({
                         id: 'audioClassification.openTrainer',
-                        default: 'open audio trainer',
-                        description: 'Block to open the audio trainer modal'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                '---',
-                {
-                    opcode: 'startListening',
-                    text: formatMessage({
-                        id: 'audioClassification.startListening',
-                        default: 'start listening',
-                        description: 'Block to start audio classification'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'stopListening',
-                    text: formatMessage({
-                        id: 'audioClassification.stopListening',
-                        default: 'stop listening',
-                        description: 'Block to stop audio classification'
-                    }),
-                    blockType: BlockType.COMMAND
+                        default: 'Open Audio Trainer',
+                        description: 'Button to open the audio trainer modal'
+                    })
                 },
                 '---',
                 {
@@ -204,10 +192,11 @@ class Scratch3AudioClassifierBlocks {
      * @returns {Array.<object>} menu items for the class menu.
      */
     getClassMenu () {
-        if (this._classes.length === 0) {
+        const userClasses = this._classes.filter(name => name !== BACKGROUND_CLASS);
+        if (userClasses.length === 0) {
             return [{text: '---', value: '---'}];
         }
-        return this._classes.map(name => ({text: name, value: name}));
+        return userClasses.map(name => ({text: name, value: name}));
     }
 
     /**
@@ -270,25 +259,34 @@ class Scratch3AudioClassifierBlocks {
 
     /**
      * Train the transfer model on collected examples.
-     * @param {function} [onProgress] - optional callback for training progress (0-1).
+     * @param {function} [onProgress] - optional callback receiving {progress, accuracy, valAccuracy}.
      * @returns {Promise} resolves when training is complete.
      */
     async train (onProgress) {
         if (!this._transferRecognizer) return;
         this._training = true;
+        const epochs = 20;
         try {
             await this._transferRecognizer.train({
-                epochs: 25,
+                epochs,
+                validationSplit: 0.2,
+                augmentByMixingNoiseRatio: 0.2,
                 callback: {
                     onEpochEnd: (epoch, logs) => {
                         if (onProgress) {
-                            onProgress((epoch + 1) / 25);
+                            onProgress({
+                                progress: (epoch + 1) / epochs,
+                                accuracy: logs.acc,
+                                valAccuracy: logs.val_acc
+                            });
                         }
                     }
                 }
             });
             this._trained = true;
             log.info('Audio classifier training complete.');
+            // Automatically start listening after training
+            this.startListening();
         } catch (e) {
             log.error('Audio classifier training failed:', e);
             throw e;
@@ -305,7 +303,12 @@ class Scratch3AudioClassifierBlocks {
         if (!this._transferRecognizer) return;
         try {
             if (className) {
-                this._transferRecognizer.clearExamples(className);
+                // clearExamples() takes no arguments — it always clears ALL examples.
+                // Use getExamples + removeExample to clear a single class.
+                const examples = this._transferRecognizer.getExamples(className);
+                for (const {uid} of examples) {
+                    this._transferRecognizer.removeExample(uid);
+                }
             } else {
                 this._transferRecognizer.clearExamples();
             }
@@ -349,14 +352,42 @@ class Scratch3AudioClassifierBlocks {
         }
     }
 
-    // -- Block implementations --
+    /**
+     * Save the trained transfer model to IndexedDB.
+     * @returns {Promise} resolves when the model is saved.
+     */
+    async saveModel () {
+        if (!this._transferRecognizer || !this._trained) return;
+        try {
+            await this._transferRecognizer.save();
+            log.info('Audio classifier model saved.');
+        } catch (e) {
+            log.error('Failed to save audio classifier model:', e);
+        }
+    }
 
     /**
-     * Open the audio trainer modal.
+     * Load a previously saved transfer model from IndexedDB.
+     * @param {object} speechCommands - the speech-commands module (needed to ensure base model).
+     * @returns {Promise<boolean>} true if a saved model was loaded.
      */
-    openTrainer () {
-        this.runtime.emit('OPEN_AUDIO_CLASSIFIER_MODAL');
+    async loadModel (speechCommands) {
+        try {
+            await this.ensureModel(speechCommands);
+            await this._transferRecognizer.load();
+            // Restore class list from the loaded model's word labels
+            const labels = this._transferRecognizer.wordLabels();
+            this._classes = labels.filter(l => l !== BACKGROUND_CLASS);
+            this._trained = true;
+            log.info('Audio classifier model loaded from IndexedDB.');
+            return true;
+        } catch (e) {
+            // No saved model found — this is normal on first use
+            return false;
+        }
     }
+
+    // -- Block implementations --
 
     /**
      * Start real-time audio classification.
@@ -381,13 +412,15 @@ class Scratch3AudioClassifierBlocks {
                     }
                 }
                 this._previousClass = this._currentClass;
-                this._currentClass = classLabels[maxIndex];
-                this._confidence = Math.round(maxScore * 100);
+                const detectedLabel = classLabels[maxIndex];
+                this._currentClass = detectedLabel === BACKGROUND_CLASS ? '' : detectedLabel;
+                this._confidence = detectedLabel === BACKGROUND_CLASS ? 0 : Math.round(maxScore * 100);
             }, {
                 probabilityThreshold: 0.5,
                 overlapFactor: 0.5
             });
             this._listening = true;
+            this.runtime.emitMicListening(true);
         } catch (e) {
             log.error('Failed to start listening:', e);
         }
@@ -404,6 +437,7 @@ class Scratch3AudioClassifierBlocks {
             log.error('Failed to stop listening:', e);
         }
         this._listening = false;
+        this.runtime.emitMicListening(false);
     }
 
     /**
