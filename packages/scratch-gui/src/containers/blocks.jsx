@@ -152,6 +152,9 @@ class Blocks extends React.Component {
                 this.handleCategorySelected('faceSensing');
             });
         });
+
+        this._pendingExtensionScroll = 'handSensing';
+        this.props.vm.extensionManager.loadExtensionURL('handSensing');
     }
     shouldComponentUpdate (nextProps, nextState) {
         return (
@@ -249,6 +252,15 @@ class Blocks extends React.Component {
             this.workspace.toolbox_.setFlyoutScrollPos(currentCategoryPos + offset);
         } else {
             this.workspace.toolbox_.setFlyoutScrollPos(currentCategoryPos);
+        }
+
+        if (this._pendingExtensionScroll) {
+            const pendingId = this._pendingExtensionScroll;
+            const pos = this.workspace.toolbox_.getCategoryPositionById(pendingId);
+            if (pos !== null && pos >= 0) {
+                this._pendingExtensionScroll = null;
+                this.handleCategorySelected(pendingId);
+            }
         }
 
         const queue = this.toolboxUpdateQueue;
