@@ -46,9 +46,10 @@ const HAND_CHOICE = {
  * @enum {string}
  */
 const GESTURES = {
+    OPEN: 'open',
+    CLOSED: 'closed',
     PINCH: 'pinch',
     THUMBS_UP: 'thumbs up',
-    OPEN_HAND: 'open hand',
     PEACE: 'peace'
 };
 
@@ -72,18 +73,10 @@ const FINGER_TIP_PIP = {
 const PALM_INDICES = [0, 5, 9, 13, 17];
 
 /**
- * Maximum pixel distance between thumb tip and index tip that counts as a pinch.
- * Used for the pinch gesture hat block threshold.
+ * Maximum pixel distance between thumb tip and index tip that counts as a pinch gesture.
  * @type {number}
  */
 const PINCH_THRESHOLD = 40;
-
-/**
- * Maximum pixel distance for pinch % normalization.
- * Distances at or above this value report 0% pinch.
- * @type {number}
- */
-const PINCH_MAX_DISTANCE = 150;
 
 /**
  * Class for the Hand Sensing blocks in Scratch 3.0
@@ -111,10 +104,10 @@ class Scratch3HandSensingBlocks {
         this._cachedFingersUp = 0;
 
         /**
-         * Cached value for pinch percentage
+         * Cached value for pinch distance
          * @type {number}
          */
-        this._cachedPinchPercent = 0;
+        this._cachedPinchDistance = 0;
 
         /**
          * Smoothed value for whether or not a hand was detected
@@ -269,7 +262,7 @@ class Scratch3HandSensingBlocks {
         return [{
             text: formatMessage({
                 id: 'handSensing.either',
-                default: 'any',
+                default: 'either',
                 description: 'Option to detect either hand'
             }),
             value: HAND_CHOICE.EITHER
@@ -291,36 +284,112 @@ class Scratch3HandSensingBlocks {
     }
 
     /**
+     * Hand choice menu without the "either" option (for fingersUp and pinchDistance).
+     * @type {object[]}
+     */
+    get HAND_LR_INFO () {
+        return [{
+            text: formatMessage({
+                id: 'handSensing.left',
+                default: 'left',
+                description: 'Option to detect the left hand'
+            }),
+            value: HAND_CHOICE.LEFT
+        }, {
+            text: formatMessage({
+                id: 'handSensing.right',
+                default: 'right',
+                description: 'Option to detect the right hand'
+            }),
+            value: HAND_CHOICE.RIGHT
+        }];
+    }
+
+    /**
      * An array of info about the gesture menu.
      * @type {object[]}
      */
-    get GESTURE_INFO () {
+    /**
+     * Gesture menu for hat blocks (verb forms: opens, closes, pinches).
+     * @type {object[]}
+     */
+    get GESTURE_HAT_INFO () {
         return [{
             text: formatMessage({
-                id: 'handSensing.gesturePinch',
-                default: 'pinch',
-                description: 'Option for pinch gesture'
+                id: 'handSensing.gestureOpens',
+                default: 'opens',
+                description: 'Option for hand opening gesture (hat block)'
+            }),
+            value: GESTURES.OPEN
+        }, {
+            text: formatMessage({
+                id: 'handSensing.gestureCloses',
+                default: 'closes',
+                description: 'Option for hand closing gesture (hat block)'
+            }),
+            value: GESTURES.CLOSED
+        }, {
+            text: formatMessage({
+                id: 'handSensing.gesturePinches',
+                default: 'pinches',
+                description: 'Option for pinch gesture (hat block)'
             }),
             value: GESTURES.PINCH
         }, {
             text: formatMessage({
-                id: 'handSensing.gestureThumbsUp',
+                id: 'handSensing.gestureThumbsUpHat',
                 default: 'thumbs up',
-                description: 'Option for thumbs up gesture'
+                description: 'Option for thumbs up gesture (hat block)'
             }),
             value: GESTURES.THUMBS_UP
         }, {
             text: formatMessage({
-                id: 'handSensing.gestureOpenHand',
-                default: 'open hand',
-                description: 'Option for open hand gesture'
+                id: 'handSensing.gesturePeaceHat',
+                default: 'peace',
+                description: 'Option for peace sign gesture (hat block)'
             }),
-            value: GESTURES.OPEN_HAND
+            value: GESTURES.PEACE
+        }];
+    }
+
+    /**
+     * Gesture menu for boolean blocks (state forms: open, closed, pinching).
+     * @type {object[]}
+     */
+    get GESTURE_STATE_INFO () {
+        return [{
+            text: formatMessage({
+                id: 'handSensing.gestureOpen',
+                default: 'open',
+                description: 'Option for hand open state (boolean block)'
+            }),
+            value: GESTURES.OPEN
         }, {
             text: formatMessage({
-                id: 'handSensing.gesturePeace',
+                id: 'handSensing.gestureClosed',
+                default: 'closed',
+                description: 'Option for hand closed state (boolean block)'
+            }),
+            value: GESTURES.CLOSED
+        }, {
+            text: formatMessage({
+                id: 'handSensing.gesturePinching',
+                default: 'pinching',
+                description: 'Option for pinching state (boolean block)'
+            }),
+            value: GESTURES.PINCH
+        }, {
+            text: formatMessage({
+                id: 'handSensing.gestureThumbsUpState',
+                default: 'thumbs up',
+                description: 'Option for thumbs up state (boolean block)'
+            }),
+            value: GESTURES.THUMBS_UP
+        }, {
+            text: formatMessage({
+                id: 'handSensing.gesturePeaceState',
                 default: 'peace',
-                description: 'Option for peace sign gesture'
+                description: 'Option for peace sign state (boolean block)'
             }),
             value: GESTURES.PEACE
         }];
@@ -448,10 +517,17 @@ class Scratch3HandSensingBlocks {
                     opcode: 'setSizeToHandSize',
                     text: formatMessage({
                         id: 'handSensing.setSizeToHandSize',
-                        default: 'set size to hand size',
+                        default: 'set size to [HAND] hand size',
                         description: 'Command that sets the size of the target to the hand size'
                     }),
                     blockType: BlockType.COMMAND,
+                    arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND',
+                            defaultValue: HAND_CHOICE.EITHER
+                        }
+                    },
                     filter: [TargetType.SPRITE]
                 },
                 '---',
@@ -459,15 +535,20 @@ class Scratch3HandSensingBlocks {
                     opcode: 'whenGesture',
                     text: formatMessage({
                         id: 'handSensing.whenGesture',
-                        default: 'when [GESTURE] detected',
-                        description: 'Event that triggers when a gesture is detected'
+                        default: 'when [HAND] hand [GESTURE]',
+                        description: 'Event that triggers when a hand gesture is detected'
                     }),
                     blockType: BlockType.HAT,
                     arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND',
+                            defaultValue: HAND_CHOICE.EITHER
+                        },
                         GESTURE: {
                             type: ArgumentType.STRING,
-                            menu: 'GESTURE',
-                            defaultValue: GESTURES.PINCH
+                            menu: 'GESTURE_HAT',
+                            defaultValue: GESTURES.OPEN
                         }
                     }
                 },
@@ -522,6 +603,27 @@ class Scratch3HandSensingBlocks {
                     }
                 },
                 {
+                    opcode: 'gestureDetected',
+                    text: formatMessage({
+                        id: 'handSensing.gestureDetected',
+                        default: '[HAND] hand [GESTURE]?',
+                        description: 'Boolean that returns whether a gesture is detected'
+                    }),
+                    blockType: BlockType.BOOLEAN,
+                    arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND',
+                            defaultValue: HAND_CHOICE.EITHER
+                        },
+                        GESTURE: {
+                            type: ArgumentType.STRING,
+                            menu: 'GESTURE_STATE',
+                            defaultValue: GESTURES.OPEN
+                        }
+                    }
+                },
+                {
                     opcode: 'fingersUp',
                     text: formatMessage({
                         id: 'handSensing.fingersUp',
@@ -532,24 +634,24 @@ class Scratch3HandSensingBlocks {
                     arguments: {
                         HAND: {
                             type: ArgumentType.STRING,
-                            menu: 'HAND',
-                            defaultValue: HAND_CHOICE.EITHER
+                            menu: 'HAND_LR',
+                            defaultValue: HAND_CHOICE.LEFT
                         }
                     }
                 },
                 {
-                    opcode: 'pinchPercent',
+                    opcode: 'pinchDistance',
                     text: formatMessage({
-                        id: 'handSensing.pinchPercent',
-                        default: 'pinch % of [HAND] hand',
-                        description: 'Reporter that returns the pinch percentage (0-100) of a hand'
+                        id: 'handSensing.pinchDistance',
+                        default: 'pinch distance of [HAND] hand',
+                        description: 'Reporter that returns the distance between thumb and index finger'
                     }),
                     blockType: BlockType.REPORTER,
                     arguments: {
                         HAND: {
                             type: ArgumentType.STRING,
-                            menu: 'HAND',
-                            defaultValue: HAND_CHOICE.EITHER
+                            menu: 'HAND_LR',
+                            defaultValue: HAND_CHOICE.LEFT
                         }
                     }
                 },
@@ -566,7 +668,9 @@ class Scratch3HandSensingBlocks {
             menus: {
                 PART: this.PART_INFO,
                 HAND: this.HAND_INFO,
-                GESTURE: this.GESTURE_INFO
+                HAND_LR: this.HAND_LR_INFO,
+                GESTURE_HAT: this.GESTURE_HAT_INFO,
+                GESTURE_STATE: this.GESTURE_STATE_INFO
             }
         };
     }
@@ -721,17 +825,23 @@ class Scratch3HandSensingBlocks {
         return Math.sqrt((dx * dx) + (dy * dy));
     }
 
+
     /**
-     * Detect whether a specific gesture is occurring on any hand.
+     * Detect whether a specific gesture is occurring on the selected hand(s).
      * @param {string} gesture - the gesture to detect
+     * @param {string} handChoice - one of HAND_CHOICE values
      * @returns {boolean} true if the gesture is detected
      * @private
      */
-    _detectGesture (gesture) {
-        for (const hand of this._allHands) {
-            if (this._detectGestureOnHand(gesture, hand)) return true;
+    _detectGesture (gesture, handChoice) {
+        if (handChoice === HAND_CHOICE.EITHER) {
+            for (const hand of this._allHands) {
+                if (this._detectGestureOnHand(gesture, hand)) return true;
+            }
+            return false;
         }
-        return false;
+        const hand = this._selectHand(handChoice);
+        return this._detectGestureOnHand(gesture, hand);
     }
 
     /**
@@ -745,6 +855,22 @@ class Scratch3HandSensingBlocks {
         if (!hand || !hand.keypoints) return false;
 
         switch (gesture) {
+        case GESTURES.OPEN: {
+            // All 5 fingers extended
+            return this._isThumbUp(hand) &&
+                this._isFingerUp(hand, FINGER_TIP_PIP.INDEX) &&
+                this._isFingerUp(hand, FINGER_TIP_PIP.MIDDLE) &&
+                this._isFingerUp(hand, FINGER_TIP_PIP.RING) &&
+                this._isFingerUp(hand, FINGER_TIP_PIP.PINKY);
+        }
+        case GESTURES.CLOSED: {
+            // All fingers curled (fist)
+            return !this._isThumbUp(hand) &&
+                this._isFingerDown(hand, FINGER_TIP_PIP.INDEX) &&
+                this._isFingerDown(hand, FINGER_TIP_PIP.MIDDLE) &&
+                this._isFingerDown(hand, FINGER_TIP_PIP.RING) &&
+                this._isFingerDown(hand, FINGER_TIP_PIP.PINKY);
+        }
         case GESTURES.PINCH: {
             const dist = this._getThumbIndexDistance(hand);
             return dist >= 0 && dist < PINCH_THRESHOLD;
@@ -756,14 +882,6 @@ class Scratch3HandSensingBlocks {
                 this._isFingerDown(hand, FINGER_TIP_PIP.MIDDLE) &&
                 this._isFingerDown(hand, FINGER_TIP_PIP.RING) &&
                 this._isFingerDown(hand, FINGER_TIP_PIP.PINKY);
-        }
-        case GESTURES.OPEN_HAND: {
-            // All 5 fingers extended
-            return this._isThumbUp(hand) &&
-                this._isFingerUp(hand, FINGER_TIP_PIP.INDEX) &&
-                this._isFingerUp(hand, FINGER_TIP_PIP.MIDDLE) &&
-                this._isFingerUp(hand, FINGER_TIP_PIP.RING) &&
-                this._isFingerUp(hand, FINGER_TIP_PIP.PINKY);
         }
         case GESTURES.PEACE: {
             // Index and middle up, ring and pinky curled
@@ -796,9 +914,10 @@ class Scratch3HandSensingBlocks {
      * @param {BlockUtility} util - the block utility
      */
     setSizeToHandSize (args, util) {
-        if (!this._currentHand) return;
+        const hand = this._selectHand(args.HAND);
+        if (!hand) return;
 
-        util.target.setSize(this.handSize());
+        util.target.setSize(this._handSizeForHand(hand));
     }
 
     /**
@@ -807,7 +926,16 @@ class Scratch3HandSensingBlocks {
      * @returns {boolean} true if the gesture is detected
      */
     whenGesture (args) {
-        return this._detectGesture(args.GESTURE);
+        return this._detectGesture(args.GESTURE, args.HAND);
+    }
+
+    /**
+     * A scratch boolean block that reports whether a gesture is detected on a hand.
+     * @param {object} args - the block arguments
+     * @returns {boolean} true if the gesture is detected
+     */
+    gestureDetected (args) {
+        return this._detectGesture(args.GESTURE, args.HAND);
     }
 
     /**
@@ -861,20 +989,32 @@ class Scratch3HandSensingBlocks {
     }
 
     /**
-     * A scratch reporter that returns the pinch percentage (0-100) for a hand.
-     * 100 means thumb and index finger are touching, 0 means fully apart.
+     * A scratch reporter that returns the distance between thumb tip and index finger tip.
      * @param {object} args - the block arguments
-     * @returns {number} pinch percentage 0-100
+     * @returns {number} distance in pixels
      */
-    pinchPercent (args) {
+    pinchDistance (args) {
         const hand = this._selectHand(args.HAND);
-        if (!hand) return this._cachedPinchPercent;
+        if (!hand) return this._cachedPinchDistance;
         const dist = this._getThumbIndexDistance(hand);
-        if (dist < 0) return this._cachedPinchPercent;
-        const clamped = Math.min(Math.max(dist, 0), PINCH_MAX_DISTANCE);
-        const percent = Math.round(100 * (1 - (clamped / PINCH_MAX_DISTANCE)));
-        this._cachedPinchPercent = percent;
-        return percent;
+        if (dist < 0) return this._cachedPinchDistance;
+        this._cachedPinchDistance = Math.round(dist);
+        return this._cachedPinchDistance;
+    }
+
+    /**
+     * Calculate the hand size for a specific hand object.
+     * @param {object} hand - the hand object
+     * @returns {number} the hand size
+     * @private
+     */
+    _handSizeForHand (hand) {
+        if (!hand) return this._cachedSize;
+        const wristPos = this._getPartPosition(PARTS.WRIST, hand);
+        const middlePos = this._getPartPosition(PARTS.MIDDLE_FINGER_TIP, hand);
+        const size = Math.round(distance(wristPos, middlePos));
+        this._cachedSize = size;
+        return size;
     }
 
     /**
@@ -883,13 +1023,7 @@ class Scratch3HandSensingBlocks {
      * @returns {number} the hand size
      */
     handSize () {
-        if (!this._currentHand) return this._cachedSize;
-
-        const wristPos = this._getPartPosition(PARTS.WRIST);
-        const middlePos = this._getPartPosition(PARTS.MIDDLE_FINGER_TIP);
-        const size = Math.round(distance(wristPos, middlePos));
-        this._cachedSize = size;
-        return size;
+        return this._handSizeForHand(this._currentHand);
     }
 }
 
