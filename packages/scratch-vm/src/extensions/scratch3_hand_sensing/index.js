@@ -9,10 +9,10 @@ const HandPoseDetection = require('@tensorflow-models/hand-pose-detection');
 const mediapipePackage = require('@mediapipe/hands/package.json');
 
 // eslint-disable-next-line max-len
-const menuIconURI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBmaWxsPSIjNGM5N2ZmIiBkPSJNMjAgNkMxMy40IDYgOCAxMS40IDggMThzNS40IDEyIDEyIDEyIDEyLTUuNCAxMi0xMlMyNi42IDYgMjAgNm0wIDJhMTAgMTAgMCAxIDEgMCAyMCAxMCAxMCAwIDAgMSAwLTIwIi8+PHBhdGggZmlsbD0iIzRjOTdmZiIgZD0iTTIwIDI4Yy0uNiAwLTEtLjQtMS0xdi00YzAtLjYuNC0xIDEtMXMxIC40IDEgMXY0YzAgLjYtLjQgMS0xIDFNMTYgMjZjLS42IDAtMS0uNC0xLTF2LTVjMC0uNi40LTEgMS0xczEgLjQgMSAxdjVjMCAuNi0uNCAxLTEgMU0yNCAyNmMtLjYgMC0xLS40LTEtMXYtNWMwLS42LjQtMSAxLTFzMSAuNCAxIDF2NWMwIC42LS40IDEtMSAxTTEzIDIzYy0uNiAwLTEtLjQtMS0xdi0zYzAtLjYuNC0xIDEtMXMxIC40IDEgMXYzYzAgLjYtLjQgMS0xIDFNMjcgMjNjLS42IDAtMS0uNC0xLTF2LTNjMC0uNi40LTEgMS0xczEgLjQgMSAxdjNjMCAuNi0uNCAxLTEgMSIvPjxwYXRoIGZpbGw9IiM0ZDk3ZmYiIGZpbGwtb3BhY2l0eT0iLjUiIGQ9Ik0zNSA0YTEgMSAwIDAgMSAxIDF2NmExIDEgMCAwIDEtMiAwVjZoLTVhMSAxIDAgMCAxIDAtMnpNNSAzNmExIDEgMCAwIDEtMS0xdi02YTEgMSAwIDAgMSAyIDB2NWg1YTEgMSAwIDAgMSAwIDJ6Ii8+PC9nPjwvc3ZnPg==';
+const menuIconURI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj4gPGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4gPGcgZmlsbD0iIzRjOTdmZiI+IDxyZWN0IHg9IjEyIiB5PSIyMSIgd2lkdGg9IjIxIiBoZWlnaHQ9IjEzIiByeD0iNSIvPiA8cmVjdCB4PSIxNCIgeT0iNyIgd2lkdGg9IjQiIGhlaWdodD0iMTciIHJ4PSIyIi8+IDxyZWN0IHg9IjE5IiB5PSI0IiB3aWR0aD0iNCIgaGVpZ2h0PSIyMCIgcng9IjIiLz4gPHJlY3QgeD0iMjQiIHk9IjciIHdpZHRoPSI0IiBoZWlnaHQ9IjE3IiByeD0iMiIvPiA8cmVjdCB4PSIyOSIgeT0iMTEiIHdpZHRoPSIzLjUiIGhlaWdodD0iMTMiIHJ4PSIxLjc1Ii8+IDxyZWN0IHg9IjEiIHk9IjIwIiB3aWR0aD0iMTYiIGhlaWdodD0iNSIgcng9IjIuNSIgdHJhbnNmb3JtPSJyb3RhdGUoLTEwNSAxMyAyMykiLz4gPC9nPiA8cGF0aCBmaWxsPSIjNGQ5N2ZmIiBmaWxsLW9wYWNpdHk9Ii41IiBkPSJNMzUgNGExIDEgMCAwIDEgMSAxdjZhMSAxIDAgMCAxLTIgMFY2aC01YTEgMSAwIDAgMSAwLTJ6TTUgMzZhMSAxIDAgMCAxLTEtMXYtNmExIDEgMCAwIDEgMiAwdjVoNWExIDEgMCAwIDEgMCAyeiIvPiA8L2c+PC9zdmc+';
 
 // eslint-disable-next-line max-len
-const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsPSJub25lIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjAgNkMxMy40IDYgOCAxMS40IDggMThzNS40IDEyIDEyIDEyIDEyLTUuNCAxMi0xMlMyNi42IDYgMjAgNm0wIDJhMTAgMTAgMCAxIDEgMCAyMCAxMCAxMCAwIDAgMSAwLTIwIi8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTIwIDI4Yy0uNiAwLTEtLjQtMS0xdi00YzAtLjYuNC0xIDEtMXMxIC40IDEgMXY0YzAgLjYtLjQgMS0xIDFNMTYgMjZjLS42IDAtMS0uNC0xLTF2LTVjMC0uNi40LTEgMS0xczEgLjQgMSAxdjVjMCAuNi0uNCAxLTEgMU0yNCAyNmMtLjYgMC0xLS40LTEtMXYtNWMwLS42LjQtMSAxLTFzMSAuNCAxIDF2NWMwIC42LS40IDEtMSAxTTEzIDIzYy0uNiAwLTEtLjQtMS0xdi0zYzAtLjYuNC0xIDEtMXMxIC40IDEgMXYzYzAgLjYtLjQgMS0xIDFNMjcgMjNjLS42IDAtMS0uNC0xLTF2LTNjMC0uNi40LTEgMS0xczEgLjQgMSAxdjNjMCAuNi0uNCAxLTEgMSIvPjwvZz48L3N2Zz4=';
+const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj4gPGcgZmlsbD0iI2ZmZiI+IDxyZWN0IHg9IjEyIiB5PSIyMSIgd2lkdGg9IjIxIiBoZWlnaHQ9IjEzIiByeD0iNSIvPiA8cmVjdCB4PSIxNCIgeT0iNyIgd2lkdGg9IjQiIGhlaWdodD0iMTciIHJ4PSIyIi8+IDxyZWN0IHg9IjE5IiB5PSI0IiB3aWR0aD0iNCIgaGVpZ2h0PSIyMCIgcng9IjIiLz4gPHJlY3QgeD0iMjQiIHk9IjciIHdpZHRoPSI0IiBoZWlnaHQ9IjE3IiByeD0iMiIvPiA8cmVjdCB4PSIyOSIgeT0iMTEiIHdpZHRoPSIzLjUiIGhlaWdodD0iMTMiIHJ4PSIxLjc1Ii8+IDxyZWN0IHg9IjEiIHk9IjIwIiB3aWR0aD0iMTYiIGhlaWdodD0iNSIgcng9IjIuNSIgdHJhbnNmb3JtPSJyb3RhdGUoLTEwNSAxMyAyMykiLz4gPC9nPjwvc3ZnPg==';
 
 /**
  * Hand keypoint names from the hand-pose-detection model.
@@ -524,8 +524,8 @@ class Scratch3HandSensingBlocks {
                     arguments: {
                         HAND: {
                             type: ArgumentType.STRING,
-                            menu: 'HAND',
-                            defaultValue: HAND_CHOICE.EITHER
+                            menu: 'HAND_LR',
+                            defaultValue: HAND_CHOICE.LEFT
                         }
                     },
                     filter: [TargetType.SPRITE]
@@ -556,10 +556,15 @@ class Scratch3HandSensingBlocks {
                     opcode: 'whenSpriteTouchesPart',
                     text: formatMessage({
                         id: 'handSensing.whenSpriteTouchesPart',
-                        default: 'when this sprite touches [PART]',
-                        description: 'Event that triggers when sprite touches a [PART]'
+                        default: 'when this sprite touches [HAND] [PART]',
+                        description: 'Event that triggers when sprite touches a [PART] on [HAND] hand'
                     }),
                     arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND',
+                            defaultValue: HAND_CHOICE.EITHER
+                        },
                         PART: {
                             type: ArgumentType.STRING,
                             menu: 'PART',
@@ -627,7 +632,7 @@ class Scratch3HandSensingBlocks {
                     opcode: 'fingersUp',
                     text: formatMessage({
                         id: 'handSensing.fingersUp',
-                        default: 'fingers up on [HAND] hand',
+                        default: '# of fingers up on [HAND] hand',
                         description: 'Reporter that returns the number of fingers up'
                     }),
                     blockType: BlockType.REPORTER,
@@ -654,15 +659,6 @@ class Scratch3HandSensingBlocks {
                             defaultValue: HAND_CHOICE.LEFT
                         }
                     }
-                },
-                {
-                    opcode: 'handSize',
-                    text: formatMessage({
-                        id: 'handSensing.handSize',
-                        default: 'hand size',
-                        description: 'Reporter that returns the hand size'
-                    }),
-                    blockType: BlockType.REPORTER
                 }
             ],
             menus: {
@@ -946,10 +942,11 @@ class Scratch3HandSensingBlocks {
      * @returns {boolean} - true if the sprite is touching the given point
      */
     whenSpriteTouchesPart (args, util) {
-        if (!this._currentHand) return false;
-        if (!this._currentHand.keypoints) return false;
+        const hand = this._selectHand(args.HAND);
+        if (!hand) return false;
+        if (!hand.keypoints) return false;
 
-        const pos = this._getPartPosition(args.PART);
+        const pos = this._getPartPosition(args.PART, hand);
         return util.target.isTouchingScratchPoint(pos.x, pos.y);
     }
 

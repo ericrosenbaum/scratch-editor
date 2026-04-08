@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -l 'blockIconURI' packages/scratch-vm/src/extensions/scratch3_*/index.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8601/)"
+    ]
+  }
+}
