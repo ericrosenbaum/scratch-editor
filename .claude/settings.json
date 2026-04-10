@@ -1,13 +1,31 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e \"const p = require\\(''''/Users/ericrosenbaum/Documents/scratch-editor-audio-classifier/packages/scratch-vm/package.json''''\\); console.log\\(p.name, p.types || p.typings || ''''no types field''''\\)\")",
-      "Read(//Users/ericrosenbaum/Documents/**)",
-      "Bash(grep -r \"type.*button\\\\|blockType.*button\" /Users/ericrosenbaum/Documents/scratch-editor/node_modules/scratch-blocks --include=*.js)",
-      "Bash(grep -r 'Buttons should have callbacks' node_modules/ --include=*.js -l)",
-      "Bash(ps -p 62946 -o command=)",
-      "Read(//proc/62946/**)",
-      "Bash(pwdx 62946)"
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(npm start *)",
+      "Bash(npm ls *)",
+      "Bash(npx jest *)",
+      "Bash(npx playwright *)",
+      "Bash(npx eslint *)",
+      "Bash(node *)",
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git branch *)",
+      "Bash(git show *)",
+      "Bash(git stash *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(curl -s *)",
+      "Bash(which *)",
+      "Bash(nvm *)",
+      "Bash(ps *)",
+      "Bash(gh *)",
+      "Bash(npm install:*)",
+      "Bash(npm view:*)",
+      "Bash(lsof -ti:8601)",
+      "Bash(xargs kill:*)"
     ]
   }
 }

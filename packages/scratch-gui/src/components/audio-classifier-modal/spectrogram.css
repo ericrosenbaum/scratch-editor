@@ -1,0 +1,16 @@
+@import "../../css/units.css";
+
+.spectrogram {
+    width: 100%;
+    height: 32px;
+    border-radius: $space;
+    margin-bottom: 1rem;
+    display: block;
+    background: rgb(20, 5, 25);
+}
+
+.example-spectrogram {
+    border-radius: 3px;
+    display: block;
+    flex-shrink: 0;
+}

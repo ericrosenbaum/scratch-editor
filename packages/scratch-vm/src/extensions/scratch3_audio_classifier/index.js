@@ -73,6 +73,19 @@ class Scratch3AudioClassifierBlocks {
         this._confidence = 0;
 
         /**
+         * Smoothed scores (exponential moving average) per class label.
+         * @type {Object.<string, number>}
+         */
+        this._smoothedScores = {};
+
+        /**
+         * EMA smoothing factor. Higher = more smoothing (more weight on previous value).
+         * 0.1 means 10% previous + 90% new each frame.
+         * @type {number}
+         */
+        this._smoothingFactor = 0.1;
+
+        /**
          * Whether the classifier is actively listening.
          * @type {boolean}
          */
@@ -265,7 +278,19 @@ class Scratch3AudioClassifierBlocks {
     async train (onProgress) {
         if (!this._transferRecognizer) return;
         this._training = true;
-        const epochs = 20;
+        const epochs = 10;
+        // Force re-creation of the transfer model before each training run.
+        // 1. Workaround for speech-commands 0.5.4 + tfjs 4.x incompatibility:
+        //    train() skips createTransferModelFromBaseModel() when model exists,
+        //    leaving secondLastBaseDenseLayer unset.
+        // 2. The output layer size must match the current number of classes.
+        //    Without this, retraining after adding/removing a class fails with
+        //    a shape mismatch (e.g., model expects [*,2] but data has 3 classes).
+        const tr = this._transferRecognizer;
+        if (tr.model) {
+            tr.model = null;
+        }
+        tr.createTransferModelFromBaseModel();
         try {
             await this._transferRecognizer.train({
                 epochs,
@@ -319,6 +344,37 @@ class Scratch3AudioClassifierBlocks {
     }
 
     /**
+     * Get spectrogram data for all examples of a class.
+     * @param {string} className - the class name to get spectrograms for.
+     * @returns {Array.<{data: Float32Array, frameSize: number}>} spectrogram data for each example.
+     */
+    getExampleSpectrograms (className) {
+        if (!this._transferRecognizer) return [];
+        try {
+            return this._transferRecognizer.getExamples(className).map(({uid, example}) => ({
+                uid,
+                data: example.spectrogram.data,
+                frameSize: example.spectrogram.frameSize
+            }));
+        } catch (e) {
+            return [];
+        }
+    }
+
+    /**
+     * Remove a single example by UID.
+     * @param {string} uid - the unique ID of the example to remove.
+     */
+    removeExample (uid) {
+        if (!this._transferRecognizer) return;
+        try {
+            this._transferRecognizer.removeExample(uid);
+        } catch (e) {
+            // Ignore if UID not found
+        }
+    }
+
+    /**
      * Add a class name.
      * @param {string} className - the name to add.
      */
@@ -349,6 +405,21 @@ class Scratch3AudioClassifierBlocks {
         const idx = this._classes.indexOf(oldName);
         if (idx >= 0) {
             this._classes[idx] = newName;
+        }
+        // Transfer examples from old label to new label in the dataset.
+        // The speech-commands library has no rename API, so we re-add
+        // each example under the new label and remove the original.
+        if (this._transferRecognizer) {
+            try {
+                const examples = this._transferRecognizer.getExamples(oldName);
+                for (const {uid, example} of examples) {
+                    example.label = newName;
+                    this._transferRecognizer.dataset.addExample(example);
+                    this._transferRecognizer.removeExample(uid);
+                }
+            } catch (e) {
+                // No examples under oldName — nothing to transfer.
+            }
         }
     }
 
@@ -399,27 +470,69 @@ class Scratch3AudioClassifierBlocks {
             log.warn('Cannot start listening: model not trained.');
             return;
         }
+        // Reset smoothed scores so stale values from a previous session don't persist
+        this._smoothedScores = {};
         try {
+            log.info('Audio classifier: starting listener...');
             await this._transferRecognizer.listen(result => {
                 const scores = result.scores;
                 const classLabels = this._transferRecognizer.wordLabels();
+
+                // Apply exponential moving average smoothing to raw scores
+                for (let i = 0; i < scores.length; i++) {
+                    const label = classLabels[i];
+                    if (this._smoothedScores[label] === undefined) {
+                        this._smoothedScores[label] = scores[i];
+                    } else {
+                        this._smoothedScores[label] =
+                            (this._smoothingFactor * this._smoothedScores[label]) +
+                            ((1 - this._smoothingFactor) * scores[i]);
+                    }
+                }
+
+                // Find the top-scoring class using smoothed scores
                 let maxScore = 0;
                 let maxIndex = 0;
-                for (let i = 0; i < scores.length; i++) {
-                    if (scores[i] > maxScore) {
-                        maxScore = scores[i];
+                let bgScore = 0;
+                for (let i = 0; i < classLabels.length; i++) {
+                    const smoothed = this._smoothedScores[classLabels[i]];
+                    if (classLabels[i] === BACKGROUND_CLASS) {
+                        bgScore = smoothed;
+                    }
+                    if (smoothed > maxScore) {
+                        maxScore = smoothed;
                         maxIndex = i;
                     }
                 }
+
                 this._previousClass = this._currentClass;
                 const detectedLabel = classLabels[maxIndex];
-                this._currentClass = detectedLabel === BACKGROUND_CLASS ? '' : detectedLabel;
-                this._confidence = detectedLabel === BACKGROUND_CLASS ? 0 : Math.round(maxScore * 100);
+
+                // Store raw and smoothed scores for debugging / inspection
+                this._lastScores = {};
+                for (let j = 0; j < classLabels.length; j++) {
+                    this._lastScores[classLabels[j]] = Math.round(scores[j] * 1000) / 1000;
+                }
+
+                if (detectedLabel === BACKGROUND_CLASS || maxScore < 0.5) {
+                    // Background won, or no class is confident enough —
+                    // treat as background.
+                    this._currentClass = 'background';
+                    this._confidence = Math.round(maxScore * 100);
+                } else {
+                    this._currentClass = detectedLabel;
+                    this._confidence = Math.round(maxScore * 100);
+                }
             }, {
-                probabilityThreshold: 0.5,
-                overlapFactor: 0.5
+                // Use a low threshold so the callback fires for every frame.
+                probabilityThreshold: 0.01,
+                overlapFactor: 0.5,
+                // Critical: without this, the library suppresses callbacks when
+                // background noise wins, so _currentClass never returns to "background".
+                invokeCallbackOnNoiseAndUnknown: true
             });
             this._listening = true;
+            log.info('Audio classifier: listener started successfully.');
             this.runtime.emitMicListening(true);
         } catch (e) {
             log.error('Failed to start listening:', e);
@@ -437,6 +550,10 @@ class Scratch3AudioClassifierBlocks {
             log.error('Failed to stop listening:', e);
         }
         this._listening = false;
+        this._currentClass = '';
+        this._previousClass = '';
+        this._confidence = 0;
+        this._smoothedScores = {};
         this.runtime.emitMicListening(false);
     }
 

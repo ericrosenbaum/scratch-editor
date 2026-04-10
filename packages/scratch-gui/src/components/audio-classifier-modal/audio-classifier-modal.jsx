@@ -7,14 +7,20 @@ import Box from '../box/box.jsx';
 import Modal from '../../containers/modal.jsx';
 import Spinner from '../spinner/spinner.jsx';
 
+import Spectrogram, {ExampleSpectrogram} from './spectrogram.jsx';
+
 import styles from './audio-classifier-modal.css';
 
+const BACKGROUND_CLASS = '_background_noise_';
+
 const AudioClassifierModalComponent = ({
+    analyserNode,
     audioLevel,
     backgroundExampleCount,
     backgroundRecordingProgress,
     classes,
     exampleCounts,
+    exampleSpectrograms,
     isRecording,
     isRecordingBackground,
     recordingClass,
@@ -26,6 +32,7 @@ const AudioClassifierModalComponent = ({
     onClearBackground,
     onRecordExample,
     onClearExamples,
+    onDeleteExample,
     onAddClass,
     onRemoveClass,
     onRenameClass,
@@ -53,12 +60,7 @@ const AudioClassifierModalComponent = ({
             onRequestClose={onRequestClose}
         >
             <Box className={styles.body}>
-                <div className={styles.levelMeter}>
-                    <div
-                        className={styles.levelFill}
-                        style={{width: `${audioLevel}%`}}
-                    />
-                </div>
+                <Spectrogram analyserNode={analyserNode} />
                 <div className={styles.backgroundSection}>
                     <div className={styles.backgroundRow}>
                         <span className={styles.backgroundLabel}>
@@ -118,68 +120,110 @@ const AudioClassifierModalComponent = ({
                             id="gui.audioClassifier.backgroundHint"
                         />
                     </div>
+                    {exampleSpectrograms[BACKGROUND_CLASS] && (
+                        <div className={styles.exampleSpectrograms}>
+                            {exampleSpectrograms[BACKGROUND_CLASS].map((spec, i) => (
+                                <div className={styles.spectrogramWrapper} key={spec.uid || i}>
+                                    <ExampleSpectrogram
+                                        data={spec.data}
+                                        frameSize={spec.frameSize}
+                                    />
+                                    {spec.uid && !anyRecording && !isTraining ? (
+                                        <button
+                                            className={styles.spectrogramDeleteButton}
+                                            onClick={() => onDeleteExample(spec.uid)}
+                                        >
+                                            {'✕'}
+                                        </button>
+                                    ) : null}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 <div className={styles.classSeparator} />
                 {classes.map((className, index) => (
-                    <div className={styles.classRow} key={index}>
-                        <input
-                            className={styles.classNameInput}
-                            type="text"
-                            value={className}
-                            onChange={e => onRenameClass(index, e.target.value)}
-                        />
-                        <button
-                            className={classNames(
-                                styles.recordButton,
-                                {[styles.recording]: isRecording && recordingClass === index}
-                            )}
-                            disabled={anyRecording || isTraining}
-                            onClick={() => onRecordExample(index)}
-                        >
-                            {isRecording && recordingClass === index ? (
-                                recordingProgress || (
-                                    <FormattedMessage
-                                        defaultMessage="Recording..."
-                                        description="Label while recording audio example"
-                                        id="gui.audioClassifier.recording"
-                                    />
-                                )
-                            ) : (
-                                <FormattedMessage
-                                    defaultMessage="Record"
-                                    description="Label for record audio example button"
-                                    id="gui.audioClassifier.record"
-                                />
-                            )}
-                        </button>
-                        <span className={styles.exampleCount}>
-                            <FormattedMessage
-                                defaultMessage="{count} {count, plural, one {example} other {examples}}"
-                                description="Count of audio examples"
-                                id="gui.audioClassifier.exampleCount"
-                                values={{count: exampleCounts[className] || 0}}
+                    <div className={styles.classSection} key={index}>
+                        <div className={styles.classRow}>
+                            <input
+                                className={styles.classNameInput}
+                                type="text"
+                                value={className}
+                                onChange={e => onRenameClass(index, e.target.value)}
                             />
-                        </span>
-                        {(exampleCounts[className] || 0) > 0 ? (
                             <button
-                                className={styles.clearButton}
+                                className={classNames(
+                                    styles.recordButton,
+                                    {[styles.recording]: isRecording && recordingClass === index}
+                                )}
                                 disabled={anyRecording || isTraining}
-                                onClick={() => onClearExamples(index)}
-                                title="Clear examples"
+                                onClick={() => onRecordExample(index)}
                             >
-                                {'↺'}
+                                {isRecording && recordingClass === index ? (
+                                    recordingProgress || (
+                                        <FormattedMessage
+                                            defaultMessage="Recording..."
+                                            description="Label while recording audio example"
+                                            id="gui.audioClassifier.recording"
+                                        />
+                                    )
+                                ) : (
+                                    <FormattedMessage
+                                        defaultMessage="Record"
+                                        description="Label for record audio example button"
+                                        id="gui.audioClassifier.record"
+                                    />
+                                )}
                             </button>
-                        ) : null}
-                        {classes.length > 1 ? (
-                            <button
-                                className={styles.deleteButton}
-                                disabled={anyRecording || isTraining}
-                                onClick={() => onRemoveClass(index)}
-                                title="Remove class"
-                            >
-                                {'✕'}
-                            </button>
-                        ) : null}
+                            <span className={styles.exampleCount}>
+                                <FormattedMessage
+                                    defaultMessage="{count} {count, plural, one {example} other {examples}}"
+                                    description="Count of audio examples"
+                                    id="gui.audioClassifier.exampleCount"
+                                    values={{count: exampleCounts[className] || 0}}
+                                />
+                            </span>
+                            {(exampleCounts[className] || 0) > 0 ? (
+                                <button
+                                    className={styles.clearButton}
+                                    disabled={anyRecording || isTraining}
+                                    onClick={() => onClearExamples(index)}
+                                    title="Clear examples"
+                                >
+                                    {'↺'}
+                                </button>
+                            ) : null}
+                            {classes.length > 1 ? (
+                                <button
+                                    className={styles.deleteButton}
+                                    disabled={anyRecording || isTraining}
+                                    onClick={() => onRemoveClass(index)}
+                                    title="Remove class"
+                                >
+                                    {'✕'}
+                                </button>
+                            ) : null}
+                        </div>
+                        {exampleSpectrograms[className] && (
+                            <div className={styles.exampleSpectrograms}>
+                                {exampleSpectrograms[className].map((spec, i) => (
+                                    <div className={styles.spectrogramWrapper} key={spec.uid || i}>
+                                        <ExampleSpectrogram
+                                            data={spec.data}
+                                            frameSize={spec.frameSize}
+                                        />
+                                        {spec.uid && !anyRecording && !isTraining ? (
+                                            <button
+                                                className={styles.spectrogramDeleteButton}
+                                                onClick={() => onDeleteExample(spec.uid)}
+                                            >
+                                                {'✕'}
+                                            </button>
+                                        ) : null}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ))}
                 <div className={styles.footer}>
@@ -226,11 +270,13 @@ const AudioClassifierModalComponent = ({
 };
 
 AudioClassifierModalComponent.propTypes = {
+    analyserNode: PropTypes.object,
     audioLevel: PropTypes.number.isRequired,
     backgroundExampleCount: PropTypes.number.isRequired,
     backgroundRecordingProgress: PropTypes.string,
     classes: PropTypes.arrayOf(PropTypes.string).isRequired,
     exampleCounts: PropTypes.objectOf(PropTypes.number).isRequired,
+    exampleSpectrograms: PropTypes.objectOf(PropTypes.array),
     isRecording: PropTypes.bool.isRequired,
     isRecordingBackground: PropTypes.bool.isRequired,
     isTraining: PropTypes.bool.isRequired,
@@ -238,6 +284,7 @@ AudioClassifierModalComponent.propTypes = {
     onAddClass: PropTypes.func.isRequired,
     onClearBackground: PropTypes.func.isRequired,
     onClearExamples: PropTypes.func.isRequired,
+    onDeleteExample: PropTypes.func.isRequired,
     onRecordBackground: PropTypes.func.isRequired,
     onRecordExample: PropTypes.func.isRequired,
     onRemoveClass: PropTypes.func.isRequired,

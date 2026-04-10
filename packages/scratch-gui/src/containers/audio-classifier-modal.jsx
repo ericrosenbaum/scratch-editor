@@ -24,6 +24,7 @@ class AudioClassifierModal extends React.Component {
             'handleAddClass',
             'handleRemoveClass',
             'handleRenameClass',
+            'handleDeleteExample',
             'handleTrain',
             'handleClose'
         ]);
@@ -39,7 +40,9 @@ class AudioClassifierModal extends React.Component {
             isTraining: false,
             isTrained: ext ? ext._trained : false,
             statusText: ext && ext._trained ? 'Listening' : '',
-            audioLevel: 0
+            audioLevel: 0,
+            analyserNode: null,
+            exampleSpectrograms: {}
         };
         this._analyserNode = null;
         this._audioLevelRaf = null;
@@ -47,8 +50,8 @@ class AudioClassifierModal extends React.Component {
 
     componentDidMount () {
         this._startAudioLevelMeter();
-        // Try loading a saved model
-        this._tryLoadModel();
+        // TODO: re-enable once model persistence is stable
+        // this._tryLoadModel();
     }
 
     componentWillUnmount () {
@@ -70,6 +73,7 @@ class AudioClassifierModal extends React.Component {
                     isTrained: true,
                     statusText: 'Loaded saved model'
                 });
+                this._fetchExampleSpectrograms();
             }
         } catch (e) {
             // No saved model — this is fine
@@ -81,10 +85,11 @@ class AudioClassifierModal extends React.Component {
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const source = audioCtx.createMediaStreamSource(stream);
             this._analyserNode = audioCtx.createAnalyser();
-            this._analyserNode.fftSize = 256;
+            this._analyserNode.fftSize = 1024;
             source.connect(this._analyserNode);
             this._audioContext = audioCtx;
             this._micStream = stream;
+            this.setState({analyserNode: this._analyserNode});
             this._pollAudioLevel();
         }).catch(() => {
             // Mic not available — level meter just won't show
@@ -120,6 +125,24 @@ class AudioClassifierModal extends React.Component {
             this._micStream = null;
         }
         this._analyserNode = null;
+        this.setState({analyserNode: null});
+    }
+
+    _fetchExampleSpectrograms () {
+        const ext = this.getExtension();
+        if (!ext || !ext.getExampleSpectrograms) {
+            this.setState({exampleSpectrograms: {}});
+            return;
+        }
+        const spectrograms = {};
+        const allClasses = [BACKGROUND_CLASS, ...this.state.classes];
+        for (const className of allClasses) {
+            const data = ext.getExampleSpectrograms(className);
+            if (data.length > 0) {
+                spectrograms[className] = data;
+            }
+        }
+        this.setState({exampleSpectrograms: spectrograms});
     }
 
     async handleRecordBackground () {
@@ -129,13 +152,15 @@ class AudioClassifierModal extends React.Component {
         this.setState({isRecordingBackground: true, backgroundRecordingProgress: null});
 
         try {
+            await ext.stopListening();
             await ext.ensureModel(speechCommands);
             for (let i = 0; i < EXAMPLES_PER_RECORD; i++) {
                 this.setState({backgroundRecordingProgress: `${i + 1} of ${EXAMPLES_PER_RECORD}`});
                 await ext.collectExample(BACKGROUND_CLASS);
+                this.setState({exampleCounts: ext.getExampleCounts()});
+                this._fetchExampleSpectrograms();
             }
             this.setState({
-                exampleCounts: ext.getExampleCounts(),
                 isRecordingBackground: false,
                 backgroundRecordingProgress: null
             });
@@ -158,14 +183,16 @@ class AudioClassifierModal extends React.Component {
         this.setState({isRecording: true, recordingClass: classIndex, recordingProgress: null});
 
         try {
+            await ext.stopListening();
             await ext.ensureModel(speechCommands);
             for (let i = 0; i < EXAMPLES_PER_RECORD; i++) {
                 this.setState({recordingProgress: `${i + 1} of ${EXAMPLES_PER_RECORD}`});
                 await ext.collectExample(className);
+                this.setState({exampleCounts: ext.getExampleCounts()});
+                this._fetchExampleSpectrograms();
             }
             ext._classes = this.state.classes.slice();
             this.setState({
-                exampleCounts: ext.getExampleCounts(),
                 isRecording: false,
                 recordingClass: null,
                 recordingProgress: null
@@ -192,6 +219,19 @@ class AudioClassifierModal extends React.Component {
             isTrained: false,
             statusText: ''
         });
+        this._fetchExampleSpectrograms();
+    }
+
+    handleDeleteExample (uid) {
+        const ext = this.getExtension();
+        if (!ext) return;
+        ext.removeExample(uid);
+        this.setState({
+            exampleCounts: ext.getExampleCounts(),
+            isTrained: false,
+            statusText: ''
+        });
+        this._fetchExampleSpectrograms();
     }
 
     handleClearBackground () {
@@ -203,6 +243,7 @@ class AudioClassifierModal extends React.Component {
             isTrained: false,
             statusText: ''
         });
+        this._fetchExampleSpectrograms();
     }
 
     handleAddClass () {
@@ -301,11 +342,13 @@ class AudioClassifierModal extends React.Component {
     render () {
         return (
             <AudioClassifierModalComponent
+                analyserNode={this.state.analyserNode}
                 audioLevel={this.state.audioLevel}
                 backgroundExampleCount={this.state.exampleCounts[BACKGROUND_CLASS] || 0}
                 backgroundRecordingProgress={this.state.backgroundRecordingProgress}
                 classes={this.state.classes}
                 exampleCounts={this.state.exampleCounts}
+                exampleSpectrograms={this.state.exampleSpectrograms}
                 isRecording={this.state.isRecording}
                 isRecordingBackground={this.state.isRecordingBackground}
                 isTraining={this.state.isTraining}
@@ -316,6 +359,7 @@ class AudioClassifierModal extends React.Component {
                 onAddClass={this.handleAddClass}
                 onClearBackground={this.handleClearBackground}
                 onClearExamples={this.handleClearExamples}
+                onDeleteExample={this.handleDeleteExample}
                 onRecordBackground={this.handleRecordBackground}
                 onRecordExample={this.handleRecordExample}
                 onRemoveClass={this.handleRemoveClass}

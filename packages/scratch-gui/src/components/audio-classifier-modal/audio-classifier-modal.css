@@ -169,20 +169,44 @@
     font-weight: bold;
 }
 
-.level-meter {
-    width: 100%;
-    height: 6px;
-    background: $ui-tertiary;
-    border-radius: 3px;
-    margin-bottom: 1rem;
-    overflow: hidden;
+.class-section {
+    margin-bottom: 0.5rem;
 }
 
-.level-fill {
-    height: 100%;
-    background: $sound-primary;
-    border-radius: 2px;
-    transition: width 0.05s ease;
+.example-spectrograms {
+    display: flex;
+    gap: 4px;
+    padding: 0.5rem 0.75rem;
+    flex-wrap: wrap;
+    overflow: visible;
+}
+
+.spectrogram-wrapper {
+    position: relative;
+    flex: 0 0 50px;
+}
+
+.spectrogram-delete-button {
+    display: none;
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    z-index: 1;
+    background: $red-primary;
+    color: $ui-white;
+    border: none;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    line-height: 16px;
+    padding: 0;
+    cursor: pointer;
+    text-align: center;
+}
+
+.spectrogram-wrapper:hover .spectrogram-delete-button {
+    display: block;
 }
 
 .background-section {
