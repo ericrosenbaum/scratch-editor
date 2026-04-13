@@ -3,11 +3,12 @@ const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const ScratchWebpackConfigBuilder = require('scratch-webpack-configuration');
+const {getDevPort} = require('../../scripts/worktree-dev-port');
 
 const baseConfig = new ScratchWebpackConfigBuilder({
     rootPath: path.resolve(__dirname)
 })
-    .enableDevServer(process.env.PORT || 8361)
+    .enableDevServer(getDevPort(8361, __dirname))
     .merge({
         resolve: {
             fallback: {

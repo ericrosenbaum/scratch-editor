@@ -6,6 +6,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const ScratchWebpackConfigBuilder = require('scratch-webpack-configuration');
+const {getDevPort} = require('../../scripts/worktree-dev-port');
 
 // const STATIC_PATH = process.env.STATIC_PATH || '/static';
 
@@ -149,7 +150,7 @@ const distStandaloneConfig = baseConfig.clone()
 
 // build the examples and debugging tools in `build/`
 const buildConfig = baseConfig.clone()
-    .enableDevServer(process.env.PORT || 8601)
+    .enableDevServer(getDevPort(8601, __dirname))
     .merge({
         entry: {
             gui: './src/playground/index.jsx',

@@ -26,6 +26,7 @@
     "build": "cross-env NODE_ENV=production npm run --workspaces build",
     "build-monorepo": "cross-env-shell ./scripts/build-monorepo.sh",
     "clean": "npm run --workspaces clean",
+    "ports": "node scripts/worktree-dev-port.js",
     "prepare": "husky install",
     "refresh-gh-workflow": "ts-node scripts/build-gha-workflows.ts",
     "test": "npm test --workspaces",

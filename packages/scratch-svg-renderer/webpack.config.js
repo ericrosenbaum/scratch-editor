@@ -1,6 +1,7 @@
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const ScratchWebpackConfigBuilder = require('scratch-webpack-configuration');
+const {getDevPort} = require('../../scripts/worktree-dev-port');
 const fs = require('fs');
 const nodeExternals = require('webpack-node-externals');
 
@@ -76,7 +77,7 @@ const playgroundConfig = new ScratchWebpackConfigBuilder(common)
     .merge({
         devServer: {
             contentBase: false,
-            port: process.env.PORT || 8576
+            port: getDevPort(8576, __dirname)
         },
         output: {
             path: path.resolve(__dirname, 'playground'),

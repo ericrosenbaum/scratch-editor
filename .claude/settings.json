@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"PORT\" /Users/ericrosenbaum/Documents/scratch-editor/packages/*/package.json)",
+      "Bash(grep -r \"worktree\\\\|multiple.*instance\\\\|concurrent\\\\|parallel\" /Users/ericrosenbaum/Documents/scratch-editor/packages/*/README.md)",
+      "Bash(PORT=9999 node -e \"console.log\\(require\\('/Users/ericrosenbaum/Documents/scratch-editor/scripts/worktree-dev-port'\\).getDevPort\\(8601, process.cwd\\(\\)\\)\\)\")"
+    ]
+  }
+}

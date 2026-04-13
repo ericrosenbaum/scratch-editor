@@ -3,6 +3,7 @@ const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const ScratchWebpackConfigBuilder = require('scratch-webpack-configuration');
+const {getDevPort} = require('../../scripts/worktree-dev-port');
 
 const common = {
     libraryName: 'scratch-vm',
@@ -53,7 +54,7 @@ const playgroundBuilder = webBuilder
         devServer: {
             contentBase: false,
             host: '0.0.0.0',
-            port: process.env.PORT || 8073
+            port: getDevPort(8073, __dirname)
         },
         performance: {
             hints: false
