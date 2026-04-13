@@ -72,7 +72,7 @@ test('initial extension state', t => {
         t.equal(ext._tempo, 120, 'Default tempo is 120 BPM');
         t.equal(ext.getTempo(), 120, 'getTempo returns 120');
         t.equal(ext.getBeatNumber(), 0, 'Beat number is 0 when not running');
-        t.equal(ext._beatCheckInterval, null, 'No beat check timer initially');
+        t.equal(ext._timerHandle, null, 'No scheduler timer initially');
 
         vm.quit();
         t.end();
@@ -88,12 +88,12 @@ test('start and stop beat controls', t => {
 
         ext.startBeat();
         t.equal(ext._running, true, 'Running after startBeat');
-        t.ok(ext._beatCheckInterval !== null, 'Beat check timer is active');
+        t.ok(ext._timerHandle !== null, 'Scheduler timer is active');
         t.ok(ext.getBeatNumber() >= 1, 'Beat number >= 1 after start');
 
         ext.stopBeat();
         t.equal(ext._running, false, 'Not running after stopBeat');
-        t.equal(ext._beatCheckInterval, null, 'Beat check timer cleared after stop');
+        t.equal(ext._timerHandle, null, 'Scheduler timer cleared after stop');
         t.equal(ext.getBeatNumber(), 0, 'Beat number is 0 after stop');
 
         vm.quit();
@@ -150,7 +150,7 @@ test('whenBeat predicate gates on running state', t => {
     });
 });
 
-test('_checkBeats fires startHats for crossed boundaries', t => {
+test('scheduler fires startHats for crossed boundaries', t => {
     const vm = new VirtualMachine();
     vm.attachStorage(makeTestStorage());
 
@@ -211,7 +211,7 @@ test('quarter note hat fires in fixture project via VM stepping', t => {
         vm.greenFlag();
 
         // Step the VM at intervals so threads execute.
-        // The beat-check timer (setInterval) fires independently to call startHats.
+        // The scheduler (setTimeout chain) fires independently to call startHats.
         // _step() is needed to actually execute the threads that startHats creates.
         const intervalId = setInterval(() => {
             vm.runtime._step();
@@ -428,11 +428,11 @@ test('PROJECT_STOP_ALL stops the beat engine and clears timer', t => {
 
         ext.startBeat();
         t.equal(ext._running, true, 'Running after start');
-        t.ok(ext._beatCheckInterval !== null, 'Timer active after start');
+        t.ok(ext._timerHandle !== null, 'Timer active after start');
 
         vm.stopAll();
         t.equal(ext._running, false, 'Stopped after PROJECT_STOP_ALL');
-        t.equal(ext._beatCheckInterval, null, 'Timer cleared after PROJECT_STOP_ALL');
+        t.equal(ext._timerHandle, null, 'Timer cleared after PROJECT_STOP_ALL');
 
         vm.quit();
         t.end();

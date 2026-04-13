@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/ericrosenbaum/GitHub/**)",
+      "Read(//Users/ericrosenbaum/Documents/scratch-vm/src/engine/**)",
+      "Read(//Users/ericrosenbaum/Documents/**)",
+      "Bash(grep -E \"\\\\.\\(js\\)$\")"
+    ]
+  }
+}

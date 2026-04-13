@@ -2,7 +2,6 @@ const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
 const MathUtil = require('../../util/math-util');
-const Timer = require('../../util/timer');
 const formatMessage = require('format-message');
 
 /**
@@ -39,19 +38,23 @@ const TEMPO_MAX = 500;
 const TEMPO_DEFAULT = 120;
 
 /**
- * Interval (ms) for the beat-check timer, matching the VM's 60 FPS step rate.
+ * Small offset in beats used when computing the next boundary, to avoid
+ * immediately re-firing the boundary we just crossed due to floating-point
+ * precision.
  * @type {number}
  */
-const BEAT_CHECK_INTERVAL = 1000 / 60;
+const BEAT_EPSILON = 1e-6;
 
 /**
  * Class for the musical timing extension in Scratch 3.0.
  * Provides a steady temporal grid that triggers hat blocks at musical time intervals.
  *
- * Uses an event-driven hat approach: a setInterval timer checks beat boundaries
- * each frame and calls runtime.startHats() with field matching to trigger all
- * hat blocks for the relevant interval. This correctly handles multiple stacks
- * using the same hat block, since startHats triggers every matching script.
+ * Uses a self-correcting setTimeout chain driven by AudioContext.currentTime.
+ * Each scheduled wake-up targets the next beat boundary directly in audio-clock
+ * seconds, fires the matching hats via runtime.startHats() with field matching,
+ * then re-targets the next absolute boundary. The audio clock is monotonic and
+ * sample-accurate, so timing does not drift under event-loop load and is not
+ * coupled to the VM frame rate.
  *
  * @param {Runtime} runtime - the runtime instantiating this block package.
  * @class
@@ -66,12 +69,6 @@ class Scratch3MusicalTimingBlocks {
 
         // Register on the runtime so other components (GUI, tests) can access this extension
         this.runtime.ext_musicalTiming = this;
-
-        /**
-         * Timer for measuring elapsed time since beat started.
-         * @type {Timer}
-         */
-        this._timer = new Timer();
 
         /**
          * Whether the beat engine is currently running.
@@ -93,17 +90,24 @@ class Scratch3MusicalTimingBlocks {
         this._beatsAtLastReset = 0;
 
         /**
+         * Audio-clock time (seconds) corresponding to _beatsAtLastReset.
+         * Rebased on start and on tempo change so that elapsed beats can be
+         * computed as _beatsAtLastReset + (now - _audioStartTime) * tempo/60.
+         * @type {number}
+         */
+        this._audioStartTime = 0;
+
+        /**
          * Map of interval name to the last interval index that was fired.
-         * Updated once per frame in _checkBeats, NOT in the hat predicate.
          * @type {object}
          */
         this._lastFiredInterval = {};
 
         /**
-         * Handle for the setInterval timer that checks beat boundaries.
+         * Handle for the pending self-correcting setTimeout.
          * @type {number|null}
          */
-        this._beatCheckInterval = null;
+        this._timerHandle = null;
 
         this._resetLastFired();
 
@@ -123,55 +127,90 @@ class Scratch3MusicalTimingBlocks {
     }
 
     /**
-     * Compute the current elapsed beats based on timer and tempo.
+     * Read the current audio-clock time in seconds. Falls back to
+     * performance.now() when no audio engine is attached (e.g. headless tests).
+     * @returns {number} Current time in seconds on a monotonic clock.
+     * @private
+     */
+    _getAudioTime () {
+        const engine = this.runtime.audioEngine;
+        if (engine && engine.audioContext) {
+            return engine.audioContext.currentTime;
+        }
+        return performance.now() / 1000;
+    }
+
+    /**
+     * Compute the current elapsed beats from the audio clock and tempo.
      * @returns {number} Elapsed beats since the beat engine started.
      * @private
      */
     _getElapsedBeats () {
-        const elapsedMs = this._timer.timeElapsed();
-        const beatsSinceReset = (elapsedMs / 60000) * this._tempo;
-        return this._beatsAtLastReset + beatsSinceReset;
+        const deltaSeconds = this._getAudioTime() - this._audioStartTime;
+        return this._beatsAtLastReset + (deltaSeconds * this._tempo / 60);
     }
 
     /**
-     * Start the internal beat-check timer.
+     * Convert a target beat count (measured from the current tempo segment's
+     * origin) back into an absolute audio-clock time in seconds.
+     * @param {number} targetBeats - beat count on the same scale as _getElapsedBeats.
+     * @returns {number} Audio-clock time in seconds.
      * @private
      */
-    _startBeatCheck () {
-        if (this._beatCheckInterval !== null) return;
-        this._beatCheckInterval = setInterval(
-            () => this._checkBeats(), BEAT_CHECK_INTERVAL
-        );
+    _beatsToAudioTime (targetBeats) {
+        const beatsSinceReset = targetBeats - this._beatsAtLastReset;
+        return this._audioStartTime + (beatsSinceReset * 60 / this._tempo);
     }
 
     /**
-     * Stop the internal beat-check timer.
+     * Schedule the next self-correcting wake-up at the soonest upcoming beat
+     * boundary across all intervals.
      * @private
      */
-    _stopBeatCheck () {
-        if (this._beatCheckInterval !== null) {
-            clearInterval(this._beatCheckInterval);
-            this._beatCheckInterval = null;
+    _scheduleNextTick () {
+        if (!this._running) return;
+
+        const elapsedBeats = this._getElapsedBeats();
+
+        let nextBoundaryBeats = Infinity;
+        for (const interval in INTERVAL_BEATS) {
+            const beatsPerInterval = INTERVAL_BEATS[interval];
+            const nextIndex = Math.floor(
+                (elapsedBeats + BEAT_EPSILON) / beatsPerInterval
+            ) + 1;
+            const boundary = nextIndex * beatsPerInterval;
+            if (boundary < nextBoundaryBeats) {
+                nextBoundaryBeats = boundary;
+            }
         }
+
+        const targetAudioTime = this._beatsToAudioTime(nextBoundaryBeats);
+        const delayMs = Math.max(
+            0, (targetAudioTime - this._getAudioTime()) * 1000
+        );
+
+        this._timerHandle = setTimeout(() => this._onTick(), delayMs);
     }
 
     /**
-     * Check all intervals for beat boundary crossings and fire hats.
-     * Called ~60 times per second by the beat-check timer.
+     * Scheduler callback: fire any interval hats whose boundaries have been
+     * crossed since the last tick, then re-target the next boundary.
      * @private
      */
-    _checkBeats () {
+    _onTick () {
+        this._timerHandle = null;
         if (!this._running) return;
 
         const elapsedBeats = this._getElapsedBeats();
 
         for (const interval in INTERVAL_BEATS) {
             const beatsPerInterval = INTERVAL_BEATS[interval];
-            const currentIndex = Math.floor(elapsedBeats / beatsPerInterval);
+            const currentIndex = Math.floor(
+                (elapsedBeats + BEAT_EPSILON) / beatsPerInterval
+            );
 
             if (currentIndex > this._lastFiredInterval[interval]) {
                 this._lastFiredInterval[interval] = currentIndex;
-                // Fire all hat blocks matching this interval.
                 // Field matching works because both sides are uppercased:
                 //   - blocks-runtime-cache.js uppercases cached field values
                 //   - runtime.startHats uppercases match field values
@@ -180,15 +219,20 @@ class Scratch3MusicalTimingBlocks {
                 });
             }
         }
+
+        this._scheduleNextTick();
     }
 
     /**
-     * Internal stop: clear running state and stop the timer.
+     * Internal stop: clear running state and cancel any pending wake-up.
      * @private
      */
     _stop () {
         this._running = false;
-        this._stopBeatCheck();
+        if (this._timerHandle !== null) {
+            clearTimeout(this._timerHandle);
+            this._timerHandle = null;
+        }
     }
 
     /**
@@ -329,11 +373,12 @@ class Scratch3MusicalTimingBlocks {
      * Start the musical timing engine.
      */
     startBeat () {
+        this._stop();
         this._running = true;
         this._beatsAtLastReset = 0;
-        this._timer.start();
+        this._audioStartTime = this._getAudioTime();
         this._resetLastFired();
-        this._startBeatCheck();
+        this._scheduleNextTick();
     }
 
     /**
@@ -366,12 +411,19 @@ class Scratch3MusicalTimingBlocks {
         );
 
         if (this._running) {
-            // Preserve current beat position across tempo change
+            // Preserve current beat position across tempo change, then
+            // re-target the next boundary under the new tempo.
             this._beatsAtLastReset = this._getElapsedBeats();
-            this._timer.start();
+            this._audioStartTime = this._getAudioTime();
+            this._tempo = newTempo;
+            if (this._timerHandle !== null) {
+                clearTimeout(this._timerHandle);
+                this._timerHandle = null;
+            }
+            this._scheduleNextTick();
+        } else {
+            this._tempo = newTempo;
         }
-
-        this._tempo = newTempo;
     }
 
     /**
