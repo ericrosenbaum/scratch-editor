@@ -12,6 +12,32 @@ const queryEmbeddings = [];
 
 const TRANSFORMERS_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3';
 
+// EmbeddingGemma requires task-specific prefixes at both index time and query time.
+// See https://huggingface.co/google/embeddinggemma-300m
+const QUERY_PREFIX = 'task: search result | query: ';
+const DOCUMENT_PREFIX = 'title: none | text: ';
+
+// Matryoshka truncation dimension. Must match TARGET_DIM in
+// scripts/generate-tip-embeddings.mjs — query vectors and cached document
+// vectors have to live in the same subspace for cosine similarity to mean anything.
+const TARGET_DIM = 256;
+
+function truncateAndRenormalize (vec, dim) {
+    const out = new Float32Array(dim);
+    let norm = 0;
+    for (let i = 0; i < dim; i++) {
+        out[i] = vec[i];
+        norm += vec[i] * vec[i];
+    }
+    norm = Math.sqrt(norm);
+    if (norm > 0) {
+        for (let i = 0; i < dim; i++) {
+            out[i] /= norm;
+        }
+    }
+    return out;
+}
+
 /**
  * Compute cosine similarity between two vectors.
  */
@@ -43,7 +69,7 @@ self.onmessage = async function (event) {
             console.log('[Embedding Worker] Creating feature-extraction pipeline...');
             embedder = await pipeline(
                 'feature-extraction',
-                'Xenova/all-MiniLM-L6-v2',
+                'onnx-community/embeddinggemma-300m-ONNX',
                 {
                     dtype: 'q8',
                     device: 'wasm',
@@ -77,6 +103,13 @@ self.onmessage = async function (event) {
         try {
             const cachedQueries = event.data.queries;
             const cachedEmbeddings = event.data.embeddings;
+            if (cachedEmbeddings.length > 0 && cachedEmbeddings[0].length !== TARGET_DIM) {
+                throw new Error(
+                    'Cached embedding dim ' + cachedEmbeddings[0].length +
+                    ' does not match worker TARGET_DIM ' + TARGET_DIM +
+                    ' — regenerate cache with `npm run generate-embeddings`'
+                );
+            }
             console.log('[Embedding Worker] Loading ' + cachedQueries.length + ' cached query embeddings...');
 
             queryEmbeddings.length = 0;
@@ -109,9 +142,10 @@ self.onmessage = async function (event) {
 
             queryEmbeddings.length = 0;
             for (let i = 0; i < queries.length; i++) {
-                const output = await embedder(queries[i].text, {pooling: 'mean', normalize: true});
+                const prefixed = DOCUMENT_PREFIX + queries[i].text;
+                const output = await embedder(prefixed, {pooling: 'mean', normalize: true});
                 queryEmbeddings.push({
-                    embedding: new Float32Array(output.data),
+                    embedding: truncateAndRenormalize(output.data, TARGET_DIM),
                     tipId: queries[i].tipId
                 });
             }
@@ -136,8 +170,9 @@ self.onmessage = async function (event) {
             const contextScores = event.data.contextScores;
             const queryId = event.data.queryId;
 
-            const output = await embedder(query, {pooling: 'mean', normalize: true});
-            const queryEmbedding = new Float32Array(output.data);
+            const prefixed = QUERY_PREFIX + query;
+            const output = await embedder(prefixed, {pooling: 'mean', normalize: true});
+            const queryEmbedding = truncateAndRenormalize(output.data, TARGET_DIM);
 
             // Find best-matching query per tip (max similarity, not average)
             const bestScores = {};
