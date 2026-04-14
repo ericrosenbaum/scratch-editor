@@ -696,7 +696,6 @@ const UnstuckCard = ({
     browseAll,
     browseFilter,
     codeExpanded,
-    contextSuggestions,
     expanded,
     listening,
     loading,
@@ -811,11 +810,6 @@ const UnstuckCard = ({
                                         <div className={styles.promptText}>
                                             {'What do you need help with?'}
                                         </div>
-                                        <ContextSuggestions
-                                            suggestions={contextSuggestions}
-                                            tips={tips}
-                                            onSelectResult={onSelectResult}
-                                        />
                                         <QuickPicks
                                             picks={quickPicks}
                                             onPickClick={onPickClick}
@@ -850,7 +844,6 @@ UnstuckCard.propTypes = {
     browseAll: PropTypes.bool,
     browseFilter: PropTypes.string,
     codeExpanded: PropTypes.bool,
-    contextSuggestions: PropTypes.array,
     expanded: PropTypes.bool.isRequired,
     listening: PropTypes.bool,
     loading: PropTypes.bool.isRequired,
@@ -886,4 +879,5 @@ UnstuckCard.propTypes = {
     y: PropTypes.number.isRequired
 };
 
+export {TipDisplay};
 export default UnstuckCard;

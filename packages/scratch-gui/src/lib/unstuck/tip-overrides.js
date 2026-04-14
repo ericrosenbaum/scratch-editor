@@ -164,6 +164,53 @@ const clearAllOverrides = function () {
     localStorage.removeItem(BLOCK_TEMPLATES_KEY);
 };
 
+/**
+ * POST the current merged tips (and optionally block templates) to the
+ * dev-server middleware so they land in tips.json / block-templates.json on
+ * disk. Only works when running under `npm start` (dev server). Callers
+ * should clear the corresponding overrides on success so subsequent reads
+ * come from the freshly written source file.
+ */
+const persistToSource = async function ({tips: tipsPayload, quickPicks, blockTemplates} = {}) {
+    const body = {};
+    if (tipsPayload) {
+        body.tips = {
+            tips: tipsPayload,
+            quickPicks: quickPicks || []
+        };
+    }
+    if (blockTemplates) {
+        body.blockTemplates = blockTemplates;
+    }
+    const response = await fetch('/__tips-author/save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+    });
+    if (!response.ok) {
+        let detail = '';
+        try {
+            const payload = await response.json();
+            detail = payload && payload.error ? `: ${payload.error}` : '';
+        } catch (e) { /* ignore */ }
+        throw new Error(`Tips authoring save failed (${response.status})${detail}`);
+    }
+    return response.json();
+};
+
+/**
+ * Drop the localStorage override for a tip without reverting the in-memory
+ * merged view. Used after a successful persistToSource so the next page load
+ * reads straight from disk.
+ */
+const forgetOverride = function (tipId) {
+    const overrides = getRawOverrides();
+    if (overrides[tipId]) {
+        delete overrides[tipId];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+    }
+};
+
 export {
     loadMergedTips,
     saveOverride,
@@ -175,5 +222,7 @@ export {
     exportBlockTemplatesJson,
     importTips,
     clearAllOverrides,
-    getCustomBlockTemplates
+    getCustomBlockTemplates,
+    persistToSource,
+    forgetOverride
 };

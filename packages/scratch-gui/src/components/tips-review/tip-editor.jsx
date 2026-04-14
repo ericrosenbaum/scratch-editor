@@ -2,6 +2,8 @@
    arrow-parens, @stylistic/max-len, no-undefined */
 import React from 'react';
 import BlockPreview from '../unstuck-card/block-preview.jsx';
+import {TipDisplay} from '../unstuck-card/unstuck-card.jsx';
+import allTips from '../../lib/libraries/tips/index.js';
 import blockTemplates from '../../lib/unstuck/block-templates.js';
 import {
     uiTargets,
@@ -14,6 +16,7 @@ import {captureWorkspaceBlocks, blocksToXml} from '../../lib/unstuck/workspace-c
 import {saveOverride, hasOverride, clearOverride, saveBlockTemplate, getCustomBlockTemplates} from '../../lib/unstuck/tip-overrides.js';
 
 import styles from './tips-review.css';
+import unstuckStyles from '../unstuck-card/unstuck-card.css';
 
 const ALL_TAGS = [
     'events', 'motion', 'looks', 'sound', 'control', 'sensing',
@@ -22,6 +25,8 @@ const ALL_TAGS = [
     'broadcast', 'keyboard', 'mouse', 'direction', 'coordinate'
 ];
 
+const AUTOSAVE_DELAY_MS = 500;
+
 class TipEditor extends React.Component {
     constructor (props) {
         super(props);
@@ -29,11 +34,17 @@ class TipEditor extends React.Component {
             draft: this.cloneTip(props.tip),
             capturedScripts: null,
             showCapturePreview: false,
-            dirty: false
+            dirty: false,
+            previewCodeExpanded: true,
+            lastSavedAt: null
         };
+        this.autosaveTimer = null;
+        this._mounted = false;
+        this.flushAutosave = this.flushAutosave.bind(this);
     }
 
     componentDidMount () {
+        this._mounted = true;
         if (this.props.pendingCapture) {
             this.performCapture();
             if (this.props.onCaptureConsumed) {
@@ -42,15 +53,11 @@ class TipEditor extends React.Component {
         }
     }
 
-    componentDidUpdate (prevProps) {
-        if (prevProps.tipId !== this.props.tipId) {
-            this.setState({
-                draft: this.cloneTip(this.props.tip),
-                capturedScripts: null,
-                showCapturePreview: false,
-                dirty: false
-            });
-        }
+    componentWillUnmount () {
+        this._mounted = false;
+        // Flush pending edits so switching tips / closing the modal
+        // never loses work.
+        this.flushAutosave();
     }
 
     cloneTip (tip) {
@@ -58,19 +65,40 @@ class TipEditor extends React.Component {
     }
 
     updateDraft (updater) {
-        this.setState(prev => ({
-            draft: {...prev.draft, ...updater(prev.draft)},
-            dirty: true
-        }));
+        this.setState(
+            prev => ({
+                draft: {...prev.draft, ...updater(prev.draft)},
+                dirty: true
+            }),
+            () => this.scheduleAutosave()
+        );
+    }
+
+    scheduleAutosave () {
+        if (this.autosaveTimer) clearTimeout(this.autosaveTimer);
+        this.autosaveTimer = setTimeout(() => {
+            this.autosaveTimer = null;
+            this.flushAutosave();
+        }, AUTOSAVE_DELAY_MS);
+    }
+
+    flushAutosave () {
+        if (this.autosaveTimer) {
+            clearTimeout(this.autosaveTimer);
+            this.autosaveTimer = null;
+        }
+        if (!this.state.dirty) return;
+        const {tipId, onSave} = this.props;
+        const tip = {...this.state.draft, id: tipId};
+        saveOverride(tipId, tip);
+        if (this._mounted) {
+            this.setState({dirty: false, lastSavedAt: Date.now()});
+        }
+        if (onSave) onSave(tipId, tip);
     }
 
     handleSave () {
-        const {tipId, onSave} = this.props;
-        const tip = this.state.draft;
-        tip.id = tipId;
-        saveOverride(tipId, tip);
-        this.setState({dirty: false});
-        if (onSave) onSave(tipId, tip);
+        this.flushAutosave();
     }
 
     handleRevert () {
@@ -163,30 +191,6 @@ class TipEditor extends React.Component {
                 delete arr[index].category;
             }
             return {pointers: arr};
-        });
-    }
-
-    // --- Relevance helpers ---
-    updateKeywords (index, value) {
-        this.updateDraft(draft => {
-            const kw = [...((draft.relevance && draft.relevance.keywords) || [])];
-            kw[index] = value;
-            return {relevance: {...(draft.relevance || {}), keywords: kw}};
-        });
-    }
-
-    addKeyword () {
-        this.updateDraft(draft => {
-            const kw = [...((draft.relevance && draft.relevance.keywords) || []), ''];
-            return {relevance: {...(draft.relevance || {}), keywords: kw}};
-        });
-    }
-
-    removeKeyword (index) {
-        this.updateDraft(draft => {
-            const kw = [...((draft.relevance && draft.relevance.keywords) || [])];
-            kw.splice(index, 1);
-            return {relevance: {...(draft.relevance || {}), keywords: kw}};
         });
     }
 
@@ -581,47 +585,40 @@ class TipEditor extends React.Component {
         );
     }
 
-    renderKeywordsEditor () {
-        const {draft} = this.state;
-        const keywords = (draft.relevance && draft.relevance.keywords) || [];
-
+    renderPreview () {
+        const {draft, previewCodeExpanded} = this.state;
+        const noop = () => {};
         return (
-            <div className={styles.editorField}>
-                <label className={styles.editorLabel}>{'Keywords'}</label>
-                <div className={styles.editorKeywordList}>
-                    {keywords.map((kw, i) => (
-                        <div
-                            className={styles.editorListRow}
-                            key={i}
-                        >
-                            <input
-                                className={styles.editorInputSmall}
-                                value={kw}
-                                onChange={e => this.updateKeywords(i, e.target.value)}
+            <div className={styles.previewPanel}>
+                <div className={styles.previewHeader}>{'Preview'}</div>
+                <div className={styles.previewStage}>
+                    <div className={unstuckStyles.card}>
+                        <div className={unstuckStyles.body}>
+                            <TipDisplay
+                                codeExpanded={previewCodeExpanded}
+                                tip={draft}
+                                tips={allTips}
+                                onAddToProject={noop}
+                                onFollowUp={noop}
+                                onPointerClick={noop}
+                                onToggleCode={() => this.setState(s => ({
+                                    previewCodeExpanded: !s.previewCodeExpanded
+                                }))}
                             />
-                            <button
-                                className={styles.editorRemoveButton}
-                                onClick={() => this.removeKeyword(i)}
-                            >
-                                {'\u00d7'}
-                            </button>
                         </div>
-                    ))}
+                    </div>
                 </div>
-                <button
-                    className={styles.editorAddButton}
-                    onClick={() => this.addKeyword()}
-                >
-                    {'+ Add keyword'}
-                </button>
             </div>
         );
     }
 
     render () {
         const {tipId} = this.props;
-        const {dirty} = this.state;
+        const {dirty, lastSavedAt} = this.state;
         const isOverridden = hasOverride(tipId);
+        const saveLabel = dirty ?
+            'Saving…' :
+            (lastSavedAt ? 'Saved ✓' : 'Saved');
 
         return (
             <div className={styles.editorPanel}>
@@ -641,10 +638,10 @@ class TipEditor extends React.Component {
                         ) : null}
                         <button
                             className={`${styles.editorSaveButton} ${dirty ? styles.editorSaveButtonDirty : ''}`}
-                            disabled={!dirty}
+                            title="Edits autosave locally. Click to flush immediately."
                             onClick={() => this.handleSave()}
                         >
-                            {'Save'}
+                            {saveLabel}
                         </button>
                         <button
                             className={styles.editorDeleteButton}
@@ -659,15 +656,17 @@ class TipEditor extends React.Component {
                     </div>
                 </div>
 
-                <div className={styles.editorForm}>
-                    {this.renderTextField('Follow-up Label', 'followUpLabel')}
-                    {this.renderTextArea('Text', 'text')}
-                    {this.renderTagsEditor()}
-                    {this.renderListEditor('Queries', 'queries', 'e.g. how do I make my sprite move')}
-                    {this.renderFollowUpsEditor()}
-                    {this.renderBlockExampleEditor()}
-                    {this.renderPointersEditor()}
-                    {this.renderKeywordsEditor()}
+                <div className={styles.editorBody}>
+                    <div className={styles.editorForm}>
+                        {this.renderTextField('Follow-up Label', 'followUpLabel')}
+                        {this.renderTextArea('Text', 'text')}
+                        {this.renderTagsEditor()}
+                        {this.renderListEditor('Queries', 'queries', 'e.g. how do I make my sprite move')}
+                        {this.renderFollowUpsEditor()}
+                        {this.renderBlockExampleEditor()}
+                        {this.renderPointersEditor()}
+                    </div>
+                    {this.renderPreview()}
                 </div>
             </div>
         );

@@ -776,8 +776,48 @@
     border-color: #b71c1c;
 }
 
+.editor-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
 .editor-form {
     padding: 20px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* ===== Live preview panel ===== */
+.preview-panel {
+    position: sticky;
+    top: 72px;
+    padding: 20px 20px 20px 0;
+    width: 360px;
+    flex-shrink: 0;
+}
+
+.preview-header {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #888;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.preview-stage {
+    background: #f0f2f5;
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Scope the live preview to a fixed 320px width (matches the editor's
+ * unstuck card container) without needing to reuse .unstuck-container. */
+.preview-stage > div {
+    width: 320px;
 }
 
 .editor-field {

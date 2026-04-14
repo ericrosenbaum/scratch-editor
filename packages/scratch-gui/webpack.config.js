@@ -240,4 +240,29 @@ case 'dist-standalone': config = distStandaloneConfig.get(); break;
 default: config = buildConfig.get(); break;
 }
 
-module.exports = buildDist ? config : buildConfig.get();
+const finalConfig = buildDist ? config : buildConfig.get();
+
+// Register dev-server-only middleware for the tips authoring tool, which
+// needs to write directly to tips.json and block-templates.json on disk.
+// Skipped entirely in production builds.
+if (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.BUILD_TYPE !== 'dist' &&
+    process.env.BUILD_TYPE !== 'dist-standalone' &&
+    finalConfig.devServer
+) {
+    const tipsAuthorMiddleware = require('./dev-server/tips-author-middleware');
+    const existingSetup = finalConfig.devServer.setupMiddlewares;
+    finalConfig.devServer.setupMiddlewares = (middlewares, devServer) => {
+        const base = typeof existingSetup === 'function' ?
+            existingSetup(middlewares, devServer) :
+            middlewares;
+        base.unshift({
+            name: 'tips-author',
+            middleware: tipsAuthorMiddleware
+        });
+        return base;
+    };
+}
+
+module.exports = finalConfig;

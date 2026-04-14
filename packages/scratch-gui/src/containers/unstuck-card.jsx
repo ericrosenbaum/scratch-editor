@@ -16,8 +16,7 @@ import {
     openUnstuck,
     toggleCodeExpanded,
     setBrowseAll,
-    setBrowseFilter,
-    setContextSuggestions
+    setBrowseFilter
 } from '../reducers/unstuck';
 
 import {activateDeck} from '../reducers/cards.js';
@@ -30,7 +29,6 @@ import extractProjectContext from '../lib/unstuck/context-extractor.js';
 import getProjectText from '../lib/unstuck/blocks-to-text.js';
 import buildContextQuery from '../lib/unstuck/context-query-builder.js';
 import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions.js';
-import getContextualSuggestions from '../lib/unstuck/context-suggestion-scorer.js';
 import blockTemplates from '../lib/unstuck/block-templates.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
 
@@ -74,34 +72,10 @@ class UnstuckCard extends React.Component {
         this.handleBackToResults = this.handleBackToResults.bind(this);
         this.handleSelectBrowseTip = this.handleSelectBrowseTip.bind(this);
         this.handleBackFromBrowseTip = this.handleBackFromBrowseTip.bind(this);
-        this.generateContextSuggestions = this.generateContextSuggestions.bind(this);
-    }
-
-    componentDidMount () {
-        this.generateContextSuggestions();
-    }
-
-    componentDidUpdate (prevProps) {
-        if (this.props.expanded && !prevProps.expanded) {
-            this.generateContextSuggestions();
-        }
     }
 
     componentWillUnmount () {
         destroyHighlight();
-    }
-
-    generateContextSuggestions () {
-        const context = extractProjectContext(
-            this.props.vm,
-            this.props.activeTabIndex
-        );
-
-        const suggestions = getContextualSuggestions(context, tips);
-        console.log('[Tips] Context suggestions:', suggestions.map(s =>
-            `${s.tipId} (${s.score}): ${s.reason}`
-        ));
-        this.props.onSetContextSuggestions(suggestions);
     }
 
     handleQueryChange (e) {
@@ -239,7 +213,6 @@ class UnstuckCard extends React.Component {
             <UnstuckCardComponent
                 activeTip={activeTip}
                 browseAll={this.props.browseAll}
-                contextSuggestions={this.props.contextSuggestions}
                 browseFilter={this.props.browseFilter}
                 codeExpanded={this.props.codeExpanded}
                 expanded={this.props.expanded}
@@ -282,11 +255,6 @@ UnstuckCard.propTypes = {
     activeTabIndex: PropTypes.number.isRequired,
     browseAll: PropTypes.bool.isRequired,
     browseFilter: PropTypes.string,
-    contextSuggestions: PropTypes.arrayOf(PropTypes.shape({
-        tipId: PropTypes.string.isRequired,
-        score: PropTypes.number.isRequired,
-        reason: PropTypes.string.isRequired
-    })).isRequired,
     onActivateDeck: PropTypes.func.isRequired,
     onBrowseAll: PropTypes.func.isRequired,
     onBrowseFilter: PropTypes.func.isRequired,
@@ -298,7 +266,6 @@ UnstuckCard.propTypes = {
     onClose: PropTypes.func.isRequired,
     onDrag: PropTypes.func.isRequired,
     onEndDrag: PropTypes.func.isRequired,
-    onSetContextSuggestions: PropTypes.func.isRequired,
     onSetLoading: PropTypes.func.isRequired,
     onSetQuery: PropTypes.func.isRequired,
     onSetSearchResults: PropTypes.func.isRequired,
@@ -321,7 +288,6 @@ const mapStateToProps = state => ({
     activeTabIndex: state.scratchGui.editorTab.activeTabIndex,
     browseAll: state.scratchGui.unstuck.browseAll,
     browseFilter: state.scratchGui.unstuck.browseFilter,
-    contextSuggestions: state.scratchGui.unstuck.contextSuggestions,
     codeExpanded: state.scratchGui.unstuck.codeExpanded,
     expanded: state.scratchGui.unstuck.expanded,
     loading: state.scratchGui.unstuck.loading,
@@ -350,8 +316,7 @@ const mapDispatchToProps = dispatch => ({
     onToggleCode: () => dispatch(toggleCodeExpanded()),
     onActivateDeck: deckId => dispatch(activateDeck(deckId)),
     onBrowseAll: () => dispatch(setBrowseAll(true)),
-    onBrowseFilter: tag => dispatch(setBrowseFilter(tag)),
-    onSetContextSuggestions: suggestions => dispatch(setContextSuggestions(suggestions))
+    onBrowseFilter: tag => dispatch(setBrowseFilter(tag))
 });
 
 export default connect(

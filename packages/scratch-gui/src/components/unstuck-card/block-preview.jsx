@@ -3,6 +3,7 @@ import React from 'react';
 import * as ScratchBlocks from 'scratch-blocks';
 import {getColorsForMode, colorModeMap} from '../../lib/settings/color-mode';
 import blockTemplates from '../../lib/unstuck/block-templates.js';
+import {getCustomBlockTemplates} from '../../lib/unstuck/tip-overrides.js';
 import {blocksToXml} from '../../lib/unstuck/workspace-capture.js';
 
 import styles from './block-preview.css';
@@ -72,11 +73,18 @@ class BlockPreview extends React.Component {
         if (!this.workspace) return;
         this.workspace.clear();
 
-        // Use explicit blockXml prop, or generate XML from block-templates JSON
+        // Use explicit blockXml prop, or generate XML from block-templates JSON.
+        // Captured templates live in localStorage via tip-overrides, so check
+        // those too — otherwise the review preview shows nothing after capture.
+        const {templateName} = this.props;
+        const resolveTemplate = (name) => {
+            if (!name) return null;
+            const custom = getCustomBlockTemplates();
+            return custom[name] || blockTemplates[name] || null;
+        };
+        const template = resolveTemplate(templateName);
         const xml = this.props.blockXml ||
-            (this.props.templateName && blockTemplates[this.props.templateName] ?
-                blocksToXml(blockTemplates[this.props.templateName]) :
-                null);
+            (template ? blocksToXml(template) : null);
         if (!xml) return;
 
         try {

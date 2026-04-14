@@ -5,66 +5,47 @@
  * strategies (keyword, embeddings, LLM) without changing the UI layer.
  */
 
-/**
- * Get all opcodes used in the project from context.
- */
-const getAllOpcodes = function (context) {
-    const opcodes = new Set();
-    if (context.stage && context.stage.hatOpcodes) {
-        context.stage.hatOpcodes.forEach(o => opcodes.add(o));
-    }
-    for (const sprite of context.sprites) {
-        if (sprite.hatOpcodes) {
-            sprite.hatOpcodes.forEach(o => opcodes.add(o));
-        }
-    }
-    return opcodes;
+const STOPWORDS = new Set([
+    'the', 'and', 'for', 'with', 'this', 'that', 'you', 'your',
+    'are', 'but', 'not', 'have', 'has', 'was', 'were', 'from', 'they',
+    'them', 'how', 'why', 'what', 'when', 'where', 'can', 'will', 'just',
+    'into', 'out', 'about', 'like'
+]);
+
+const tokenize = function (phrase) {
+    return phrase
+        .toLowerCase()
+        .split(/[^a-z0-9']+/)
+        .filter(w => w.length > 2 && !STOPWORDS.has(w));
 };
 
 /**
- * Get all block categories used in the project.
+ * Build (and cache on the tip) the set of keyword tokens derived from
+ * `tip.queries`. Queries are full natural-language phrases; we tokenize
+ * them so the scorer can match individual words from the user's query.
  */
-const getAllCategories = function (context) {
-    const categories = new Set();
-    if (context.stage) {
-        context.stage.blockCategories.forEach(c => categories.add(c));
+const getKeywordSet = function (tip) {
+    if (tip.__keywordSet) return tip.__keywordSet;
+    const set = new Set();
+    if (Array.isArray(tip.queries)) {
+        for (const phrase of tip.queries) {
+            for (const tok of tokenize(String(phrase))) {
+                set.add(tok);
+            }
+        }
     }
-    for (const sprite of context.sprites) {
-        sprite.blockCategories.forEach(c => categories.add(c));
-    }
-    return categories;
+    Object.defineProperty(tip, '__keywordSet', {value: set, enumerable: false});
+    return set;
 };
 
 /**
  * Score a tip based on project context signals only.
- * @param {object} tip - A tip object from the tips library
- * @param {object} context - Project context from extractProjectContext
- * @returns {number} Context relevance score
+ * Kept as an API surface for EmbeddingTipProvider; contextual suggestion
+ * logic now lives in context-suggestion-scorer.js.
+ * @returns {number}
  */
-const scoreContext = function (tip, context) {
-    let score = 0;
-    if (context && tip.relevance) {
-        const {projectSignals} = tip.relevance;
-        if (projectSignals) {
-            if (projectSignals.missing) {
-                const allOpcodes = getAllOpcodes(context);
-                for (const opcode of projectSignals.missing) {
-                    if (!allOpcodes.has(opcode)) {
-                        score += 2;
-                    }
-                }
-            }
-            if (projectSignals.hasCategories) {
-                const allCategories = getAllCategories(context);
-                for (const cat of projectSignals.hasCategories) {
-                    if (allCategories.has(cat)) {
-                        score += 1;
-                    }
-                }
-            }
-        }
-    }
-    return score;
+const scoreContext = function () {
+    return 0;
 };
 
 /**
@@ -72,24 +53,20 @@ const scoreContext = function (tip, context) {
  * Returns a relevance score (higher = better match).
  * @param {object} tip - A tip object from the tips library
  * @param {string} query - The user's search query
- * @param {object} context - Project context from extractProjectContext
  * @returns {number} Relevance score
  */
-const scoreTip = function (tip, query, context) {
+const scoreTip = function (tip, query) {
     const queryLower = query.toLowerCase();
     const queryWords = queryLower.split(/\s+/).filter(w => w.length > 2);
     let score = 0;
 
-    // Match against tip keywords
-    if (tip.relevance && tip.relevance.keywords) {
-        for (const keyword of tip.relevance.keywords) {
-            if (queryLower.includes(keyword.toLowerCase())) {
-                score += 3;
-            }
+    const keywordSet = getKeywordSet(tip);
+    for (const word of queryWords) {
+        if (keywordSet.has(word)) {
+            score += 3;
         }
     }
 
-    // Match against tip tags
     if (tip.tags) {
         for (const tag of tip.tags) {
             if (queryLower.includes(tag.toLowerCase())) {
@@ -98,15 +75,12 @@ const scoreTip = function (tip, query, context) {
         }
     }
 
-    // Match query words against tip text
     const tipTextLower = tip.text.toLowerCase();
     for (const word of queryWords) {
         if (tipTextLower.includes(word)) {
             score += 1;
         }
     }
-
-    score += scoreContext(tip, context);
 
     return score;
 };
@@ -130,7 +104,7 @@ class KeywordTipProvider {
         const results = [];
         for (const tipId in this.tips) {
             const tip = this.tips[tipId];
-            const score = scoreTip(tip, query, context);
+            const score = scoreTip(tip, query);
             if (score > 0) {
                 results.push({tipId, score});
             }

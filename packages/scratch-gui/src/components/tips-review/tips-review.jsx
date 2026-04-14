@@ -8,7 +8,8 @@ import BlockPreview from '../unstuck-card/block-preview.jsx';
 import TipEditor from './tip-editor.jsx';
 import {
     loadMergedTips, hasOverride, deleteOverride,
-    exportTipsJson, exportBlockTemplatesJson, importTips
+    exportTipsJson, exportBlockTemplatesJson, importTips,
+    persistToSource, clearAllOverrides, getCustomBlockTemplates
 } from '../../lib/unstuck/tip-overrides.js';
 
 const CAPTURE_STATE_KEY = 'scratch-tips-editor-capture-state';
@@ -111,7 +112,7 @@ function computeAnalysis () {
         total: tipEntries.length,
         withBlocks: tipEntries.filter(([, t]) => t.blockExample).length,
         withPointers: tipEntries.filter(([, t]) => t.pointers && t.pointers.length > 0).length,
-        withKeywords: tipEntries.filter(([, t]) => t.relevance && t.relevance.keywords).length,
+        withQueries: tipEntries.filter(([, t]) => Array.isArray(t.queries) && t.queries.length > 0).length,
         warningCount: Object.keys(warnings).length
     };
 
@@ -157,7 +158,7 @@ function tipMatchesFilter (tipId, tip, searchQuery, activeTag, warningsOnly, orp
             tip.text,
             tip.followUpLabel,
             ...(tip.tags || []),
-            ...(tip.relevance && tip.relevance.keywords ? tip.relevance.keywords : [])
+            ...(tip.queries || [])
         ].join(' ').toLowerCase();
         if (!haystack.includes(q)) return false;
     }
@@ -197,8 +198,7 @@ class TipCard extends React.Component {
         const hasPointers = tip.pointers && tip.pointers.length > 0;
         const hasBlocks = !!tip.blockExample;
         const hasFollowUps = tip.followUps && tip.followUps.length > 0;
-        const hasKeywords = tip.relevance && tip.relevance.keywords;
-        const hasSignals = tip.relevance && tip.relevance.projectSignals;
+        const hasQueries = Array.isArray(tip.queries) && tip.queries.length > 0;
         const refs = referencedBy[tipId] || [];
 
         const opcodeChain = hasBlocks ? getOpcodeChain(blockTemplates[tip.blockExample]) : [];
@@ -384,28 +384,19 @@ class TipCard extends React.Component {
                     </div>
                 ) : null}
 
-                {hasKeywords ? (
+                {hasQueries ? (
                     <div className={styles.section}>
-                        <div className={styles.sectionLabel}>{'Keywords'}</div>
+                        <div className={styles.sectionLabel}>{'Queries'}</div>
                         <div className={styles.keywords}>
-                            {tip.relevance.keywords.map(kw => (
+                            {tip.queries.map((q, i) => (
                                 <span
                                     className={styles.keyword}
-                                    key={kw}
+                                    key={i}
                                 >
-                                    {kw}
+                                    {q}
                                 </span>
                             ))}
                         </div>
-                    </div>
-                ) : null}
-
-                {hasSignals ? (
-                    <div className={styles.section}>
-                        <div className={styles.sectionLabel}>{'Project Signals'}</div>
-                        <pre className={styles.signals}>
-                            {JSON.stringify(tip.relevance.projectSignals, null, 2)}
-                        </pre>
                     </div>
                 ) : null}
             </div>
@@ -428,7 +419,8 @@ class TipsReview extends React.Component {
             editSearchQuery: '',
             selectedTipId: pendingCapture ? pendingCapture.tipId : null,
             pendingCapture: !!pendingCapture,
-            workingTips: loadMergedTips()
+            workingTips: loadMergedTips(),
+            saveToSourceStatus: null // null | 'saving' | 'saved' | 'error'
         };
         this.analysis = computeAnalysis();
         this.handleSearchChange = this.handleSearchChange.bind(this);
@@ -441,7 +433,9 @@ class TipsReview extends React.Component {
         this.handleTipRevert = this.handleTipRevert.bind(this);
         this.handleTipDelete = this.handleTipDelete.bind(this);
         this.handleRequestCapture = this.handleRequestCapture.bind(this);
+        this.handleSaveToSource = this.handleSaveToSource.bind(this);
         this.importInputRef = React.createRef();
+        this.tipEditorRef = React.createRef();
     }
 
     handleSearchChange (e) {
@@ -524,6 +518,41 @@ class TipsReview extends React.Component {
         this.props.onClose();
     }
 
+    async handleSaveToSource () {
+        // Flush any in-flight autosave so the latest keystrokes make it into
+        // localStorage before we read it.
+        if (this.tipEditorRef.current) {
+            this.tipEditorRef.current.flushAutosave();
+        }
+        this.setState({saveToSourceStatus: 'saving'});
+        try {
+            const mergedTips = loadMergedTips();
+            const mergedBlockTemplates = {
+                ...blockTemplates,
+                ...getCustomBlockTemplates()
+            };
+            await persistToSource({
+                tips: mergedTips,
+                quickPicks,
+                blockTemplates: mergedBlockTemplates
+            });
+            // Drop all overrides so the next read comes from the freshly
+            // written source files. Dev-server HMR will reload the page
+            // once the JSON files change on disk.
+            clearAllOverrides();
+            this.setState({
+                saveToSourceStatus: 'saved',
+                workingTips: loadMergedTips()
+            });
+            setTimeout(() => this.setState({saveToSourceStatus: null}), 2000);
+        } catch (err) {
+            // eslint-disable-next-line no-alert
+            alert(`Save to source failed: ${err.message}`);
+            this.setState({saveToSourceStatus: 'error'});
+            setTimeout(() => this.setState({saveToSourceStatus: null}), 3000);
+        }
+    }
+
     renderReviewMode () {
         const {warnings, referencedByMap, tagCounts, stats} = this.analysis;
         const {searchQuery, activeTag, warningsOnly, orphansOnly} = this.state;
@@ -575,8 +604,8 @@ class TipsReview extends React.Component {
                                 <div className={styles.statLabel}>{'With pointers'}</div>
                             </div>
                             <div className={styles.stat}>
-                                <div className={styles.statValue}>{stats.withKeywords}</div>
-                                <div className={styles.statLabel}>{'With keywords'}</div>
+                                <div className={styles.statValue}>{stats.withQueries}</div>
+                                <div className={styles.statLabel}>{'With queries'}</div>
                             </div>
                             <div className={styles.warningsStat}>
                                 <div className={styles.statValue}>{stats.warningCount}</div>
@@ -679,6 +708,7 @@ class TipsReview extends React.Component {
                     <TipEditor
                         allTipIds={allTipIds}
                         key={selectedTipId}
+                        ref={this.tipEditorRef}
                         onCaptureConsumed={() => this.setState({pendingCapture: false})}
                         onDelete={this.handleTipDelete}
                         onRequestCapture={this.handleRequestCapture}
@@ -753,6 +783,15 @@ class TipsReview extends React.Component {
                         </React.Fragment>
                     ) : (
                         <React.Fragment>
+                            <button
+                                className={styles.exportButton}
+                                disabled={this.state.saveToSourceStatus === 'saving'}
+                                onClick={this.handleSaveToSource}
+                            >
+                                {this.state.saveToSourceStatus === 'saving' ? 'Saving…' :
+                                    this.state.saveToSourceStatus === 'saved' ? 'Saved ✓' :
+                                        'Save to source'}
+                            </button>
                             <button
                                 className={styles.exportButton}
                                 onClick={this.handleExportTips}

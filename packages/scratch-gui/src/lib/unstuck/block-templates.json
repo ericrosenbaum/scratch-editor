@@ -3853,5 +3853,342 @@
             "shadow": true,
             "topLevel": false
         }
+    ],
+    "captured_nothing-happens_1776172322032": [
+        {
+            "id": "unstuck_capture_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_capture_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_capture_2",
+            "opcode": "looks_sayforsecs",
+            "next": null,
+            "parent": "unstuck_capture_1",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_capture_3",
+                    "shadow": "unstuck_capture_3"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_capture_4",
+                    "shadow": "unstuck_capture_4"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_3",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "Hello!"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_4",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "2"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_glide-to-position_1776179064452": [
+        {
+            "id": "unstuck_capture_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_capture_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_capture_2",
+            "opcode": "motion_gotoxy",
+            "next": "unstuck_capture_3",
+            "parent": "unstuck_capture_1",
+            "inputs": {
+                "X": {
+                    "name": "X",
+                    "block": "unstuck_capture_7",
+                    "shadow": "unstuck_capture_7"
+                },
+                "Y": {
+                    "name": "Y",
+                    "block": "unstuck_capture_8",
+                    "shadow": "unstuck_capture_8"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_3",
+            "opcode": "motion_glidesecstoxy",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_capture_4",
+                    "shadow": "unstuck_capture_4"
+                },
+                "X": {
+                    "name": "X",
+                    "block": "unstuck_capture_5",
+                    "shadow": "unstuck_capture_5"
+                },
+                "Y": {
+                    "name": "Y",
+                    "block": "unstuck_capture_6",
+                    "shadow": "unstuck_capture_6"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_4",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_5",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "100"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_6",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "100"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_7",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "0"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_8",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "0"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_glide-to-position_1776180803203": [
+        {
+            "id": "unstuck_capture_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_capture_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_capture_2",
+            "opcode": "motion_gotoxy",
+            "next": "unstuck_capture_3",
+            "parent": "unstuck_capture_1",
+            "inputs": {
+                "X": {
+                    "name": "X",
+                    "block": "unstuck_capture_7",
+                    "shadow": "unstuck_capture_7"
+                },
+                "Y": {
+                    "name": "Y",
+                    "block": "unstuck_capture_8",
+                    "shadow": "unstuck_capture_8"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_3",
+            "opcode": "motion_glidesecstoxy",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_capture_4",
+                    "shadow": "unstuck_capture_4"
+                },
+                "X": {
+                    "name": "X",
+                    "block": "unstuck_capture_5",
+                    "shadow": "unstuck_capture_5"
+                },
+                "Y": {
+                    "name": "Y",
+                    "block": "unstuck_capture_6",
+                    "shadow": "unstuck_capture_6"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_4",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_5",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "100"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_6",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "100"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_7",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "0"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_8",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "0"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
     ]
 }
