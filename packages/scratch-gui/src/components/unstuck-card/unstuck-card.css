@@ -364,6 +364,17 @@ body .unstuck-container {
 }
 
 /* Show me button */
+.show-me-button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.show-me-button-group .show-me-button {
+    margin-bottom: 0;
+}
+
 .show-me-button {
     display: inline-flex;
     align-items: center;

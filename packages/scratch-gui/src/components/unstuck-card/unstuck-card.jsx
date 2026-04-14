@@ -555,13 +555,15 @@ class TipDisplay extends React.Component {
     handleFollowUp (e) {
         this.props.onFollowUp(e.currentTarget.dataset.tipId);
     }
-    handleShowMe () {
-        // Cycle through pointers — use index 0 for single, or step through
-        this.props.onPointerClick(0);
+    handleShowMe (e) {
+        const index = Number(e.currentTarget.dataset.pointerIndex) || 0;
+        this.props.onPointerClick(index);
     }
     render () {
         const {tip, tips, onAddToProject, codeExpanded, onToggleCode} = this.props;
-        const hasPointers = tip.pointers && tip.pointers.length > 0;
+        const pointers = tip.pointers || [];
+        const hasPointers = pointers.length > 0;
+        const multiplePointers = pointers.length > 1;
         const hasBlocks = !!tip.blockExample;
         const hasFollowUps = tip.followUps && tip.followUps.length > 0;
 
@@ -598,13 +600,30 @@ class TipDisplay extends React.Component {
                 ) : null}
 
                 {hasPointers ? (
-                    <button
-                        className={styles.showMeButton}
-                        onClick={this.handleShowMe}
-                    >
-                        {'Show me'}
-                        <span className={styles.showMeArrow}>{'\u2192'}</span>
-                    </button>
+                    multiplePointers ? (
+                        <div className={styles.showMeButtonGroup}>
+                            {pointers.map((pointer, i) => (
+                                <button
+                                    className={styles.showMeButton}
+                                    data-pointer-index={i}
+                                    key={i}
+                                    onClick={this.handleShowMe}
+                                >
+                                    {pointer.label}
+                                    <span className={styles.showMeArrow}>{'\u2192'}</span>
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <button
+                            className={styles.showMeButton}
+                            data-pointer-index={0}
+                            onClick={this.handleShowMe}
+                        >
+                            {'Show me'}
+                            <span className={styles.showMeArrow}>{'\u2192'}</span>
+                        </button>
+                    )
                 ) : null}
 
                 {hasBlocks ? (
