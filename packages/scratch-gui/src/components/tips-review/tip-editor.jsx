@@ -350,41 +350,23 @@ class TipEditor extends React.Component {
 
     renderPointerTargetSelect (pointer, index) {
         const isBlockType = !!pointer.blockOpcode;
-        const isUiType = !!pointer.target;
 
         return (
             <div className={styles.editorPointerTarget}>
                 <select
                     className={styles.editorSelect}
-                    value={isBlockType ? 'block' : (isUiType ? 'ui' : 'custom')}
+                    value={isBlockType ? 'block' : 'ui'}
                     onChange={e => {
                         if (e.target.value === 'block') {
                             this.updatePointer(index, 'blockOpcode', '');
-                        } else if (e.target.value === 'ui') {
+                        } else {
                             this.updatePointer(index, 'target', '');
                         }
                     }}
                 >
                     <option value="ui">{'UI Element'}</option>
                     <option value="block">{'Block'}</option>
-                    <option value="custom">{'Custom CSS'}</option>
                 </select>
-
-                {isBlockType || (!isUiType && !pointer.target) ? null : (
-                    <select
-                        className={styles.editorSelect}
-                        value={pointer.target || ''}
-                        onChange={e => this.updatePointer(index, 'target', e.target.value)}
-                    >
-                        <option value="">{'Select target...'}</option>
-                        {uiTargets.map(t => (
-                            <option
-                                key={t.selector}
-                                value={t.selector}
-                            >{t.label}</option>
-                        ))}
-                    </select>
-                )}
 
                 {isBlockType ? (
                     <select
@@ -407,16 +389,21 @@ class TipEditor extends React.Component {
                             </optgroup>
                         ))}
                     </select>
-                ) : null}
-
-                {!isBlockType && !isUiType ? (
-                    <input
-                        className={styles.editorInput}
-                        placeholder="CSS selector"
+                ) : (
+                    <select
+                        className={styles.editorSelect}
                         value={pointer.target || ''}
                         onChange={e => this.updatePointer(index, 'target', e.target.value)}
-                    />
-                ) : null}
+                    >
+                        <option value="">{'Select target...'}</option>
+                        {uiTargets.map(t => (
+                            <option
+                                key={t.selector}
+                                value={t.selector}
+                            >{t.label}</option>
+                        ))}
+                    </select>
+                )}
             </div>
         );
     }

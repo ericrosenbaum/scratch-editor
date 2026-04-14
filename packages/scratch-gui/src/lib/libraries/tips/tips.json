@@ -472,6 +472,12 @@
                     "label": "Click the Sounds tab",
                     "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)",
                     "side": "bottom"
+                },
+                {
+                    "label": "Choose \"record\"",
+                    "target": "[class*=\"new-buttons\"] [class*=\"main-button\"]",
+                    "side": "right",
+                    "preAction": "switchToSoundsTab"
                 }
             ]
         },

@@ -13,9 +13,17 @@ const uiTargets = [
     {label: 'Sprite info panel', selector: '[class*="sprite-info"]'},
     {label: 'Costumes tab', selector: '[class*="tab-list"] [class*="tab"]:nth-child(2)'},
     {label: 'Sounds tab', selector: '[class*="tab-list"] [class*="tab"]:nth-child(3)'},
+    {label: 'Choose a Sound button', selector: '[class*="new-buttons"] [class*="main-button"]'},
+    {label: 'Choose a Costume button', selector: '[class*="new-buttons"] [class*="main-button"]'},
+    {label: 'Choose a Backdrop button', selector: '[class*="new-buttons"] [class*="main-button"]'},
+    {label: 'Motion toolbox category', selector: '.blocklyToolboxCategory#motion'},
+    {label: 'Looks toolbox category', selector: '.blocklyToolboxCategory#looks'},
     {label: 'Sound toolbox category', selector: '.blocklyToolboxCategory#sound'},
-    {label: 'Variables toolbox category', selector: '.blocklyToolboxCategory#variables'},
+    {label: 'Events toolbox category', selector: '.blocklyToolboxCategory#events'},
+    {label: 'Control toolbox category', selector: '.blocklyToolboxCategory#control'},
+    {label: 'Sensing toolbox category', selector: '.blocklyToolboxCategory#sensing'},
     {label: 'Operators toolbox category', selector: '.blocklyToolboxCategory#operators'},
+    {label: 'Variables toolbox category', selector: '.blocklyToolboxCategory#variables'},
     {label: 'My Blocks toolbox category', selector: '.blocklyToolboxCategory#myBlocks'}
 ];
 
