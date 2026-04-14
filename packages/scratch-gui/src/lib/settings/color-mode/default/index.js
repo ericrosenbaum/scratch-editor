@@ -71,8 +71,8 @@ const blockColors = {
     },
     text: '#FFFFFF',
     workspace: '#F9F9F9',
-    toolboxHover: '#4C97FF',
-    toolboxSelected: '#E9EEF2',
+    toolboxHover: '#3FB08A',
+    toolboxSelected: '#D9F1E6',
     toolboxText: '#575E75',
     toolbox: '#FFFFFF',
     flyout: '#F9F9F9',
@@ -93,9 +93,9 @@ const blockColors = {
     // CSS colours: support RGBA
     fieldShadow: 'rgba(255, 255, 255, 0.3)',
     dropDownShadow: 'rgba(0, 0, 0, .3)',
-    numPadBackground: '#547AB2',
-    numPadBorder: '#435F91',
-    numPadActiveBackground: '#435F91',
+    numPadBackground: '#3FB08A',
+    numPadBorder: '#2E8F6E',
+    numPadActiveBackground: '#236F55',
     numPadText: 'white', // Do not use hex here, it cannot be inlined with data-uri SVG
     valueReportBackground: '#FFFFFF',
     valueReportBorder: '#AAAAAA',

@@ -27,6 +27,7 @@
     "build-monorepo": "cross-env-shell ./scripts/build-monorepo.sh",
     "clean": "npm run --workspaces clean",
     "ports": "node scripts/worktree-dev-port.js",
+    "postinstall": "patch-package",
     "prepare": "husky install",
     "refresh-gh-workflow": "ts-node scripts/build-gha-workflows.ts",
     "test": "npm test --workspaces",
@@ -45,6 +46,7 @@
     "globals": "16.5.0",
     "husky": "8.0.3",
     "npm": "10.9.8",
+    "patch-package": "^8.0.1",
     "ts-node": "10.9.2"
   }
 }
