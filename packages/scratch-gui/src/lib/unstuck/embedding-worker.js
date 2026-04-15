@@ -8,14 +8,15 @@
 
 let embedder = null;
 // Each entry: {embedding: Float32Array, tipId: string}
-const queryEmbeddings = [];
+const tipEmbeddings = [];
 
 const TRANSFORMERS_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3';
 
-// EmbeddingGemma requires task-specific prefixes at both index time and query time.
+// EmbeddingGemma requires task-specific query prefix at search time.
+// Document prefixing happens at build time in tip-document.js, so the
+// cached vectors are already in the correct prompt format.
 // See https://huggingface.co/google/embeddinggemma-300m
 const QUERY_PREFIX = 'task: search result | query: ';
-const DOCUMENT_PREFIX = 'title: none | text: ';
 
 // Matryoshka truncation dimension. Must match TARGET_DIM in
 // scripts/generate-tip-embeddings.mjs — query vectors and cached document
@@ -99,9 +100,9 @@ self.onmessage = async function (event) {
             });
         }
     } else if (type === 'load-cached-embeddings') {
-        // Load pre-computed query embeddings from the build-time cache
+        // Load pre-computed tip embeddings from the build-time cache
         try {
-            const cachedQueries = event.data.queries;
+            const cachedDocs = event.data.docs;
             const cachedEmbeddings = event.data.embeddings;
             if (cachedEmbeddings.length > 0 && cachedEmbeddings[0].length !== TARGET_DIM) {
                 throw new Error(
@@ -110,17 +111,17 @@ self.onmessage = async function (event) {
                     ' — regenerate cache with `npm run generate-embeddings`'
                 );
             }
-            console.log('[Embedding Worker] Loading ' + cachedQueries.length + ' cached query embeddings...');
+            console.log('[Embedding Worker] Loading ' + cachedDocs.length + ' cached tip embeddings...');
 
-            queryEmbeddings.length = 0;
-            for (let i = 0; i < cachedQueries.length; i++) {
-                queryEmbeddings.push({
+            tipEmbeddings.length = 0;
+            for (let i = 0; i < cachedDocs.length; i++) {
+                tipEmbeddings.push({
                     embedding: new Float32Array(cachedEmbeddings[i]),
-                    tipId: cachedQueries[i].tipId
+                    tipId: cachedDocs[i].tipId
                 });
             }
 
-            console.log('[Embedding Worker] All ' + cachedQueries.length + ' cached query embeddings loaded');
+            console.log('[Embedding Worker] All ' + cachedDocs.length + ' cached tip embeddings loaded');
             self.postMessage({type: 'tips-ready'});
         } catch (error) {
             console.error('[Embedding Worker] Loading cached embeddings failed: ' + error.message);
@@ -130,33 +131,33 @@ self.onmessage = async function (event) {
             });
         }
     } else if (type === 'embed-tips') {
-        // Fallback: compute query embeddings at runtime if no cache is available
+        // Fallback: compute tip embeddings at runtime if no cache is available.
+        // Doc strings arrive pre-formatted (title: ... | text: ...) from the provider.
         if (!embedder) {
             self.postMessage({type: 'error', message: 'Model not loaded yet'});
             return;
         }
 
         try {
-            const queries = event.data.tips; // array of {id, text, tipId}
-            console.log('[Embedding Worker] Embedding ' + queries.length + ' queries (no cache)...');
+            const docs = event.data.docs; // array of {tipId, text}
+            console.log('[Embedding Worker] Embedding ' + docs.length + ' tip documents (no cache)...');
 
-            queryEmbeddings.length = 0;
-            for (let i = 0; i < queries.length; i++) {
-                const prefixed = DOCUMENT_PREFIX + queries[i].text;
-                const output = await embedder(prefixed, {pooling: 'mean', normalize: true});
-                queryEmbeddings.push({
+            tipEmbeddings.length = 0;
+            for (let i = 0; i < docs.length; i++) {
+                const output = await embedder(docs[i].text, {pooling: 'mean', normalize: true});
+                tipEmbeddings.push({
                     embedding: truncateAndRenormalize(output.data, TARGET_DIM),
-                    tipId: queries[i].tipId
+                    tipId: docs[i].tipId
                 });
             }
 
-            console.log('[Embedding Worker] All ' + queries.length + ' queries embedded');
+            console.log('[Embedding Worker] All ' + docs.length + ' tip documents embedded');
             self.postMessage({type: 'tips-ready'});
         } catch (error) {
-            console.error('[Embedding Worker] Query embedding failed: ' + error.message);
+            console.error('[Embedding Worker] Tip embedding failed: ' + error.message);
             self.postMessage({
                 type: 'error',
-                message: 'Query embedding failed: ' + error.message
+                message: 'Tip embedding failed: ' + error.message
             });
         }
     } else if (type === 'embed-query') {
@@ -167,30 +168,20 @@ self.onmessage = async function (event) {
 
         try {
             const query = event.data.query;
-            const contextScores = event.data.contextScores;
             const queryId = event.data.queryId;
 
             const prefixed = QUERY_PREFIX + query;
             const output = await embedder(prefixed, {pooling: 'mean', normalize: true});
             const queryEmbedding = truncateAndRenormalize(output.data, TARGET_DIM);
 
-            // Find best-matching query per tip (max similarity, not average)
-            const bestScores = {};
-            for (let i = 0; i < queryEmbeddings.length; i++) {
-                const entry = queryEmbeddings[i];
-                const similarity = cosineSimilarity(queryEmbedding, entry.embedding);
-                if (!(entry.tipId in bestScores) || similarity > bestScores[entry.tipId]) {
-                    bestScores[entry.tipId] = similarity;
-                }
-            }
-
+            // One embedding per tip → direct cosine similarity, no aggregation needed.
             const results = [];
-            var tipIds = Object.keys(bestScores);
-            for (var j = 0; j < tipIds.length; j++) {
-                var tid = tipIds[j];
-                var embeddingScore = bestScores[tid] * 10;
-                var ctxScore = contextScores[tid] || 0;
-                results.push({tipId: tid, score: embeddingScore + ctxScore});
+            for (let i = 0; i < tipEmbeddings.length; i++) {
+                const entry = tipEmbeddings[i];
+                results.push({
+                    tipId: entry.tipId,
+                    score: cosineSimilarity(queryEmbedding, entry.embedding)
+                });
             }
 
             results.sort(function (a, b) { return b.score - a.score; });

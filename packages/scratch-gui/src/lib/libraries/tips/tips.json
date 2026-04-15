@@ -2,21 +2,13 @@
     "tips": {
         "nothing-happens": {
             "id": "nothing-happens",
-            "followUpLabel": "Start your code",
+            "title": "Start your code",
             "text": "Your code needs a \"hat block\" on top to tell it when to start. Try \"when green flag clicked.\"",
             "tags": [
                 "events",
                 "start",
                 "beginner",
                 "hat"
-            ],
-            "queries": [
-                "nothing happens when I click the green flag",
-                "my code is not working",
-                "why won't my project run",
-                "I clicked the blocks but nothing happened",
-                "my project is broken it doesn't do anything",
-                "how do I make my code start"
             ],
             "followUps": [
                 "green-flag",
@@ -100,19 +92,12 @@
         },
         "green-flag": {
             "id": "green-flag",
-            "followUpLabel": "Run your project",
+            "title": "Run your project",
             "text": "Click the green flag above the stage to run your project!",
             "tags": [
                 "events",
                 "start",
                 "beginner"
-            ],
-            "queries": [
-                "how do I start my project",
-                "where is the play button",
-                "how do I run my code",
-                "where do I click to start",
-                "how do I begin my project when I click the flag"
             ],
             "followUps": [
                 "nothing-happens",
@@ -128,19 +113,12 @@
         },
         "move-sprite": {
             "id": "move-sprite",
-            "followUpLabel": "Move a sprite",
+            "title": "Move a sprite",
             "text": "Use \"move 10 steps\" from the Motion category to make your sprite move!",
             "tags": [
                 "motion",
                 "movement",
                 "beginner"
-            ],
-            "queries": [
-                "how do I make my sprite move",
-                "my sprite is just sitting there",
-                "I want my character to walk",
-                "how do I move the cat",
-                "make sprite go forward"
             ],
             "followUps": [
                 "move-with-keys",
@@ -158,20 +136,13 @@
         },
         "move-with-keys": {
             "id": "move-with-keys",
-            "followUpLabel": "Keyboard controls",
+            "title": "Keyboard controls",
             "text": "Use \"when key pressed\" with a \"move\" block to control your sprite with the keyboard",
             "tags": [
                 "motion",
                 "events",
                 "keyboard",
                 "beginner"
-            ],
-            "queries": [
-                "how do I use the arrow keys to move",
-                "I want to control my sprite with the keyboard",
-                "how do I make wasd controls",
-                "my sprite won't move when I press keys",
-                "how to add keyboard controls"
             ],
             "followUps": [
                 "move-sprite",
@@ -188,17 +159,12 @@
         },
         "change-xy-position": {
             "id": "change-xy-position",
-            "followUpLabel": "Change x",
+            "title": "Change x",
             "text": "Use \"change x by\" for left and right movement",
             "tags": [
                 "motion",
                 "coordinates",
                 "position"
-            ],
-            "queries": [
-                "how do I move my sprite left and right",
-                "what is x and y",
-                "I want movement with arrow keys"
             ],
             "followUps": [
                 "move-with-keys",
@@ -215,18 +181,11 @@
         },
         "go-to-position": {
             "id": "go-to-position",
-            "followUpLabel": "Go to a spot",
+            "title": "Go to a spot",
             "text": "Use \"go to x y\" to put your sprite in a specific place",
             "tags": [
                 "motion",
                 "position"
-            ],
-            "queries": [
-                "how do I put my sprite in a specific spot",
-                "I want my sprite to go to the center",
-                "how do I set the position of my sprite",
-                "go to",
-                "how do I move my sprite to a specific location on the stage"
             ],
             "followUps": [
                 "change-xy-position",
@@ -243,17 +202,11 @@
         },
         "glide-to-position": {
             "id": "glide-to-position",
-            "followUpLabel": "Smooth movement",
+            "title": "Smooth movement",
             "text": "Use \"glide\" instead of \"go to\" for smooth, animated movement!",
             "tags": [
                 "motion",
                 "animation"
-            ],
-            "queries": [
-                "how do I make my sprite slide smoothly",
-                "I want my sprite to glide across the screen",
-                "my sprite teleports instead of moving slowly",
-                "how do I make my sprite animate slowly to a new spot"
             ],
             "followUps": [
                 "move-sprite",
@@ -406,20 +359,12 @@
         },
         "add-sound": {
             "id": "add-sound",
-            "followUpLabel": "Add a sound",
+            "title": "Add a sound",
             "text": "Go to the Sounds tab to add sounds, then use the \"play sound\" block",
             "tags": [
                 "sound",
                 "audio",
                 "beginner"
-            ],
-            "queries": [
-                "how do I add a sound to my project",
-                "I want my sprite to make noise",
-                "where are the sound effects",
-                "how do I play music",
-                "I want to add a song",
-                "I want my sprite to make a noise I can hear"
             ],
             "followUps": [
                 "record-sound",
@@ -440,18 +385,11 @@
         },
         "record-sound": {
             "id": "record-sound",
-            "followUpLabel": "Record a sound",
+            "title": "Record a sound",
             "text": "In the Sounds tab, click the microphone button to record your own sound!",
             "tags": [
                 "sound",
                 "recording"
-            ],
-            "queries": [
-                "how do I record my own sound",
-                "I want to use my voice in my project",
-                "where is the microphone button",
-                "can I record audio",
-                "own sound"
             ],
             "followUps": [
                 "add-sound",
@@ -470,17 +408,10 @@
         },
         "play-sound-until-done": {
             "id": "play-sound-until-done",
-            "followUpLabel": "Wait for sound",
+            "title": "Wait for sound",
             "text": "\"Play sound until done\" waits for the sound to finish before continuing to the next block.",
             "tags": [
                 "sound"
-            ],
-            "queries": [
-                "my sounds are overlapping each other",
-                "how do I wait for a sound to finish",
-                "the sound keeps restarting",
-                "until done",
-                "how do I stop sounds from overlapping when I play them"
             ],
             "followUps": [
                 "add-sound",
@@ -593,20 +524,12 @@
         },
         "say-think": {
             "id": "say-think",
-            "followUpLabel": "Speech bubbles",
+            "title": "Speech bubbles",
             "text": "Use the \"say\" or \"think\" blocks to make a speech bubble appear",
             "tags": [
                 "looks",
                 "speech",
                 "beginner"
-            ],
-            "queries": [
-                "how do I make my sprite talk",
-                "I want a speech bubble",
-                "how do I show text on the screen",
-                "I want my character to say something",
-                "how to make the sprite think",
-                "how do I make my sprite speak a message"
             ],
             "followUps": [
                 "change-costume",
@@ -739,20 +662,13 @@
         },
         "change-costume": {
             "id": "change-costume",
-            "followUpLabel": "Change costume",
+            "title": "Change costume",
             "text": "Use \"next costume\" to change how your sprite looks",
             "tags": [
                 "looks",
                 "costumes",
                 "animation",
                 "beginner"
-            ],
-            "queries": [
-                "how do I change what my sprite looks like",
-                "I want to switch between different outfits",
-                "how do I use costumes",
-                "my sprite needs a different picture",
-                "how do I change the look or appearance or outfit of my sprite"
             ],
             "followUps": [
                 "add-costume",
@@ -770,19 +686,11 @@
         },
         "add-costume": {
             "id": "add-costume",
-            "followUpLabel": "Add costumes",
+            "title": "Add costumes",
             "text": "Go to the Costumes tab, then click the cat button at the bottom to add a new costume",
             "tags": [
                 "costumes",
                 "drawing"
-            ],
-            "queries": [
-                "how do I add more costumes",
-                "I want to draw my own costume",
-                "where do I add a new picture for my sprite",
-                "add costume",
-                "new costume",
-                "how do I paint or edit a new costume for my sprite"
             ],
             "followUps": [
                 "change-costume",
@@ -801,21 +709,13 @@
         },
         "animate-costume": {
             "id": "animate-costume",
-            "followUpLabel": "Animate",
+            "title": "Animate",
             "text": "Put \"next costume\" inside a \"forever\" loop with a \"wait\" block to make a simple animation!",
             "tags": [
                 "looks",
                 "costumes",
                 "animation",
                 "loops"
-            ],
-            "queries": [
-                "how do I animate my sprite",
-                "I want my sprite to look like it's walking",
-                "how do I make a flipbook animation",
-                "my sprite should change costumes automatically",
-                "walk cycle",
-                "how do I flip through costume frames to make animation"
             ],
             "followUps": [
                 "change-costume",
@@ -832,20 +732,12 @@
         },
         "forever-loop": {
             "id": "forever-loop",
-            "followUpLabel": "Repeat forever",
+            "title": "Repeat forever",
             "text": "Use a \"forever\" block from Control to make something repeat over and over",
             "tags": [
                 "control",
                 "loops",
                 "beginner"
-            ],
-            "queries": [
-                "how do I make something repeat forever",
-                "I want my sprite to keep moving",
-                "how do I loop my code",
-                "my code only runs once",
-                "I want it to keep going and not stop",
-                "how do I make something happen again and again continuously always"
             ],
             "followUps": [
                 "repeat-loop",
@@ -863,18 +755,11 @@
         },
         "repeat-loop": {
             "id": "repeat-loop",
-            "followUpLabel": "Repeat N times",
+            "title": "Repeat N times",
             "text": "Use \"repeat\" to do something a specific number of times!",
             "tags": [
                 "control",
                 "loops"
-            ],
-            "queries": [
-                "how do I repeat something a certain number of times",
-                "I want to do something 10 times",
-                "how do I make a loop that stops",
-                "number of times",
-                "how do I count how many times something repeats"
             ],
             "followUps": [
                 "forever-loop",
@@ -891,21 +776,12 @@
         },
         "too-fast": {
             "id": "too-fast",
-            "followUpLabel": "Slow it down",
-            "text": "Add a \"wait 1 seconds\" block inside your loop to slow things down!",
+            "title": "Slow it down",
+            "text": "Add a \"wait\" block inside your loop to slow things down",
             "tags": [
                 "control",
                 "timing",
                 "beginner"
-            ],
-            "queries": [
-                "everything happens too fast",
-                "my sprite moves too quickly",
-                "how do I slow things down",
-                "it goes so fast I can't see anything",
-                "how do I add a pause",
-                "too quick",
-                "my sprite moves at instant speed and I want to slow it down"
             ],
             "followUps": [
                 "forever-loop",
@@ -913,31 +789,115 @@
                 "wait-vs-no-wait",
                 "understand-seconds"
             ],
-            "blockExample": "waitBlock",
+            "blockExample": "captured_too-fast_1776261807097",
             "pointers": [
                 {
                     "label": "Drag \"wait 1 seconds\" into your code",
                     "blockOpcode": "control_wait",
                     "category": "control"
                 }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_capture_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_capture_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_capture_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_capture_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_capture_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_3",
+                    "opcode": "motion_movesteps",
+                    "next": "unstuck_capture_4",
+                    "parent": "unstuck_capture_2",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_capture_6",
+                            "shadow": "unstuck_capture_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_4",
+                    "opcode": "control_wait",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {
+                        "DURATION": {
+                            "name": "DURATION",
+                            "block": "unstuck_capture_5",
+                            "shadow": "unstuck_capture_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_5",
+                    "opcode": "math_positive_number",
+                    "next": null,
+                    "parent": "unstuck_capture_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_6",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "use-variables": {
             "id": "use-variables",
-            "followUpLabel": "Make a variable",
+            "title": "Make a variable",
             "text": "Click \"Make a Variable\" in the Variables category to keep track of things like score!",
             "tags": [
                 "variables",
                 "data",
                 "beginner"
-            ],
-            "queries": [
-                "how do I keep score",
-                "I want to count something",
-                "how do I make a score variable",
-                "how do I track lives or health",
-                "I need to save a number",
-                "how do I remember or store numbers like score and points"
             ],
             "followUps": [
                 "change-variable",
@@ -948,23 +908,66 @@
                     "label": "Variables are here",
                     "target": ".blocklyToolboxCategory#variables"
                 }
+            ],
+            "blockExample": "captured_use-variables_1776261944253",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_capture_1",
+                    "opcode": "event_whenthisspriteclicked",
+                    "next": "unstuck_capture_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_capture_2",
+                    "opcode": "data_changevariableby",
+                    "next": null,
+                    "parent": "unstuck_capture_1",
+                    "inputs": {
+                        "VALUE": {
+                            "name": "VALUE",
+                            "block": "unstuck_capture_3",
+                            "shadow": "unstuck_capture_3"
+                        }
+                    },
+                    "fields": {
+                        "VARIABLE": {
+                            "name": "VARIABLE",
+                            "value": "score"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_3",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "change-variable": {
             "id": "change-variable",
-            "followUpLabel": "Update a variable",
+            "title": "Update a variable",
             "text": "Use \"set my variable to 0\" at the start, then \"change my variable by 1\" to update it!",
             "tags": [
                 "variables",
                 "data"
-            ],
-            "queries": [
-                "how do I add 1 to my score",
-                "how do I change my variable",
-                "my score won't go up",
-                "how do I reset the score to zero",
-                "change variable",
-                "how do I increase or decrease or subtract from a variable"
             ],
             "followUps": [
                 "use-variables",
@@ -979,18 +982,12 @@
         },
         "use-lists": {
             "id": "use-lists",
-            "followUpLabel": "Use lists",
+            "title": "Use lists",
             "text": "Click \"Make a List\" in Variables to store multiple things, like a collection of names!",
             "tags": [
                 "variables",
                 "lists",
                 "data"
-            ],
-            "queries": [
-                "how do I store a bunch of things",
-                "I want to make a list of names",
-                "how do I save multiple items",
-                "how do I make an array or inventory of items"
             ],
             "followUps": [
                 "use-variables"
@@ -1004,20 +1001,12 @@
         },
         "detect-collision": {
             "id": "detect-collision",
-            "followUpLabel": "Detect collisions",
+            "title": "Detect collisions",
             "text": "Use \"if touching\" from Sensing inside a forever loop to detect when sprites bump into each other!",
             "tags": [
                 "sensing",
                 "collision",
                 "game"
-            ],
-            "queries": [
-                "how do I tell when sprites touch each other",
-                "I want something to happen when my sprite hits another sprite",
-                "how do I detect collisions",
-                "my sprite should catch things",
-                "how do I know if two sprites are touching",
-                "how do I tell when two sprites hit or collide or overlap"
             ],
             "followUps": [
                 "forever-loop",
@@ -1035,21 +1024,12 @@
         },
         "broadcast-message": {
             "id": "broadcast-message",
-            "followUpLabel": "Send messages",
+            "title": "Send messages",
             "text": "Use \"broadcast\" and \"when I receive\" to send messages between sprites!",
             "tags": [
                 "events",
                 "broadcast",
                 "communication"
-            ],
-            "queries": [
-                "how do I make one sprite tell another sprite to do something",
-                "how do sprites communicate",
-                "I want to send a message between sprites",
-                "how does broadcast work",
-                "between sprites",
-                "other sprite",
-                "how do I send a signal from one sprite to another"
             ],
             "followUps": [
                 "add-sprite",
@@ -1067,21 +1047,11 @@
         },
         "add-sprite": {
             "id": "add-sprite",
-            "followUpLabel": "Add a sprite",
+            "title": "Add a sprite",
             "text": "Click the cat button below the stage to add a new sprite to your project!",
             "tags": [
                 "sprites",
                 "beginner"
-            ],
-            "queries": [
-                "how do I add another character",
-                "I want more sprites in my project",
-                "where do I get a new sprite",
-                "how do I add a second sprite",
-                "add sprite",
-                "new sprite",
-                "another sprite",
-                "more sprites"
             ],
             "followUps": [
                 "broadcast-message",
@@ -1096,21 +1066,13 @@
         },
         "change-backdrop": {
             "id": "change-backdrop",
-            "followUpLabel": "Change backdrop",
+            "title": "Change backdrop",
             "text": "Click the picture button below the stage to add a backdrop, then use \"switch backdrop\"!",
             "tags": [
                 "looks",
                 "backdrop",
                 "stage",
                 "beginner"
-            ],
-            "queries": [
-                "how do I change the background",
-                "I want a different scene",
-                "how do I add a backdrop",
-                "the white background is boring",
-                "how do I switch scenes",
-                "how do I change the scenery or level of my project"
             ],
             "followUps": [
                 "add-sprite",
@@ -1125,21 +1087,11 @@
         },
         "make-game": {
             "id": "make-game",
-            "followUpLabel": "Make a game",
+            "title": "Make a game",
             "text": "A simple game needs: keyboard controls, something to collect or avoid, and a score variable!",
             "tags": [
                 "game",
                 "project-ideas"
-            ],
-            "queries": [
-                "how do I make a game",
-                "I want to build a game",
-                "what do I need for a game",
-                "how do I make a simple game",
-                "I want to make something you can play",
-                "make a game",
-                "create game",
-                "build game"
             ],
             "followUps": [
                 "move-with-keys",
@@ -1156,19 +1108,12 @@
         },
         "clone-sprite": {
             "id": "clone-sprite",
-            "followUpLabel": "Clone sprites",
+            "title": "Clone sprites",
             "text": "Use \"create clone of myself\" to make copies of a sprite — great for projectiles or enemies!",
             "tags": [
                 "control",
                 "clones",
                 "advanced"
-            ],
-            "queries": [
-                "how do I make copies of my sprite",
-                "I want lots of the same sprite",
-                "how do I spawn enemies",
-                "how do clones work",
-                "how do I make many copies like enemies or projectiles or bullets for a game"
             ],
             "followUps": [
                 "make-game",
@@ -1187,22 +1132,11 @@
         },
         "add-extension": {
             "id": "add-extension",
-            "followUpLabel": "Add extensions",
+            "title": "Add extensions",
             "text": "Click the blue \"Add Extension\" button at the bottom-left to get extra blocks like Music or Pen!",
             "tags": [
                 "extensions",
                 "beginner"
-            ],
-            "queries": [
-                "how do I get more blocks",
-                "where are the extra blocks",
-                "I want to use pen or music blocks",
-                "how do I add an extension",
-                "I need more types of blocks",
-                "extra blocks",
-                "more blocks",
-                "text to speech",
-                "how do I add the pen extension so I can draw with my sprite"
             ],
             "followUps": [
                 "pen-extension",
@@ -1218,18 +1152,11 @@
         },
         "no-visible-effect": {
             "id": "no-visible-effect",
-            "followUpLabel": "No visible effect",
+            "title": "No visible effect",
             "text": "Some blocks don't have a visible effect on their own — try connecting them to other blocks in a stack!",
             "tags": [
                 "debugging",
                 "beginner"
-            ],
-            "queries": [
-                "I clicked a block but nothing happened",
-                "the block doesn't seem to do anything",
-                "why doesn't this block work",
-                "I tried running my code but I can't see a difference",
-                "I click my blocks but nothing seems to happen and my project looks broken"
             ],
             "followUps": [
                 "nothing-happens",
@@ -1239,20 +1166,11 @@
         },
         "block-already-there": {
             "id": "block-already-there",
-            "followUpLabel": "Already there",
+            "title": "Already there",
             "text": "If a block doesn't seem to do anything, the sprite might already be where the block is telling it to go — try changing the number first!",
             "tags": [
                 "debugging",
                 "beginner"
-            ],
-            "queries": [
-                "my block doesn't do anything",
-                "I used a block but nothing changed",
-                "the sprite is already in that position",
-                "why does this block not seem to work",
-                "doesn't do",
-                "no change",
-                "I added a block but the same thing keeps happening"
             ],
             "followUps": [
                 "no-visible-effect",
@@ -1261,20 +1179,11 @@
         },
         "sound-volume-zero": {
             "id": "sound-volume-zero",
-            "followUpLabel": "Fix volume",
+            "title": "Fix volume",
             "text": "Can't hear anything? Check if the volume was set to 0 — use \"set volume to 100%\" to fix it!",
             "tags": [
                 "sound",
                 "debugging"
-            ],
-            "queries": [
-                "I can't hear any sound",
-                "my sound isn't playing",
-                "why is there no audio",
-                "the volume is too quiet",
-                "my project is silent",
-                "no sound",
-                "my sound is muted and I cannot hear it"
             ],
             "followUps": [
                 "add-sound",
@@ -1289,21 +1198,12 @@
         },
         "sprite-is-hidden": {
             "id": "sprite-is-hidden",
-            "followUpLabel": "Unhide sprite",
+            "title": "Unhide sprite",
             "text": "Can't see your sprite? It might be hidden! Click the \"show\" eye icon in the sprite info area, or use the \"show\" block.",
             "tags": [
                 "looks",
                 "debugging",
                 "beginner"
-            ],
-            "queries": [
-                "my sprite disappeared",
-                "I can't see my sprite",
-                "where did my sprite go",
-                "my character is invisible",
-                "my sprite is hidden and I can't find it",
-                "can't see",
-                "my sprite is gone or missing from the stage"
             ],
             "followUps": [
                 "sprite-ghost-effect",
@@ -1319,19 +1219,12 @@
         },
         "sprite-ghost-effect": {
             "id": "sprite-ghost-effect",
-            "followUpLabel": "Fix ghost effect",
+            "title": "Fix ghost effect",
             "text": "If your sprite is see-through or invisible, the ghost effect might be on — use \"set ghost effect to 0\" to make it solid again!",
             "tags": [
                 "looks",
                 "debugging",
                 "effects"
-            ],
-            "queries": [
-                "my sprite is see-through",
-                "my sprite looks faded or transparent",
-                "how do I make my sprite solid again",
-                "the ghost effect is stuck on",
-                "see through"
             ],
             "followUps": [
                 "sprite-is-hidden",
@@ -1348,19 +1241,11 @@
         },
         "sprite-too-small": {
             "id": "sprite-too-small",
-            "followUpLabel": "Fix size",
+            "title": "Fix size",
             "text": "Your sprite might be too small to see! Use \"set size to 100%\" to reset it.",
             "tags": [
                 "looks",
                 "debugging"
-            ],
-            "queries": [
-                "my sprite is too tiny to see",
-                "my sprite shrunk and I can't find it",
-                "how do I make my sprite bigger again",
-                "my sprite got really small",
-                "can't see",
-                "my sprite shrank and disappeared because it is too small"
             ],
             "followUps": [
                 "sprite-is-hidden",
@@ -1377,21 +1262,11 @@
         },
         "sprite-off-stage": {
             "id": "sprite-off-stage",
-            "followUpLabel": "Find sprite",
+            "title": "Find sprite",
             "text": "Sprite missing? It might have moved off the edge of the stage! Use \"go to x: 0 y: 0\" to bring it back to the center.",
             "tags": [
                 "motion",
                 "debugging"
-            ],
-            "queries": [
-                "my sprite went off the screen",
-                "I can't find my sprite it moved away",
-                "my sprite is gone off the edge",
-                "how do I bring my sprite back to the middle",
-                "off screen",
-                "off stage",
-                "can't find",
-                "my sprite disappeared and I cannot find where it went"
             ],
             "followUps": [
                 "sprite-is-hidden",
@@ -1407,18 +1282,11 @@
         },
         "stop-project": {
             "id": "stop-project",
-            "followUpLabel": "Stop everything",
+            "title": "Stop everything",
             "text": "Click the red stop sign to stop all running scripts — useful when things are going wrong!",
             "tags": [
                 "control",
                 "beginner"
-            ],
-            "queries": [
-                "how do I stop my project",
-                "everything is going crazy how do I stop it",
-                "where is the stop button",
-                "my project won't stop running",
-                "how do I end or halt or freeze my project when it is stuck"
             ],
             "followUps": [
                 "green-flag",
@@ -1433,19 +1301,11 @@
         },
         "debug-with-say": {
             "id": "debug-with-say",
-            "followUpLabel": "Debug with say",
+            "title": "Debug with say",
             "text": "Not sure what your code is doing? Add a \"say\" block to show values while your code runs — it's like X-ray vision for your code!",
             "tags": [
                 "debugging",
                 "advanced"
-            ],
-            "queries": [
-                "how do I figure out what's wrong with my code",
-                "I don't know why my code isn't working",
-                "how do I test what a variable equals",
-                "how do I debug my project",
-                "figure out",
-                "how do I check a value to troubleshoot what is wrong"
             ],
             "followUps": [
                 "say-think",
@@ -1461,23 +1321,12 @@
         },
         "wrong-sprite-selected": {
             "id": "wrong-sprite-selected",
-            "followUpLabel": "Check which sprite",
+            "title": "Check which sprite",
             "text": "Code not running? Make sure you added it to the right sprite — click the sprite you want in the sprite pane, then check its code!",
             "tags": [
                 "debugging",
                 "sprites",
                 "beginner"
-            ],
-            "queries": [
-                "my code is on the wrong sprite",
-                "I put the code on the wrong character",
-                "why is the other sprite doing it instead",
-                "how do I check which sprite has the code",
-                "my code runs but the wrong sprite moves",
-                "wrong sprite",
-                "not working",
-                "different sprite",
-                "which sprite"
             ],
             "followUps": [
                 "where-did-blocks-go",
@@ -1492,20 +1341,11 @@
         },
         "touching-wrong-color": {
             "id": "touching-wrong-color",
-            "followUpLabel": "Fix color detection",
+            "title": "Fix color detection",
             "text": "If \"touching color\" isn't working, make sure you picked the exact right color — use the eyedropper tool on the color square to sample it from the stage!",
             "tags": [
                 "debugging",
                 "sensing"
-            ],
-            "queries": [
-                "touching color isn't working",
-                "my color detection doesn't detect anything",
-                "the sprite doesn't notice the color",
-                "how do I pick the right color",
-                "touching color",
-                "wrong color",
-                "not detecting"
             ],
             "followUps": [
                 "detect-collision",
@@ -1521,22 +1361,12 @@
         },
         "wait-vs-no-wait": {
             "id": "wait-vs-no-wait",
-            "followUpLabel": "Add a wait",
+            "title": "Add a wait",
             "text": "If things happen too fast to see, try adding \"wait\" blocks between actions — even \"wait 0.1 seconds\" can help!",
             "tags": [
                 "debugging",
                 "control",
                 "timing"
-            ],
-            "queries": [
-                "things happen so fast I can't see them",
-                "my say block flashes and disappears",
-                "everything happens instantly",
-                "I need things to go slower",
-                "how do I add a delay between blocks",
-                "too fast",
-                "can't see",
-                "my sprite does things in an instant flash and I want each quick step to blink"
             ],
             "followUps": [
                 "too-fast",
@@ -1552,21 +1382,12 @@
         },
         "where-did-blocks-go": {
             "id": "where-did-blocks-go",
-            "followUpLabel": "Find your blocks",
+            "title": "Find your blocks",
             "text": "Each sprite has its own code! Click on a sprite in the sprite pane to see its blocks.",
             "tags": [
                 "sprites",
                 "beginner",
                 "meta"
-            ],
-            "queries": [
-                "where did my blocks go",
-                "my code disappeared",
-                "I can't find my code anymore",
-                "all my blocks are gone",
-                "I lost my code",
-                "other sprite",
-                "my blocks are missing from the workspace"
             ],
             "followUps": [
                 "sprite-has-own-code",
@@ -1581,21 +1402,12 @@
         },
         "sprite-has-own-code": {
             "id": "sprite-has-own-code",
-            "followUpLabel": "Separate code",
+            "title": "Separate code",
             "text": "Remember, each sprite has its own separate code, costumes, and sounds — check you're editing the right sprite!",
             "tags": [
                 "sprites",
                 "meta",
                 "beginner"
-            ],
-            "queries": [
-                "does each sprite have its own code",
-                "why can't my sprites share code",
-                "I added code but it's not on my other sprite",
-                "wrong sprite",
-                "other sprite",
-                "code disappeared",
-                "sprite code"
             ],
             "followUps": [
                 "where-did-blocks-go",
@@ -1604,20 +1416,12 @@
         },
         "blocks-run-in-order": {
             "id": "blocks-run-in-order",
-            "followUpLabel": "Block order",
+            "title": "Block order",
             "text": "Blocks in a stack run one at a time, from top to bottom — the order matters!",
             "tags": [
                 "control",
                 "beginner",
                 "meta"
-            ],
-            "queries": [
-                "do blocks run in order",
-                "which block runs first",
-                "does order matter in my code",
-                "why does it do things one at a time",
-                "which one",
-                "what is the sequence of when blocks run from top to bottom"
             ],
             "followUps": [
                 "two-stacks-same-time",
@@ -1626,21 +1430,12 @@
         },
         "two-stacks-same-time": {
             "id": "two-stacks-same-time",
-            "followUpLabel": "Do two things at once",
+            "title": "Do two things at once",
             "text": "You can run two stacks at the same time! Use two \"when green flag clicked\" blocks to do things in parallel.",
             "tags": [
                 "events",
                 "control",
                 "meta"
-            ],
-            "queries": [
-                "how do I do two things at the same time",
-                "I want my sprite to move and talk at once",
-                "can I run two scripts together",
-                "how do I make things happen in parallel",
-                "same time",
-                "two things",
-                "how do I run both scripts simultaneously at the same time"
             ],
             "followUps": [
                 "blocks-run-in-order",
@@ -1657,22 +1452,12 @@
         },
         "if-not-forever": {
             "id": "if-not-forever",
-            "followUpLabel": "Keep checking",
+            "title": "Keep checking",
             "text": "\"If\" checks only once! Wrap it inside a \"forever\" loop to keep checking over and over.",
             "tags": [
                 "control",
                 "beginner",
                 "meta"
-            ],
-            "queries": [
-                "my if block only works once",
-                "why doesn't my if block keep checking",
-                "the if block runs but then stops",
-                "I need my if to keep checking over and over",
-                "my collision detection only works the first time",
-                "only once",
-                "not working",
-                "how do I check a condition that keeps running continuously"
             ],
             "followUps": [
                 "forever-loop",
@@ -1689,20 +1474,12 @@
         },
         "deleting-sprite-deletes-code": {
             "id": "deleting-sprite-deletes-code",
-            "followUpLabel": "Don't lose code",
+            "title": "Don't lose code",
             "text": "Careful — deleting a sprite also deletes all the code, costumes, and sounds inside it!",
             "tags": [
                 "sprites",
                 "meta",
                 "beginner"
-            ],
-            "queries": [
-                "I deleted a sprite and lost all my code",
-                "can I undo deleting a sprite",
-                "all my code is gone after I deleted the sprite",
-                "I accidentally removed a sprite",
-                "code gone",
-                "I deleted a sprite and now its code is removed and disappeared"
             ],
             "followUps": [
                 "sprite-has-own-code",
@@ -1711,18 +1488,11 @@
         },
         "drag-blocks-to-workspace": {
             "id": "drag-blocks-to-workspace",
-            "followUpLabel": "Start coding",
+            "title": "Start coding",
             "text": "Drag blocks from the block palette on the left into the workspace to start coding!",
             "tags": [
                 "beginner",
                 "meta"
-            ],
-            "queries": [
-                "how do I start coding",
-                "what do I do first",
-                "how do I use the blocks",
-                "where do I put the blocks",
-                "I don't know how to begin"
             ],
             "followUps": [
                 "click-block-to-try",
@@ -1738,17 +1508,11 @@
         },
         "click-block-to-try": {
             "id": "click-block-to-try",
-            "followUpLabel": "Try a block",
+            "title": "Try a block",
             "text": "You can click on any block in the workspace to try it! Click a whole stack to run all of them.",
             "tags": [
                 "beginner",
                 "meta"
-            ],
-            "queries": [
-                "can I click a block to see what it does",
-                "how do I test a single block",
-                "how do I try out a block",
-                "does it do"
             ],
             "followUps": [
                 "drag-blocks-to-workspace",
@@ -1757,20 +1521,12 @@
         },
         "remove-block-from-stack": {
             "id": "remove-block-from-stack",
-            "followUpLabel": "Remove a block",
+            "title": "Remove a block",
             "text": "To remove a block from the middle of a stack, drag it out to the side — the blocks above and below will reconnect!",
             "tags": [
                 "beginner",
                 "meta",
                 "editing"
-            ],
-            "queries": [
-                "how do I delete a block from the middle",
-                "how do I remove a block without breaking my code",
-                "I want to take out one block from my stack",
-                "how do I disconnect a block",
-                "get rid",
-                "take out"
             ],
             "followUps": [
                 "right-click-duplicate",
@@ -1779,20 +1535,12 @@
         },
         "add-event-block": {
             "id": "add-event-block",
-            "followUpLabel": "Add a hat block",
+            "title": "Add a hat block",
             "text": "Every script needs a \"hat block\" (the rounded ones) on top to know when to start running.",
             "tags": [
                 "events",
                 "beginner",
                 "meta"
-            ],
-            "queries": [
-                "what is a hat block",
-                "my code doesn't have a starting block",
-                "how do I make my code run automatically",
-                "I need a when block on top",
-                "what goes at the top of my code",
-                "what event or trigger block do I need to begin my code"
             ],
             "followUps": [
                 "nothing-happens",
@@ -1808,21 +1556,12 @@
         },
         "batched-updates": {
             "id": "batched-updates",
-            "followUpLabel": "Why no effect?",
+            "title": "Why no effect?",
             "text": "Blocks that undo each other (like \"turn 15\" then \"turn -15\") happen so fast you won't see anything — add a \"wait\" block between them!",
             "tags": [
                 "motion",
                 "control",
                 "meta"
-            ],
-            "queries": [
-                "I put turn and turn back but nothing happens",
-                "my blocks cancel each other out",
-                "the sprite doesn't seem to move at all",
-                "blocks happen too fast to see",
-                "no effect",
-                "can't see",
-                "my changes all happen in an instant and I cannot see them one by one"
             ],
             "followUps": [
                 "wait-vs-no-wait",
@@ -1838,20 +1577,12 @@
         },
         "negative-numbers": {
             "id": "negative-numbers",
-            "followUpLabel": "Go backward",
+            "title": "Go backward",
             "text": "Use a minus sign (-) before a number to go backward! For example, \"move -10 steps\" makes your sprite go the other way.",
             "tags": [
                 "motion",
                 "math",
                 "beginner"
-            ],
-            "queries": [
-                "how do I make my sprite go backwards",
-                "I want my sprite to move the other way",
-                "how do I use negative numbers",
-                "can I move left instead of right",
-                "other way",
-                "how do I move in reverse or the opposite direction or back"
             ],
             "followUps": [
                 "move-sprite",
@@ -1860,20 +1591,12 @@
         },
         "decimal-numbers": {
             "id": "decimal-numbers",
-            "followUpLabel": "Use decimals",
+            "title": "Use decimals",
             "text": "You can use decimal numbers like 0.5! Try \"wait 0.5 seconds\" for a shorter pause, or \"move 0.5 steps\" for tiny movements.",
             "tags": [
                 "math",
                 "beginner",
                 "control"
-            ],
-            "queries": [
-                "can I use decimal numbers like 0.5",
-                "how do I make a really short wait",
-                "I want to move less than 1 step",
-                "small number",
-                "less than 1",
-                "how do I use a point or half or fraction in my numbers"
             ],
             "followUps": [
                 "negative-numbers",
@@ -1882,19 +1605,12 @@
         },
         "greater-less-than": {
             "id": "greater-less-than",
-            "followUpLabel": "Compare numbers",
+            "title": "Compare numbers",
             "text": "The pointy symbols compare numbers: < means \"less than\" and > means \"greater than\" — the open end faces the bigger number!",
             "tags": [
                 "operators",
                 "math",
                 "beginner"
-            ],
-            "queries": [
-                "what does the less than symbol mean",
-                "how do I compare two numbers",
-                "I don't understand greater than and less than",
-                "what are the pointy blocks for",
-                "what are the arrow symbols < and > for comparing numbers"
             ],
             "followUps": [
                 "use-variables",
@@ -1909,19 +1625,11 @@
         },
         "find-block-by-color": {
             "id": "find-block-by-color",
-            "followUpLabel": "Find blocks",
+            "title": "Find blocks",
             "text": "Blocks are color-coded by category! Blue = Motion, Purple = Looks, Pink = Sound, Yellow = Events, Orange = Control.",
             "tags": [
                 "beginner",
                 "meta"
-            ],
-            "queries": [
-                "I can't find the block I need",
-                "where is the move block",
-                "how do I know which category a block is in",
-                "what do the colors mean",
-                "I'm looking for a specific block",
-                "looking for"
             ],
             "followUps": [
                 "drag-blocks-to-workspace",
@@ -1930,17 +1638,11 @@
         },
         "change-block-menu": {
             "id": "change-block-menu",
-            "followUpLabel": "Change options",
+            "title": "Change options",
             "text": "See a dropdown on a block? Click it to change the option — like picking a different key, sound, or direction!",
             "tags": [
                 "beginner",
                 "meta"
-            ],
-            "queries": [
-                "how do I change the option on a block",
-                "how do I pick a different sound or key",
-                "there's a little arrow on my block what does it do",
-                "how do I open the menu to select or choose a different option"
             ],
             "followUps": [
                 "insert-reporter",
@@ -1949,19 +1651,12 @@
         },
         "insert-reporter": {
             "id": "insert-reporter",
-            "followUpLabel": "Dynamic values",
+            "title": "Dynamic values",
             "text": "You can drag a round or pointed block into an input on another block to make it dynamic!",
             "tags": [
                 "beginner",
                 "meta",
                 "advanced"
-            ],
-            "queries": [
-                "how do I put a variable inside a block",
-                "can I drag a block into another block",
-                "how do I use a random number in a move block",
-                "drag into",
-                "how do I put a reporter block with a value inside another block"
             ],
             "followUps": [
                 "random-numbers",
@@ -1978,19 +1673,12 @@
         },
         "right-click-duplicate": {
             "id": "right-click-duplicate",
-            "followUpLabel": "Duplicate blocks",
+            "title": "Duplicate blocks",
             "text": "Right-click (or long-press) on a block to duplicate it, add a comment, or get help!",
             "tags": [
                 "beginner",
                 "meta",
                 "editing"
-            ],
-            "queries": [
-                "how do I copy a block",
-                "how do I duplicate my code",
-                "is there a right-click menu",
-                "right click",
-                "context menu"
             ],
             "followUps": [
                 "remove-block-from-stack",
@@ -1999,18 +1687,11 @@
         },
         "change-xy-explanation": {
             "id": "change-xy-explanation",
-            "followUpLabel": "Stage coordinates",
+            "title": "Stage coordinates",
             "text": "The stage is like a grid: X goes left (-240) to right (240), and Y goes down (-180) to up (180), with center at (0, 0).",
             "tags": [
                 "motion",
                 "coordinates"
-            ],
-            "queries": [
-                "how does the stage grid work",
-                "what are x and y coordinates",
-                "where is the center of the stage",
-                "how big is the stage",
-                "what are the coordinate and position numbers x and y for the stage"
             ],
             "followUps": [
                 "go-to-position",
@@ -2019,18 +1700,11 @@
         },
         "understand-seconds": {
             "id": "understand-seconds",
-            "followUpLabel": "Timing tips",
+            "title": "Timing tips",
             "text": "1 second = a quick pause. \"Wait 10 seconds\" = a long pause. \"Wait 0.1 seconds\" = super fast! Try different numbers to get the right speed.",
             "tags": [
                 "control",
                 "timing"
-            ],
-            "queries": [
-                "how long is 1 second in Scratch",
-                "what number should I put in the wait block",
-                "how do I get the right timing",
-                "how long",
-                "how does the time in seconds make things slow or fast"
             ],
             "followUps": [
                 "too-fast",
@@ -2039,21 +1713,11 @@
         },
         "custom-blocks": {
             "id": "custom-blocks",
-            "followUpLabel": "Make custom blocks",
+            "title": "Make custom blocks",
             "text": "Click \"Make a Block\" in My Blocks to create your own custom block — great for cleaning up long scripts!",
             "tags": [
                 "myblocks",
                 "advanced"
-            ],
-            "queries": [
-                "how do I make my own block",
-                "can I create a custom block",
-                "my code is really long how do I organize it",
-                "custom block",
-                "my blocks",
-                "make a block",
-                "own block",
-                "how do I define my own function or procedure as a custom block"
             ],
             "followUps": [
                 "forever-loop",
@@ -2068,19 +1732,12 @@
         },
         "pen-extension": {
             "id": "pen-extension",
-            "followUpLabel": "Draw with Pen",
+            "title": "Draw with Pen",
             "text": "Add the Pen extension to draw lines and shapes as your sprite moves — try \"pen down\" + \"move\" + \"turn\" in a loop!",
             "tags": [
                 "extensions",
                 "pen",
                 "drawing"
-            ],
-            "queries": [
-                "how do I draw lines on the stage",
-                "I want my sprite to leave a trail",
-                "how do I use the pen",
-                "where are the drawing blocks",
-                "how do I draw a line or make art or trace or paint with pen stamp"
             ],
             "followUps": [
                 "add-extension",
@@ -2096,20 +1753,12 @@
         },
         "music-extension": {
             "id": "music-extension",
-            "followUpLabel": "Play music",
+            "title": "Play music",
             "text": "Add the Music extension to play drums and instruments — use it in a loop to make a beat!",
             "tags": [
                 "extensions",
                 "music",
                 "sound"
-            ],
-            "queries": [
-                "how do I play instruments",
-                "I want to make music with drums",
-                "where are the music blocks",
-                "how do I play notes",
-                "play music",
-                "how do I play an instrument like a drum note or melody"
             ],
             "followUps": [
                 "add-extension",
@@ -2124,19 +1773,11 @@
         },
         "text-to-speech-extension": {
             "id": "text-to-speech-extension",
-            "followUpLabel": "Sprite talks out loud",
+            "title": "Sprite talks out loud",
             "text": "Add the Text to Speech extension to make your sprite actually talk out loud!",
             "tags": [
                 "extensions",
                 "speech"
-            ],
-            "queries": [
-                "how do I make my sprite talk out loud",
-                "I want to hear my sprite's voice",
-                "can my sprite speak with real audio",
-                "text to speech",
-                "say out loud",
-                "how do I use tts text to speech to make my sprite talk"
             ],
             "followUps": [
                 "add-extension",
@@ -2151,19 +1792,11 @@
         },
         "random-numbers": {
             "id": "random-numbers",
-            "followUpLabel": "Use random",
+            "title": "Use random",
             "text": "Use \"pick random 1 to 10\" from Operators to add surprises — great for random positions, sizes, or colors!",
             "tags": [
                 "operators",
                 "math"
-            ],
-            "queries": [
-                "how do I make something random",
-                "I want a different thing to happen each time",
-                "how do I pick a random number",
-                "I want surprise elements in my project",
-                "each time",
-                "how do I use chance or luck for an unpredictable outcome"
             ],
             "followUps": [
                 "insert-reporter",
@@ -2178,17 +1811,11 @@
         },
         "ask-and-answer": {
             "id": "ask-and-answer",
-            "followUpLabel": "Ask a question",
+            "title": "Ask a question",
             "text": "Use \"ask and wait\" from Sensing to ask the player a question — their response goes into the \"answer\" block!",
             "tags": [
                 "sensing",
                 "input"
-            ],
-            "queries": [
-                "how do I ask the player a question",
-                "I want the user to type something",
-                "how do I get the player's name",
-                "how does the answer block work"
             ],
             "followUps": [
                 "make-quiz",
@@ -2205,18 +1832,11 @@
         },
         "touching-color": {
             "id": "touching-color",
-            "followUpLabel": "Detect colors",
+            "title": "Detect colors",
             "text": "Use \"touching color?\" from Sensing — click the color square to pick any color from the stage with the eyedropper!",
             "tags": [
                 "sensing",
                 "color"
-            ],
-            "queries": [
-                "how do I detect when my sprite touches a color",
-                "I want to know if my sprite is on the ground",
-                "how do I use the color picker",
-                "touching color",
-                "how do I sense when my sprite touches a color"
             ],
             "followUps": [
                 "detect-collision",
@@ -2232,17 +1852,11 @@
         },
         "timer-block": {
             "id": "timer-block",
-            "followUpLabel": "Use the timer",
+            "title": "Use the timer",
             "text": "Use the \"timer\" block from Sensing to time things — combine with \"reset timer\" to make countdowns or speedruns!",
             "tags": [
                 "sensing",
                 "timing"
-            ],
-            "queries": [
-                "how do I add a timer to my game",
-                "I want a countdown",
-                "how do I time how long something takes",
-                "how do I use a stopwatch or clock to count seconds"
             ],
             "followUps": [
                 "use-variables",
@@ -2258,18 +1872,11 @@
         },
         "change-size": {
             "id": "change-size",
-            "followUpLabel": "Change size",
+            "title": "Change size",
             "text": "Use \"change size by 10\" or \"set size to\" from Looks to make your sprite grow or shrink!",
             "tags": [
                 "looks",
                 "size"
-            ],
-            "queries": [
-                "how do I make my sprite bigger",
-                "I want my sprite to grow",
-                "how do I shrink my sprite",
-                "how do I change the size of my sprite",
-                "how do I make my sprite big or small or larger or smaller at any scale"
             ],
             "followUps": [
                 "sprite-too-small",
@@ -2286,18 +1893,11 @@
         },
         "graphic-effects": {
             "id": "graphic-effects",
-            "followUpLabel": "Visual effects",
+            "title": "Visual effects",
             "text": "Try \"set color effect\" or \"set whirl effect\" from Looks to add wild visual effects to your sprite!",
             "tags": [
                 "looks",
                 "effects"
-            ],
-            "queries": [
-                "how do I add cool effects to my sprite",
-                "I want to make my sprite look weird",
-                "how do I change the color of my sprite",
-                "what visual effects are there",
-                "how do I use fisheye pixelate mosaic brightness or ghost effects"
             ],
             "followUps": [
                 "sprite-ghost-effect",
@@ -2314,18 +1914,12 @@
         },
         "stamp-block": {
             "id": "stamp-block",
-            "followUpLabel": "Stamp copies",
+            "title": "Stamp copies",
             "text": "Use \"stamp\" from the Pen extension to leave a copy of your sprite on the stage — like a trail of footprints!",
             "tags": [
                 "pen",
                 "effects",
                 "advanced"
-            ],
-            "queries": [
-                "how do I stamp my sprite on the stage",
-                "I want to leave copies of my sprite",
-                "how do I make a trail of pictures",
-                "how do I leave a footprint or mark or imprint as my sprite moves"
             ],
             "followUps": [
                 "pen-extension",
@@ -2340,19 +1934,10 @@
         },
         "play-vs-play-until-done": {
             "id": "play-vs-play-until-done",
-            "followUpLabel": "Sound timing",
+            "title": "Sound timing",
             "text": "\"Start sound\" plays and keeps going. \"Play sound until done\" waits for it to finish. Use \"start sound\" for background music!",
             "tags": [
                 "sound"
-            ],
-            "queries": [
-                "what is the difference between start sound and play sound until done",
-                "my sounds play on top of each other",
-                "how do I play background music",
-                "start sound",
-                "play sound",
-                "until done",
-                "how do I stop two sounds from overlapping at the same time"
             ],
             "followUps": [
                 "add-sound",
@@ -2367,19 +1952,12 @@
         },
         "backdrop-events": {
             "id": "backdrop-events",
-            "followUpLabel": "Backdrop triggers",
+            "title": "Backdrop triggers",
             "text": "Use \"when backdrop switches to\" to trigger code when the scene changes — perfect for levels in a game!",
             "tags": [
                 "events",
                 "backdrop",
                 "game"
-            ],
-            "queries": [
-                "how do I trigger code when the backdrop changes",
-                "I want something to happen when I switch scenes",
-                "how do I make levels with backdrops",
-                "when backdrop",
-                "how do I trigger code when my level or stage background changes"
             ],
             "followUps": [
                 "change-backdrop",
@@ -2395,18 +1973,12 @@
         },
         "mouse-pointer": {
             "id": "mouse-pointer",
-            "followUpLabel": "Follow mouse",
+            "title": "Follow mouse",
             "text": "Use \"go to mouse-pointer\" or \"point towards mouse-pointer\" to make sprites follow your mouse!",
             "tags": [
                 "motion",
                 "sensing",
                 "mouse"
-            ],
-            "queries": [
-                "how do I make my sprite follow the mouse",
-                "I want my sprite to chase the cursor",
-                "how do I use the mouse to control a sprite",
-                "how do I make my sprite track the mouse"
             ],
             "followUps": [
                 "move-sprite",
@@ -2423,19 +1995,12 @@
         },
         "clone-basics": {
             "id": "clone-basics",
-            "followUpLabel": "Clone behavior",
+            "title": "Clone behavior",
             "text": "When you create a clone, use \"when I start as a clone\" to give the clone its own behavior — it's like a copy that can do its own thing!",
             "tags": [
                 "control",
                 "clones",
                 "advanced"
-            ],
-            "queries": [
-                "what happens when a clone starts",
-                "how do I give clones their own code",
-                "how do I make each clone do something different",
-                "start as clone",
-                "when I start"
             ],
             "followUps": [
                 "clone-sprite",
@@ -2452,17 +2017,11 @@
         },
         "show-hide-variable": {
             "id": "show-hide-variable",
-            "followUpLabel": "Variable display",
+            "title": "Variable display",
             "text": "Right-click a variable on the stage to change how it looks — you can make it a slider for testing!",
             "tags": [
                 "variables",
                 "debugging"
-            ],
-            "queries": [
-                "how do I show a variable on the stage",
-                "how do I hide the variable display",
-                "can I make a variable slider",
-                "how do I show or hide a variable monitor or readout on the stage"
             ],
             "followUps": [
                 "use-variables",
@@ -2477,20 +2036,12 @@
         },
         "reset-at-start": {
             "id": "reset-at-start",
-            "followUpLabel": "Reset at start",
+            "title": "Reset at start",
             "text": "Put \"go to x: y:\" and \"set size to 100\" under \"when green flag clicked\" to reset your sprite at the start!",
             "tags": [
                 "events",
                 "motion",
                 "beginner"
-            ],
-            "queries": [
-                "my sprite starts in the wrong place every time",
-                "how do I reset my sprite at the beginning",
-                "my sprite doesn't go back to the start",
-                "I want everything to reset when I click the green flag",
-                "go back",
-                "how do I set the initial position of my sprite to restart the project"
             ],
             "followUps": [
                 "green-flag",
@@ -2507,21 +2058,13 @@
         },
         "broadcast-for-levels": {
             "id": "broadcast-for-levels",
-            "followUpLabel": "Game levels",
+            "title": "Game levels",
             "text": "Use \"broadcast\" to switch between levels or scenes — each sprite can listen for the same message and react differently!",
             "tags": [
                 "events",
                 "broadcast",
                 "game",
                 "advanced"
-            ],
-            "queries": [
-                "how do I make levels in my game",
-                "how do I go to the next level",
-                "I want to switch between game scenes",
-                "next level",
-                "game over",
-                "how do I advance to the next scene using broadcast"
             ],
             "followUps": [
                 "broadcast-message",
@@ -2538,19 +2081,12 @@
         },
         "clone-delete": {
             "id": "clone-delete",
-            "followUpLabel": "Delete clones",
+            "title": "Delete clones",
             "text": "Don't forget to \"delete this clone\" when you're done with it — otherwise you might hit the 300 clone limit!",
             "tags": [
                 "control",
                 "clones",
                 "advanced"
-            ],
-            "queries": [
-                "how do I get rid of clones",
-                "there are too many clones and my project is lagging",
-                "my project is slow because of clones",
-                "too many",
-                "how do I remove clones to avoid the maximum limit and lag"
             ],
             "followUps": [
                 "clone-basics",
@@ -2567,19 +2103,11 @@
         },
         "repeat-until": {
             "id": "repeat-until",
-            "followUpLabel": "Repeat until",
+            "title": "Repeat until",
             "text": "Use \"repeat until\" to keep doing something until a condition is met — like moving until you reach the edge!",
             "tags": [
                 "control",
                 "loops"
-            ],
-            "queries": [
-                "how do I repeat until something happens",
-                "I want to keep going until I reach the edge",
-                "how do I stop a loop when a condition is true",
-                "repeat until",
-                "stop when",
-                "keep going"
             ],
             "followUps": [
                 "forever-loop",
@@ -2596,17 +2124,11 @@
         },
         "make-story": {
             "id": "make-story",
-            "followUpLabel": "Tell a story",
+            "title": "Tell a story",
             "text": "Tell a story! Use \"say for 2 seconds\", \"wait\", and \"switch backdrop\" to create scenes and dialogue.",
             "tags": [
                 "project-ideas",
                 "looks"
-            ],
-            "queries": [
-                "I want to make a story",
-                "how do I make characters talk to each other",
-                "I want to create a cartoon or movie",
-                "how do I make a story with narrative and conversation and scenes like a tale"
             ],
             "followUps": [
                 "change-backdrop"
@@ -2621,17 +2143,12 @@
         },
         "make-animation": {
             "id": "make-animation",
-            "followUpLabel": "Make animation",
+            "title": "Make animation",
             "text": "Create an animation by switching costumes in a loop — draw your own frames in the Costumes tab!",
             "tags": [
                 "project-ideas",
                 "animation",
                 "looks"
-            ],
-            "queries": [
-                "how do I make an animation",
-                "I want to make a cartoon",
-                "how do I create a flipbook or movie"
             ],
             "followUps": [
                 "animate-costume",
@@ -2646,19 +2163,12 @@
         },
         "make-music-project": {
             "id": "make-music-project",
-            "followUpLabel": "Compose music",
+            "title": "Compose music",
             "text": "Make a music project! Use the Music extension with \"play note\" blocks to compose your own song.",
             "tags": [
                 "project-ideas",
                 "music",
                 "sound"
-            ],
-            "queries": [
-                "how do I make a music project",
-                "I want to compose a song",
-                "how do I create beats and melodies",
-                "create music",
-                "how do I make a song with a melody for my band"
             ],
             "followUps": [
                 "music-extension",
@@ -2673,18 +2183,12 @@
         },
         "make-art": {
             "id": "make-art",
-            "followUpLabel": "Create art",
+            "title": "Create art",
             "text": "Make art! Use the Pen extension with loops and turns to draw amazing patterns and spirals.",
             "tags": [
                 "project-ideas",
                 "pen",
                 "art"
-            ],
-            "queries": [
-                "how do I make art in Scratch",
-                "I want to draw patterns and spirals",
-                "how do I make geometric designs",
-                "how do I make art with a pattern or spiral or creative design"
             ],
             "followUps": [
                 "pen-extension",
@@ -2699,18 +2203,12 @@
         },
         "make-quiz": {
             "id": "make-quiz",
-            "followUpLabel": "Make a quiz",
+            "title": "Make a quiz",
             "text": "Make a quiz! Use \"ask and wait\" + \"if answer =\" to check if the player got it right.",
             "tags": [
                 "project-ideas",
                 "sensing",
                 "operators"
-            ],
-            "queries": [
-                "how do I make a quiz game",
-                "I want to make a trivia game",
-                "how do I check if the answer is right",
-                "how do I ask a question and show if the answer is wrong in a test"
             ],
             "followUps": [
                 "ask-and-answer",
@@ -2726,19 +2224,12 @@
         },
         "make-platformer": {
             "id": "make-platformer",
-            "followUpLabel": "Platformer game",
+            "title": "Platformer game",
             "text": "Make a platformer game! Use \"change y by -2\" in a forever loop for gravity, and \"if touching color\" for the ground.",
             "tags": [
                 "project-ideas",
                 "game",
                 "advanced"
-            ],
-            "queries": [
-                "how do I make a platformer game",
-                "I want to add gravity and jumping",
-                "how do I make a side scrolling game like Mario",
-                "side scroller",
-                "how do I make a platformer game where you jump between platforms"
             ],
             "followUps": [
                 "make-game",
@@ -2756,18 +2247,12 @@
         },
         "make-clicker": {
             "id": "make-clicker",
-            "followUpLabel": "Clicker game",
+            "title": "Clicker game",
             "text": "Make a clicker game! Use \"when this sprite clicked\" + \"change score by 1\" — add costumes to make the sprite react to each click!",
             "tags": [
                 "project-ideas",
                 "game",
                 "beginner"
-            ],
-            "queries": [
-                "how do I make a clicker game",
-                "I want to click a sprite to get points",
-                "how do I make a cookie clicker",
-                "how do I make an idle clicker where you tap to earn points"
             ],
             "followUps": [
                 "use-variables",
@@ -2784,18 +2269,12 @@
         },
         "make-dance-party": {
             "id": "make-dance-party",
-            "followUpLabel": "Dance party",
+            "title": "Dance party",
             "text": "Make a dance party! Add multiple sprites, give each one a forever loop with costume changes and moves, then add music!",
             "tags": [
                 "project-ideas",
                 "fun",
                 "animation"
-            ],
-            "queries": [
-                "how do I make a dance party",
-                "I want sprites to dance together",
-                "how do I make a music video",
-                "how do I choreograph sprites to move and groove to the music"
             ],
             "followUps": [
                 "add-sprite",
@@ -2811,19 +2290,12 @@
         },
         "make-pet": {
             "id": "make-pet",
-            "followUpLabel": "Virtual pet",
+            "title": "Virtual pet",
             "text": "Make a virtual pet! Use variables to track hunger, happiness, and energy — and buttons to feed, play, and rest.",
             "tags": [
                 "project-ideas",
                 "game",
                 "variables"
-            ],
-            "queries": [
-                "how do I make a virtual pet",
-                "I want to make a tamagotchi",
-                "how do I make a pet you can feed and play with",
-                "virtual pet",
-                "how do I make a virtual pet to feed and care for"
             ],
             "followUps": [
                 "use-variables",
@@ -2838,17 +2310,11 @@
         },
         "surprise-sprite": {
             "id": "surprise-sprite",
-            "followUpLabel": "Random surprise",
+            "title": "Random surprise",
             "text": "Try putting \"set size to pick random 50 to 200\" in your project for fun surprises!",
             "tags": [
                 "fun",
                 "operators"
-            ],
-            "queries": [
-                "I want something fun and random to happen",
-                "how do I make my sprite a surprise size",
-                "I want silly random stuff",
-                "how do I make my sprite do something goofy or playful or wacky"
             ],
             "followUps": [
                 "random-numbers",
@@ -2864,17 +2330,11 @@
         },
         "silly-sounds": {
             "id": "silly-sounds",
-            "followUpLabel": "Silly sounds",
+            "title": "Silly sounds",
             "text": "Try the sound effects in the Sounds tab — there are funny sounds like \"boing\", \"chomp\", and \"zoop\"!",
             "tags": [
                 "fun",
                 "sound"
-            ],
-            "queries": [
-                "where are the funny sounds",
-                "I want silly sound effects",
-                "are there any cool sounds I can use",
-                "how do I explore funny silly sound effects"
             ],
             "followUps": [
                 "add-sound",
@@ -2889,18 +2349,12 @@
         },
         "color-changing": {
             "id": "color-changing",
-            "followUpLabel": "Rainbow colors",
+            "title": "Rainbow colors",
             "text": "Put \"change color effect by 25\" inside a forever loop to make your sprite cycle through rainbow colors!",
             "tags": [
                 "fun",
                 "looks",
                 "effects"
-            ],
-            "queries": [
-                "how do I make my sprite change colors like a rainbow",
-                "I want rainbow effects",
-                "how do I make a color cycling effect",
-                "how do I make my sprite colorful with a rainbow effect"
             ],
             "followUps": [
                 "graphic-effects",
@@ -2917,17 +2371,11 @@
         },
         "spinning": {
             "id": "spinning",
-            "followUpLabel": "Spin around",
+            "title": "Spin around",
             "text": "Put \"turn 15 degrees\" inside a forever loop to make your sprite spin! Change the number to spin faster or slower.",
             "tags": [
                 "fun",
                 "motion"
-            ],
-            "queries": [
-                "how do I make my sprite spin",
-                "I want my sprite to rotate around",
-                "how do I make something twirl",
-                "how do I make my sprite spin until it looks dizzy"
             ],
             "followUps": [
                 "color-changing",
@@ -2944,17 +2392,11 @@
         },
         "growing-shrinking": {
             "id": "growing-shrinking",
-            "followUpLabel": "Pulse effect",
+            "title": "Pulse effect",
             "text": "Make your sprite pulse! Use \"change size by 5\" and \"wait\", then \"change size by -5\" and \"wait\" in a forever loop.",
             "tags": [
                 "fun",
                 "looks"
-            ],
-            "queries": [
-                "how do I make my sprite pulse or throb",
-                "I want my sprite to grow and shrink",
-                "how do I make a breathing or bouncing effect",
-                "how do I make my sprite bounce to the beat bigger and smaller"
             ],
             "followUps": [
                 "change-size",
@@ -2971,18 +2413,12 @@
         },
         "trail-of-stamps": {
             "id": "trail-of-stamps",
-            "followUpLabel": "Leave a trail",
+            "title": "Leave a trail",
             "text": "Turn on pen down and move your sprite around with the keyboard — you'll leave a colorful trail everywhere you go!",
             "tags": [
                 "fun",
                 "pen",
                 "motion"
-            ],
-            "queries": [
-                "how do I make a drawing program",
-                "I want my sprite to leave a colorful trail",
-                "how do I doodle on the stage",
-                "how do I draw a path or trace a mark or line as my sprite moves"
             ],
             "followUps": [
                 "pen-extension",
@@ -2997,16 +2433,11 @@
         },
         "sound-remix": {
             "id": "sound-remix",
-            "followUpLabel": "Remix sounds",
+            "title": "Remix sounds",
             "text": "Record your own voice in the Sounds tab, then use \"set pitch effect\" to make it sound like a chipmunk or a monster!",
             "tags": [
                 "fun",
                 "sound"
-            ],
-            "queries": [
-                "how do I make my voice sound funny",
-                "I want to make chipmunk or monster sounds",
-                "how do I change the pitch of a recording"
             ],
             "followUps": [
                 "record-sound",
@@ -3021,18 +2452,12 @@
         },
         "bouncing-around": {
             "id": "bouncing-around",
-            "followUpLabel": "Bouncing screensaver",
+            "title": "Bouncing screensaver",
             "text": "Make a screensaver! Use \"point in direction pick random 1 to 360\", then \"forever: move + if on edge bounce\"!",
             "tags": [
                 "fun",
                 "motion",
                 "project-ideas"
-            ],
-            "queries": [
-                "how do I make a bouncing screensaver",
-                "I want my sprite to bounce off the walls",
-                "how do I make a DVD logo effect",
-                "how do I make my sprite float or drift and bounce off the walls"
             ],
             "followUps": [
                 "forever-loop",
@@ -3049,20 +2474,11 @@
         },
         "huge-number": {
             "id": "huge-number",
-            "followUpLabel": "Big number issues",
+            "title": "Big number issues",
             "text": "Typed a really huge number? Numbers bigger than about 16 digits lose precision — and really enormous ones get treated as 0!",
             "tags": [
                 "debugging",
                 "math"
-            ],
-            "queries": [
-                "I typed a really big number and it broke",
-                "why does my huge number turn into 0",
-                "my number is wrong after I type a lot of digits",
-                "big number",
-                "lots of digits",
-                "not working",
-                "what happens when a variable reaches a huge infinity or overflow large number like 999"
             ],
             "followUps": [
                 "decimal-numbers",
@@ -3071,20 +2487,11 @@
         },
         "rotation-style-vs-turn": {
             "id": "rotation-style-vs-turn",
-            "followUpLabel": "Fix rotation",
+            "title": "Fix rotation",
             "text": "If \"turn\" doesn't seem to work, check if the rotation style is set to \"left-right\" or \"don't rotate\" — change it to \"all around\" in the sprite info!",
             "tags": [
                 "motion",
                 "debugging"
-            ],
-            "queries": [
-                "my sprite won't turn or rotate",
-                "the turn block doesn't seem to do anything",
-                "my sprite only flips left and right",
-                "how do I change the rotation style",
-                "not turning",
-                "left right",
-                "why is my sprite spinning in an unexpected direction"
             ],
             "followUps": [
                 "spinning",
@@ -3099,19 +2506,12 @@
         },
         "costume-center": {
             "id": "costume-center",
-            "followUpLabel": "Fix costume center",
+            "title": "Fix costume center",
             "text": "If your sprite rotates weirdly, the costume center point might be off — go to the Costumes tab and drag the crosshair to the center of your drawing!",
             "tags": [
                 "costumes",
                 "motion",
                 "debugging"
-            ],
-            "queries": [
-                "my sprite wobbles when it turns",
-                "the sprite rotates around the wrong point",
-                "my sprite orbits in a circle instead of spinning",
-                "spinning wrong",
-                "my sprite rotates around an offset center and wobbles or orbits weirdly"
             ],
             "followUps": [
                 "rotation-style-vs-turn",
@@ -3126,19 +2526,12 @@
         },
         "missing-asset": {
             "id": "missing-asset",
-            "followUpLabel": "Missing asset",
+            "title": "Missing asset",
             "text": "If a block says a costume or sound name that's grayed out, that asset might be missing — add it back in the Costumes or Sounds tab!",
             "tags": [
                 "debugging",
                 "costumes",
                 "sound"
-            ],
-            "queries": [
-                "a costume or sound name is grayed out",
-                "my block says a name but it's missing",
-                "how do I fix a missing costume or sound",
-                "not found",
-                "my costume or sound is empty and shows up as missing"
             ],
             "followUps": [
                 "add-costume",
@@ -3153,21 +2546,12 @@
         },
         "dragging-to-stage": {
             "id": "dragging-to-stage",
-            "followUpLabel": "Drag to workspace",
+            "title": "Drag to workspace",
             "text": "Make sure you're dragging blocks to the code workspace (the big area in the middle), not onto the stage!",
             "tags": [
                 "debugging",
                 "beginner",
                 "meta"
-            ],
-            "queries": [
-                "I'm dragging blocks to the stage by accident",
-                "my blocks won't snap together",
-                "where am I supposed to put the blocks",
-                "blocks aren't connecting to each other",
-                "wrong place",
-                "won't snap",
-                "can't connect"
             ],
             "followUps": [
                 "drag-blocks-to-workspace",
@@ -3182,15 +2566,6 @@
                 "beginner",
                 "tutorial"
             ],
-            "queries": [
-                "how do I get started",
-                "I'm new to Scratch what do I do",
-                "beginner tutorial",
-                "how do I start making something",
-                "teach me Scratch",
-                "getting started",
-                "I am new to scratch and want to begin my first project"
-            ],
             "followUps": []
         },
         "tutorial-getting-started-asl": {
@@ -3200,14 +2575,6 @@
             "tags": [
                 "beginner",
                 "tutorial"
-            ],
-            "queries": [
-                "getting started with ASL",
-                "American Sign Language tutorial",
-                "deaf accessible tutorial",
-                "sign language Scratch tutorial",
-                "sign language",
-                "getting started"
             ],
             "followUps": []
         },
@@ -3220,13 +2587,6 @@
                 "art",
                 "tutorial"
             ],
-            "queries": [
-                "how do I animate letters",
-                "I want to make a name animation",
-                "animate text or letters",
-                "make letters spin and change color",
-                "how do I make each letter of my name animate"
-            ],
             "followUps": []
         },
         "tutorial-animate-a-character": {
@@ -3236,13 +2596,6 @@
             "tags": [
                 "animation",
                 "tutorial"
-            ],
-            "queries": [
-                "how do I animate a character",
-                "make my character move and talk",
-                "character animation tutorial",
-                "how do I make a character jump",
-                "arrow keys"
             ],
             "followUps": []
         },
@@ -3254,13 +2607,6 @@
                 "stories",
                 "tutorial"
             ],
-            "queries": [
-                "how do I make a story",
-                "I want to create a story in Scratch",
-                "make characters talk to each other",
-                "how do I switch scenes in a story",
-                "how do I make a story tutorial with scenes backdrops conversation and narrative"
-            ],
             "followUps": []
         },
         "tutorial-say-it-out-loud": {
@@ -3270,15 +2616,6 @@
             "tags": [
                 "sound",
                 "tutorial"
-            ],
-            "queries": [
-                "how do I make a sprite talk out loud",
-                "text to speech in Scratch",
-                "make my character speak with a voice",
-                "how do I use text to speech",
-                "text to speech",
-                "out loud",
-                "how do I use text to speech tts to say things out loud"
             ],
             "followUps": []
         },
@@ -3291,13 +2628,6 @@
                 "stories",
                 "tutorial"
             ],
-            "queries": [
-                "imagine a world tutorial",
-                "how do I make an interactive world",
-                "I want to create a world in Scratch",
-                "make sprites fly around and change costumes",
-                "how do I use glide to fly through an imaginary world"
-            ],
             "followUps": []
         },
         "tutorial-add-effects": {
@@ -3308,13 +2638,6 @@
                 "looks",
                 "tutorial"
             ],
-            "queries": [
-                "how do I add effects to a sprite",
-                "color fisheye whirl pixelate effects",
-                "how do I make my sprite look cool",
-                "graphic effects in Scratch",
-                "how do I add graphic effects like mosaic ghost and brightness"
-            ],
             "followUps": []
         },
         "tutorial-make-it-fly": {
@@ -3324,14 +2647,6 @@
             "tags": [
                 "games",
                 "tutorial"
-            ],
-            "queries": [
-                "how do I make a flying game",
-                "make my sprite fly around",
-                "flying game with score",
-                "how do I collect things in a game",
-                "arrow keys",
-                "how do I make a flying game with scrolling scenery"
             ],
             "followUps": []
         },
@@ -3344,13 +2659,6 @@
                 "sound",
                 "tutorial"
             ],
-            "queries": [
-                "how do I make music in Scratch",
-                "I want to play instruments",
-                "create a song or beat",
-                "make a drum beat or beatbox",
-                "how do I make music with instruments like a band"
-            ],
             "followUps": []
         },
         "tutorial-pong": {
@@ -3360,12 +2668,6 @@
             "tags": [
                 "games",
                 "tutorial"
-            ],
-            "queries": [
-                "how do I make a pong game",
-                "bouncing ball game with paddle",
-                "how do I make a ball bounce off things",
-                "pong game tutorial"
             ],
             "followUps": []
         },
@@ -3377,13 +2679,6 @@
                 "games",
                 "tutorial"
             ],
-            "queries": [
-                "how do I make a clicker game",
-                "clicking game with score",
-                "make things pop up and click them",
-                "whack a mole style game",
-                "how do I make a random clicker game tutorial"
-            ],
             "followUps": []
         },
         "tutorial-chase-game": {
@@ -3393,14 +2688,6 @@
             "tags": [
                 "games",
                 "tutorial"
-            ],
-            "queries": [
-                "how do I make a chase game",
-                "make a game where I chase things",
-                "arrow key game with score",
-                "how do I make a game with keyboard controls",
-                "arrow keys",
-                "how do I make a chase game where sprites catch and follow each other"
             ],
             "followUps": []
         },
@@ -3412,13 +2699,6 @@
                 "sensing",
                 "tutorial"
             ],
-            "queries": [
-                "how do I use video sensing",
-                "camera in Scratch",
-                "use my webcam in a project",
-                "video sensing extension tutorial",
-                "how do I use motion from the camera with video sensing"
-            ],
             "followUps": []
         },
         "tutorial-face-sensing": {
@@ -3428,13 +2708,6 @@
             "tags": [
                 "sensing",
                 "tutorial"
-            ],
-            "queries": [
-                "how do I use face sensing",
-                "face tracking in Scratch",
-                "put things on my face with camera",
-                "face sensing extension tutorial",
-                "how do I put a hat glasses or accessory on my face with face sensing"
             ],
             "followUps": []
         },
@@ -3447,14 +2720,6 @@
                 "sound",
                 "tutorial"
             ],
-            "queries": [
-                "talking tales tutorial",
-                "make characters speak and dance",
-                "text to speech story with scenes",
-                "ask and answer blocks tutorial",
-                "text to speech",
-                "how do I make a talking tales story scene tutorial"
-            ],
             "followUps": []
         },
         "tutorial-add-sprite": {
@@ -3465,13 +2730,6 @@
                 "beginner",
                 "tutorial"
             ],
-            "queries": [
-                "how do I add a sprite",
-                "add a new character",
-                "where do I find more sprites",
-                "how do I add a second sprite",
-                "how do I choose or pick a new sprite to add"
-            ],
             "followUps": []
         },
         "tutorial-add-backdrop": {
@@ -3481,12 +2739,6 @@
             "tags": [
                 "beginner",
                 "tutorial"
-            ],
-            "queries": [
-                "how do I add a backdrop",
-                "change the background",
-                "how do I set a background",
-                "add a scene or background"
             ],
             "followUps": []
         },
@@ -3499,12 +2751,6 @@
                 "motion",
                 "tutorial"
             ],
-            "queries": [
-                "how do I move with arrow keys",
-                "keyboard controls for my sprite",
-                "move up down left right with keys",
-                "how do I use arrow keys in Scratch"
-            ],
             "followUps": []
         },
         "tutorial-change-size": {
@@ -3514,13 +2760,6 @@
             "tags": [
                 "looks",
                 "tutorial"
-            ],
-            "queries": [
-                "how do I change the size of a sprite",
-                "make my sprite bigger or smaller",
-                "grow and shrink a sprite",
-                "change size tutorial",
-                "how do I scale my sprite bigger or smaller"
             ],
             "followUps": []
         },
@@ -3532,13 +2771,6 @@
                 "motion",
                 "tutorial"
             ],
-            "queries": [
-                "how do I make a sprite glide",
-                "smooth movement glide to a point",
-                "glide back and forth",
-                "how do I use the glide block",
-                "how do I make my sprite move and slide smoothly with glide"
-            ],
             "followUps": []
         },
         "tutorial-make-it-spin": {
@@ -3548,13 +2780,6 @@
             "tags": [
                 "motion",
                 "tutorial"
-            ],
-            "queries": [
-                "how do I make a sprite spin",
-                "turn and rotate a sprite",
-                "spinning animation",
-                "how do I set direction",
-                "how do I make my sprite twist and spin around"
             ],
             "followUps": []
         },
@@ -3566,13 +2791,6 @@
                 "sound",
                 "tutorial"
             ],
-            "queries": [
-                "how do I record a sound",
-                "record my own sound or voice",
-                "use the microphone to record",
-                "add my own sound to Scratch",
-                "how do I record my own audio sound with a microphone"
-            ],
             "followUps": []
         },
         "tutorial-hide-and-show": {
@@ -3582,13 +2800,6 @@
             "tags": [
                 "looks",
                 "tutorial"
-            ],
-            "queries": [
-                "how do I hide and show a sprite",
-                "make a sprite appear and disappear",
-                "hide a sprite then show it",
-                "invisible sprite tutorial",
-                "how do I make my sprite visible and invisible on the stage"
             ],
             "followUps": []
         },
@@ -3601,18 +2812,11 @@
                 "animation",
                 "tutorial"
             ],
-            "queries": [
-                "how do I animate a sprite with costumes",
-                "switch costumes to make animation",
-                "costume animation tutorial",
-                "how do I change what my sprite looks like",
-                "how do I change the look and appearance of my sprite as it animates"
-            ],
             "followUps": []
         },
         "starter-dance-party": {
             "id": "starter-dance-party",
-            "followUpLabel": "Dance Party",
+            "title": "Dance Party",
             "text": "The Dance Party project shows how to make characters dance by switching costumes in a forever loop while the stage plays music!",
             "tags": [
                 "animation",
@@ -3622,13 +2826,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105113583_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1105113583/",
-            "queries": [
-                "I want to make a dance animation",
-                "how do I make sprites dance",
-                "how do I animate to music",
-                "I want to make a dance party",
-                "how do I animate costumes and switch backdrops in a dance party"
-            ],
             "followUps": [
                 "starter-animate-crab",
                 "starter-walk-cycle",
@@ -3637,7 +2834,7 @@
         },
         "starter-animate-crab": {
             "id": "starter-animate-crab",
-            "followUpLabel": "Animate the Crab",
+            "title": "Animate the Crab",
             "text": "The Animate the Crab project shows how to bring a character to life with costume expressions, \"if on edge bounce,\" and random positioning!",
             "tags": [
                 "animation",
@@ -3647,13 +2844,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105114913_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1105114913/",
-            "queries": [
-                "how do I animate a character",
-                "how do costume animations work",
-                "how do I use if on edge bounce",
-                "make a character come alive",
-                "how do I make a crab character change expression"
-            ],
             "followUps": [
                 "starter-dance-party",
                 "starter-walk-cycle",
@@ -3662,7 +2852,7 @@
         },
         "starter-walk-cycle": {
             "id": "starter-walk-cycle",
-            "followUpLabel": "Walk Cycle",
+            "title": "Walk Cycle",
             "text": "The Walk Cycle project shows how to create a realistic walking animation by combining \"move steps\" with \"next costume\" in a repeat loop!",
             "tags": [
                 "animation",
@@ -3672,12 +2862,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105114015_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1105114015/",
-            "queries": [
-                "how do I make a walk cycle",
-                "make my sprite walk realistically",
-                "walking animation with costumes",
-                "how to animate walking"
-            ],
             "followUps": [
                 "starter-dance-party",
                 "starter-animate-crab",
@@ -3686,7 +2870,7 @@
         },
         "starter-mouse-trail": {
             "id": "starter-mouse-trail",
-            "followUpLabel": "Mouse Trail",
+            "title": "Mouse Trail",
             "text": "The Mouse Trail project shows how to use cloning to create a trail of stars that follows your mouse, with each clone shrinking and disappearing!",
             "tags": [
                 "animation",
@@ -3696,13 +2880,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105118803_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1105118803/",
-            "queries": [
-                "how do I make a mouse trail",
-                "how do clones work",
-                "particle effect with cloning",
-                "make things follow my mouse",
-                "how do I make a mouse trail with clones that shrink randomly"
-            ],
             "followUps": [
                 "starter-animate-crab",
                 "starter-walk-cycle",
@@ -3711,7 +2888,7 @@
         },
         "starter-food-truck": {
             "id": "starter-food-truck",
-            "followUpLabel": "Food Truck Animation",
+            "title": "Food Truck Animation",
             "text": "The Food Truck Animation project shows how to make a scrolling background, spinning tires, and flashing graphic effects with multiple sprites!",
             "tags": [
                 "animation",
@@ -3721,13 +2898,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105114421_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1105114421/",
-            "queries": [
-                "how do I make a scrolling background",
-                "animate a scene with multiple sprites",
-                "how do I make a driving animation",
-                "scrolling side-scroll effect",
-                "how do I make a food truck that can drive and spin"
-            ],
             "followUps": [
                 "starter-dance-party",
                 "starter-animate-crab",
@@ -3736,7 +2906,7 @@
         },
         "starter-make-it-fly": {
             "id": "starter-make-it-fly",
-            "followUpLabel": "Make It Fly",
+            "title": "Make It Fly",
             "text": "The Make It Fly project shows how to use keyboard sensing and forever loops to make a flying cat dodge scrolling buildings!",
             "tags": [
                 "game",
@@ -3746,13 +2916,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1110545496_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1110545496/",
-            "queries": [
-                "how do I make a flying game",
-                "keyboard controls for a game",
-                "side scrolling game",
-                "flappy bird style game",
-                "how do I make a scrolling game where arrow keys control a flying sprite"
-            ],
             "followUps": [
                 "starter-maze",
                 "starter-pong",
@@ -3761,7 +2924,7 @@
         },
         "starter-maze": {
             "id": "starter-maze",
-            "followUpLabel": "Maze Starter",
+            "title": "Maze Starter",
             "text": "The Maze Starter project shows how to navigate a ball through a maze using arrow keys and color-touching detection for wall collisions!",
             "tags": [
                 "game",
@@ -3771,12 +2934,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/10128431_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/10128431/",
-            "queries": [
-                "how do I make a maze game",
-                "color touching collision detection",
-                "arrow key movement game",
-                "navigate through walls"
-            ],
             "followUps": [
                 "starter-make-it-fly",
                 "starter-pong",
@@ -3785,7 +2942,7 @@
         },
         "starter-dress-up": {
             "id": "starter-dress-up",
-            "followUpLabel": "Dress Up Tera",
+            "title": "Dress Up Tera",
             "text": "The Dress Up Tera project shows how to make sprites draggable and use touching detection to create an interactive dress-up game!",
             "tags": [
                 "game",
@@ -3795,13 +2952,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105678528_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1105678528/",
-            "queries": [
-                "how do I make a dress up game",
-                "how do I make sprites draggable",
-                "touching detection game",
-                "character customization game",
-                "how do I drag different costume layers onto a sprite to customize it"
-            ],
             "followUps": [
                 "starter-make-it-fly",
                 "starter-maze",
@@ -3810,7 +2960,7 @@
         },
         "starter-pong": {
             "id": "starter-pong",
-            "followUpLabel": "Pong Starter",
+            "title": "Pong Starter",
             "text": "The Pong Starter project shows how to make a simple game including mouse movement, ball bouncing, collisions, and sound effects!",
             "tags": [
                 "game",
@@ -3821,13 +2971,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/10128515_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/10128515/",
-            "queries": [
-                "how do I make pong",
-                "bouncing ball game",
-                "paddle game with mouse",
-                "how do I make a ball bounce",
-                "how do I make a pong game with random angles and a score"
-            ],
             "followUps": [
                 "starter-make-it-fly",
                 "starter-maze",
@@ -3836,7 +2979,7 @@
         },
         "starter-hide-seek": {
             "id": "starter-hide-seek",
-            "followUpLabel": "Hide and Seek",
+            "title": "Hide and Seek",
             "text": "The Hide and Seek project shows how to make a clicking game with a score variable, random positioning, and show/hide!",
             "tags": [
                 "game",
@@ -3846,13 +2989,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/10128368_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/10128368/",
-            "queries": [
-                "how do I make a clicking game",
-                "hide and seek game",
-                "score variable game",
-                "random position game",
-                "how do I make a hide and seek game where sprites click and disappear"
-            ],
             "followUps": [
                 "starter-make-it-fly",
                 "starter-maze",
@@ -3861,7 +2997,7 @@
         },
         "starter-stamp-studio": {
             "id": "starter-stamp-studio",
-            "followUpLabel": "Stamp Studio",
+            "title": "Stamp Studio",
             "text": "The Stamp Studio project shows how to use the pen stamp block with if-then conditions to draw colorful patterns that follow your mouse!",
             "tags": [
                 "art",
@@ -3871,13 +3007,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111541829_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1111541829/",
-            "queries": [
-                "how do I make a stamp tool",
-                "drawing program in Scratch",
-                "pen stamp art",
-                "create a painting app",
-                "how do I use the stamp tool to make a pattern"
-            ],
             "followUps": [
                 "starter-parallax",
                 "starter-soundflower",
@@ -3886,7 +3015,7 @@
         },
         "starter-parallax": {
             "id": "starter-parallax",
-            "followUpLabel": "Interactive Parallax",
+            "title": "Interactive Parallax",
             "text": "The Interactive Parallax project shows how to use math operators and mouse sensing to move layers at different speeds for a depth effect!",
             "tags": [
                 "art",
@@ -3896,13 +3025,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105131011_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1105131011/",
-            "queries": [
-                "how do I make a parallax effect",
-                "moving background layers",
-                "depth illusion with layers",
-                "interactive background art",
-                "how do I use operator blocks to divide layers for parallax"
-            ],
             "followUps": [
                 "starter-stamp-studio",
                 "starter-art-alive",
@@ -3911,7 +3033,7 @@
         },
         "starter-soundflower": {
             "id": "starter-soundflower",
-            "followUpLabel": "Soundflower",
+            "title": "Soundflower",
             "text": "The Soundflower project shows how to use the loudness sensor and multiply blocks to make a flower that responds to your microphone!",
             "tags": [
                 "art",
@@ -3921,13 +3043,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111537402_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1111537402/",
-            "queries": [
-                "how do I make art with sound",
-                "microphone art project",
-                "sound reactive animation",
-                "generative art with loudness",
-                "how do I make a flower react to the microphone loudness"
-            ],
             "followUps": [
                 "starter-stamp-studio",
                 "starter-art-alive",
@@ -3936,7 +3051,7 @@
         },
         "starter-art-alive": {
             "id": "starter-art-alive",
-            "followUpLabel": "Make Art Come Alive",
+            "title": "Make Art Come Alive",
             "text": "The Make Art Come Alive project shows how to use click events, broadcasts, and glide blocks to animate parts of a painting!",
             "tags": [
                 "art",
@@ -3946,12 +3061,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106198418_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106198418/",
-            "queries": [
-                "how do I make animated art",
-                "broadcast messages for animation",
-                "interactive artwork",
-                "make a painting come alive"
-            ],
             "followUps": [
                 "starter-stamp-studio",
                 "starter-parallax",
@@ -3960,7 +3069,7 @@
         },
         "starter-spin-art": {
             "id": "starter-spin-art",
-            "followUpLabel": "Spin Art",
+            "title": "Spin Art",
             "text": "The Spin Art project shows how to use slider variables, the stamp block, and move-and-turn to create mesmerizing spiral patterns!",
             "tags": [
                 "art",
@@ -3970,13 +3079,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105521187_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1105521187/",
-            "queries": [
-                "how do I make spin art",
-                "spiral drawing with pen",
-                "slider variables for art",
-                "spirograph pattern",
-                "how do I use a variable to rotate and draw spin art"
-            ],
             "followUps": [
                 "starter-stamp-studio",
                 "starter-parallax",
@@ -3985,7 +3087,7 @@
         },
         "starter-dj": {
             "id": "starter-dj",
-            "followUpLabel": "DJ Scratch Cat",
+            "title": "DJ Scratch Cat",
             "text": "The DJ Scratch Cat project shows how to use key press events and sound blocks to make a DJ mixing board with a looping beat!",
             "tags": [
                 "music",
@@ -3995,13 +3097,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/11640429_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/11640429/",
-            "queries": [
-                "how do I make a DJ app",
-                "music mixing with keys",
-                "sound buttons game",
-                "beat maker project",
-                "how do I loop and mix sound beats like a DJ"
-            ],
             "followUps": [
                 "starter-piano",
                 "starter-fur-elise",
@@ -4010,7 +3105,7 @@
         },
         "starter-piano": {
             "id": "starter-piano",
-            "followUpLabel": "Piano",
+            "title": "Piano",
             "text": "The Piano project shows how to build a playable instrument with clickable key sprites using the Music extension's play-note block!",
             "tags": [
                 "music",
@@ -4020,12 +3115,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106245381_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106245381/",
-            "queries": [
-                "how do I make a piano",
-                "play notes in Scratch",
-                "music extension instrument",
-                "clickable piano keys"
-            ],
             "followUps": [
                 "starter-dj",
                 "starter-fur-elise",
@@ -4034,7 +3123,7 @@
         },
         "starter-fish-pitch": {
             "id": "starter-fish-pitch",
-            "followUpLabel": "Catch the Fish",
+            "title": "Catch the Fish",
             "text": "The Catch the Fish project shows how to use cloning, a score variable, and the pitch effect to make music play higher as you score!",
             "tags": [
                 "music",
@@ -4045,13 +3134,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106268602_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106268602/",
-            "queries": [
-                "sound pitch effect game",
-                "cloning game with sound",
-                "how do I change pitch",
-                "music and game combined",
-                "how do I clone fish with different pitches to catch"
-            ],
             "followUps": [
                 "starter-dj",
                 "starter-piano",
@@ -4060,7 +3142,7 @@
         },
         "starter-fur-elise": {
             "id": "starter-fur-elise",
-            "followUpLabel": "Fur Elise",
+            "title": "Fur Elise",
             "text": "The Fur Elise project shows how to use custom My Blocks to organize a song into reusable sections with the Music extension!",
             "tags": [
                 "music",
@@ -4070,14 +3152,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106259376_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106259376/",
-            "queries": [
-                "how do I compose music in Scratch",
-                "custom my blocks for music",
-                "music extension song",
-                "write a song with play note",
-                "my blocks",
-                "how do I compose a melody with tempo like Fur Elise"
-            ],
             "followUps": [
                 "starter-dj",
                 "starter-piano",
@@ -4086,7 +3160,7 @@
         },
         "starter-drum-sequencer": {
             "id": "starter-drum-sequencer",
-            "followUpLabel": "Drum Sequencer",
+            "title": "Drum Sequencer",
             "text": "The Drum Sequencer project shows how to use cloning for a button grid and color-sensing on a moving play head to make a drum machine!",
             "tags": [
                 "music",
@@ -4096,13 +3170,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111562971_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1111562971/",
-            "queries": [
-                "how do I make a drum machine",
-                "beat sequencer project",
-                "drum patterns with clones",
-                "rhythm loop maker",
-                "how do I make a drum sequencer with cloned pattern cells"
-            ],
             "followUps": [
                 "starter-dj",
                 "starter-piano",
@@ -4111,7 +3178,7 @@
         },
         "starter-story": {
             "id": "starter-story",
-            "followUpLabel": "Story Starter",
+            "title": "Story Starter",
             "text": "The Story Starter project shows how to tell a story with multiple characters using broadcasts to coordinate dialogue and sound!",
             "tags": [
                 "story",
@@ -4121,13 +3188,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1110565816_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1110565816/",
-            "queries": [
-                "how do I make a story",
-                "character dialogue with broadcasts",
-                "tell a story in Scratch",
-                "make characters talk to each other",
-                "how do I use broadcast to switch scenes in a story narrative"
-            ],
             "followUps": [
                 "starter-fill-blanks",
                 "starter-stop-motion",
@@ -4136,7 +3196,7 @@
         },
         "starter-random-facts": {
             "id": "starter-random-facts",
-            "followUpLabel": "Random Facts",
+            "title": "Random Facts",
             "text": "The 5 Random Facts About Me project shows how to create a slideshow presentation using backdrops and key press events!",
             "tags": [
                 "story",
@@ -4146,13 +3206,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/10014866_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/10014866/",
-            "queries": [
-                "how do I make a presentation",
-                "slideshow with backdrops",
-                "about me project",
-                "flip through pages",
-                "how do I make a random facts slideshow with backdrop pages"
-            ],
             "followUps": [
                 "starter-story",
                 "starter-fill-blanks",
@@ -4161,7 +3214,7 @@
         },
         "starter-fill-blanks": {
             "id": "starter-fill-blanks",
-            "followUpLabel": "Fill in the Blanks",
+            "title": "Fill in the Blanks",
             "text": "The Fill in the Blanks project shows how to make a mad-libs story using ask blocks, variables, and the join operator!",
             "tags": [
                 "story",
@@ -4172,14 +3225,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1110571119_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1110571119/",
-            "queries": [
-                "how do I make mad libs",
-                "ask block for user input",
-                "join operator for sentences",
-                "word game with variables",
-                "mad libs",
-                "how do I use a variable to fill in a sentence with blanks"
-            ],
             "followUps": [
                 "starter-story",
                 "starter-random-facts",
@@ -4188,7 +3233,7 @@
         },
         "starter-stop-motion": {
             "id": "starter-stop-motion",
-            "followUpLabel": "Stop Motion",
+            "title": "Stop Motion",
             "text": "The Stop Motion Animation project shows how to create a flipbook-style animation by switching costumes in a forever loop!",
             "tags": [
                 "story",
@@ -4198,13 +3243,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105521591_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1105521591/",
-            "queries": [
-                "how do I make stop motion",
-                "frame by frame animation",
-                "make a movie in Scratch",
-                "flipbook animation",
-                "how do I animate with costumes in a stop motion movie"
-            ],
             "followUps": [
                 "starter-story",
                 "starter-random-facts",
@@ -4213,7 +3251,7 @@
         },
         "starter-adventure": {
             "id": "starter-adventure",
-            "followUpLabel": "Adventure Game",
+            "title": "Adventure Game",
             "text": "The Adventure with Scratch Cat project shows how to build an interactive adventure with collision detection and broadcast-driven scene changes!",
             "tags": [
                 "story",
@@ -4224,13 +3262,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1107181129_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1107181129/",
-            "queries": [
-                "how do I make a choose your own adventure",
-                "interactive story game",
-                "collision detection adventure",
-                "branching story with broadcasts",
-                "how do I make an adventure game with choices and hidden mouse areas"
-            ],
             "followUps": [
                 "starter-story",
                 "starter-fill-blanks",
@@ -4239,7 +3270,7 @@
         },
         "starter-gravity": {
             "id": "starter-gravity",
-            "followUpLabel": "Gravity Example",
+            "title": "Gravity Example",
             "text": "The Gravity Example project shows how to simulate gravity with velocity variables and conditionals for ground collision!",
             "tags": [
                 "math",
@@ -4249,13 +3280,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111567332_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1111567332/",
-            "queries": [
-                "how do I simulate gravity",
-                "falling with acceleration",
-                "physics in Scratch",
-                "velocity variable for gravity",
-                "how do I make things fall with gravity physics"
-            ],
             "followUps": [
                 "starter-sound-graph",
                 "starter-math-game",
@@ -4264,7 +3288,7 @@
         },
         "starter-sound-graph": {
             "id": "starter-sound-graph",
-            "followUpLabel": "Sound Graph",
+            "title": "Sound Graph",
             "text": "The Sound Graph project shows how to visualize microphone input as a graph using pen blocks, loudness sensing, and math operators!",
             "tags": [
                 "math",
@@ -4274,13 +3298,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105532968_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1105532968/",
-            "queries": [
-                "how do I graph sound",
-                "microphone visualizer",
-                "draw a graph with pen",
-                "loudness graph project",
-                "how do I graph the sound volume from the microphone"
-            ],
             "followUps": [
                 "starter-gravity",
                 "starter-math-game",
@@ -4289,7 +3306,7 @@
         },
         "starter-math-game": {
             "id": "starter-math-game",
-            "followUpLabel": "Math Game",
+            "title": "Math Game",
             "text": "The Math Game project shows how to make a quiz with random number variables, ask blocks for input, and if-else to check answers!",
             "tags": [
                 "math",
@@ -4300,13 +3317,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106220358_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106220358/",
-            "queries": [
-                "how do I make a math quiz",
-                "random math problems game",
-                "quiz game with ask and answer",
-                "educational math game",
-                "how do I make a math game for education"
-            ],
             "followUps": [
                 "starter-gravity",
                 "starter-circuit",
@@ -4315,7 +3325,7 @@
         },
         "starter-circuit": {
             "id": "starter-circuit",
-            "followUpLabel": "Circuit Simulation",
+            "title": "Circuit Simulation",
             "text": "The Simple Circuit Simulation project shows how to use draggable sprites, color-touching detection, and boolean logic to simulate a circuit!",
             "tags": [
                 "math",
@@ -4326,13 +3336,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106279050_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106279050/",
-            "queries": [
-                "circuit simulation project",
-                "electricity in Scratch",
-                "boolean logic project",
-                "draggable science simulation",
-                "how do I make a circuit with switches I can drag to complete"
-            ],
             "followUps": [
                 "starter-gravity",
                 "starter-sound-graph",
@@ -4341,7 +3344,7 @@
         },
         "starter-coordinates": {
             "id": "starter-coordinates",
-            "followUpLabel": "X and Y Coordinates",
+            "title": "X and Y Coordinates",
             "text": "The X and Y Coordinates project shows how the Scratch coordinate system works by letting you drag a sprite and see its position update!",
             "tags": [
                 "math",
@@ -4351,13 +3354,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106739913_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106739913/",
-            "queries": [
-                "how do coordinates work in Scratch",
-                "x and y position explained",
-                "coordinate system project",
-                "learn about stage coordinates",
-                "how do I ask a user to enter coordinates to move to"
-            ],
             "followUps": [
                 "starter-gravity",
                 "starter-math-game",
@@ -4366,7 +3362,7 @@
         },
         "starter-text-speech": {
             "id": "starter-text-speech",
-            "followUpLabel": "Text to Speech",
+            "title": "Text to Speech",
             "text": "The Text to Speech project shows how to use the Text-to-Speech extension and broadcasts to make characters have a spoken conversation!",
             "tags": [
                 "extensions",
@@ -4376,13 +3372,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106234816_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106234816/",
-            "queries": [
-                "how do I use text to speech",
-                "make sprites talk out loud",
-                "speech extension project",
-                "talking characters",
-                "how do I use broadcast to make different sprites speak with different voices"
-            ],
             "followUps": [
                 "starter-pen-flower",
                 "starter-translate",
@@ -4391,7 +3380,7 @@
         },
         "starter-pen-flower": {
             "id": "starter-pen-flower",
-            "followUpLabel": "Pen Flower",
+            "title": "Pen Flower",
             "text": "The Pen Flower project shows how to use nested repeat loops and pen blocks to draw a colorful pattern of rotating squares!",
             "tags": [
                 "extensions",
@@ -4401,13 +3390,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106765499_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106765499/",
-            "queries": [
-                "how do I draw with pen blocks",
-                "pen flower pattern",
-                "geometric pattern with loops",
-                "nested loops pen art",
-                "how do I loop and rotate to draw a pen flower pattern"
-            ],
             "followUps": [
                 "starter-text-speech",
                 "starter-musical-droplets",
@@ -4416,7 +3398,7 @@
         },
         "starter-musical-droplets": {
             "id": "starter-musical-droplets",
-            "followUpLabel": "Musical Droplets",
+            "title": "Musical Droplets",
             "text": "The Musical Droplets project shows how to use clones, the Music extension, and math to turn mouse position into musical notes!",
             "tags": [
                 "extensions",
@@ -4427,13 +3409,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111576868_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1111576868/",
-            "queries": [
-                "music extension with clones",
-                "mouse position to music notes",
-                "musical animation project",
-                "interactive music art",
-                "how do I clone musical droplets with different notes"
-            ],
             "followUps": [
                 "starter-text-speech",
                 "starter-pen-flower",
@@ -4442,7 +3417,7 @@
         },
         "starter-translate": {
             "id": "starter-translate",
-            "followUpLabel": "Translate This!",
+            "title": "Translate This!",
             "text": "The Translate This! project shows how to use the Translate extension to make characters speak in different languages!",
             "tags": [
                 "extensions",
@@ -4451,13 +3426,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1110579465_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1110579465/",
-            "queries": [
-                "how do I use the translate extension",
-                "change language in Scratch",
-                "translate words between languages",
-                "multilingual project",
-                "how do I translate between languages like French or Italian"
-            ],
             "followUps": [
                 "starter-text-speech",
                 "starter-pen-flower",
@@ -4466,7 +3434,7 @@
         },
         "starter-face-filter": {
             "id": "starter-face-filter",
-            "followUpLabel": "Face Filter",
+            "title": "Face Filter",
             "text": "The Face Filter project shows how to use the Face Sensing extension to make hats and glasses follow your face in real time!",
             "tags": [
                 "extensions",
@@ -4475,13 +3443,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1208621527_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1208621527/",
-            "queries": [
-                "how do I use face sensing",
-                "face filter with camera",
-                "augmented reality in Scratch",
-                "face tracking project",
-                "how do I track a face and tilt the filter with it"
-            ],
             "followUps": [
                 "starter-text-speech",
                 "starter-musical-droplets",
@@ -4490,7 +3451,7 @@
         },
         "starter-greeting-card": {
             "id": "starter-greeting-card",
-            "followUpLabel": "Greeting Card",
+            "title": "Greeting Card",
             "text": "The Greeting Card project shows how to make an interactive card with backdrop switches, glide animations, and sound effects!",
             "tags": [
                 "kindness",
@@ -4501,13 +3462,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/11806234_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/11806234/",
-            "queries": [
-                "how do I make a greeting card",
-                "birthday card project",
-                "interactive card with sound",
-                "animated greeting",
-                "how do I make a greeting card with a message and animation"
-            ],
             "followUps": [
                 "starter-quiz",
                 "starter-trophy",
@@ -4516,7 +3470,7 @@
         },
         "starter-quiz": {
             "id": "starter-quiz",
-            "followUpLabel": "Community Quiz",
+            "title": "Community Quiz",
             "text": "The Community Quiz project shows how to build a quiz with custom blocks, ask-and-wait input, if-else logic, and Text-to-Speech!",
             "tags": [
                 "kindness",
@@ -4526,14 +3480,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106806960_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106806960/",
-            "queries": [
-                "how do I make a quiz",
-                "trivia game with ask blocks",
-                "custom blocks for a quiz",
-                "check answers with if-else",
-                "my blocks",
-                "how do I make a quiz that checks the answer"
-            ],
             "followUps": [
                 "starter-greeting-card",
                 "starter-trophy",
@@ -4542,7 +3488,7 @@
         },
         "starter-trophy": {
             "id": "starter-trophy",
-            "followUpLabel": "Small Wins Trophy",
+            "title": "Small Wins Trophy",
             "text": "The Small Wins Trophy project shows how to click on sprite parts to cycle through costumes and design a custom award!",
             "tags": [
                 "kindness",
@@ -4552,13 +3498,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106823880_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1106823880/",
-            "queries": [
-                "trophy customization project",
-                "click to change costumes",
-                "celebration animation",
-                "design an award",
-                "how do I customize a winning trophy costume"
-            ],
             "followUps": [
                 "starter-greeting-card",
                 "starter-quiz",
@@ -4567,7 +3506,7 @@
         },
         "starter-kindness": {
             "id": "starter-kindness",
-            "followUpLabel": "Acts of Kindness",
+            "title": "Acts of Kindness",
             "text": "The Random Acts of Kindness project shows how to pick a random item from a list using broadcasts and the pick-random operator!",
             "tags": [
                 "kindness",
@@ -4577,13 +3516,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1110573738_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1110573738/",
-            "queries": [
-                "how do I pick random from a list",
-                "kindness generator project",
-                "random suggestion picker",
-                "list and pick random",
-                "how do I use broadcast to share a kindness message"
-            ],
             "followUps": [
                 "starter-greeting-card",
                 "starter-quiz",
@@ -4592,7 +3524,7 @@
         },
         "starter-paper-plane": {
             "id": "starter-paper-plane",
-            "followUpLabel": "Paper Plane Tutorial",
+            "title": "Paper Plane Tutorial",
             "text": "The Paper Plane Tutorial project shows how to make a step-by-step guide with broadcasts, repeat-until loops, and costume switching!",
             "tags": [
                 "kindness",
@@ -4602,13 +3534,6 @@
             ],
             "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111552152_480x360.png",
             "projectUrl": "https://scratch.mit.edu/projects/1111552152/",
-            "queries": [
-                "how do I make a tutorial in Scratch",
-                "step by step instruction project",
-                "repeat until loop project",
-                "broadcast for steps",
-                "how do I teach someone to make a paper plane in a tutorial"
-            ],
             "followUps": [
                 "starter-greeting-card",
                 "starter-trophy",
@@ -4617,20 +3542,12 @@
         },
         "follow-another-sprite": {
             "id": "follow-another-sprite",
-            "followUpLabel": "Follow a sprite",
+            "title": "Follow a sprite",
             "text": "Use \"go to [sprite]\" inside a \"forever\" loop to make one sprite follow another — like a basketball following the cat!",
             "tags": [
                 "motion",
                 "game",
                 "sports"
-            ],
-            "queries": [
-                "how do I make the cat dribble a basketball",
-                "show me the code to make the basketball follow the cat",
-                "how do I make one sprite follow another",
-                "how do I make the ball follow the player",
-                "how do I make a sprite chase another sprite",
-                "go to"
             ],
             "followUps": [
                 "follow-with-offset",
@@ -4648,19 +3565,11 @@
         },
         "follow-with-offset": {
             "id": "follow-with-offset",
-            "followUpLabel": "Follow with offset",
+            "title": "Follow with offset",
             "text": "To make a sprite follow below another, use \"go to [sprite]\" then \"change y by -30\" — the negative number puts it lower!",
             "tags": [
                 "motion",
                 "position"
-            ],
-            "queries": [
-                "what if I want the basketball to be a little below the cat",
-                "how do I make a sprite follow but a little lower",
-                "how do I offset a following sprite",
-                "make the ball stay below the player",
-                "next to",
-                "how do I make one sprite follow above or beside another"
             ],
             "followUps": [
                 "follow-another-sprite",
@@ -4676,20 +3585,12 @@
         },
         "bounce-up-down": {
             "id": "bounce-up-down",
-            "followUpLabel": "Bounce up & down",
+            "title": "Bounce up & down",
             "text": "Make a sprite bounce! Use \"repeat 10: change y by 5\" then \"repeat 10: change y by -5\" inside a forever loop.",
             "tags": [
                 "motion",
                 "animation",
                 "sports"
-            ],
-            "queries": [
-                "how do I make the basketball bounce up and down",
-                "how do I make a sprite bounce up and down",
-                "how do I make a bouncing animation",
-                "I want my sprite to go up and down",
-                "up and down",
-                "how do I make a ball hop and bounce like a spring"
             ],
             "followUps": [
                 "bounce-speed",
@@ -4707,18 +3608,11 @@
         },
         "bounce-speed": {
             "id": "bounce-speed",
-            "followUpLabel": "Bounce speed",
+            "title": "Bounce speed",
             "text": "To change bounce speed, adjust the \"repeat\" number — fewer repeats = faster bounce, more repeats = slower bounce!",
             "tags": [
                 "motion",
                 "animation"
-            ],
-            "queries": [
-                "how can I make the bounce faster or slower",
-                "how do I change the bounce speed",
-                "my bounce is too slow",
-                "I want the ball to bounce faster",
-                "how do I change the quick or slow tempo of a bounce"
             ],
             "followUps": [
                 "bounce-up-down",
@@ -4728,18 +3622,11 @@
         },
         "bounce-height": {
             "id": "bounce-height",
-            "followUpLabel": "Bounce height",
+            "title": "Bounce height",
             "text": "To change how high the bounce goes, change the number in \"change y by\" — bigger number = higher bounce!",
             "tags": [
                 "motion",
                 "animation"
-            ],
-            "queries": [
-                "how do I change the height of the bounce",
-                "I want a higher bounce",
-                "how do I make the ball bounce lower",
-                "make the bounce taller or shorter",
-                "how do I make a bounce low or tall or short in height"
             ],
             "followUps": [
                 "bounce-up-down",
@@ -4748,19 +3635,12 @@
         },
         "shoot-at-target": {
             "id": "shoot-at-target",
-            "followUpLabel": "Shoot at a target",
+            "title": "Shoot at a target",
             "text": "Use \"glide 0.5 secs to x: y:\" to make a sprite fly toward a target — set x and y to where the hoop or goal is!",
             "tags": [
                 "motion",
                 "game",
                 "sports"
-            ],
-            "queries": [
-                "how do I make the cat shoot the ball into the hoop",
-                "how do I make a sprite fly toward a target",
-                "how do I throw a ball at something",
-                "how do I make a shooting animation",
-                "how do I aim and launch a shot at a basket target"
             ],
             "followUps": [
                 "glide-to-position",
@@ -4778,20 +3658,12 @@
         },
         "sprite-hop-jump": {
             "id": "sprite-hop-jump",
-            "followUpLabel": "Make it hop",
+            "title": "Make it hop",
             "text": "Press space to hop! Use \"change y by 50\", \"wait 0.3 seconds\", then \"change y by -50\" — that's up, pause, and back down!",
             "tags": [
                 "motion",
                 "animation",
                 "beginner"
-            ],
-            "queries": [
-                "how to make the chick hop",
-                "how do I make a sprite hop",
-                "how do I make my sprite jump",
-                "I want my character to hop up and down",
-                "how to make the movement more smooth and make my character jump",
-                "how do I make my bunny or frog leap and spring"
             ],
             "followUps": [
                 "bounce-up-down",
@@ -4809,21 +3681,13 @@
         },
         "sprite-walk-animate": {
             "id": "sprite-walk-animate",
-            "followUpLabel": "Make it walk",
+            "title": "Make it walk",
             "text": "To make a sprite walk, use \"next costume\" with \"move 10 steps\" inside a forever loop — the costume changes make it look like walking!",
             "tags": [
                 "motion",
                 "looks",
                 "animation",
                 "beginner"
-            ],
-            "queries": [
-                "how to make chick walk",
-                "how do I make a sprite walk",
-                "how do I make my character walk across the screen",
-                "show me the code for the cat's movement",
-                "I want my sprite to look like it's walking",
-                "how do I animate walking steps of a character"
             ],
             "followUps": [
                 "animate-costume",
@@ -4841,19 +3705,12 @@
         },
         "sprite-backflip": {
             "id": "sprite-backflip",
-            "followUpLabel": "Do a backflip",
+            "title": "Do a backflip",
             "text": "Make a sprite do a backflip! Use \"change y by 50\", then \"repeat 10: turn 36 degrees\", then \"change y by -50\" to jump, spin, and land!",
             "tags": [
                 "motion",
                 "animation",
                 "fun"
-            ],
-            "queries": [
-                "how do I make my sprite do a backflip",
-                "how to make a sprite flip in the air",
-                "I want my character to do a trick",
-                "how do I make a spinning jump",
-                "how do I make my sprite do a somersault or acrobat backflip"
             ],
             "followUps": [
                 "sprite-hop-jump",
@@ -4871,20 +3728,12 @@
         },
         "sprite-lay-down": {
             "id": "sprite-lay-down",
-            "followUpLabel": "Lay down",
+            "title": "Lay down",
             "text": "Use \"point in direction 0\" to make a sprite lay down (facing up), or \"point in direction 180\" to face down — set rotation style to \"all around\" first!",
             "tags": [
                 "motion",
                 "looks",
                 "animation"
-            ],
-            "queries": [
-                "how can I make singer1 lay down",
-                "how do I make a sprite lay down",
-                "how to make a sprite lie flat",
-                "how do I rotate my sprite sideways",
-                "lay down",
-                "how do I make my sprite horizontal like it is asleep"
             ],
             "followUps": [
                 "rotation-style-vs-turn",
@@ -4900,19 +3749,12 @@
         },
         "crowd-surf-effect": {
             "id": "crowd-surf-effect",
-            "followUpLabel": "Crowd surf",
+            "title": "Crowd surf",
             "text": "Make a sprite crowd surf! Use \"glide 2 secs to x:240 y:50\" to slide across, and add \"change y by 5\" then \"change y by -5\" in a loop for a bobbing effect!",
             "tags": [
                 "motion",
                 "animation",
                 "fun"
-            ],
-            "queries": [
-                "how to make singer1 crowd surf",
-                "how do I make a sprite slide across the screen",
-                "how do I make a floating movement",
-                "crowd surf",
-                "how do I make a singer float over a concert crowd"
             ],
             "followUps": [
                 "glide-to-position",
@@ -4930,20 +3772,12 @@
         },
         "duplicate-code-to-sprite": {
             "id": "duplicate-code-to-sprite",
-            "followUpLabel": "Copy code to sprite",
+            "title": "Copy code to sprite",
             "text": "Yes! Drag your code stack from the workspace onto another sprite's thumbnail in the sprite pane — it copies the whole stack!",
             "tags": [
                 "sprites",
                 "meta",
                 "beginner"
-            ],
-            "queries": [
-                "can you duplicate the code stack to other sprites",
-                "how do I copy code to another sprite",
-                "how do I share blocks between sprites",
-                "I want the same code on a different sprite",
-                "other sprite",
-                "how do I transfer code from one sprite to another"
             ],
             "followUps": [
                 "sprite-has-own-code",
@@ -4959,20 +3793,12 @@
         },
         "explore-sprite-abilities": {
             "id": "explore-sprite-abilities",
-            "followUpLabel": "What can it do?",
+            "title": "What can it do?",
             "text": "Every sprite can move, change costumes, play sounds, and run code! Click the Costumes tab to see its different looks, and the Sounds tab for its sounds.",
             "tags": [
                 "sprites",
                 "beginner",
                 "meta"
-            ],
-            "queries": [
-                "what can the egg do",
-                "what can this sprite do",
-                "what are all the things my sprite can do",
-                "what is this sprite for",
-                "what can",
-                "how do I explore the abilities and features of a sprite"
             ],
             "followUps": [
                 "access-other-costumes",
@@ -4988,17 +3814,11 @@
         },
         "access-other-costumes": {
             "id": "access-other-costumes",
-            "followUpLabel": "See all costumes",
+            "title": "See all costumes",
             "text": "Click the Costumes tab at the top to see all the costumes your sprite has — you can switch between them with \"switch costume to\" or \"next costume\"!",
             "tags": [
                 "costumes",
                 "beginner"
-            ],
-            "queries": [
-                "how do I get to the other egg costumes",
-                "where are the other costumes",
-                "how do I see all my sprite's costumes",
-                "how do I find the costume list"
             ],
             "followUps": [
                 "change-costume",
@@ -5014,18 +3834,11 @@
         },
         "find-sprite-in-library": {
             "id": "find-sprite-in-library",
-            "followUpLabel": "Find a sprite",
+            "title": "Find a sprite",
             "text": "Click the cat button below the stage to open the sprite library, then use the search bar to find any sprite by name!",
             "tags": [
                 "sprites",
                 "beginner"
-            ],
-            "queries": [
-                "where can I find Dan B",
-                "how do I find a specific sprite",
-                "how do I search for a sprite",
-                "where is the sprite library",
-                "look for"
             ],
             "followUps": [
                 "add-sprite",
@@ -5040,18 +3853,11 @@
         },
         "add-many-same-sprite": {
             "id": "add-many-same-sprite",
-            "followUpLabel": "Add more copies",
+            "title": "Add more copies",
             "text": "To add more copies of a sprite, right-click the sprite in the sprite pane and choose \"duplicate\" — or add it again from the library! For lots of copies, try cloning.",
             "tags": [
                 "sprites",
                 "beginner"
-            ],
-            "queries": [
-                "how do I make more than three dans",
-                "how do I add more of the same sprite",
-                "I want multiple copies of a sprite",
-                "can I duplicate a sprite",
-                "how do I add another of the same sprite"
             ],
             "followUps": [
                 "clone-sprite",
@@ -5067,21 +3873,11 @@
         },
         "move-side-to-side": {
             "id": "move-side-to-side",
-            "followUpLabel": "Move side to side",
+            "title": "Move side to side",
             "text": "Use \"move 5 steps\" with \"if on edge, bounce\" inside a forever loop to make a sprite go back and forth automatically!",
             "tags": [
                 "motion",
                 "animation"
-            ],
-            "queries": [
-                "how to make the egg move side to side",
-                "how do I make a sprite go left and right",
-                "I want my sprite to move back and forth",
-                "how do I make something go side to side automatically",
-                "side to side",
-                "left and right",
-                "back and forth",
-                "how do I make my sprite patrol or pace from side to side"
             ],
             "followUps": [
                 "waddle-side-to-side",
@@ -5099,19 +3895,12 @@
         },
         "waddle-side-to-side": {
             "id": "waddle-side-to-side",
-            "followUpLabel": "Waddle effect",
+            "title": "Waddle effect",
             "text": "Make a sprite waddle! Use \"turn right 10\" then \"wait 0.1\" then \"turn left 10\" then \"wait 0.1\" inside a forever loop.",
             "tags": [
                 "motion",
                 "animation",
                 "fun"
-            ],
-            "queries": [
-                "how to make the egg waddle side to side",
-                "how do I make a waddle animation",
-                "how do I make my sprite wobble",
-                "I want my sprite to rock back and forth",
-                "how do I make a penguin sway and tilt as it waddles"
             ],
             "followUps": [
                 "move-side-to-side",
@@ -5129,18 +3918,11 @@
         },
         "fix-upright-rotation": {
             "id": "fix-upright-rotation",
-            "followUpLabel": "Stay upright",
+            "title": "Stay upright",
             "text": "Use \"point in direction 90\" to make your sprite sit upright, or set rotation style to \"don't rotate\" so it always stays right-side up!",
             "tags": [
                 "motion",
                 "looks"
-            ],
-            "queries": [
-                "how to make the egg sit upright",
-                "how do I make my sprite stay right side up",
-                "my sprite is tilted how do I fix it",
-                "I want my sprite to face straight up",
-                "how do I reset the tilt so my sprite stays upright"
             ],
             "followUps": [
                 "face-without-flip",
@@ -5155,20 +3937,12 @@
         },
         "face-without-flip": {
             "id": "face-without-flip",
-            "followUpLabel": "Face left (no flip)",
+            "title": "Face left (no flip)",
             "text": "Set rotation style to \"left-right\" in the sprite info area — then your sprite will mirror horizontally without flipping upside down!",
             "tags": [
                 "motion",
                 "looks",
                 "beginner"
-            ],
-            "queries": [
-                "how do I make the monkey face left without flipping upside down",
-                "my sprite flips upside down when it turns",
-                "how do I mirror my sprite left and right",
-                "how do I stop my sprite from going upside down",
-                "upside down",
-                "rotation style"
             ],
             "followUps": [
                 "rotation-style-vs-turn",
@@ -5183,20 +3957,12 @@
         },
         "continuous-key-hold": {
             "id": "continuous-key-hold",
-            "followUpLabel": "Hold key to move",
+            "title": "Hold key to move",
             "text": "Use \"forever: if key pressed then change x by 5\" instead of \"when key pressed\" — this way holding the key gives smooth, continuous movement!",
             "tags": [
                 "motion",
                 "events",
                 "control"
-            ],
-            "queries": [
-                "how do I make it so that when I hold down the arrow keys it continuously moves in that direction",
-                "holding the key should keep moving",
-                "I want smooth continuous movement when holding a key",
-                "how do I make my sprite move while holding a key",
-                "key pressed",
-                "keep moving"
             ],
             "followUps": [
                 "move-with-keys",
@@ -5214,20 +3980,12 @@
         },
         "wasd-controls": {
             "id": "wasd-controls",
-            "followUpLabel": "WASD controls",
+            "title": "WASD controls",
             "text": "For WASD movement, use \"forever: if key w pressed, change y by 5 / if key a pressed, change x by -5\" and so on for each letter!",
             "tags": [
                 "motion",
                 "events",
                 "control"
-            ],
-            "queries": [
-                "how do I make my sprite move using wasd",
-                "how do I use wasd keys for movement",
-                "I want to use the letter keys to move",
-                "wasd keyboard controls",
-                "w a s d",
-                "letter keys"
             ],
             "followUps": [
                 "continuous-key-hold",
@@ -5245,19 +4003,11 @@
         },
         "sprite-return-to-position": {
             "id": "sprite-return-to-position",
-            "followUpLabel": "Go back to start",
+            "title": "Go back to start",
             "text": "Use \"go to x: -200 y: 0\" to send a sprite back to a specific position — great for resetting enemies or obstacles!",
             "tags": [
                 "motion",
                 "game"
-            ],
-            "queries": [
-                "how do I get the crab to go back to the left",
-                "how do I reset a sprite to its starting position",
-                "how do I make a sprite go back to the start",
-                "I want the enemy to come back after it goes off screen",
-                "go back",
-                "how do I make a sprite return or reappear at the beginning position"
             ],
             "followUps": [
                 "reset-at-start",
@@ -5274,19 +4024,12 @@
         },
         "move-multiple-sprites": {
             "id": "move-multiple-sprites",
-            "followUpLabel": "Move both sprites",
+            "title": "Move both sprites",
             "text": "Each sprite needs its own code! Click a sprite in the sprite pane, then add movement blocks to it — do this for each sprite you want to move.",
             "tags": [
                 "sprites",
                 "motion",
                 "beginner"
-            ],
-            "queries": [
-                "how do I make both sprites move",
-                "how do I control two sprites",
-                "only one sprite is moving",
-                "I want all my sprites to move",
-                "how do I move multiple sprites at the same time"
             ],
             "followUps": [
                 "sprite-has-own-code",
@@ -5302,19 +4045,11 @@
         },
         "find-specific-sound": {
             "id": "find-specific-sound",
-            "followUpLabel": "Find a sound",
+            "title": "Find a sound",
             "text": "Click the Sounds tab, then click the speaker button to open the sound library — use the search bar to look for sounds like \"chirp\", \"bird\", or any sound you want!",
             "tags": [
                 "sound",
                 "beginner"
-            ],
-            "queries": [
-                "is there a cheeping sound",
-                "how do I find a specific sound",
-                "is there a bird sound",
-                "where do I search for sounds",
-                "I'm looking for a particular sound effect",
-                "how do I find a specific bird sound like a cheep"
             ],
             "followUps": [
                 "add-sound",
@@ -5330,19 +4065,11 @@
         },
         "insert-audio-file": {
             "id": "insert-audio-file",
-            "followUpLabel": "Upload a sound",
+            "title": "Upload a sound",
             "text": "To add your own audio file, go to the Sounds tab, hover over the speaker button, and choose \"Upload Sound\" to pick a file from your computer!",
             "tags": [
                 "sound",
                 "beginner"
-            ],
-            "queries": [
-                "how do I insert an audio",
-                "how do I upload my own sound file",
-                "can I add an mp3 to my project",
-                "I want to use my own music file",
-                "own sound",
-                "how do I import and insert an audio file"
             ],
             "followUps": [
                 "add-sound",
@@ -5358,20 +4085,12 @@
         },
         "debug-sound-on-collision": {
             "id": "debug-sound-on-collision",
-            "followUpLabel": "Fix sound on touch",
+            "title": "Fix sound on touch",
             "text": "If your sound isn't playing when sprites touch, make sure the \"if touching\" and \"play sound\" are both inside a \"forever\" loop — and use \"play sound until done\" so it doesn't restart every frame!",
             "tags": [
                 "sound",
                 "debugging",
                 "sensing"
-            ],
-            "queries": [
-                "look at my code, why is my sound not playing when it hits the volleyball sprite",
-                "my sound doesn't play when sprites touch",
-                "why isn't the sound working on collision",
-                "sound not playing when touching another sprite",
-                "not playing",
-                "how do I play a sound when my sprite hits another"
             ],
             "followUps": [
                 "detect-collision",
@@ -5388,20 +4107,12 @@
         },
         "solid-wall-collision": {
             "id": "solid-wall-collision",
-            "followUpLabel": "Solid walls",
+            "title": "Solid walls",
             "text": "To stop a sprite from going through walls, use \"if touching color [wall color] then move back\" — put it in a forever loop so it's always checking!",
             "tags": [
                 "sensing",
                 "game",
                 "collision"
-            ],
-            "queries": [
-                "how do I make my cat not able to go through the green pillars",
-                "how do I make solid walls my sprite can't walk through",
-                "my sprite goes through obstacles",
-                "how do I stop a sprite from going through things",
-                "can't pass",
-                "how do I make a pillar or barrier block the sprite from passing through"
             ],
             "followUps": [
                 "touching-color",
@@ -5419,18 +4130,11 @@
         },
         "obstacle-course-game": {
             "id": "obstacle-course-game",
-            "followUpLabel": "Obstacle course",
+            "title": "Obstacle course",
             "text": "Make an obstacle course! Draw obstacles on the backdrop, then use \"if touching color\" to detect them. Add keyboard controls and a \"go to start\" reset!",
             "tags": [
                 "game",
                 "project-ideas"
-            ],
-            "queries": [
-                "how do I make an obstacle course",
-                "I want to make an obstacle game",
-                "how do I make a game with obstacles to dodge",
-                "how do I make a maze or obstacle course game",
-                "how do I avoid obstacles in a platformer course"
             ],
             "followUps": [
                 "solid-wall-collision",
@@ -5449,21 +4153,12 @@
         },
         "score-on-event": {
             "id": "score-on-event",
-            "followUpLabel": "Score points",
+            "title": "Score points",
             "text": "Make a \"score\" variable, set it to 0 at the start, then use \"if touching [sprite]\" with \"change score by 1\" inside a forever loop to score when sprites meet!",
             "tags": [
                 "variables",
                 "game",
                 "sensing"
-            ],
-            "queries": [
-                "how do I put a score for every time the sprite jumps over the crab",
-                "how do I add points when something happens",
-                "how do I score when sprites touch",
-                "how do put the score up",
-                "I want to keep score in my game",
-                "jump over",
-                "how do I track and count how many points a player earns or collects"
             ],
             "followUps": [
                 "use-variables",
@@ -5479,20 +4174,12 @@
         },
         "countdown-timer-variable": {
             "id": "countdown-timer-variable",
-            "followUpLabel": "Countdown timer",
+            "title": "Countdown timer",
             "text": "Make a \"timer\" variable, set it to 30, then use \"repeat 30: wait 1 second, change timer by -1\" — when it hits 0, stop the game!",
             "tags": [
                 "variables",
                 "game",
                 "control"
-            ],
-            "queries": [
-                "how do I make a 30 second timer",
-                "how do I make a countdown timer",
-                "I want a timer that counts down in my game",
-                "how do I set a time limit",
-                "time limit",
-                "how do I use a variable to make a clock or stopwatch countdown in seconds"
             ],
             "followUps": [
                 "use-variables",
@@ -5508,22 +4195,12 @@
         },
         "color-touch-restart": {
             "id": "color-touch-restart",
-            "followUpLabel": "Color = restart",
+            "title": "Color = restart",
             "text": "Use \"forever: if touching color [pick a color] then go to x: y:\" — this sends your sprite back to the start whenever it touches that color!",
             "tags": [
                 "sensing",
                 "game",
                 "control"
-            ],
-            "queries": [
-                "how do I make it so that if a sprite touches a color it restart",
-                "touching a color should restart the game",
-                "if my sprite touches red it should go back",
-                "how do I make a color that resets you",
-                "touch color",
-                "go back",
-                "start over",
-                "how do I reset the game when the sprite touches danger and dies"
             ],
             "followUps": [
                 "touching-color",
@@ -5541,20 +4218,12 @@
         },
         "kill-brick-game-over": {
             "id": "kill-brick-game-over",
-            "followUpLabel": "Game over trigger",
+            "title": "Game over trigger",
             "text": "To make a sprite end the game when touched, use \"forever: if touching [sprite] then stop all\" — you can also broadcast \"game over\" to show a message first!",
             "tags": [
                 "game",
                 "control",
                 "sensing"
-            ],
-            "queries": [
-                "how do I make button 3 a kill brick",
-                "how do I make a sprite that ends the game when you touch it",
-                "how do I make a death block",
-                "how do I make game over when touching a sprite",
-                "game over",
-                "how do I end the game when the player loses or hits danger"
             ],
             "followUps": [
                 "detect-collision",
@@ -5572,21 +4241,13 @@
         },
         "ball-bounce-off-sprite": {
             "id": "ball-bounce-off-sprite",
-            "followUpLabel": "Bounce off sprite",
+            "title": "Bounce off sprite",
             "text": "To make a ball bounce off a player, use \"if touching [player]\" inside a forever loop, then \"point in direction (pick random)\" or \"turn 180 degrees\" to reverse it!",
             "tags": [
                 "motion",
                 "sensing",
                 "game",
                 "sports"
-            ],
-            "queries": [
-                "how can I make the ball bounce off a player",
-                "how do I make a ball bounce off a sprite",
-                "I want the ball to ricochet when it hits something",
-                "how do I make things bounce off each other",
-                "bounce off",
-                "how do I deflect or rebound the ball when it hits a sprite"
             ],
             "followUps": [
                 "detect-collision",
@@ -5604,18 +4265,11 @@
         },
         "falling-obstacle": {
             "id": "falling-obstacle",
-            "followUpLabel": "Falling obstacles",
+            "title": "Falling obstacles",
             "text": "To make a sprite fall from the sky, start it at the top with \"go to x:0 y:180\" then use \"forever: change y by -5\" to make it fall down!",
             "tags": [
                 "motion",
                 "game"
-            ],
-            "queries": [
-                "how do I make a sprite fall from the sky",
-                "how do I make things fall down",
-                "I want obstacles to drop from the top",
-                "how do I make the broom fall from the sky",
-                "how do I make rain obstacles that fall from the sky"
             ],
             "followUps": [
                 "solid-wall-collision",
@@ -5633,18 +4287,11 @@
         },
         "game-types-overview": {
             "id": "game-types-overview",
-            "followUpLabel": "Game ideas",
+            "title": "Game ideas",
             "text": "You can make so many games! Maze games, chase games, platformers, clicker games, pong, quiz games, dodge games, catching games, and more — pick one that sounds fun!",
             "tags": [
                 "project-ideas",
                 "game"
-            ],
-            "queries": [
-                "what kind of games can I create",
-                "what kinds of games can you make in Scratch",
-                "what are some game ideas",
-                "what games can I build",
-                "what are the different types of games I can build"
             ],
             "followUps": [
                 "make-game",
@@ -5655,18 +4302,11 @@
         },
         "advanced-scratch-examples": {
             "id": "advanced-scratch-examples",
-            "followUpLabel": "Amazing Scratch projects",
+            "title": "Amazing Scratch projects",
             "text": "People have made incredible things in Scratch — 3D engines, full RPG games, music studios, and even working computers! Start with something simple and keep building your skills.",
             "tags": [
                 "project-ideas",
                 "inspiration"
-            ],
-            "queries": [
-                "what is the most advanced complicated game that was made on Scratch",
-                "what is the coolest Scratch project ever",
-                "what amazing things can you make in Scratch",
-                "can you make advanced games in Scratch",
-                "what are the most complex best and impressive scratch projects"
             ],
             "followUps": [
                 "game-types-overview",
@@ -5676,20 +4316,11 @@
         },
         "project-idea-suggestion": {
             "id": "project-idea-suggestion",
-            "followUpLabel": "Get an idea",
+            "title": "Get an idea",
             "text": "How about making a game where your sprite dodges falling objects? Or an animation of your favorite animal? Or a music machine? Start small — you can always add more!",
             "tags": [
                 "project-ideas",
                 "beginner"
-            ],
-            "queries": [
-                "give me an idea of what I should make",
-                "I don't know what to make",
-                "what should I create in Scratch",
-                "I need inspiration for a project",
-                "what to make",
-                "don't know",
-                "give me a suggestion to inspire a new project idea"
             ],
             "followUps": [
                 "game-types-overview",
@@ -5700,21 +4331,12 @@
         },
         "make-tetris-game": {
             "id": "make-tetris-game",
-            "followUpLabel": "Tetris-style game",
+            "title": "Tetris-style game",
             "text": "Tetris is an advanced project! Start by making one block that falls and stops at the bottom, then add keyboard controls to move it left and right. Build up from there!",
             "tags": [
                 "project-ideas",
                 "game",
                 "advanced"
-            ],
-            "queries": [
-                "I want to make a tetris game",
-                "how do I make tetris in Scratch",
-                "how do I make falling block game",
-                "can I make tetris",
-                "falling blocks",
-                "block game",
-                "how do I make a tetris puzzle stacking game"
             ],
             "followUps": [
                 "falling-obstacle",
@@ -5732,20 +4354,12 @@
         },
         "volleyball-game": {
             "id": "volleyball-game",
-            "followUpLabel": "Volleyball game",
+            "title": "Volleyball game",
             "text": "For a volleyball game, make a ball sprite that bounces, two player sprites with keyboard controls, and use \"if touching\" to make the ball bounce off the players!",
             "tags": [
                 "project-ideas",
                 "game",
                 "sports"
-            ],
-            "queries": [
-                "how can I make a volleyball game",
-                "I want to make a volleyball game",
-                "how do I make a two player sports game",
-                "how can I make the ball move",
-                "two player",
-                "how do I make a volleyball game with a net"
             ],
             "followUps": [
                 "ball-bounce-off-sprite",
@@ -5763,18 +4377,11 @@
         },
         "make-game-more-interesting": {
             "id": "make-game-more-interesting",
-            "followUpLabel": "Improve your game",
+            "title": "Improve your game",
             "text": "Try adding: a score variable, sound effects when things happen, a timer, extra levels with backdrops, or power-ups using clones — these all make games more exciting!",
             "tags": [
                 "project-ideas",
                 "game"
-            ],
-            "queries": [
-                "what else should I add to make the game more interesting",
-                "how do I make my game better",
-                "my game needs more features",
-                "what can I add to my game",
-                "how do I add more fun features to my game"
             ],
             "followUps": [
                 "use-variables",
@@ -5785,19 +4392,12 @@
         },
         "scrolling-backdrop": {
             "id": "scrolling-backdrop",
-            "followUpLabel": "Scrolling background",
+            "title": "Scrolling background",
             "text": "For a continuously moving backdrop, make two copies of the background as sprites. Move both left in a forever loop — when one goes off screen, jump it to the right side!",
             "tags": [
                 "motion",
                 "game",
                 "advanced"
-            ],
-            "queries": [
-                "how to make the backdrop continuously moving",
-                "how do I make a scrolling background",
-                "I want the background to keep moving",
-                "how do I make an infinite scrolling backdrop",
-                "how do I make a continuous parallax scrolling background"
             ],
             "followUps": [
                 "change-backdrop",
@@ -5815,19 +4415,12 @@
         },
         "multiple-backdrops": {
             "id": "multiple-backdrops",
-            "followUpLabel": "Multiple backdrops",
+            "title": "Multiple backdrops",
             "text": "Click the backdrop area below the stage and add more backdrops! Use \"switch backdrop to\" or \"next backdrop\" blocks to switch between them in your code.",
             "tags": [
                 "looks",
                 "backdrop",
                 "beginner"
-            ],
-            "queries": [
-                "how do I have 2 backgrounds",
-                "how do I add multiple backdrops",
-                "I want different backgrounds for different levels",
-                "how do I switch between backgrounds",
-                "how do I switch between two or more backdrops"
             ],
             "followUps": [
                 "change-backdrop",
@@ -5843,21 +4436,12 @@
         },
         "find-sprite-x-position": {
             "id": "find-sprite-x-position",
-            "followUpLabel": "Find X position",
+            "title": "Find X position",
             "text": "Hover over a sprite on the stage to see its x and y position in the sprite info area below, or use the \"x position\" reporter block from Motion!",
             "tags": [
                 "motion",
                 "sensing",
                 "coordinates"
-            ],
-            "queries": [
-                "where is the x position of crab",
-                "how do I find a sprite's x position",
-                "what is my sprite's position",
-                "how do I see the coordinates of a sprite",
-                "x position",
-                "y position",
-                "how do I find the coordinate location of my sprite"
             ],
             "followUps": [
                 "change-xy-explanation",
@@ -5873,18 +4457,11 @@
         },
         "other-turn-options": {
             "id": "other-turn-options",
-            "followUpLabel": "Turn options",
+            "title": "Turn options",
             "text": "You can \"turn right\" or \"turn left\" by any number of degrees, or use \"point in direction\" to face a specific way (90=right, -90=left, 0=up, 180=down)!",
             "tags": [
                 "motion",
                 "beginner"
-            ],
-            "queries": [
-                "are there other turn options",
-                "what other ways can I turn my sprite",
-                "how do I point my sprite in a direction",
-                "what are the different turn blocks",
-                "how do I rotate in different directions with different turn options"
             ],
             "followUps": [
                 "spinning",
@@ -5901,19 +4478,12 @@
         },
         "forever-block-explained": {
             "id": "forever-block-explained",
-            "followUpLabel": "Why use forever?",
+            "title": "Why use forever?",
             "text": "Without \"forever\", your code runs once and stops! The \"forever\" loop keeps repeating your blocks over and over — that's why your sprite stops moving when you remove it.",
             "tags": [
                 "control",
                 "meta",
                 "beginner"
-            ],
-            "queries": [
-                "why when I take out the forever block, my sprite stops moving",
-                "why do I need a forever block",
-                "what does the forever block do",
-                "my code stops after running once",
-                "take out"
             ],
             "followUps": [
                 "forever-loop",
@@ -5924,21 +4494,11 @@
         },
         "no-code-interactions": {
             "id": "no-code-interactions",
-            "followUpLabel": "Without code",
+            "title": "Without code",
             "text": "You can drag sprites around the stage with your mouse, draw costumes, record sounds, and change the backdrop — all without any code! But code is what makes things interactive.",
             "tags": [
                 "meta",
                 "beginner"
-            ],
-            "queries": [
-                "can I do that without code",
-                "do I need code to do this",
-                "what can I do without coding",
-                "is there a way to do it without blocks",
-                "without code",
-                "no code",
-                "don't code",
-                "how do I manually drag the sprite with the mouse"
             ],
             "followUps": [
                 "drag-blocks-to-workspace",
@@ -5948,21 +4508,12 @@
         },
         "green-flag-not-moving": {
             "id": "green-flag-not-moving",
-            "followUpLabel": "Nothing moves",
+            "title": "Nothing moves",
             "text": "If clicking the green flag does nothing, check: do you have a \"when green flag clicked\" block on top of your code? Is your code connected in a stack? Is it on the right sprite?",
             "tags": [
                 "debugging",
                 "events",
                 "beginner"
-            ],
-            "queries": [
-                "I'm clicking the green flag and it doesn't move what do I do",
-                "green flag doesn't work",
-                "nothing happens when I press play",
-                "I click start but nothing moves",
-                "green flag",
-                "not moving",
-                "doesn't move"
             ],
             "followUps": [
                 "nothing-happens",
@@ -5980,20 +4531,12 @@
         },
         "make-sprite-bigger": {
             "id": "make-sprite-bigger",
-            "followUpLabel": "Make it bigger",
+            "title": "Make it bigger",
             "text": "Use \"set size to 200%\" from Looks to make your sprite bigger — 100% is normal, higher numbers make it larger!",
             "tags": [
                 "looks",
                 "size",
                 "beginner"
-            ],
-            "queries": [
-                "how do I make the broom size bigger",
-                "how do I make a sprite larger",
-                "my sprite is too small I want it bigger",
-                "how do I increase the size of my sprite",
-                "scale up",
-                "how do I grow my sprite to make it bigger"
             ],
             "followUps": [
                 "change-size",
@@ -6010,18 +4553,11 @@
         },
         "costume-masking": {
             "id": "costume-masking",
-            "followUpLabel": "Edit part of costume",
+            "title": "Edit part of costume",
             "text": "Scratch doesn't have masking, but you can select just part of a costume to edit! In the Costumes tab, use the select tool to click and drag around the area you want to change.",
             "tags": [
                 "costumes",
                 "drawing"
-            ],
-            "queries": [
-                "can I mask a costume so that when I edit it only edits what's inside the mask",
-                "how do I edit just part of a costume",
-                "how do I select a portion of my costume to edit",
-                "is there a mask tool in Scratch",
-                "how do I crop and mask a part of my costume"
             ],
             "followUps": [
                 "add-costume",

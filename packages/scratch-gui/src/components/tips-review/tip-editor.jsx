@@ -610,10 +610,9 @@ class TipEditor extends React.Component {
 
                 <div className={styles.editorBody}>
                     <div className={styles.editorForm}>
-                        {this.renderTextField('Follow-up Label', 'followUpLabel')}
+                        {this.renderTextField('Title', 'title')}
                         {this.renderTextArea('Text', 'text')}
                         {this.renderTagsEditor()}
-                        {this.renderListEditor('Queries', 'queries', 'e.g. how do I make my sprite move')}
                         {this.renderFollowUpsEditor()}
                         {this.renderBlockExampleEditor()}
                         {this.renderPointersEditor()}

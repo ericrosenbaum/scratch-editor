@@ -7,9 +7,9 @@
  * at runtime. If the cache is missing or stale, falls back to computing embeddings
  * in the worker.
  */
-import {scoreContext} from './tip-provider.js';
 import embeddingCache from '../libraries/tips/embeddings-cache.json';
 import {createHash} from './embedding-hash.js';
+import {buildTipDocument} from './tip-document.js';
 
 class EmbeddingTipProvider {
     constructor (tips, keywordProvider) {
@@ -19,31 +19,28 @@ class EmbeddingTipProvider {
         this._pendingQueries = new Map(); // id -> {resolve, reject}
         this._queryId = 0;
 
-        // Build query texts from each tip's `queries` array
-        this._queryTexts = [];
+        // One embedding document per tip — same shape used by the build script,
+        // including the `id` field expected by createHash.
+        this._tipDocs = [];
         for (const tipId of Object.keys(tips)) {
-            const tip = tips[tipId];
-            const queries = tip.queries || [];
-            for (let i = 0; i < queries.length; i++) {
-                this._queryTexts.push({
-                    id: `${tipId}__q${i}`,
-                    text: queries[i],
-                    tipId
-                });
-            }
+            this._tipDocs.push({
+                id: tipId,
+                tipId,
+                text: buildTipDocument(tips[tipId])
+            });
         }
 
         // Check if the build-time cache is still valid
-        this._cachedQueries = null;
+        this._cachedDocs = null;
         this._cachedEmbeddings = null;
-        if (embeddingCache && embeddingCache.queries && embeddingCache.embeddings) {
+        if (embeddingCache && embeddingCache.docs && embeddingCache.embeddings) {
             const currentHash = createHash(
                 embeddingCache.modelName,
                 embeddingCache.modelDtype,
-                this._queryTexts
+                this._tipDocs
             );
             if (currentHash === embeddingCache.contentHash) {
-                this._cachedQueries = embeddingCache.queries;
+                this._cachedDocs = embeddingCache.docs;
                 this._cachedEmbeddings = embeddingCache.embeddings;
             } else {
                 console.warn(
@@ -69,18 +66,18 @@ class EmbeddingTipProvider {
             const {type} = event.data;
 
             if (type === 'ready') {
-                if (this._cachedQueries && this._cachedEmbeddings) {
-                    console.log('[EmbeddingTipProvider] Model loaded, using cached query embeddings');
+                if (this._cachedDocs && this._cachedEmbeddings) {
+                    console.log('[EmbeddingTipProvider] Model loaded, using cached tip embeddings');
                     this._worker.postMessage({
                         type: 'load-cached-embeddings',
-                        queries: this._cachedQueries,
+                        docs: this._cachedDocs,
                         embeddings: this._cachedEmbeddings
                     });
                 } else {
-                    console.log('[EmbeddingTipProvider] Model loaded, computing query embeddings at runtime...');
+                    console.log('[EmbeddingTipProvider] Model loaded, computing tip embeddings at runtime...');
                     this._worker.postMessage({
                         type: 'embed-tips',
-                        tips: this._queryTexts
+                        docs: this._tipDocs
                     });
                 }
             } else if (type === 'tips-ready') {
@@ -122,19 +119,6 @@ class EmbeddingTipProvider {
             return this._keywordProvider.getTips(context, query);
         }
 
-        // Compute context scores on the main thread
-        // Set to false to disable context boosting and use pure embedding similarity
-        const useContextScores = false;
-        const contextScores = {};
-        if (useContextScores) {
-            for (const tipId in this.tips) {
-                const score = scoreContext(this.tips[tipId], context);
-                if (score > 0) {
-                    contextScores[tipId] = score;
-                }
-            }
-        }
-
         const queryId = this._queryId++;
 
         return new Promise((resolve, reject) => {
@@ -143,7 +127,6 @@ class EmbeddingTipProvider {
             this._worker.postMessage({
                 type: 'embed-query',
                 query,
-                contextScores,
                 queryId
             });
         }).catch(() =>

@@ -20,32 +20,20 @@ const tokenize = function (phrase) {
 };
 
 /**
- * Build (and cache on the tip) the set of keyword tokens derived from
- * `tip.queries`. Queries are full natural-language phrases; we tokenize
- * them so the scorer can match individual words from the user's query.
+ * Build (and cache on the tip) the set of keyword tokens derived from the
+ * tip's title + text. Mirrors what the embedder sees so semantic and
+ * keyword paths return consistent results. Tags are deliberately excluded
+ * — they're organizational metadata, not retrieval signal.
  */
 const getKeywordSet = function (tip) {
     if (tip.__keywordSet) return tip.__keywordSet;
     const set = new Set();
-    if (Array.isArray(tip.queries)) {
-        for (const phrase of tip.queries) {
-            for (const tok of tokenize(String(phrase))) {
-                set.add(tok);
-            }
-        }
+    const source = `${tip.text || ''} ${tip.title || ''}`;
+    for (const tok of tokenize(source)) {
+        set.add(tok);
     }
     Object.defineProperty(tip, '__keywordSet', {value: set, enumerable: false});
     return set;
-};
-
-/**
- * Score a tip based on project context signals only.
- * Kept as an API surface for EmbeddingTipProvider; contextual suggestion
- * logic now lives in context-suggestion-scorer.js.
- * @returns {number}
- */
-const scoreContext = function () {
-    return 0;
 };
 
 /**
@@ -56,22 +44,14 @@ const scoreContext = function () {
  * @returns {number} Relevance score
  */
 const scoreTip = function (tip, query) {
-    const queryLower = query.toLowerCase();
-    const queryWords = queryLower.split(/\s+/).filter(w => w.length > 2);
+    const queryWords = query.toLowerCase().split(/\s+/)
+        .filter(w => w.length > 2);
     let score = 0;
 
     const keywordSet = getKeywordSet(tip);
     for (const word of queryWords) {
         if (keywordSet.has(word)) {
             score += 3;
-        }
-    }
-
-    if (tip.tags) {
-        for (const tag of tip.tags) {
-            if (queryLower.includes(tag.toLowerCase())) {
-                score += 2;
-            }
         }
     }
 
@@ -96,11 +76,13 @@ class KeywordTipProvider {
 
     /**
      * Get matching tips for a query.
-     * @param {object} context - Project context from extractProjectContext
+     * The `context` parameter is part of the TipProvider interface but unused
+     * here; the keyword scorer relies only on the query text.
+     * @param {object} _context - Project context (unused)
      * @param {string} query - The user's question
      * @returns {Promise<Array<{tipId: string, score: number}>>} Ranked results
      */
-    getTips (context, query) {
+    getTips (_context, query) {
         const results = [];
         for (const tipId in this.tips) {
             const tip = this.tips[tipId];
@@ -114,5 +96,5 @@ class KeywordTipProvider {
     }
 }
 
-export {KeywordTipProvider, scoreContext};
+export {KeywordTipProvider};
 export default KeywordTipProvider;

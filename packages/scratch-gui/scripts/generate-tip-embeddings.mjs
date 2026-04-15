@@ -23,10 +23,6 @@ const MODEL_NAME = 'onnx-community/embeddinggemma-300m-ONNX';
 const MODEL_DTYPE = 'q8';
 const CACHE_PATH = resolve(__dirname, '../src/lib/libraries/tips/embeddings-cache.json');
 
-// EmbeddingGemma requires task-specific prefixes at both index time and query time.
-// See https://huggingface.co/google/embeddinggemma-300m
-const DOCUMENT_PREFIX = 'title: none | text: ';
-
 // Matryoshka truncation dimension. EmbeddingGemma is trained to support 768/512/256/128.
 // 256 keeps strong quality while cutting the shipped cache by 3x. Must match the runtime
 // worker's TARGET_DIM in src/lib/unstuck/embedding-worker.js.
@@ -49,7 +45,7 @@ function truncateAndRenormalize (vec, dim) {
 }
 
 // ---------------------------------------------------------------------------
-// 1. Load tips (ESM) and build the same combined texts the runtime uses
+// 1. Load tips (ESM) and build per-tip embedding documents
 // ---------------------------------------------------------------------------
 
 // Load tips.json directly rather than through ../src/lib/libraries/tips/index.js,
@@ -57,23 +53,19 @@ function truncateAndRenormalize (vec, dim) {
 const tipsJsonPath = resolve(__dirname, '../src/lib/libraries/tips/tips.json');
 const tips = JSON.parse(readFileSync(tipsJsonPath, 'utf-8')).tips;
 
-// Build a list of {id, text, tipId} for each query across all tips.
-// Each tip's `queries` array contains natural-language questions that map to that tip.
-const queryTexts = [];
-for (const tipId of Object.keys(tips)) {
-    const tip = tips[tipId];
-    const queries = tip.queries || [];
-    for (let i = 0; i < queries.length; i++) {
-        queryTexts.push({
-            id: `${tipId}__q${i}`,
-            text: queries[i],
-            tipId
-        });
-    }
-}
+import {buildTipDocument} from '../src/lib/unstuck/tip-document.js';
 
-// Keep tipTexts as an alias for hash computation (the hash input is the query texts)
-const tipTexts = queryTexts;
+// One document per tip. The runtime uses the same buildTipDocument helper.
+// `id` mirrors `tipId` so the shared hash helper in embedding-hash.js (which
+// keys on `id`) gets a stable identifier.
+const tipDocs = [];
+for (const tipId of Object.keys(tips)) {
+    tipDocs.push({
+        id: tipId,
+        tipId,
+        text: buildTipDocument(tips[tipId])
+    });
+}
 
 // ---------------------------------------------------------------------------
 // 2. Compute content hash — uses the same algorithm as the runtime
@@ -81,11 +73,7 @@ const tipTexts = queryTexts;
 
 import {createHash as createContentHash} from '../src/lib/unstuck/embedding-hash.js';
 
-function computeContentHash (modelName, modelDtype, texts) {
-    return createContentHash(modelName, modelDtype, texts);
-}
-
-const contentHash = computeContentHash(MODEL_NAME, MODEL_DTYPE, tipTexts);
+const contentHash = createContentHash(MODEL_NAME, MODEL_DTYPE, tipDocs);
 
 // ---------------------------------------------------------------------------
 // 3. Check existing cache — skip if hash matches (unless --force)
@@ -123,17 +111,16 @@ const embedder = await pipeline('feature-extraction', MODEL_NAME, {
     device: 'cpu'
 });
 
-console.log(`[generate-tip-embeddings] Embedding ${queryTexts.length} queries across ${Object.keys(tips).length} tips...`);
+console.log(`[generate-tip-embeddings] Embedding ${tipDocs.length} tip documents...`);
 
-const queries = [];
+const docs = [];
 const embeddings = [];
-for (let i = 0; i < queryTexts.length; i++) {
-    const prefixed = DOCUMENT_PREFIX + queryTexts[i].text;
-    const output = await embedder(prefixed, {pooling: 'mean', normalize: true});
-    queries.push({text: queryTexts[i].text, tipId: queryTexts[i].tipId});
+for (let i = 0; i < tipDocs.length; i++) {
+    const output = await embedder(tipDocs[i].text, {pooling: 'mean', normalize: true});
+    docs.push({tipId: tipDocs[i].tipId, text: tipDocs[i].text});
     embeddings.push(truncateAndRenormalize(output.data, TARGET_DIM));
-    if ((i + 1) % 10 === 0 || i === queryTexts.length - 1) {
-        console.log(`[generate-tip-embeddings] ${i + 1}/${queryTexts.length}`);
+    if ((i + 1) % 10 === 0 || i === tipDocs.length - 1) {
+        console.log(`[generate-tip-embeddings] ${i + 1}/${tipDocs.length}`);
     }
 }
 
@@ -146,7 +133,7 @@ const cache = {
     modelName: MODEL_NAME,
     modelDtype: MODEL_DTYPE,
     contentHash,
-    queries,
+    docs,
     embeddings
 };
 

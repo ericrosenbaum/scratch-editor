@@ -112,7 +112,6 @@ function computeAnalysis () {
         total: tipEntries.length,
         withBlocks: tipEntries.filter(([, t]) => t.blockExample).length,
         withPointers: tipEntries.filter(([, t]) => t.pointers && t.pointers.length > 0).length,
-        withQueries: tipEntries.filter(([, t]) => Array.isArray(t.queries) && t.queries.length > 0).length,
         warningCount: Object.keys(warnings).length
     };
 
@@ -156,9 +155,8 @@ function tipMatchesFilter (tipId, tip, searchQuery, activeTag, warningsOnly, orp
         const haystack = [
             tipId,
             tip.text,
-            tip.followUpLabel,
-            ...(tip.tags || []),
-            ...(tip.queries || [])
+            tip.title,
+            ...(tip.tags || [])
         ].join(' ').toLowerCase();
         if (!haystack.includes(q)) return false;
     }
@@ -198,7 +196,6 @@ class TipCard extends React.Component {
         const hasPointers = tip.pointers && tip.pointers.length > 0;
         const hasBlocks = !!tip.blockExample;
         const hasFollowUps = tip.followUps && tip.followUps.length > 0;
-        const hasQueries = Array.isArray(tip.queries) && tip.queries.length > 0;
         const refs = referencedBy[tipId] || [];
 
         const opcodeChain = hasBlocks ? getOpcodeChain(blockTemplates[tip.blockExample]) : [];
@@ -233,9 +230,9 @@ class TipCard extends React.Component {
                     {this.state.copied ? (
                         <span className={styles.copiedToast}>{'Copied!'}</span>
                     ) : null}
-                    {tip.followUpLabel ? (
-                        <span className={styles.followUpLabel}>
-                            {tip.followUpLabel}
+                    {tip.title ? (
+                        <span className={styles.tipTitle}>
+                            {tip.title}
                         </span>
                     ) : null}
                     <button
@@ -355,7 +352,7 @@ class TipCard extends React.Component {
                                         href={`#${fid}`}
                                         key={fid}
                                     >
-                                        {exists ? (tips[fid].followUpLabel || fid) : `${fid} (missing!)`}
+                                        {exists ? (tips[fid].title || fid) : `${fid} (missing!)`}
                                     </a>
                                 );
                             })}
@@ -380,21 +377,6 @@ class TipCard extends React.Component {
                     </div>
                 ) : null}
 
-                {hasQueries ? (
-                    <div className={styles.section}>
-                        <div className={styles.sectionLabel}>{'Queries'}</div>
-                        <div className={styles.keywords}>
-                            {tip.queries.map((q, i) => (
-                                <span
-                                    className={styles.keyword}
-                                    key={i}
-                                >
-                                    {q}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                ) : null}
             </div>
         );
     }
@@ -406,7 +388,7 @@ class TipsReview extends React.Component {
         super(props);
         const pendingCapture = loadCaptureState();
         this.state = {
-            mode: pendingCapture ? 'edit' : 'review',
+            mode: 'edit',
             searchQuery: '',
             activeTag: null,
             warningsOnly: false,
@@ -599,10 +581,6 @@ class TipsReview extends React.Component {
                                 <div className={styles.statValue}>{stats.withPointers}</div>
                                 <div className={styles.statLabel}>{'With pointers'}</div>
                             </div>
-                            <div className={styles.stat}>
-                                <div className={styles.statValue}>{stats.withQueries}</div>
-                                <div className={styles.statLabel}>{'With queries'}</div>
-                            </div>
                             <div className={styles.warningsStat}>
                                 <div className={styles.statValue}>{stats.warningCount}</div>
                                 <div className={styles.statLabel}>{'Warnings'}</div>
@@ -659,7 +637,7 @@ class TipsReview extends React.Component {
             const tip = workingTips[id];
             const haystack = [
                 id,
-                tip.followUpLabel || '',
+                tip.title || '',
                 tip.text || ''
             ].join(' ').toLowerCase();
             return haystack.includes(q);
@@ -693,7 +671,7 @@ class TipsReview extends React.Component {
                             >
                                 <span className={styles.editTipItemId}>{id}</span>
                                 <span className={styles.editTipItemLabel}>
-                                    {tip.followUpLabel || tip.text}
+                                    {tip.title || tip.text}
                                 </span>
                             </button>
                         );
@@ -739,16 +717,16 @@ class TipsReview extends React.Component {
 
                     <div className={styles.modeToggle}>
                         <button
-                            className={`${styles.modeButton} ${mode === 'review' ? styles.modeButtonActive : ''}`}
-                            onClick={() => this.setState({mode: 'review'})}
-                        >
-                            {'Review'}
-                        </button>
-                        <button
                             className={`${styles.modeButton} ${mode === 'edit' ? styles.modeButtonActive : ''}`}
                             onClick={() => this.setState({mode: 'edit', workingTips: loadMergedTips()})}
                         >
                             {'Edit'}
+                        </button>
+                        <button
+                            className={`${styles.modeButton} ${mode === 'review' ? styles.modeButtonActive : ''}`}
+                            onClick={() => this.setState({mode: 'review'})}
+                        >
+                            {'Review'}
                         </button>
                     </div>
 

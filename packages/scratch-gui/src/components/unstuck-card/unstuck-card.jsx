@@ -240,8 +240,7 @@ class ContextSuggestions extends React.Component {
                 {display.map((s, index) => {
                     const tip = allTips[s.tipId];
                     if (!tip) return null;
-                    // Use followUpLabel if available, otherwise truncate tip text
-                    const label = tip.followUpLabel || tip.text;
+                    const label = tip.title || tip.text;
                     return (
                         <button
                             className={styles.contextSuggestion}
@@ -677,7 +676,7 @@ class TipDisplay extends React.Component {
                                     key={followUpId}
                                     onClick={this.handleFollowUp}
                                 >
-                                    {tips[followUpId].followUpLabel || followUpId}
+                                    {tips[followUpId].title || followUpId}
                                 </button>
                             ))
                         }

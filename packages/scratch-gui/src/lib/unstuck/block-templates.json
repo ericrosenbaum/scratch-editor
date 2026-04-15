@@ -4402,5 +4402,147 @@
             "shadow": true,
             "topLevel": false
         }
+    ],
+    "captured_too-fast_1776261807097": [
+        {
+            "id": "unstuck_capture_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_capture_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_capture_2",
+            "opcode": "control_forever",
+            "next": null,
+            "parent": "unstuck_capture_1",
+            "inputs": {
+                "SUBSTACK": {
+                    "name": "SUBSTACK",
+                    "block": "unstuck_capture_3",
+                    "shadow": null
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_3",
+            "opcode": "motion_movesteps",
+            "next": "unstuck_capture_4",
+            "parent": "unstuck_capture_2",
+            "inputs": {
+                "STEPS": {
+                    "name": "STEPS",
+                    "block": "unstuck_capture_6",
+                    "shadow": "unstuck_capture_6"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_4",
+            "opcode": "control_wait",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {
+                "DURATION": {
+                    "name": "DURATION",
+                    "block": "unstuck_capture_5",
+                    "shadow": "unstuck_capture_5"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_5",
+            "opcode": "math_positive_number",
+            "next": null,
+            "parent": "unstuck_capture_4",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_6",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "10"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_use-variables_1776261944253": [
+        {
+            "id": "unstuck_capture_1",
+            "opcode": "event_whenthisspriteclicked",
+            "next": "unstuck_capture_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_capture_2",
+            "opcode": "data_changevariableby",
+            "next": null,
+            "parent": "unstuck_capture_1",
+            "inputs": {
+                "VALUE": {
+                    "name": "VALUE",
+                    "block": "unstuck_capture_3",
+                    "shadow": "unstuck_capture_3"
+                }
+            },
+            "fields": {
+                "VARIABLE": {
+                    "name": "VARIABLE",
+                    "value": "score"
+                }
+            },
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_3",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
     ]
 }
