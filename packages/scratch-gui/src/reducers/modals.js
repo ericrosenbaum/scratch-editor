@@ -13,6 +13,7 @@ const MODAL_SOUND_RECORDER = 'soundRecorder';
 const MODAL_CONNECTION = 'connectionModal';
 const MODAL_TIPS_LIBRARY = 'tipsLibrary';
 const MODAL_TIPS_REVIEW = 'tipsReviewModal';
+const MODAL_QA_DATA_EDITOR = 'qaDataEditor';
 
 const initialState = {
     [MODAL_BACKDROP_LIBRARY]: false,
@@ -26,7 +27,8 @@ const initialState = {
     [MODAL_SOUND_RECORDER]: false,
     [MODAL_CONNECTION]: false,
     [MODAL_TIPS_LIBRARY]: false,
-    [MODAL_TIPS_REVIEW]: false
+    [MODAL_TIPS_REVIEW]: false,
+    [MODAL_QA_DATA_EDITOR]: false
 };
 
 const reducer = function (state, action) {
@@ -128,6 +130,12 @@ const closeTipsReview = function () {
 const closeConnectionModal = function () {
     return closeModal(MODAL_CONNECTION);
 };
+const openQADataEditor = function () {
+    return openModal(MODAL_QA_DATA_EDITOR);
+};
+const closeQADataEditor = function () {
+    return closeModal(MODAL_QA_DATA_EDITOR);
+};
 export {
     reducer as default,
     initialState as modalsInitialState,
@@ -143,6 +151,7 @@ export {
     openTipsLibrary,
     openTipsReview,
     openConnectionModal,
+    openQADataEditor,
     closeBackdropLibrary,
     closeCostumeLibrary,
     closeDebugModal,
@@ -154,5 +163,6 @@ export {
     closeTelemetryModal,
     closeTipsLibrary,
     closeTipsReview,
-    closeConnectionModal
+    closeConnectionModal,
+    closeQADataEditor
 };

@@ -49,7 +49,30 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
+import qaIconURL from './qa/qa.svg';
+import qaInsetIconURL from './qa/qa-small.svg';
+
 export default [
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Q+A"
+                description="Name for the 'Q+A' extension"
+                id="gui.extension.qa.name"
+            />
+        ),
+        extensionId: 'qa',
+        iconURL: qaIconURL,
+        insetIconURL: qaInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Answer questions using a dataset you can edit."
+                description="Description for the 'Q+A' extension"
+                id="gui.extension.qa.description"
+            />
+        ),
+        featured: true
+    },
     {
         name: (
             <FormattedMessage

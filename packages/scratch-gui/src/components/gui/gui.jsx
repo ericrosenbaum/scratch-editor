@@ -33,6 +33,7 @@ import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
+import QADataModal from '../../containers/qa-data-modal.jsx';
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
 import {resolveStageSize} from '../../lib/screen-utils';
@@ -144,6 +145,7 @@ const GUIComponent = props => {
         canUseCloud,
         children,
         connectionModalVisible,
+        qaDataEditorVisible,
         costumeLibraryVisible,
         costumesTabVisible,
         debugModalVisible,
@@ -323,6 +325,9 @@ const GUIComponent = props => {
                             useExternalPeripheralList={useExternalPeripheralList}
                             vm={vm}
                         />
+                    ) : null}
+                    {qaDataEditorVisible ? (
+                        <QADataModal vm={vm} />
                     ) : null}
                     {costumeLibraryVisible ? (
                         <CostumeLibrary
@@ -606,6 +611,7 @@ GUIComponent.propTypes = {
     children: PropTypes.node,
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
+    qaDataEditorVisible: PropTypes.bool,
     debugModalVisible: PropTypes.bool,
     hasActiveMembership: PropTypes.bool,
     onDebugModalClose: PropTypes.func,

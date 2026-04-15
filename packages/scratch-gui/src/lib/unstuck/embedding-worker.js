@@ -204,5 +204,56 @@ self.onmessage = async function (event) {
                 message: `Query embedding failed: ${error.message}`
             });
         }
+    } else if (type === 'embed-and-match') {
+        // Stateless per-request: embed query + candidates, return best candidate.
+        // Does not touch tipEmbeddings so it is safe to interleave with tip queries.
+        const requestId = event.data.requestId;
+        if (!embedder) {
+            self.postMessage({
+                type: 'match-error',
+                requestId: requestId,
+                message: 'Model not loaded yet'
+            });
+            return;
+        }
+
+        try {
+            const query = event.data.query;
+            const candidates = event.data.candidates || [];
+
+            if (candidates.length === 0) {
+                self.postMessage({type: 'match-result', requestId: requestId, match: null, score: 0});
+                return;
+            }
+
+            const qOutput = await embedder(QUERY_PREFIX + query, {pooling: 'mean', normalize: true});
+            const qVec = truncateAndRenormalize(qOutput.data, TARGET_DIM);
+
+            let best = null;
+            let bestScore = -Infinity;
+            for (let i = 0; i < candidates.length; i++) {
+                const cOutput = await embedder(candidates[i], {pooling: 'mean', normalize: true});
+                const cVec = truncateAndRenormalize(cOutput.data, TARGET_DIM);
+                const score = cosineSimilarity(qVec, cVec);
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = candidates[i];
+                }
+            }
+
+            self.postMessage({
+                type: 'match-result',
+                requestId: requestId,
+                match: best,
+                score: bestScore
+            });
+        } catch (error) {
+            console.error(`[Embedding Worker] embed-and-match failed: ${error.message}`);
+            self.postMessage({
+                type: 'match-error',
+                requestId: requestId,
+                message: `embed-and-match failed: ${error.message}`
+            });
+        }
     }
 };

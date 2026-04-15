@@ -1,6 +1,9 @@
 /**
- * Embedding-based tip provider using a sentence embedding model in a Web Worker.
- * Falls back to KeywordTipProvider when the model isn't ready.
+ * Embedding-based tip provider using a sentence embedding model.
+ * Delegates all worker/model management to the shared EmbeddingService
+ * singleton so the tips feature and the Q+A extension share one worker
+ * and one model load. Falls back to KeywordTipProvider when the model
+ * isn't ready or errors out.
  *
  * Tip embeddings are pre-computed at build time (see scripts/generate-tip-embeddings.mjs)
  * and loaded from a checked-in cache file. The worker only needs to embed user queries
@@ -10,14 +13,14 @@
 import embeddingCache from '../libraries/tips/embeddings-cache.json';
 import {createHash} from './embedding-hash.js';
 import {buildTipDocument} from './tip-document.js';
+import sharedEmbeddingService from '../embedding/embedding-service.js';
 
 class EmbeddingTipProvider {
-    constructor (tips, keywordProvider) {
+    constructor (tips, keywordProvider, embeddingService) {
         this.tips = tips;
         this._keywordProvider = keywordProvider;
+        this._service = embeddingService || sharedEmbeddingService;
         this._ready = false;
-        this._pendingQueries = new Map(); // id -> {resolve, reject}
-        this._queryId = 0;
 
         // One embedding document per tip — same shape used by the build script,
         // including the `id` field expected by createHash.
@@ -31,8 +34,7 @@ class EmbeddingTipProvider {
         }
 
         // Check if the build-time cache is still valid
-        this._cachedDocs = null;
-        this._cachedEmbeddings = null;
+        let cachedEmbeddings = null;
         if (embeddingCache && embeddingCache.docs && embeddingCache.embeddings) {
             const currentHash = createHash(
                 embeddingCache.modelName,
@@ -40,8 +42,7 @@ class EmbeddingTipProvider {
                 this._tipDocs
             );
             if (currentHash === embeddingCache.contentHash) {
-                this._cachedDocs = embeddingCache.docs;
-                this._cachedEmbeddings = embeddingCache.embeddings;
+                cachedEmbeddings = embeddingCache.embeddings;
             } else {
                 console.warn(
                     '[EmbeddingTipProvider] Cache content hash mismatch — will compute embeddings at runtime'
@@ -49,62 +50,23 @@ class EmbeddingTipProvider {
             }
         }
 
-        this._initWorker();
-    }
-
-    _initWorker () {
-        try {
-            // Load the standalone worker file (copied to build output, not bundled by webpack).
-            // Must be type: 'module' so the worker can use dynamic import() for the CDN library.
-            this._worker = new Worker('/static/embedding-worker.js', {type: 'module'});
-        } catch (e) {
-            console.warn('[EmbeddingTipProvider] Worker creation failed, using keyword fallback', e);
-            return;
-        }
-
-        this._worker.onmessage = event => {
-            const {type} = event.data;
-
-            if (type === 'ready') {
-                if (this._cachedDocs && this._cachedEmbeddings) {
+        this._service.warmUp()
+            .then(() => {
+                if (cachedEmbeddings) {
                     console.log('[EmbeddingTipProvider] Model loaded, using cached tip embeddings');
-                    this._worker.postMessage({
-                        type: 'load-cached-embeddings',
-                        docs: this._cachedDocs,
-                        embeddings: this._cachedEmbeddings
-                    });
-                } else {
-                    console.log('[EmbeddingTipProvider] Model loaded, computing tip embeddings at runtime...');
-                    this._worker.postMessage({
-                        type: 'embed-tips',
-                        docs: this._tipDocs
-                    });
+                    return this._service.loadTipCorpus(this._tipDocs, cachedEmbeddings);
                 }
-            } else if (type === 'tips-ready') {
+                console.log('[EmbeddingTipProvider] Model loaded, computing tip embeddings at runtime...');
+                return this._service.loadTipCorpus(this._tipDocs, null);
+            })
+            .then(() => {
                 console.log('[EmbeddingTipProvider] Tips embedded, switching to semantic matching');
                 this._ready = true;
-            } else if (type === 'results') {
-                const pending = this._pendingQueries.get(event.data.queryId);
-                if (pending) {
-                    this._pendingQueries.delete(event.data.queryId);
-                    pending.resolve(event.data.results);
-                }
-            } else if (type === 'error') {
-                console.warn(`[EmbeddingTipProvider] Worker error: ${event.data.message}`);
-                // Resolve any pending queries via fallback
-                for (const [id, pending] of this._pendingQueries) {
-                    this._pendingQueries.delete(id);
-                    pending.reject(new Error(event.data.message));
-                }
-            }
-        };
-
-        this._worker.onerror = error => {
-            console.warn('[EmbeddingTipProvider] Worker onerror:', error.message || error);
-            this._ready = false;
-        };
-
-        this._worker.postMessage({type: 'init'});
+            })
+            .catch(err => {
+                console.warn('[EmbeddingTipProvider] Failed to load embedding model:', err);
+                this._ready = false;
+            });
     }
 
     /**
@@ -115,32 +77,15 @@ class EmbeddingTipProvider {
      * @returns {Promise<Array<{tipId: string, score: number}>>} Ranked results
      */
     getTips (context, query) {
-        if (!this._ready || !this._worker) {
+        if (!this._ready) {
             return this._keywordProvider.getTips(context, query);
         }
 
-        const queryId = this._queryId++;
-
-        return new Promise((resolve, reject) => {
-            this._pendingQueries.set(queryId, {resolve, reject});
-
-            this._worker.postMessage({
-                type: 'embed-query',
-                query,
-                queryId
-            });
-        }).catch(() =>
-            // On any worker error, fall back to keyword matching
-            this._keywordProvider.getTips(context, query)
-        );
-    }
-
-    dispose () {
-        if (this._worker) {
-            this._worker.terminate();
-            this._worker = null;
-        }
-        this._ready = false;
+        return this._service.queryTips(query)
+            .catch(() =>
+                // On any worker error, fall back to keyword matching
+                this._keywordProvider.getTips(context, query)
+            );
     }
 }
 

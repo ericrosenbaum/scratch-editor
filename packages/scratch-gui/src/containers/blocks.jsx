@@ -30,7 +30,7 @@ import {
 import {connect} from 'react-redux';
 import {updateToolbox} from '../reducers/toolbox';
 import {activateColorPicker} from '../reducers/color-picker';
-import {closeExtensionLibrary, openSoundRecorder, openConnectionModal} from '../reducers/modals';
+import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openQADataEditor} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {updateMetrics} from '../reducers/workspace-metrics';
@@ -165,6 +165,23 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('MAKE_A_VARIABLE', varListButtonCallback(''));
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
+
+        // Register the Q+A extension's "Edit QA Data" button callback. scratch-blocks 2.x
+        // looks up flyout button callbacks on the main workspace (see data_category.ts),
+        // so register there — not on the flyout sub-workspace — otherwise the click fires
+        // "Buttons should have callbacks" and does nothing.
+        const editQADataCallback = () => {
+            // Delay opening so the click event doesn't propagate to the React
+            // modal's scrim and immediately dismiss it — same pattern used in
+            // scratch-blocks data_category.ts for CREATE_VARIABLE / CREATE_LIST.
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    this.props.onOpenQADataEditor();
+                });
+            });
+        };
+        this.workspace.registerButtonCallback('EDIT_QA_DATA', editQADataCallback);
+        toolboxWorkspace.registerButtonCallback('EDIT_QA_DATA', editQADataCallback);
 
         // Store the xml of the toolbox that is actually rendered.
         // This is used in componentDidUpdate instead of prevProps, because
@@ -682,6 +699,7 @@ class Blocks extends React.Component {
             onActivateColorPicker,
             onOpenConnectionModal,
             onOpenSoundRecorder,
+            onOpenQADataEditor,
             updateToolboxState,
             onActivateCustomProcedures,
             onRequestCloseExtensionLibrary,
@@ -749,6 +767,7 @@ Blocks.propTypes = {
     onActivateCustomProcedures: PropTypes.func,
     onOpenConnectionModal: PropTypes.func,
     onOpenSoundRecorder: PropTypes.func,
+    onOpenQADataEditor: PropTypes.func,
     onRequestCloseCustomProcedures: PropTypes.func,
     onRequestCloseExtensionLibrary: PropTypes.func,
     options: PropTypes.shape({
@@ -826,6 +845,9 @@ const mapDispatchToProps = dispatch => ({
     onOpenSoundRecorder: () => {
         dispatch(activateTab(SOUNDS_TAB_INDEX));
         dispatch(openSoundRecorder());
+    },
+    onOpenQADataEditor: () => {
+        dispatch(openQADataEditor());
     },
     onRequestCloseExtensionLibrary: () => {
         dispatch(closeExtensionLibrary());
