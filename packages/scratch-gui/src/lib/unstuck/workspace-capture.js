@@ -75,13 +75,19 @@ const walkBlockTree = function (blocks, topBlockId) {
             }
         }
 
-        // Copy fields as-is
+        // Copy fields as-is (preserve id/variableType so variable and list
+        // reporters round-trip correctly)
         if (block.fields) {
             for (const [fieldName, field] of Object.entries(block.fields)) {
-                templateBlock.fields[fieldName] = {
+                const copied = {
                     name: fieldName,
                     value: field.value
                 };
+                if (field.id) copied.id = field.id;
+                if (typeof field.variableType === 'string') {
+                    copied.variableType = field.variableType;
+                }
+                templateBlock.fields[fieldName] = copied;
             }
         }
 
@@ -165,7 +171,14 @@ const blocksToXml = function (templateBlocks) {
         // Fields
         if (block.fields) {
             for (const [fieldName, field] of Object.entries(block.fields)) {
-                xml += `<field name="${escapeXml(fieldName)}">${escapeXml(field.value)}</field>`;
+                xml += `<field name="${escapeXml(fieldName)}"`;
+                if (field.id) {
+                    xml += ` id="${escapeXml(field.id)}"`;
+                }
+                if (typeof field.variableType === 'string') {
+                    xml += ` variabletype="${escapeXml(field.variableType)}"`;
+                }
+                xml += `>${escapeXml(field.value)}</field>`;
             }
         }
 
@@ -204,10 +217,74 @@ const blocksToXml = function (templateBlocks) {
         return xml;
     };
 
-    const topBlock = templateBlocks.find(b => b.topLevel && !b.shadow);
-    if (!topBlock) return '';
+    const topBlocks = templateBlocks.filter(b => b.topLevel && !b.shadow);
+    if (topBlocks.length === 0) return '';
 
-    return `<xml>${blockToXml(topBlock)}</xml>`;
+    // Collect variable/list/broadcast references from fields so Blockly
+    // can pre-create them on the preview workspace. Without this, loading
+    // a variable reporter into a workspace that lacks the variable throws
+    // "Cannot read properties of null (reading 'getId')" when Blockly
+    // later tries to serialize the field.
+    const varsById = {};
+    for (const b of templateBlocks) {
+        if (!b.fields) continue;
+        for (const field of Object.values(b.fields)) {
+            if (field.id && typeof field.variableType === 'string') {
+                varsById[field.id] = {
+                    id: field.id,
+                    type: field.variableType,
+                    name: field.value
+                };
+            }
+        }
+    }
+    const varEntries = Object.values(varsById);
+    let variablesXml = '';
+    if (varEntries.length > 0) {
+        variablesXml = '<variables>';
+        for (const v of varEntries) {
+            variablesXml += `<variable type="${escapeXml(v.type)}" id="${escapeXml(v.id)}">${escapeXml(v.name)}</variable>`;
+        }
+        variablesXml += '</variables>';
+    }
+
+    return `<xml>${variablesXml}${topBlocks.map(blockToXml).join('')}</xml>`;
 };
 
-export {captureWorkspaceBlocks, blocksToXml};
+/**
+ * Combine multiple captured scripts (from captureWorkspaceBlocks) into a
+ * single flat block array suitable for saving as one template. Each script's
+ * block IDs are re-prefixed so IDs don't collide across scripts.
+ * @param {Array} scripts - Array of {blocks} script objects
+ * @returns {Array} Flat array of block-template objects
+ */
+const combineScripts = function (scripts) {
+    const combined = [];
+    scripts.forEach((script, scriptIdx) => {
+        const idRemap = {};
+        for (const b of script.blocks) {
+            idRemap[b.id] = `unstuck_s${scriptIdx}_${b.id.replace(/^unstuck_capture_/, '')}`;
+        }
+        for (const b of script.blocks) {
+            const remapped = {
+                ...b,
+                id: idRemap[b.id],
+                next: b.next ? idRemap[b.next] || null : null,
+                parent: b.parent ? idRemap[b.parent] || null : null,
+                inputs: {},
+                fields: {...(b.fields || {})}
+            };
+            for (const [name, input] of Object.entries(b.inputs || {})) {
+                remapped.inputs[name] = {
+                    name,
+                    block: input.block ? idRemap[input.block] || null : null,
+                    shadow: input.shadow ? idRemap[input.shadow] || null : null
+                };
+            }
+            combined.push(remapped);
+        }
+    });
+    return combined;
+};
+
+export {captureWorkspaceBlocks, blocksToXml, combineScripts};

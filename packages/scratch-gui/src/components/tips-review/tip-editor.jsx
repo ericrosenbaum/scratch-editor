@@ -10,7 +10,7 @@ import {
     blockOpcodesByCategory,
     categoryNames
 } from '../../lib/unstuck/pointer-targets.js';
-import {captureWorkspaceBlocks, blocksToXml} from '../../lib/unstuck/workspace-capture.js';
+import {captureWorkspaceBlocks, blocksToXml, combineScripts} from '../../lib/unstuck/workspace-capture.js';
 import {saveOverride, hasOverride, clearOverride, saveBlockTemplate, getCustomBlockTemplates} from '../../lib/unstuck/tip-overrides.js';
 
 import styles from './tips-review.css';
@@ -31,6 +31,7 @@ class TipEditor extends React.Component {
         this.state = {
             draft: this.cloneTip(props.tip),
             capturedScripts: null,
+            selectedScriptIndexes: null,
             showCapturePreview: false,
             dirty: false,
             previewCodeExpanded: true,
@@ -117,17 +118,42 @@ class TipEditor extends React.Component {
     performCapture () {
         const {vm} = this.props;
         const scripts = captureWorkspaceBlocks(vm);
-        this.setState({capturedScripts: scripts, showCapturePreview: true});
+        const selected = new Set(scripts.map((_, i) => i));
+        this.setState({
+            capturedScripts: scripts,
+            selectedScriptIndexes: selected,
+            showCapturePreview: true
+        });
     }
 
-    handleUseCapturedScript (script) {
+    toggleScriptSelection (index) {
+        this.setState(prev => {
+            const next = new Set(prev.selectedScriptIndexes);
+            if (next.has(index)) {
+                next.delete(index);
+            } else {
+                next.add(index);
+            }
+            return {selectedScriptIndexes: next};
+        });
+    }
+
+    handleUseSelectedScripts () {
+        const {capturedScripts, selectedScriptIndexes} = this.state;
+        if (!capturedScripts || !selectedScriptIndexes) return;
+        const picked = capturedScripts.filter((_, i) => selectedScriptIndexes.has(i));
+        if (picked.length === 0) return;
+        const combined = combineScripts(picked);
         const templateName = `captured_${this.props.tipId}_${Date.now()}`;
-        saveBlockTemplate(templateName, script.blocks);
+        saveBlockTemplate(templateName, combined);
         this.updateDraft(() => ({
             blockExample: templateName,
-            _capturedBlocks: script.blocks
+            _capturedBlocks: combined
         }));
-        this.setState({showCapturePreview: false});
+        this.setState({
+            showCapturePreview: false,
+            selectedScriptIndexes: null
+        });
     }
 
     // --- List field helpers ---
@@ -452,7 +478,7 @@ class TipEditor extends React.Component {
     }
 
     renderBlockExampleEditor () {
-        const {draft, capturedScripts, showCapturePreview} = this.state;
+        const {draft, capturedScripts, selectedScriptIndexes, showCapturePreview} = this.state;
         const {vm} = this.props;
         const allTemplateNames = Object.keys(blockTemplates);
         const customTemplates = getCustomBlockTemplates();
@@ -514,23 +540,50 @@ class TipEditor extends React.Component {
                         <div className={styles.editorLabel}>
                             {capturedScripts.length === 0 ?
                                 'No scripts found in workspace' :
-                                `Found ${capturedScripts.length} script(s) — click one to use it:`
+                                `Found ${capturedScripts.length} script(s) — check which to include:`
                             }
                         </div>
-                        {capturedScripts.map((script, i) => (
-                            <button
-                                className={styles.editorCaptureItem}
-                                key={i}
-                                onClick={() => this.handleUseCapturedScript(script)}
-                            >
-                                <span className={styles.opcodeChain}>
-                                    {script.opcodeChain.join(' \u2192 ')}
-                                </span>
-                                <span className={styles.editorCaptureBlocks}>
-                                    {`${script.blocks.length} blocks`}
-                                </span>
-                            </button>
-                        ))}
+                        {capturedScripts.map((script, i) => {
+                            const checked = selectedScriptIndexes ? selectedScriptIndexes.has(i) : false;
+                            return (
+                                <label
+                                    className={styles.editorCaptureItem}
+                                    key={i}
+                                    style={{cursor: 'pointer'}}
+                                >
+                                    <span style={{display: 'flex', alignItems: 'center', gap: 8, minWidth: 0}}>
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={() => this.toggleScriptSelection(i)}
+                                        />
+                                        <span className={styles.opcodeChain}>
+                                            {script.opcodeChain.join(' \u2192 ')}
+                                        </span>
+                                    </span>
+                                    <span className={styles.editorCaptureBlocks}>
+                                        {`${script.blocks.length} blocks`}
+                                    </span>
+                                </label>
+                            );
+                        })}
+                        {capturedScripts.length > 0 ? (
+                            <div style={{marginTop: 10, display: 'flex', gap: 8}}>
+                                <button
+                                    className={styles.editorCaptureButton}
+                                    disabled={!selectedScriptIndexes || selectedScriptIndexes.size === 0}
+                                    onClick={() => this.handleUseSelectedScripts()}
+                                >
+                                    {`Use selected (${selectedScriptIndexes ? selectedScriptIndexes.size : 0})`}
+                                </button>
+                                <button
+                                    className={styles.editorCaptureButton}
+                                    onClick={() => this.setState({showCapturePreview: false, selectedScriptIndexes: null})}
+                                >
+                                    {'Cancel'}
+                                </button>
+                            </div>
+                        ) : null}
                     </div>
                 ) : null}
             </div>

@@ -18,6 +18,7 @@ const isSupported = function () {
  * @param {string} [options.lang] - Language code (default: 'en-US')
  * @param {function} [options.onStart] - Called when recognition starts
  * @param {function} [options.onEnd] - Called when recognition ends
+ * @param {function} [options.onInterim] - Called with the live transcript (final + interim) as the user speaks
  * @returns {Promise<string>} The transcribed text
  */
 const listen = function (options = {}) {
@@ -31,7 +32,7 @@ const listen = function (options = {}) {
         const recognition = new SpeechRecognition();
 
         recognition.lang = options.lang || 'en-US';
-        recognition.interimResults = false;
+        recognition.interimResults = true;
         recognition.maxAlternatives = 1;
         recognition.continuous = false;
 
@@ -42,9 +43,23 @@ const listen = function (options = {}) {
         };
 
         recognition.onresult = function (event) {
-            hasResult = true;
-            const transcript = event.results[0][0].transcript;
-            resolve(transcript);
+            let finalTranscript = '';
+            let interimTranscript = '';
+            for (let i = 0; i < event.results.length; i++) {
+                const result = event.results[i];
+                if (result.isFinal) {
+                    finalTranscript += result[0].transcript;
+                } else {
+                    interimTranscript += result[0].transcript;
+                }
+            }
+            if (options.onInterim) {
+                options.onInterim(finalTranscript + interimTranscript);
+            }
+            if (finalTranscript && !hasResult) {
+                hasResult = true;
+                resolve(finalTranscript);
+            }
         };
 
         recognition.onerror = function (event) {

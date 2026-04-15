@@ -527,7 +527,7 @@ body .unstuck-container {
 }
 
 .code-section-body-expanded {
-    max-height: 300px;
+    max-height: 600px;
 }
 
 .code-section-inner {

@@ -114,7 +114,7 @@
         "move-sprite": {
             "id": "move-sprite",
             "title": "Move a sprite",
-            "text": "Use \"move 10 steps\" from the Motion category to make your sprite move!",
+            "text": "Make your sprite move with the \"move\" block",
             "tags": [
                 "motion",
                 "movement",
@@ -125,19 +125,69 @@
                 "glide-to-position",
                 "negative-numbers"
             ],
-            "blockExample": "whenFlagMove",
+            "blockExample": "captured_move-sprite_1776276387827",
             "pointers": [
                 {
                     "label": "Drag \"move 10 steps\" into your code",
                     "blockOpcode": "motion_movesteps",
                     "category": "motion"
                 }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenkeypressed",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "space"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "motion_movesteps",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "move-with-keys": {
             "id": "move-with-keys",
             "title": "Keyboard controls",
-            "text": "Use \"when key pressed\" with a \"move\" block to control your sprite with the keyboard",
+            "text": "Use \"when key pressed\" with a motion block to control your sprite with the keyboard",
             "tags": [
                 "motion",
                 "events",
@@ -977,6 +1027,155 @@
                 {
                     "label": "Variables are here",
                     "target": ".blocklyToolboxCategory#variables"
+                }
+            ],
+            "blockExample": "captured_change-variable_1776281114514",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "data_setvariableto",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "VALUE": {
+                            "name": "VALUE",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {
+                        "VARIABLE": {
+                            "name": "VARIABLE",
+                            "value": "my variable",
+                            "id": "`jEk@4|i[#Fk?(8x)AV.-my variable"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_1",
+                    "opcode": "event_whenthisspriteclicked",
+                    "next": "unstuck_s1_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s1_2",
+                    "opcode": "data_changevariableby",
+                    "next": "unstuck_s1_3",
+                    "parent": "unstuck_s1_1",
+                    "inputs": {
+                        "VALUE": {
+                            "name": "VALUE",
+                            "block": "unstuck_s1_6",
+                            "shadow": "unstuck_s1_6"
+                        }
+                    },
+                    "fields": {
+                        "VARIABLE": {
+                            "name": "VARIABLE",
+                            "value": "my variable",
+                            "id": "`jEk@4|i[#Fk?(8x)AV.-my variable"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_3",
+                    "opcode": "looks_say",
+                    "next": null,
+                    "parent": "unstuck_s1_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s1_4",
+                            "shadow": "unstuck_s1_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_4",
+                    "opcode": "data_variable",
+                    "next": null,
+                    "parent": "unstuck_s1_3",
+                    "inputs": {},
+                    "fields": {
+                        "VARIABLE": {
+                            "name": "VARIABLE",
+                            "value": "my variable",
+                            "id": "`jEk@4|i[#Fk?(8x)AV.-my variable",
+                            "variableType": ""
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_5",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s1_3",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Hello!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_6",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s1_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },

@@ -136,12 +136,16 @@ class QueryInput extends React.Component {
         }
     }
     render () {
+        const displayValue = this.props.listening && this.props.interimTranscript ?
+            this.props.interimTranscript :
+            this.props.query;
         return (
             <div className={styles.queryRow}>
                 <input
                     className={styles.queryInput}
                     placeholder="Or type your question..."
-                    value={this.props.query}
+                    readOnly={this.props.listening}
+                    value={displayValue}
                     onChange={this.props.onQueryChange}
                     onKeyDown={this.handleKeyDown}
                 />
@@ -167,6 +171,7 @@ class QueryInput extends React.Component {
 }
 
 QueryInput.propTypes = {
+    interimTranscript: PropTypes.string,
     listening: PropTypes.bool,
     onQueryChange: PropTypes.func.isRequired,
     onSubmit: PropTypes.func.isRequired,
@@ -339,12 +344,13 @@ class SearchResults extends React.Component {
         this.props.onSelectResult(e.currentTarget.dataset.tipId);
     }
     render () {
-        const {results, tips, query, listening, voiceSupported,
+        const {results, tips, query, listening, interimTranscript, voiceSupported,
             onQueryChange, onSubmit, onVoiceClick} = this.props;
 
         return (
             <div className={styles.searchResults}>
                 <QueryInput
+                    interimTranscript={interimTranscript}
                     listening={listening}
                     query={query}
                     voiceSupported={voiceSupported}
@@ -529,6 +535,7 @@ BrowseAllTips.propTypes = {
 };
 
 SearchResults.propTypes = {
+    interimTranscript: PropTypes.string,
     listening: PropTypes.bool,
     onQueryChange: PropTypes.func.isRequired,
     onSelectResult: PropTypes.func.isRequired,
@@ -715,6 +722,7 @@ const UnstuckCard = ({
     browseFilter,
     codeExpanded,
     expanded,
+    interimTranscript,
     listening,
     loading,
     onAddToProject,
@@ -806,6 +814,7 @@ const UnstuckCard = ({
                                     />
                                 ) : searchResults.length > 0 ? (
                                     <SearchResults
+                                        interimTranscript={interimTranscript}
                                         listening={listening}
                                         query={query}
                                         results={searchResults}
@@ -833,6 +842,7 @@ const UnstuckCard = ({
                                             onPickClick={onPickClick}
                                         />
                                         <QueryInput
+                                            interimTranscript={interimTranscript}
                                             listening={listening}
                                             query={query}
                                             voiceSupported={voiceSupported}
@@ -863,6 +873,7 @@ UnstuckCard.propTypes = {
     browseFilter: PropTypes.string,
     codeExpanded: PropTypes.bool,
     expanded: PropTypes.bool.isRequired,
+    interimTranscript: PropTypes.string,
     listening: PropTypes.bool,
     loading: PropTypes.bool.isRequired,
     onAddToProject: PropTypes.func.isRequired,

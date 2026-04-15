@@ -1,6 +1,7 @@
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import React from 'react';
+import * as ScratchBlocks from 'scratch-blocks';
 
 import {
     closeUnstuck,
@@ -30,6 +31,7 @@ import getProjectText from '../lib/unstuck/blocks-to-text.js';
 import buildContextQuery from '../lib/unstuck/context-query-builder.js';
 import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions.js';
 import blockTemplates from '../lib/unstuck/block-templates.js';
+import {getCustomBlockTemplates} from '../lib/unstuck/tip-overrides.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
 
 const keywordProvider = new KeywordTipProvider(tips);
@@ -58,7 +60,8 @@ class UnstuckCard extends React.Component {
     constructor (props) {
         super(props);
         this.state = {
-            listening: false
+            listening: false,
+            interimTranscript: ''
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleQueryChange = this.handleQueryChange.bind(this);
@@ -165,11 +168,65 @@ class UnstuckCard extends React.Component {
     handleAddToProject () {
         const activeTip = this.props.activeTipId ? tips[this.props.activeTipId] : null;
         if (!activeTip || !activeTip.blockExample) return;
-        const template = blockTemplates[activeTip.blockExample];
+        const custom = getCustomBlockTemplates();
+        const template = custom[activeTip.blockExample] || blockTemplates[activeTip.blockExample];
         if (!template) return;
-        this.props.vm.shareBlocksToTarget(template, this.props.vm.editingTarget.id)
+
+        // Captured templates may reference variables/lists/broadcasts that
+        // don't exist in the current project. Always create missing ones as
+        // GLOBAL variables on the stage (or remap to an existing same-named
+        // global variable) before sharing, so every sprite can see them and
+        // the blocks palette picks them up after refresh.
+        const vm = this.props.vm;
+        const stage = vm.runtime.getTargetForStage();
+        const editingTarget = vm.editingTarget;
+        const idRemap = {};
+        const prepared = JSON.parse(JSON.stringify(template));
+        for (const block of prepared) {
+            if (!block.fields) continue;
+            for (const field of Object.values(block.fields)) {
+                if (!field.id || typeof field.variableType !== 'string') continue;
+                // Look up only on the stage (global scope). Using
+                // editingTarget.lookupVariableById would match a local variable
+                // on the current sprite, but we want globals only.
+                if (stage.lookupVariableById(field.id)) continue;
+                const existing = stage.lookupVariableByNameAndType(field.value, field.variableType);
+                if (existing) {
+                    idRemap[field.id] = existing.id;
+                    field.id = existing.id;
+                } else {
+                    stage.createVariable(field.id, field.value, field.variableType);
+                }
+            }
+        }
+        // Fix up block-level variable refs (e.g. monitor owners) if we remapped any ids.
+        if (Object.keys(idRemap).length > 0) {
+            for (const block of prepared) {
+                if (!block.fields) continue;
+                for (const field of Object.values(block.fields)) {
+                    if (field.id && idRemap[field.id]) {
+                        field.id = idRemap[field.id];
+                    }
+                }
+            }
+        }
+
+        vm.shareBlocksToTarget(prepared, editingTarget.id)
             .then(() => {
-                this.props.vm.refreshWorkspace();
+                vm.refreshWorkspace();
+                // refreshWorkspace → emitWorkspaceUpdate → clearWorkspaceAndLoadFromXml
+                // loads the new <variables> into Blockly's variable map, but
+                // because Blockly events are suppressed during that reload, no
+                // VAR_CREATE fires and the toolbox (which normally refreshes on
+                // VAR_CREATE) never rebuilds its Variables category. Force a
+                // rerender so the palette picks up the new variable immediately.
+                const workspace = ScratchBlocks.getMainWorkspace();
+                if (workspace) {
+                    const toolbox = workspace.getToolbox && workspace.getToolbox();
+                    if (toolbox && toolbox.forceRerender) {
+                        toolbox.forceRerender();
+                    }
+                }
             });
     }
 
@@ -181,11 +238,13 @@ class UnstuckCard extends React.Component {
 
     handleVoiceClick () {
         if (this.state.listening) return;
-        this.setState({listening: true});
+        this.setState({listening: true, interimTranscript: ''});
         voiceListen({
-            onEnd: () => this.setState({listening: false})
+            onInterim: text => this.setState({interimTranscript: text}),
+            onEnd: () => this.setState({listening: false, interimTranscript: ''})
         })
             .then(transcript => {
+                this.setState({interimTranscript: ''});
                 this.props.onSetQuery(transcript);
                 this.props.onSetLoading(true);
                 const context = extractProjectContext(
@@ -202,7 +261,7 @@ class UnstuckCard extends React.Component {
                     });
             })
             .catch(() => {
-                this.setState({listening: false});
+                this.setState({listening: false, interimTranscript: ''});
             });
     }
 
@@ -217,6 +276,7 @@ class UnstuckCard extends React.Component {
                 codeExpanded={this.props.codeExpanded}
                 expanded={this.props.expanded}
                 listening={this.state.listening}
+                interimTranscript={this.state.interimTranscript}
                 loading={this.props.loading}
                 query={this.props.query}
                 searchResults={this.props.searchResults}
