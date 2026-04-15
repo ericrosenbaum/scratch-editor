@@ -4190,5 +4190,217 @@
             "shadow": true,
             "topLevel": false
         }
+    ],
+    "captured_play-sound-until-done_1776182323807": [
+        {
+            "id": "unstuck_capture_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_capture_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_capture_2",
+            "opcode": "sound_playuntildone",
+            "next": "unstuck_capture_3",
+            "parent": "unstuck_capture_1",
+            "inputs": {
+                "SOUND_MENU": {
+                    "name": "SOUND_MENU",
+                    "block": "unstuck_capture_6",
+                    "shadow": "unstuck_capture_6"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_3",
+            "opcode": "looks_sayforsecs",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_capture_4",
+                    "shadow": "unstuck_capture_4"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_capture_5",
+                    "shadow": "unstuck_capture_5"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_4",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "I just meowed!"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_5",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "2"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_6",
+            "opcode": "sound_sounds_menu",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {},
+            "fields": {
+                "SOUND_MENU": {
+                    "name": "SOUND_MENU",
+                    "value": "Meow"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_say-think_1776182424711": [
+        {
+            "id": "unstuck_capture_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_capture_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_capture_2",
+            "opcode": "looks_sayforsecs",
+            "next": "unstuck_capture_3",
+            "parent": "unstuck_capture_1",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_capture_6",
+                    "shadow": "unstuck_capture_6"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_capture_7",
+                    "shadow": "unstuck_capture_7"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_3",
+            "opcode": "looks_thinkforsecs",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_capture_4",
+                    "shadow": "unstuck_capture_4"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_capture_5",
+                    "shadow": "unstuck_capture_5"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_4",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "I wonder what happens next..."
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_5",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "2"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_6",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "Hello!"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_capture_7",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_capture_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "2"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
     ]
 }

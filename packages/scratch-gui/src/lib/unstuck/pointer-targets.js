@@ -4,28 +4,106 @@
  */
 
 const uiTargets = [
-    {label: 'Green Flag button', selector: 'button[class*="green-flag"]'},
-    {label: 'Stop button', selector: 'button[class*="stop-all"]'},
-    {label: 'Extension button', selector: 'button[class*="extension-button"]'},
-    {label: 'Sprite list', selector: '[class*="sprite-selector_sprite-selector"]'},
-    {label: 'Add Sprite button', selector: '[class*="sprite-selector_sprite-selector"] [class*="add-button"]'},
-    {label: 'Add Backdrop button', selector: '[class*="stage-selector"] [class*="add-button"]'},
-    {label: 'Sprite info panel', selector: '[class*="sprite-info"]'},
-    {label: 'Costumes tab', selector: '[class*="tab-list"] [class*="tab"]:nth-child(2)'},
-    {label: 'Sounds tab', selector: '[class*="tab-list"] [class*="tab"]:nth-child(3)'},
-    {label: 'Choose a Sound button', selector: '[class*="new-buttons"] [class*="main-button"]'},
-    {label: 'Choose a Costume button', selector: '[class*="new-buttons"] [class*="main-button"]'},
-    {label: 'Choose a Backdrop button', selector: '[class*="new-buttons"] [class*="main-button"]'},
-    {label: 'Motion toolbox category', selector: '.blocklyToolboxCategory#motion'},
-    {label: 'Looks toolbox category', selector: '.blocklyToolboxCategory#looks'},
-    {label: 'Sound toolbox category', selector: '.blocklyToolboxCategory#sound'},
-    {label: 'Events toolbox category', selector: '.blocklyToolboxCategory#events'},
-    {label: 'Control toolbox category', selector: '.blocklyToolboxCategory#control'},
-    {label: 'Sensing toolbox category', selector: '.blocklyToolboxCategory#sensing'},
-    {label: 'Operators toolbox category', selector: '.blocklyToolboxCategory#operators'},
-    {label: 'Variables toolbox category', selector: '.blocklyToolboxCategory#variables'},
-    {label: 'My Blocks toolbox category', selector: '.blocklyToolboxCategory#myBlocks'}
+    {label: 'Green Flag button', selector: 'button[class*="green-flag"]', side: 'bottom'},
+    {label: 'Stop button', selector: 'button[class*="stop-all"]', side: 'bottom'},
+    {
+        label: 'Extension button',
+        selector: 'button[class*="extension-button"]',
+        preAction: 'switchToCodeTab',
+        side: 'top'
+    },
+    {label: 'Sprite list', selector: '[class*="sprite-selector_sprite-selector"]', side: 'left'},
+    {
+        label: 'Add Sprite button',
+        selector: '[class*="sprite-selector_sprite-selector"] [class*="add-button"]',
+        side: 'top'
+    },
+    {label: 'Add Backdrop button', selector: '[class*="stage-selector"] [class*="add-button"]', side: 'top'},
+    {label: 'Sprite info panel', selector: '[class*="sprite-info"]', side: 'left'},
+    {label: 'Costumes tab', selector: '[class*="tab-list"] [class*="tab"]:nth-child(2)', side: 'bottom'},
+    {label: 'Sounds tab', selector: '[class*="tab-list"] [class*="tab"]:nth-child(3)', side: 'bottom'},
+    {
+        label: 'Choose a Sound button',
+        selector: '[class*="new-buttons"]:not(#__sound) [class*="main-button"]',
+        preAction: 'switchToSoundsTab',
+        side: 'right'
+    },
+    {
+        label: 'Choose a Costume button',
+        selector: '[class*="new-buttons"]:not(#__costume) [class*="main-button"]',
+        preAction: 'switchToCostumesTab',
+        side: 'right'
+    },
+    {
+        label: 'Choose a Backdrop button',
+        selector: '[class*="new-buttons"]:not(#__backdrop) [class*="main-button"]',
+        side: 'right'
+    },
+    {
+        label: 'Motion toolbox category',
+        selector: '.blocklyToolboxCategory#motion',
+        preAction: 'switchToCodeTab',
+        side: 'right'
+    },
+    {
+        label: 'Looks toolbox category',
+        selector: '.blocklyToolboxCategory#looks',
+        preAction: 'switchToCodeTab',
+        side: 'right'
+    },
+    {
+        label: 'Sound toolbox category',
+        selector: '.blocklyToolboxCategory#sound',
+        preAction: 'switchToCodeTab',
+        side: 'right'
+    },
+    {
+        label: 'Events toolbox category',
+        selector: '.blocklyToolboxCategory#events',
+        preAction: 'switchToCodeTab',
+        side: 'right'
+    },
+    {
+        label: 'Control toolbox category',
+        selector: '.blocklyToolboxCategory#control',
+        preAction: 'switchToCodeTab',
+        side: 'right'
+    },
+    {
+        label: 'Sensing toolbox category',
+        selector: '.blocklyToolboxCategory#sensing',
+        preAction: 'switchToCodeTab',
+        side: 'right'
+    },
+    {
+        label: 'Operators toolbox category',
+        selector: '.blocklyToolboxCategory#operators',
+        preAction: 'switchToCodeTab',
+        side: 'right'
+    },
+    {
+        label: 'Variables toolbox category',
+        selector: '.blocklyToolboxCategory#variables',
+        preAction: 'switchToCodeTab',
+        side: 'right'
+    },
+    {
+        label: 'My Blocks toolbox category',
+        selector: '.blocklyToolboxCategory#myBlocks',
+        preAction: 'switchToCodeTab',
+        side: 'right'
+    }
 ];
+
+const getPreActionForTarget = selector => {
+    const entry = uiTargets.find(t => t.selector === selector);
+    return entry && entry.preAction ? entry.preAction : null;
+};
+
+const getSideForTarget = selector => {
+    const entry = uiTargets.find(t => t.selector === selector);
+    return entry && entry.side ? entry.side : 'bottom';
+};
 
 const blockOpcodesByCategory = {
     events: [
@@ -82,14 +160,6 @@ const blockOpcodesByCategory = {
     ]
 };
 
-const preActions = [
-    {value: 'switchToCodeTab', label: 'Switch to Code tab'},
-    {value: 'switchToCostumesTab', label: 'Switch to Costumes tab'},
-    {value: 'switchToSoundsTab', label: 'Switch to Sounds tab'}
-];
-
-const sideOptions = ['top', 'bottom', 'left', 'right'];
-
 const categoryNames = {
     events: 'Events',
     motion: 'Motion',
@@ -103,7 +173,7 @@ const categoryNames = {
 export {
     uiTargets,
     blockOpcodesByCategory,
-    preActions,
-    sideOptions,
+    getPreActionForTarget,
+    getSideForTarget,
     categoryNames
 };

@@ -176,7 +176,7 @@ class UnstuckCard extends React.Component {
     handlePointerClick (pointerIndex) {
         const activeTip = this.props.activeTipId ? tips[this.props.activeTipId] : null;
         if (!activeTip || !activeTip.pointers || !activeTip.pointers[pointerIndex]) return;
-        highlightElement(activeTip.pointers[pointerIndex], this.props.dispatch);
+        highlightElement(activeTip.pointers[pointerIndex], this.props.dispatch, this.props.vm);
     }
 
     handleVoiceClick () {

@@ -8,8 +8,6 @@ import blockTemplates from '../../lib/unstuck/block-templates.js';
 import {
     uiTargets,
     blockOpcodesByCategory,
-    preActions,
-    sideOptions,
     categoryNames
 } from '../../lib/unstuck/pointer-targets.js';
 import {captureWorkspaceBlocks, blocksToXml} from '../../lib/unstuck/workspace-capture.js';
@@ -159,7 +157,7 @@ class TipEditor extends React.Component {
     // --- Pointer helpers ---
     addPointer () {
         this.updateDraft(draft => ({
-            pointers: [...(draft.pointers || []), {label: '', target: '', side: 'right'}]
+            pointers: [...(draft.pointers || []), {label: '', target: ''}]
         }));
     }
 
@@ -440,39 +438,6 @@ class TipEditor extends React.Component {
                         <div className={styles.editorField}>
                             <label className={styles.editorLabelSmall}>{'Target'}</label>
                             {this.renderPointerTargetSelect(pointer, i)}
-                        </div>
-                        <div className={styles.editorPointerRow}>
-                            <div className={styles.editorField}>
-                                <label className={styles.editorLabelSmall}>{'Pre-action'}</label>
-                                <select
-                                    className={styles.editorSelect}
-                                    value={pointer.preAction || ''}
-                                    onChange={e => this.updatePointer(i, 'preAction', e.target.value || undefined)}
-                                >
-                                    <option value="">{'None'}</option>
-                                    {preActions.map(pa => (
-                                        <option
-                                            key={pa.value}
-                                            value={pa.value}
-                                        >{pa.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className={styles.editorField}>
-                                <label className={styles.editorLabelSmall}>{'Side'}</label>
-                                <select
-                                    className={styles.editorSelect}
-                                    value={pointer.side || 'right'}
-                                    onChange={e => this.updatePointer(i, 'side', e.target.value)}
-                                >
-                                    {sideOptions.map(s => (
-                                        <option
-                                            key={s}
-                                            value={s}
-                                        >{s}</option>
-                                    ))}
-                                </select>
-                            </div>
                         </div>
                     </div>
                 ))}

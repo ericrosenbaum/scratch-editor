@@ -329,8 +329,6 @@ class TipCard extends React.Component {
                                 <tr>
                                     <th>{'Label'}</th>
                                     <th>{'Target'}</th>
-                                    <th>{'Pre-action'}</th>
-                                    <th>{'Side'}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -338,8 +336,6 @@ class TipCard extends React.Component {
                                     <tr key={i}>
                                         <td>{p.label}</td>
                                         <td>{p.target}</td>
-                                        <td>{p.preAction || '\u2014'}</td>
-                                        <td>{p.side || '\u2014'}</td>
                                     </tr>
                                 ))}
                             </tbody>

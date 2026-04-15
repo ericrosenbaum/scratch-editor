@@ -12,6 +12,7 @@ import {
     COSTUMES_TAB_INDEX,
     SOUNDS_TAB_INDEX
 } from '../../reducers/editor-tab';
+import {getPreActionForTarget, getSideForTarget} from './pointer-targets';
 
 let activeDriver = null;
 let highlightCleanup = null;
@@ -35,9 +36,10 @@ const destroyHighlight = function () {
  * PreActions prepare the UI state so the target element is visible.
  * @param {string} preAction - The action name to execute
  * @param {function} dispatch - Redux dispatch function
+ * @param {object} vm - Scratch VM instance (needed for target selection)
  * @returns {Promise} Resolves when the action is complete
  */
-const executePreAction = function (preAction, dispatch) {
+const executePreAction = function (preAction, dispatch, vm) {
     switch (preAction) {
     case 'switchToCodeTab':
         dispatch(activateTab(BLOCKS_TAB_INDEX));
@@ -47,6 +49,12 @@ const executePreAction = function (preAction, dispatch) {
         break;
     case 'switchToSoundsTab':
         dispatch(activateTab(SOUNDS_TAB_INDEX));
+        break;
+    case 'selectStage':
+        if (vm) {
+            const stage = vm.runtime.getTargetForStage();
+            if (stage) vm.setEditingTarget(stage.id);
+        }
         break;
     default:
         break;
@@ -194,13 +202,14 @@ const createDriver = function () {
  * Highlight a UI element using driver.js.
  *
  * Supports two pointer shapes:
- * - CSS selector: { label, target, preAction?, side? }
- * - Block opcode: { label, blockOpcode, category, side? }
+ * - CSS selector: { label, target }
+ * - Block opcode: { label, blockOpcode, category }
  *
  * @param {object} pointer - Pointer config from a tip
  * @param {function} dispatch - Redux dispatch function
+ * @param {object} [vm] - Scratch VM instance (optional, needed for some preActions)
  */
-const highlightElement = function (pointer, dispatch) {
+const highlightElement = function (pointer, dispatch, vm) {
     // Clean up any existing highlight
     destroyHighlight();
 
@@ -218,7 +227,7 @@ const highlightElement = function (pointer, dispatch) {
                 element: blockElement,
                 popover: {
                     title: pointer.label,
-                    side: pointer.side || 'right',
+                    side: 'right',
                     align: 'center'
                 }
             });
@@ -284,14 +293,15 @@ const highlightElement = function (pointer, dispatch) {
                 element: pointer.target,
                 popover: {
                     title: pointer.label,
-                    side: pointer.side || 'bottom',
+                    side: getSideForTarget(pointer.target),
                     align: 'center'
                 }
             });
         };
 
-        if (pointer.preAction) {
-            executePreAction(pointer.preAction, dispatch)
+        const preAction = getPreActionForTarget(pointer.target);
+        if (preAction) {
+            executePreAction(preAction, dispatch, vm)
                 .then(doHighlight);
         } else {
             doHighlight();

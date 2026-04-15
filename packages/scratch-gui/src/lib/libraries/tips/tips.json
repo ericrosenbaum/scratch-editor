@@ -29,8 +29,7 @@
                 {
                     "label": "Drag \"when green flag clicked\" into your code",
                     "blockOpcode": "event_whenflagclicked",
-                    "category": "events",
-                    "side": "right"
+                    "category": "events"
                 }
             ],
             "_capturedBlocks": [
@@ -123,8 +122,7 @@
             "pointers": [
                 {
                     "label": "Click this green flag to start!",
-                    "target": "button[class*=\"green-flag\"]",
-                    "side": "bottom"
+                    "target": "button[class*=\"green-flag\"]"
                 }
             ]
         },
@@ -154,8 +152,7 @@
                 {
                     "label": "Drag \"move 10 steps\" into your code",
                     "blockOpcode": "motion_movesteps",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -185,8 +182,7 @@
                 {
                     "label": "Drag \"when key pressed\" into your code",
                     "blockOpcode": "event_whenkeypressed",
-                    "category": "events",
-                    "side": "right"
+                    "category": "events"
                 }
             ]
         },
@@ -213,8 +209,7 @@
                 {
                     "label": "Drag \"change x by\" into your code",
                     "blockOpcode": "motion_changexby",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -242,8 +237,7 @@
                 {
                     "label": "Drag \"go to x: y:\" into your code",
                     "blockOpcode": "motion_gotoxy",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -270,8 +264,7 @@
                 {
                     "label": "Drag \"glide\" into your code",
                     "blockOpcode": "motion_glidesecstoxy",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ],
             "_capturedBlocks": [
@@ -437,14 +430,11 @@
             "pointers": [
                 {
                     "label": "Click the Sounds tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
                 },
                 {
                     "label": "Sound blocks are here",
-                    "target": ".blocklyToolboxCategory#sound",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#sound"
                 }
             ]
         },
@@ -470,21 +460,18 @@
             "pointers": [
                 {
                     "label": "Click the Sounds tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
                 },
                 {
                     "label": "Choose \"record\"",
-                    "target": "[class*=\"new-buttons\"] [class*=\"main-button\"]",
-                    "side": "right",
-                    "preAction": "switchToSoundsTab"
+                    "target": "[class*=\"new-buttons\"] [class*=\"main-button\"]"
                 }
             ]
         },
         "play-sound-until-done": {
             "id": "play-sound-until-done",
             "followUpLabel": "Wait for sound",
-            "text": "Use \"play sound until done\" if you want to wait for the sound to finish before continuing!",
+            "text": "\"Play sound until done\" waits for the sound to finish before continuing to the next block.",
             "tags": [
                 "sound"
             ],
@@ -503,15 +490,111 @@
                 {
                     "label": "Drag \"play sound until done\" into your code",
                     "blockOpcode": "sound_playuntildone",
-                    "category": "sound",
-                    "side": "right"
+                    "category": "sound"
+                }
+            ],
+            "blockExample": "captured_play-sound-until-done_1776182323807",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_capture_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_capture_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_capture_2",
+                    "opcode": "sound_playuntildone",
+                    "next": "unstuck_capture_3",
+                    "parent": "unstuck_capture_1",
+                    "inputs": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "block": "unstuck_capture_6",
+                            "shadow": "unstuck_capture_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_3",
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_capture_4",
+                            "shadow": "unstuck_capture_4"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_capture_5",
+                            "shadow": "unstuck_capture_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_4",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "I just meowed!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_6",
+                    "opcode": "sound_sounds_menu",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "value": "Meow"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
         "say-think": {
             "id": "say-think",
             "followUpLabel": "Speech bubbles",
-            "text": "Use \"say\" or \"think\" from the Looks category to make your sprite talk with a speech bubble!",
+            "text": "Use the \"say\" or \"think\" blocks to make a speech bubble appear",
             "tags": [
                 "looks",
                 "speech",
@@ -527,50 +610,137 @@
             ],
             "followUps": [
                 "change-costume",
-                "say-for-seconds",
                 "debug-with-say"
             ],
-            "blockExample": "saySomething",
+            "blockExample": "captured_say-think_1776182424711",
             "pointers": [
                 {
                     "label": "Drag \"say Hello!\" into your code",
                     "blockOpcode": "looks_sayforsecs",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
-            ]
-        },
-        "say-for-seconds": {
-            "id": "say-for-seconds",
-            "followUpLabel": "Timed messages",
-            "text": "Use \"say for 2 seconds\" to show a message that disappears — great for conversations!",
-            "tags": [
-                "looks",
-                "speech"
             ],
-            "queries": [
-                "how do I make the speech bubble go away",
-                "I want the text to disappear after a while",
-                "how do I make a conversation between sprites",
-                "how do I show a temporary dialogue that disappears"
-            ],
-            "followUps": [
-                "say-think",
-                "too-fast"
-            ],
-            "pointers": [
+            "_capturedBlocks": [
                 {
-                    "label": "Drag \"say for 2 seconds\" into your code",
-                    "blockOpcode": "looks_sayforsecs",
-                    "category": "looks",
-                    "side": "right"
+                    "id": "unstuck_capture_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_capture_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_capture_2",
+                    "opcode": "looks_sayforsecs",
+                    "next": "unstuck_capture_3",
+                    "parent": "unstuck_capture_1",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_capture_6",
+                            "shadow": "unstuck_capture_6"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_capture_7",
+                            "shadow": "unstuck_capture_7"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_3",
+                    "opcode": "looks_thinkforsecs",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_capture_4",
+                            "shadow": "unstuck_capture_4"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_capture_5",
+                            "shadow": "unstuck_capture_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_4",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "I wonder what happens next..."
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_6",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Hello!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_7",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
         "change-costume": {
             "id": "change-costume",
             "followUpLabel": "Change costume",
-            "text": "Use \"switch costume\" or \"next costume\" from Looks to change how your sprite looks!",
+            "text": "Use \"next costume\" to change how your sprite looks",
             "tags": [
                 "looks",
                 "costumes",
@@ -593,15 +763,15 @@
                 {
                     "label": "Drag \"next costume\" into your code",
                     "blockOpcode": "looks_nextcostume",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
-            ]
+            ],
+            "blockExample": "foreverNextCostume"
         },
         "add-costume": {
             "id": "add-costume",
             "followUpLabel": "Add costumes",
-            "text": "Go to the Costumes tab and click the cat button to add a new costume to your sprite!",
+            "text": "Go to the Costumes tab, then click the cat button at the bottom to add a new costume",
             "tags": [
                 "costumes",
                 "drawing"
@@ -621,8 +791,11 @@
             "pointers": [
                 {
                     "label": "Click the Costumes tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
+                },
+                {
+                    "label": "Choose a costume",
+                    "target": "[class*=\"new-buttons\"]:not(#__costume) [class*=\"main-button\"]"
                 }
             ]
         },
@@ -653,15 +826,14 @@
                 {
                     "label": "Drag \"next costume\" into your code",
                     "blockOpcode": "looks_nextcostume",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
         "forever-loop": {
             "id": "forever-loop",
             "followUpLabel": "Repeat forever",
-            "text": "Use a \"forever\" block from Control to make something repeat over and over!",
+            "text": "Use a \"forever\" block from Control to make something repeat over and over",
             "tags": [
                 "control",
                 "loops",
@@ -685,15 +857,14 @@
                 {
                     "label": "Drag \"forever\" into your code",
                     "blockOpcode": "control_forever",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
         "repeat-loop": {
             "id": "repeat-loop",
             "followUpLabel": "Repeat N times",
-            "text": "Use \"repeat 10\" to do something a specific number of times!",
+            "text": "Use \"repeat\" to do something a specific number of times!",
             "tags": [
                 "control",
                 "loops"
@@ -714,8 +885,7 @@
                 {
                     "label": "Drag \"repeat\" into your code",
                     "blockOpcode": "control_repeat",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
@@ -748,8 +918,7 @@
                 {
                     "label": "Drag \"wait 1 seconds\" into your code",
                     "blockOpcode": "control_wait",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
@@ -777,9 +946,7 @@
             "pointers": [
                 {
                     "label": "Variables are here",
-                    "target": ".blocklyToolboxCategory#variables",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#variables"
                 }
             ]
         },
@@ -806,9 +973,7 @@
             "pointers": [
                 {
                     "label": "Variables are here",
-                    "target": ".blocklyToolboxCategory#variables",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#variables"
                 }
             ]
         },
@@ -833,9 +998,7 @@
             "pointers": [
                 {
                     "label": "Variables are here",
-                    "target": ".blocklyToolboxCategory#variables",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#variables"
                 }
             ]
         },
@@ -866,8 +1029,7 @@
                 {
                     "label": "Drag \"touching?\" into your code",
                     "blockOpcode": "sensing_touchingobject",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -899,8 +1061,7 @@
                 {
                     "label": "Drag \"broadcast\" into your code",
                     "blockOpcode": "event_broadcast",
-                    "category": "events",
-                    "side": "right"
+                    "category": "events"
                 }
             ]
         },
@@ -929,8 +1090,7 @@
             "pointers": [
                 {
                     "label": "Add a new sprite here",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]",
-                    "side": "top"
+                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]"
                 }
             ]
         },
@@ -959,8 +1119,7 @@
             "pointers": [
                 {
                     "label": "Add a backdrop here",
-                    "target": "[class*=\"stage-selector\"] [class*=\"add-button\"]",
-                    "side": "top"
+                    "target": "[class*=\"stage-selector\"] [class*=\"add-button\"]"
                 }
             ]
         },
@@ -991,8 +1150,7 @@
                 {
                     "label": "Drag \"when key pressed\" into your code",
                     "blockOpcode": "event_whenkeypressed",
-                    "category": "events",
-                    "side": "right"
+                    "category": "events"
                 }
             ]
         },
@@ -1023,8 +1181,7 @@
                 {
                     "label": "Drag \"create clone of\" into your code",
                     "blockOpcode": "control_create_clone_of",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
@@ -1055,9 +1212,7 @@
             "pointers": [
                 {
                     "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]",
-                    "preAction": "switchToCodeTab",
-                    "side": "top"
+                    "target": "button[class*=\"extension-button\"]"
                 }
             ]
         },
@@ -1128,9 +1283,7 @@
             "pointers": [
                 {
                     "label": "Sound blocks are here",
-                    "target": ".blocklyToolboxCategory#sound",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#sound"
                 }
             ]
         },
@@ -1160,8 +1313,7 @@
             "pointers": [
                 {
                     "label": "Check the sprite info here",
-                    "target": "[class*=\"sprite-info\"]",
-                    "side": "left"
+                    "target": "[class*=\"sprite-info\"]"
                 }
             ]
         },
@@ -1190,8 +1342,7 @@
                 {
                     "label": "Drag \"set ghost effect to 0\" from Looks",
                     "blockOpcode": "looks_seteffectto",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
@@ -1220,8 +1371,7 @@
                 {
                     "label": "Drag \"set size to\" from Looks",
                     "blockOpcode": "looks_setsizeto",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
@@ -1251,8 +1401,7 @@
                 {
                     "label": "Drag \"go to x: y:\" into your code",
                     "blockOpcode": "motion_gotoxy",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -1278,8 +1427,7 @@
             "pointers": [
                 {
                     "label": "Click the red stop sign",
-                    "target": "button[class*=\"stop-all\"]",
-                    "side": "bottom"
+                    "target": "button[class*=\"stop-all\"]"
                 }
             ]
         },
@@ -1307,8 +1455,7 @@
                 {
                     "label": "Drag \"say\" into your code",
                     "blockOpcode": "looks_say",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
@@ -1339,8 +1486,7 @@
             "pointers": [
                 {
                     "label": "Click a sprite to see its code",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"]",
-                    "side": "left"
+                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
                 }
             ]
         },
@@ -1369,8 +1515,7 @@
                 {
                     "label": "Find \"touching color?\" in Sensing",
                     "blockOpcode": "sensing_touchingcolor",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -1401,8 +1546,7 @@
                 {
                     "label": "Drag \"wait\" into your code",
                     "blockOpcode": "control_wait",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
@@ -1431,8 +1575,7 @@
             "pointers": [
                 {
                     "label": "Click a sprite to see its code",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"]",
-                    "side": "left"
+                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
                 }
             ]
         },
@@ -1508,8 +1651,7 @@
                 {
                     "label": "Drag \"when green flag clicked\" into your code",
                     "blockOpcode": "event_whenflagclicked",
-                    "category": "events",
-                    "side": "right"
+                    "category": "events"
                 }
             ]
         },
@@ -1541,8 +1683,7 @@
                 {
                     "label": "Drag \"if\" into your code",
                     "blockOpcode": "control_if",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
@@ -1591,8 +1732,7 @@
                 {
                     "label": "Drag blocks from here into the workspace",
                     "blockOpcode": "motion_movesteps",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -1662,8 +1802,7 @@
                 {
                     "label": "Drag \"when green flag clicked\" into your code",
                     "blockOpcode": "event_whenflagclicked",
-                    "category": "events",
-                    "side": "right"
+                    "category": "events"
                 }
             ]
         },
@@ -1693,8 +1832,7 @@
                 {
                     "label": "Drag \"wait\" into your code",
                     "blockOpcode": "control_wait",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
@@ -1765,9 +1903,7 @@
             "pointers": [
                 {
                     "label": "Operators are here",
-                    "target": ".blocklyToolboxCategory#operators",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#operators"
                 }
             ]
         },
@@ -1836,8 +1972,7 @@
                 {
                     "label": "Find \"pick random\" in Operators",
                     "blockOpcode": "operator_random",
-                    "category": "operators",
-                    "side": "right"
+                    "category": "operators"
                 }
             ]
         },
@@ -1927,9 +2062,7 @@
             "pointers": [
                 {
                     "label": "Find My Blocks here",
-                    "target": ".blocklyToolboxCategory#myBlocks",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#myBlocks"
                 }
             ]
         },
@@ -1957,9 +2090,7 @@
             "pointers": [
                 {
                     "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]",
-                    "preAction": "switchToCodeTab",
-                    "side": "top"
+                    "target": "button[class*=\"extension-button\"]"
                 }
             ]
         },
@@ -1987,9 +2118,7 @@
             "pointers": [
                 {
                     "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]",
-                    "preAction": "switchToCodeTab",
-                    "side": "top"
+                    "target": "button[class*=\"extension-button\"]"
                 }
             ]
         },
@@ -2016,9 +2145,7 @@
             "pointers": [
                 {
                     "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]",
-                    "preAction": "switchToCodeTab",
-                    "side": "top"
+                    "target": "button[class*=\"extension-button\"]"
                 }
             ]
         },
@@ -2045,9 +2172,7 @@
             "pointers": [
                 {
                     "label": "Operators are here",
-                    "target": ".blocklyToolboxCategory#operators",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#operators"
                 }
             ]
         },
@@ -2074,8 +2199,7 @@
                 {
                     "label": "Drag \"ask and wait\" into your code",
                     "blockOpcode": "sensing_askandwait",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -2102,8 +2226,7 @@
                 {
                     "label": "Drag \"touching color?\" into your code",
                     "blockOpcode": "sensing_touchingcolor",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -2129,8 +2252,7 @@
                 {
                     "label": "Find \"timer\" in Sensing",
                     "blockOpcode": "sensing_timer",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -2158,8 +2280,7 @@
                 {
                     "label": "Drag \"change size by\" into your code",
                     "blockOpcode": "looks_changesizeby",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
@@ -2187,8 +2308,7 @@
                 {
                     "label": "Drag \"set effect to\" from Looks",
                     "blockOpcode": "looks_seteffectto",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
@@ -2214,9 +2334,7 @@
             "pointers": [
                 {
                     "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]",
-                    "preAction": "switchToCodeTab",
-                    "side": "top"
+                    "target": "button[class*=\"extension-button\"]"
                 }
             ]
         },
@@ -2243,9 +2361,7 @@
             "pointers": [
                 {
                     "label": "Sound blocks are here",
-                    "target": ".blocklyToolboxCategory#sound",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#sound"
                 }
             ]
         },
@@ -2273,8 +2389,7 @@
                 {
                     "label": "Drag \"when backdrop switches to\" into your code",
                     "blockOpcode": "event_whenbackdropswitchesto",
-                    "category": "events",
-                    "side": "right"
+                    "category": "events"
                 }
             ]
         },
@@ -2302,8 +2417,7 @@
                 {
                     "label": "Drag \"go to\" into your code",
                     "blockOpcode": "motion_goto",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -2332,8 +2446,7 @@
                 {
                     "label": "Drag \"when I start as a clone\" into your code",
                     "blockOpcode": "control_start_as_clone",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
@@ -2358,9 +2471,7 @@
             "pointers": [
                 {
                     "label": "Variables are here",
-                    "target": ".blocklyToolboxCategory#variables",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#variables"
                 }
             ]
         },
@@ -2390,8 +2501,7 @@
                 {
                     "label": "Drag \"go to x: y:\" into your code",
                     "blockOpcode": "motion_gotoxy",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -2422,8 +2532,7 @@
                 {
                     "label": "Drag \"broadcast\" into your code",
                     "blockOpcode": "event_broadcast",
-                    "category": "events",
-                    "side": "right"
+                    "category": "events"
                 }
             ]
         },
@@ -2452,8 +2561,7 @@
                 {
                     "label": "Drag \"delete this clone\" into your code",
                     "blockOpcode": "control_delete_this_clone",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
@@ -2482,8 +2590,7 @@
                 {
                     "label": "Drag \"repeat until\" into your code",
                     "blockOpcode": "control_repeat_until",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
@@ -2502,15 +2609,13 @@
                 "how do I make a story with narrative and conversation and scenes like a tale"
             ],
             "followUps": [
-                "say-for-seconds",
                 "change-backdrop"
             ],
             "pointers": [
                 {
                     "label": "Drag \"say for 2 seconds\" into your code",
                     "blockOpcode": "looks_sayforsecs",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
@@ -2535,8 +2640,7 @@
             "pointers": [
                 {
                     "label": "Click the Costumes tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
                 }
             ]
         },
@@ -2563,9 +2667,7 @@
             "pointers": [
                 {
                     "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]",
-                    "preAction": "switchToCodeTab",
-                    "side": "top"
+                    "target": "button[class*=\"extension-button\"]"
                 }
             ]
         },
@@ -2591,9 +2693,7 @@
             "pointers": [
                 {
                     "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]",
-                    "preAction": "switchToCodeTab",
-                    "side": "top"
+                    "target": "button[class*=\"extension-button\"]"
                 }
             ]
         },
@@ -2620,8 +2720,7 @@
                 {
                     "label": "Drag \"ask and wait\" into your code",
                     "blockOpcode": "sensing_askandwait",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -2651,8 +2750,7 @@
                 {
                     "label": "Drag \"change y by\" into your code",
                     "blockOpcode": "motion_changeyby",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -2680,8 +2778,7 @@
                 {
                     "label": "Drag \"when this sprite clicked\" into your code",
                     "blockOpcode": "event_whenthisspriteclicked",
-                    "category": "events",
-                    "side": "right"
+                    "category": "events"
                 }
             ]
         },
@@ -2708,8 +2805,7 @@
             "pointers": [
                 {
                     "label": "Add a new sprite here",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]",
-                    "side": "top"
+                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]"
                 }
             ]
         },
@@ -2736,9 +2832,7 @@
             "pointers": [
                 {
                     "label": "Variables are here",
-                    "target": ".blocklyToolboxCategory#variables",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#variables"
                 }
             ]
         },
@@ -2764,8 +2858,7 @@
                 {
                     "label": "Find \"pick random\" in Operators",
                     "blockOpcode": "operator_random",
-                    "category": "operators",
-                    "side": "right"
+                    "category": "operators"
                 }
             ]
         },
@@ -2790,8 +2883,7 @@
             "pointers": [
                 {
                     "label": "Click the Sounds tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
                 }
             ]
         },
@@ -2819,8 +2911,7 @@
                 {
                     "label": "Drag \"change color effect\" into your code",
                     "blockOpcode": "looks_changeeffectby",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
@@ -2847,8 +2938,7 @@
                 {
                     "label": "Drag \"turn\" into your code",
                     "blockOpcode": "motion_turnright",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -2875,8 +2965,7 @@
                 {
                     "label": "Drag \"change size by\" into your code",
                     "blockOpcode": "looks_changesizeby",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
@@ -2902,9 +2991,7 @@
             "pointers": [
                 {
                     "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]",
-                    "preAction": "switchToCodeTab",
-                    "side": "top"
+                    "target": "button[class*=\"extension-button\"]"
                 }
             ]
         },
@@ -2928,8 +3015,7 @@
             "pointers": [
                 {
                     "label": "Click the Sounds tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
                 }
             ]
         },
@@ -2957,8 +3043,7 @@
                 {
                     "label": "Drag \"if on edge, bounce\" into your code",
                     "blockOpcode": "motion_ifonedgebounce",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -3008,8 +3093,7 @@
             "pointers": [
                 {
                     "label": "Check rotation style in sprite info",
-                    "target": "[class*=\"sprite-info\"]",
-                    "side": "left"
+                    "target": "[class*=\"sprite-info\"]"
                 }
             ]
         },
@@ -3036,8 +3120,7 @@
             "pointers": [
                 {
                     "label": "Go to the Costumes tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
                 }
             ]
         },
@@ -3064,8 +3147,7 @@
             "pointers": [
                 {
                     "label": "Click the Costumes tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
                 }
             ]
         },
@@ -4560,8 +4642,7 @@
                 {
                     "label": "Drag \"go to\" into your code",
                     "blockOpcode": "motion_goto",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -4589,8 +4670,7 @@
                 {
                     "label": "Drag \"change y by\" into your code",
                     "blockOpcode": "motion_changeyby",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -4621,8 +4701,7 @@
                 {
                     "label": "Drag \"change y by\" into your code",
                     "blockOpcode": "motion_changeyby",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -4693,8 +4772,7 @@
                 {
                     "label": "Drag \"glide\" into your code",
                     "blockOpcode": "motion_glidesecstoxy",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -4725,8 +4803,7 @@
                 {
                     "label": "Drag \"change y by\" into your code",
                     "blockOpcode": "motion_changeyby",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -4758,8 +4835,7 @@
                 {
                     "label": "Drag \"next costume\" into your code",
                     "blockOpcode": "looks_nextcostume",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
@@ -4789,8 +4865,7 @@
                 {
                     "label": "Drag \"turn\" into your code",
                     "blockOpcode": "motion_turnright",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -4819,8 +4894,7 @@
                 {
                     "label": "Drag \"point in direction\" into your code",
                     "blockOpcode": "motion_pointindirection",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -4850,8 +4924,7 @@
                 {
                     "label": "Drag \"glide\" into your code",
                     "blockOpcode": "motion_glidesecstoxy",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -4880,8 +4953,7 @@
             "pointers": [
                 {
                     "label": "Drag code onto a sprite thumbnail to copy it",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"]",
-                    "side": "left"
+                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
                 }
             ]
         },
@@ -4910,8 +4982,7 @@
             "pointers": [
                 {
                     "label": "Click Costumes to see its looks",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
                 }
             ]
         },
@@ -4937,8 +5008,7 @@
             "pointers": [
                 {
                     "label": "Click the Costumes tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
                 }
             ]
         },
@@ -4964,8 +5034,7 @@
             "pointers": [
                 {
                     "label": "Add a new sprite here",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]",
-                    "side": "top"
+                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]"
                 }
             ]
         },
@@ -4992,8 +5061,7 @@
             "pointers": [
                 {
                     "label": "Right-click a sprite to duplicate",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"]",
-                    "side": "left"
+                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
                 }
             ]
         },
@@ -5025,8 +5093,7 @@
                 {
                     "label": "Drag \"if on edge, bounce\" into your code",
                     "blockOpcode": "motion_ifonedgebounce",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -5056,8 +5123,7 @@
                 {
                     "label": "Drag \"turn\" into your code",
                     "blockOpcode": "motion_turnright",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -5083,8 +5149,7 @@
             "pointers": [
                 {
                     "label": "Check rotation style in sprite info",
-                    "target": "[class*=\"sprite-info\"]",
-                    "side": "left"
+                    "target": "[class*=\"sprite-info\"]"
                 }
             ]
         },
@@ -5112,8 +5177,7 @@
             "pointers": [
                 {
                     "label": "Set rotation style in sprite info",
-                    "target": "[class*=\"sprite-info\"]",
-                    "side": "left"
+                    "target": "[class*=\"sprite-info\"]"
                 }
             ]
         },
@@ -5144,8 +5208,7 @@
                 {
                     "label": "Drag \"key pressed?\" from Sensing",
                     "blockOpcode": "sensing_keypressed",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -5176,8 +5239,7 @@
                 {
                     "label": "Drag \"key pressed?\" from Sensing",
                     "blockOpcode": "sensing_keypressed",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -5206,8 +5268,7 @@
                 {
                     "label": "Drag \"go to x: y:\" into your code",
                     "blockOpcode": "motion_gotoxy",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -5235,8 +5296,7 @@
             "pointers": [
                 {
                     "label": "Click a sprite to add code to it",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"]",
-                    "side": "left"
+                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
                 }
             ]
         },
@@ -5264,8 +5324,7 @@
             "pointers": [
                 {
                     "label": "Click the Sounds tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
                 }
             ]
         },
@@ -5293,8 +5352,7 @@
             "pointers": [
                 {
                     "label": "Click the Sounds tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
                 }
             ]
         },
@@ -5324,8 +5382,7 @@
                 {
                     "label": "Drag \"play sound until done\" into your code",
                     "blockOpcode": "sound_playuntildone",
-                    "category": "sound",
-                    "side": "right"
+                    "category": "sound"
                 }
             ]
         },
@@ -5356,8 +5413,7 @@
                 {
                     "label": "Drag \"touching color?\" into your code",
                     "blockOpcode": "sensing_touchingcolor",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -5387,8 +5443,7 @@
                 {
                     "label": "Drag \"touching color?\" into your code",
                     "blockOpcode": "sensing_touchingcolor",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -5418,9 +5473,7 @@
             "pointers": [
                 {
                     "label": "Make a Variable here",
-                    "target": ".blocklyToolboxCategory#variables",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#variables"
                 }
             ]
         },
@@ -5449,9 +5502,7 @@
             "pointers": [
                 {
                     "label": "Make a Variable here",
-                    "target": ".blocklyToolboxCategory#variables",
-                    "preAction": "switchToCodeTab",
-                    "side": "right"
+                    "target": ".blocklyToolboxCategory#variables"
                 }
             ]
         },
@@ -5484,8 +5535,7 @@
                 {
                     "label": "Drag \"touching color?\" into your code",
                     "blockOpcode": "sensing_touchingcolor",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -5516,8 +5566,7 @@
                 {
                     "label": "Drag \"stop all\" into your code",
                     "blockOpcode": "control_stop",
-                    "category": "control",
-                    "side": "right"
+                    "category": "control"
                 }
             ]
         },
@@ -5549,8 +5598,7 @@
                 {
                     "label": "Drag \"touching?\" into your code",
                     "blockOpcode": "sensing_touchingobject",
-                    "category": "sensing",
-                    "side": "right"
+                    "category": "sensing"
                 }
             ]
         },
@@ -5579,8 +5627,7 @@
                 {
                     "label": "Drag \"change y by\" into your code",
                     "blockOpcode": "motion_changeyby",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -5679,8 +5726,7 @@
                 {
                     "label": "Drag \"change y by\" into your code",
                     "blockOpcode": "motion_changeyby",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -5711,8 +5757,7 @@
                 {
                     "label": "Drag \"if on edge, bounce\" into your code",
                     "blockOpcode": "motion_ifonedgebounce",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -5764,8 +5809,7 @@
                 {
                     "label": "Drag \"change x by\" into your code",
                     "blockOpcode": "motion_changexby",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -5793,8 +5837,7 @@
             "pointers": [
                 {
                     "label": "Add a backdrop here",
-                    "target": "[class*=\"stage-selector\"] [class*=\"add-button\"]",
-                    "side": "top"
+                    "target": "[class*=\"stage-selector\"] [class*=\"add-button\"]"
                 }
             ]
         },
@@ -5824,8 +5867,7 @@
                 {
                     "label": "Find \"x position\" in Motion",
                     "blockOpcode": "motion_xposition",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -5853,8 +5895,7 @@
                 {
                     "label": "Drag \"point in direction\" into your code",
                     "blockOpcode": "motion_pointindirection",
-                    "category": "motion",
-                    "side": "right"
+                    "category": "motion"
                 }
             ]
         },
@@ -5933,8 +5974,7 @@
                 {
                     "label": "Drag \"when green flag clicked\" into your code",
                     "blockOpcode": "event_whenflagclicked",
-                    "category": "events",
-                    "side": "right"
+                    "category": "events"
                 }
             ]
         },
@@ -5964,8 +6004,7 @@
                 {
                     "label": "Drag \"set size to\" into your code",
                     "blockOpcode": "looks_setsizeto",
-                    "category": "looks",
-                    "side": "right"
+                    "category": "looks"
                 }
             ]
         },
@@ -5991,8 +6030,7 @@
             "pointers": [
                 {
                     "label": "Click the Costumes tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)",
-                    "side": "bottom"
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
                 }
             ]
         }
