@@ -110,6 +110,9 @@ export class EditorState {
         }
         const reducer = combineReducers(reducers);
         this.store = createStore(reducer, initialState, enhancer);
+        if (typeof window !== 'undefined') {
+            (window as any).__scratchStore = this.store;
+        }
     }
 
     dispatch (action) {

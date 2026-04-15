@@ -7,13 +7,14 @@ export default eslintConfigScratch.defineConfig(
     eslintConfigScratch.legacy.base,
     importPlugin.flatConfigs.errors,
     {
-        files: ['*.{js,cjs,mjs,ts}', 'scripts/**/*.{js,cjs,mjs,ts}'],
+        files: ['*.{js,cjs,mjs,ts}', 'scripts/**/*.{js,cjs,mjs,ts}', 'dev-server/**/*.{js,cjs,mjs,ts}'],
         extends: [eslintConfigScratch.legacy.node],
         languageOptions: {
             globals: globals.node
         },
         rules: {
-            'no-console': 'off'
+            'no-console': 'off',
+            'func-style': 'off'
         }
     },
     {
@@ -106,6 +107,38 @@ export default eslintConfigScratch.defineConfig(
         rules: {
             // the way these files are built makes duplicate imports the natural way to do things
             'no-duplicate-imports': 'off'
+        }
+    },
+    {
+        // Tips/unstuck feature: on-device ML worker + authoring tool.
+        // These files intentionally log diagnostic info during inference/debug.
+        files: [
+            'src/lib/unstuck/**/*.js',
+            'src/components/unstuck-card/**/*.{js,jsx}',
+            'src/components/tips-review/**/*.{js,jsx}',
+            'src/containers/unstuck-card.jsx',
+            'src/containers/tips-review.jsx',
+            'src/containers/capture-return-button.jsx',
+            'src/reducers/unstuck.js',
+            'src/lib/libraries/extensions/speech2text/**/*.js',
+            'dev-server/**/*.js'
+        ],
+        rules: {
+            'no-console': 'off',
+            'func-style': 'off',
+            'no-negated-condition': 'off',
+            '@stylistic/no-mixed-operators': 'off',
+            '@stylistic/max-len': 'off',
+            'jsdoc/valid-types': 'off'
+        }
+    },
+    {
+        // Tips playwright specs use dynamic in-page imports like
+        // `await import('/src/lib/libraries/tips/index.js')` which the
+        // typescript resolver can't statically verify.
+        files: ['test/playwright/tips*.spec.js'],
+        rules: {
+            'import-x/no-unresolved': 'off'
         }
     },
     globalIgnores([

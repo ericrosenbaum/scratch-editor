@@ -1,0 +1,40 @@
+.capture-return-button {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 500;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: none;
+    background: #1e1e2e;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slide-up 0.3s ease-out;
+}
+
+.capture-return-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.capture-return-icon {
+    font-size: 18px;
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

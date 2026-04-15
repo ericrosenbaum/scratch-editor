@@ -1,0 +1,4616 @@
+{
+    "tips": {
+        "nothing-happens": {
+            "id": "nothing-happens",
+            "title": "Start your code",
+            "text": "Your code needs a \"hat block\" on top to tell it when to start. Try \"when green flag clicked.\"",
+            "tags": [
+                "events",
+                "start",
+                "beginner",
+                "hat"
+            ],
+            "followUps": [
+                "green-flag",
+                "add-event-block",
+                "no-visible-effect",
+                "block-already-there"
+            ],
+            "blockExample": "captured_nothing-happens_1776172322032",
+            "pointers": [
+                {
+                    "label": "Drag \"when green flag clicked\" into your code",
+                    "blockOpcode": "event_whenflagclicked",
+                    "category": "events"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_capture_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_capture_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_capture_2",
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "unstuck_capture_1",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_capture_3",
+                            "shadow": "unstuck_capture_3"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_capture_4",
+                            "shadow": "unstuck_capture_4"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_3",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Hello!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_4",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "green-flag": {
+            "id": "green-flag",
+            "title": "Run your project",
+            "text": "Click the green flag above the stage to run your project!",
+            "tags": [
+                "events",
+                "start",
+                "beginner"
+            ],
+            "followUps": [
+                "nothing-happens",
+                "stop-project",
+                "reset-at-start"
+            ],
+            "pointers": [
+                {
+                    "label": "Click this green flag to start!",
+                    "target": "button[class*=\"green-flag\"]"
+                }
+            ]
+        },
+        "move-sprite": {
+            "id": "move-sprite",
+            "title": "Move a sprite",
+            "text": "Use \"move 10 steps\" from the Motion category to make your sprite move!",
+            "tags": [
+                "motion",
+                "movement",
+                "beginner"
+            ],
+            "followUps": [
+                "move-with-keys",
+                "glide-to-position",
+                "negative-numbers"
+            ],
+            "blockExample": "whenFlagMove",
+            "pointers": [
+                {
+                    "label": "Drag \"move 10 steps\" into your code",
+                    "blockOpcode": "motion_movesteps",
+                    "category": "motion"
+                }
+            ]
+        },
+        "move-with-keys": {
+            "id": "move-with-keys",
+            "title": "Keyboard controls",
+            "text": "Use \"when key pressed\" with a \"move\" block to control your sprite with the keyboard",
+            "tags": [
+                "motion",
+                "events",
+                "keyboard",
+                "beginner"
+            ],
+            "followUps": [
+                "move-sprite",
+                "change-xy-position"
+            ],
+            "blockExample": "whenKeyMoveRight",
+            "pointers": [
+                {
+                    "label": "Drag \"when key pressed\" into your code",
+                    "blockOpcode": "event_whenkeypressed",
+                    "category": "events"
+                }
+            ]
+        },
+        "change-xy-position": {
+            "id": "change-xy-position",
+            "title": "Change x",
+            "text": "Use \"change x by\" for left and right movement",
+            "tags": [
+                "motion",
+                "coordinates",
+                "position"
+            ],
+            "followUps": [
+                "move-with-keys",
+                "go-to-position"
+            ],
+            "blockExample": "whenKeyMoveRight",
+            "pointers": [
+                {
+                    "label": "Drag \"change x by\" into your code",
+                    "blockOpcode": "motion_changexby",
+                    "category": "motion"
+                }
+            ]
+        },
+        "go-to-position": {
+            "id": "go-to-position",
+            "title": "Go to a spot",
+            "text": "Use \"go to x y\" to put your sprite in a specific place",
+            "tags": [
+                "motion",
+                "position"
+            ],
+            "followUps": [
+                "change-xy-position",
+                "glide-to-position"
+            ],
+            "blockExample": "goToCenter",
+            "pointers": [
+                {
+                    "label": "Drag \"go to x: y:\" into your code",
+                    "blockOpcode": "motion_gotoxy",
+                    "category": "motion"
+                }
+            ]
+        },
+        "glide-to-position": {
+            "id": "glide-to-position",
+            "title": "Smooth movement",
+            "text": "Use \"glide\" instead of \"go to\" for smooth, animated movement!",
+            "tags": [
+                "motion",
+                "animation"
+            ],
+            "followUps": [
+                "move-sprite",
+                "too-fast"
+            ],
+            "blockExample": "captured_glide-to-position_1776180803203",
+            "pointers": [
+                {
+                    "label": "Drag \"glide\" into your code",
+                    "blockOpcode": "motion_glidesecstoxy",
+                    "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_capture_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_capture_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_capture_2",
+                    "opcode": "motion_gotoxy",
+                    "next": "unstuck_capture_3",
+                    "parent": "unstuck_capture_1",
+                    "inputs": {
+                        "X": {
+                            "name": "X",
+                            "block": "unstuck_capture_7",
+                            "shadow": "unstuck_capture_7"
+                        },
+                        "Y": {
+                            "name": "Y",
+                            "block": "unstuck_capture_8",
+                            "shadow": "unstuck_capture_8"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_3",
+                    "opcode": "motion_glidesecstoxy",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_capture_4",
+                            "shadow": "unstuck_capture_4"
+                        },
+                        "X": {
+                            "name": "X",
+                            "block": "unstuck_capture_5",
+                            "shadow": "unstuck_capture_5"
+                        },
+                        "Y": {
+                            "name": "Y",
+                            "block": "unstuck_capture_6",
+                            "shadow": "unstuck_capture_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_4",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "100"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_6",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "100"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_7",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_8",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "add-sound": {
+            "id": "add-sound",
+            "title": "Add a sound",
+            "text": "Go to the Sounds tab to add sounds, then use the \"play sound\" block",
+            "tags": [
+                "sound",
+                "audio",
+                "beginner"
+            ],
+            "followUps": [
+                "record-sound",
+                "play-sound-until-done",
+                "play-vs-play-until-done"
+            ],
+            "blockExample": "playSound",
+            "pointers": [
+                {
+                    "label": "Click the Sounds tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
+                },
+                {
+                    "label": "Sound blocks are here",
+                    "target": ".blocklyToolboxCategory#sound"
+                }
+            ]
+        },
+        "record-sound": {
+            "id": "record-sound",
+            "title": "Record a sound",
+            "text": "In the Sounds tab, click the microphone button to record your own sound!",
+            "tags": [
+                "sound",
+                "recording"
+            ],
+            "followUps": [
+                "add-sound",
+                "play-sound-until-done"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the Sounds tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
+                },
+                {
+                    "label": "Choose \"record\"",
+                    "target": "[class*=\"new-buttons\"] [class*=\"main-button\"]"
+                }
+            ]
+        },
+        "play-sound-until-done": {
+            "id": "play-sound-until-done",
+            "title": "Wait for sound",
+            "text": "\"Play sound until done\" waits for the sound to finish before continuing to the next block.",
+            "tags": [
+                "sound"
+            ],
+            "followUps": [
+                "add-sound",
+                "too-fast"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"play sound until done\" into your code",
+                    "blockOpcode": "sound_playuntildone",
+                    "category": "sound"
+                }
+            ],
+            "blockExample": "captured_play-sound-until-done_1776182323807",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_capture_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_capture_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_capture_2",
+                    "opcode": "sound_playuntildone",
+                    "next": "unstuck_capture_3",
+                    "parent": "unstuck_capture_1",
+                    "inputs": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "block": "unstuck_capture_6",
+                            "shadow": "unstuck_capture_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_3",
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_capture_4",
+                            "shadow": "unstuck_capture_4"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_capture_5",
+                            "shadow": "unstuck_capture_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_4",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "I just meowed!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_6",
+                    "opcode": "sound_sounds_menu",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "value": "Meow"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "say-think": {
+            "id": "say-think",
+            "title": "Speech bubbles",
+            "text": "Use the \"say\" or \"think\" blocks to make a speech bubble appear",
+            "tags": [
+                "looks",
+                "speech",
+                "beginner"
+            ],
+            "followUps": [
+                "change-costume",
+                "debug-with-say"
+            ],
+            "blockExample": "captured_say-think_1776182424711",
+            "pointers": [
+                {
+                    "label": "Drag \"say Hello!\" into your code",
+                    "blockOpcode": "looks_sayforsecs",
+                    "category": "looks"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_capture_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_capture_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_capture_2",
+                    "opcode": "looks_sayforsecs",
+                    "next": "unstuck_capture_3",
+                    "parent": "unstuck_capture_1",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_capture_6",
+                            "shadow": "unstuck_capture_6"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_capture_7",
+                            "shadow": "unstuck_capture_7"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_3",
+                    "opcode": "looks_thinkforsecs",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_capture_4",
+                            "shadow": "unstuck_capture_4"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_capture_5",
+                            "shadow": "unstuck_capture_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_4",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "I wonder what happens next..."
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_6",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Hello!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_7",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "change-costume": {
+            "id": "change-costume",
+            "title": "Change costume",
+            "text": "Use \"next costume\" to change how your sprite looks",
+            "tags": [
+                "looks",
+                "costumes",
+                "animation",
+                "beginner"
+            ],
+            "followUps": [
+                "add-costume",
+                "animate-costume",
+                "costume-center"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"next costume\" into your code",
+                    "blockOpcode": "looks_nextcostume",
+                    "category": "looks"
+                }
+            ],
+            "blockExample": "foreverNextCostume"
+        },
+        "add-costume": {
+            "id": "add-costume",
+            "title": "Add costumes",
+            "text": "Go to the Costumes tab, then click the cat button at the bottom to add a new costume",
+            "tags": [
+                "costumes",
+                "drawing"
+            ],
+            "followUps": [
+                "change-costume",
+                "animate-costume"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the Costumes tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
+                },
+                {
+                    "label": "Choose a costume",
+                    "target": "[class*=\"new-buttons\"]:not(#__costume) [class*=\"main-button\"]"
+                }
+            ]
+        },
+        "animate-costume": {
+            "id": "animate-costume",
+            "title": "Animate",
+            "text": "Put \"next costume\" inside a \"forever\" loop with a \"wait\" block to make a simple animation!",
+            "tags": [
+                "looks",
+                "costumes",
+                "animation",
+                "loops"
+            ],
+            "followUps": [
+                "change-costume",
+                "forever-loop"
+            ],
+            "blockExample": "foreverNextCostume",
+            "pointers": [
+                {
+                    "label": "Drag \"next costume\" into your code",
+                    "blockOpcode": "looks_nextcostume",
+                    "category": "looks"
+                }
+            ]
+        },
+        "forever-loop": {
+            "id": "forever-loop",
+            "title": "Repeat forever",
+            "text": "Use a \"forever\" block from Control to make something repeat over and over",
+            "tags": [
+                "control",
+                "loops",
+                "beginner"
+            ],
+            "followUps": [
+                "repeat-loop",
+                "too-fast",
+                "if-not-forever"
+            ],
+            "blockExample": "foreverMove",
+            "pointers": [
+                {
+                    "label": "Drag \"forever\" into your code",
+                    "blockOpcode": "control_forever",
+                    "category": "control"
+                }
+            ]
+        },
+        "repeat-loop": {
+            "id": "repeat-loop",
+            "title": "Repeat N times",
+            "text": "Use \"repeat\" to do something a specific number of times!",
+            "tags": [
+                "control",
+                "loops"
+            ],
+            "followUps": [
+                "forever-loop",
+                "too-fast"
+            ],
+            "blockExample": "repeatTurn",
+            "pointers": [
+                {
+                    "label": "Drag \"repeat\" into your code",
+                    "blockOpcode": "control_repeat",
+                    "category": "control"
+                }
+            ]
+        },
+        "too-fast": {
+            "id": "too-fast",
+            "title": "Slow it down",
+            "text": "Add a \"wait\" block inside your loop to slow things down",
+            "tags": [
+                "control",
+                "timing",
+                "beginner"
+            ],
+            "followUps": [
+                "forever-loop",
+                "glide-to-position",
+                "wait-vs-no-wait",
+                "understand-seconds"
+            ],
+            "blockExample": "captured_too-fast_1776261807097",
+            "pointers": [
+                {
+                    "label": "Drag \"wait 1 seconds\" into your code",
+                    "blockOpcode": "control_wait",
+                    "category": "control"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_capture_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_capture_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_capture_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_capture_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_capture_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_3",
+                    "opcode": "motion_movesteps",
+                    "next": "unstuck_capture_4",
+                    "parent": "unstuck_capture_2",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_capture_6",
+                            "shadow": "unstuck_capture_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_4",
+                    "opcode": "control_wait",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {
+                        "DURATION": {
+                            "name": "DURATION",
+                            "block": "unstuck_capture_5",
+                            "shadow": "unstuck_capture_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_5",
+                    "opcode": "math_positive_number",
+                    "next": null,
+                    "parent": "unstuck_capture_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_6",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "use-variables": {
+            "id": "use-variables",
+            "title": "Make a variable",
+            "text": "Click \"Make a Variable\" in the Variables category to keep track of things like score!",
+            "tags": [
+                "variables",
+                "data",
+                "beginner"
+            ],
+            "followUps": [
+                "change-variable",
+                "use-lists"
+            ],
+            "pointers": [
+                {
+                    "label": "Variables are here",
+                    "target": ".blocklyToolboxCategory#variables"
+                }
+            ],
+            "blockExample": "captured_use-variables_1776261944253",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_capture_1",
+                    "opcode": "event_whenthisspriteclicked",
+                    "next": "unstuck_capture_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_capture_2",
+                    "opcode": "data_changevariableby",
+                    "next": null,
+                    "parent": "unstuck_capture_1",
+                    "inputs": {
+                        "VALUE": {
+                            "name": "VALUE",
+                            "block": "unstuck_capture_3",
+                            "shadow": "unstuck_capture_3"
+                        }
+                    },
+                    "fields": {
+                        "VARIABLE": {
+                            "name": "VARIABLE",
+                            "value": "score"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_capture_3",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_capture_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "change-variable": {
+            "id": "change-variable",
+            "title": "Update a variable",
+            "text": "Use \"set my variable to 0\" at the start, then \"change my variable by 1\" to update it!",
+            "tags": [
+                "variables",
+                "data"
+            ],
+            "followUps": [
+                "use-variables",
+                "detect-collision"
+            ],
+            "pointers": [
+                {
+                    "label": "Variables are here",
+                    "target": ".blocklyToolboxCategory#variables"
+                }
+            ]
+        },
+        "use-lists": {
+            "id": "use-lists",
+            "title": "Use lists",
+            "text": "Click \"Make a List\" in Variables to store multiple things, like a collection of names!",
+            "tags": [
+                "variables",
+                "lists",
+                "data"
+            ],
+            "followUps": [
+                "use-variables"
+            ],
+            "pointers": [
+                {
+                    "label": "Variables are here",
+                    "target": ".blocklyToolboxCategory#variables"
+                }
+            ]
+        },
+        "detect-collision": {
+            "id": "detect-collision",
+            "title": "Detect collisions",
+            "text": "Use \"if touching\" from Sensing inside a forever loop to detect when sprites bump into each other!",
+            "tags": [
+                "sensing",
+                "collision",
+                "game"
+            ],
+            "followUps": [
+                "forever-loop",
+                "make-game",
+                "touching-wrong-color"
+            ],
+            "blockExample": "foreverIfTouching",
+            "pointers": [
+                {
+                    "label": "Drag \"touching?\" into your code",
+                    "blockOpcode": "sensing_touchingobject",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "broadcast-message": {
+            "id": "broadcast-message",
+            "title": "Send messages",
+            "text": "Use \"broadcast\" and \"when I receive\" to send messages between sprites!",
+            "tags": [
+                "events",
+                "broadcast",
+                "communication"
+            ],
+            "followUps": [
+                "add-sprite",
+                "make-game",
+                "broadcast-for-levels"
+            ],
+            "blockExample": "broadcastAndReceive",
+            "pointers": [
+                {
+                    "label": "Drag \"broadcast\" into your code",
+                    "blockOpcode": "event_broadcast",
+                    "category": "events"
+                }
+            ]
+        },
+        "add-sprite": {
+            "id": "add-sprite",
+            "title": "Add a sprite",
+            "text": "Click the cat button below the stage to add a new sprite to your project!",
+            "tags": [
+                "sprites",
+                "beginner"
+            ],
+            "followUps": [
+                "broadcast-message",
+                "detect-collision"
+            ],
+            "pointers": [
+                {
+                    "label": "Add a new sprite here",
+                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]"
+                }
+            ]
+        },
+        "change-backdrop": {
+            "id": "change-backdrop",
+            "title": "Change backdrop",
+            "text": "Click the picture button below the stage to add a backdrop, then use \"switch backdrop\"!",
+            "tags": [
+                "looks",
+                "backdrop",
+                "stage",
+                "beginner"
+            ],
+            "followUps": [
+                "add-sprite",
+                "backdrop-events"
+            ],
+            "pointers": [
+                {
+                    "label": "Add a backdrop here",
+                    "target": "[class*=\"stage-selector\"] [class*=\"add-button\"]"
+                }
+            ]
+        },
+        "make-game": {
+            "id": "make-game",
+            "title": "Make a game",
+            "text": "A simple game needs: keyboard controls, something to collect or avoid, and a score variable!",
+            "tags": [
+                "game",
+                "project-ideas"
+            ],
+            "followUps": [
+                "move-with-keys",
+                "detect-collision",
+                "use-variables"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"when key pressed\" into your code",
+                    "blockOpcode": "event_whenkeypressed",
+                    "category": "events"
+                }
+            ]
+        },
+        "clone-sprite": {
+            "id": "clone-sprite",
+            "title": "Clone sprites",
+            "text": "Use \"create clone of myself\" to make copies of a sprite — great for projectiles or enemies!",
+            "tags": [
+                "control",
+                "clones",
+                "advanced"
+            ],
+            "followUps": [
+                "make-game",
+                "detect-collision",
+                "clone-basics",
+                "clone-delete"
+            ],
+            "blockExample": "cloneCreateAndBehave",
+            "pointers": [
+                {
+                    "label": "Drag \"create clone of\" into your code",
+                    "blockOpcode": "control_create_clone_of",
+                    "category": "control"
+                }
+            ]
+        },
+        "add-extension": {
+            "id": "add-extension",
+            "title": "Add extensions",
+            "text": "Click the blue \"Add Extension\" button at the bottom-left to get extra blocks like Music or Pen!",
+            "tags": [
+                "extensions",
+                "beginner"
+            ],
+            "followUps": [
+                "pen-extension",
+                "music-extension",
+                "text-to-speech-extension"
+            ],
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ]
+        },
+        "no-visible-effect": {
+            "id": "no-visible-effect",
+            "title": "No visible effect",
+            "text": "Some blocks don't have a visible effect on their own — try connecting them to other blocks in a stack!",
+            "tags": [
+                "debugging",
+                "beginner"
+            ],
+            "followUps": [
+                "nothing-happens",
+                "block-already-there",
+                "add-event-block"
+            ]
+        },
+        "block-already-there": {
+            "id": "block-already-there",
+            "title": "Already there",
+            "text": "If a block doesn't seem to do anything, the sprite might already be where the block is telling it to go — try changing the number first!",
+            "tags": [
+                "debugging",
+                "beginner"
+            ],
+            "followUps": [
+                "no-visible-effect",
+                "nothing-happens"
+            ]
+        },
+        "sound-volume-zero": {
+            "id": "sound-volume-zero",
+            "title": "Fix volume",
+            "text": "Can't hear anything? Check if the volume was set to 0 — use \"set volume to 100%\" to fix it!",
+            "tags": [
+                "sound",
+                "debugging"
+            ],
+            "followUps": [
+                "add-sound",
+                "play-vs-play-until-done"
+            ],
+            "pointers": [
+                {
+                    "label": "Sound blocks are here",
+                    "target": ".blocklyToolboxCategory#sound"
+                }
+            ]
+        },
+        "sprite-is-hidden": {
+            "id": "sprite-is-hidden",
+            "title": "Unhide sprite",
+            "text": "Can't see your sprite? It might be hidden! Click the \"show\" eye icon in the sprite info area, or use the \"show\" block.",
+            "tags": [
+                "looks",
+                "debugging",
+                "beginner"
+            ],
+            "followUps": [
+                "sprite-ghost-effect",
+                "sprite-too-small",
+                "sprite-off-stage"
+            ],
+            "pointers": [
+                {
+                    "label": "Check the sprite info here",
+                    "target": "[class*=\"sprite-info\"]"
+                }
+            ]
+        },
+        "sprite-ghost-effect": {
+            "id": "sprite-ghost-effect",
+            "title": "Fix ghost effect",
+            "text": "If your sprite is see-through or invisible, the ghost effect might be on — use \"set ghost effect to 0\" to make it solid again!",
+            "tags": [
+                "looks",
+                "debugging",
+                "effects"
+            ],
+            "followUps": [
+                "sprite-is-hidden",
+                "graphic-effects"
+            ],
+            "blockExample": "setGhostZero",
+            "pointers": [
+                {
+                    "label": "Drag \"set ghost effect to 0\" from Looks",
+                    "blockOpcode": "looks_seteffectto",
+                    "category": "looks"
+                }
+            ]
+        },
+        "sprite-too-small": {
+            "id": "sprite-too-small",
+            "title": "Fix size",
+            "text": "Your sprite might be too small to see! Use \"set size to 100%\" to reset it.",
+            "tags": [
+                "looks",
+                "debugging"
+            ],
+            "followUps": [
+                "sprite-is-hidden",
+                "change-size"
+            ],
+            "blockExample": "setSizeTo100",
+            "pointers": [
+                {
+                    "label": "Drag \"set size to\" from Looks",
+                    "blockOpcode": "looks_setsizeto",
+                    "category": "looks"
+                }
+            ]
+        },
+        "sprite-off-stage": {
+            "id": "sprite-off-stage",
+            "title": "Find sprite",
+            "text": "Sprite missing? It might have moved off the edge of the stage! Use \"go to x: 0 y: 0\" to bring it back to the center.",
+            "tags": [
+                "motion",
+                "debugging"
+            ],
+            "followUps": [
+                "sprite-is-hidden",
+                "go-to-position"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"go to x: y:\" into your code",
+                    "blockOpcode": "motion_gotoxy",
+                    "category": "motion"
+                }
+            ]
+        },
+        "stop-project": {
+            "id": "stop-project",
+            "title": "Stop everything",
+            "text": "Click the red stop sign to stop all running scripts — useful when things are going wrong!",
+            "tags": [
+                "control",
+                "beginner"
+            ],
+            "followUps": [
+                "green-flag",
+                "nothing-happens"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the red stop sign",
+                    "target": "button[class*=\"stop-all\"]"
+                }
+            ]
+        },
+        "debug-with-say": {
+            "id": "debug-with-say",
+            "title": "Debug with say",
+            "text": "Not sure what your code is doing? Add a \"say\" block to show values while your code runs — it's like X-ray vision for your code!",
+            "tags": [
+                "debugging",
+                "advanced"
+            ],
+            "followUps": [
+                "say-think",
+                "show-hide-variable"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"say\" into your code",
+                    "blockOpcode": "looks_say",
+                    "category": "looks"
+                }
+            ]
+        },
+        "wrong-sprite-selected": {
+            "id": "wrong-sprite-selected",
+            "title": "Check which sprite",
+            "text": "Code not running? Make sure you added it to the right sprite — click the sprite you want in the sprite pane, then check its code!",
+            "tags": [
+                "debugging",
+                "sprites",
+                "beginner"
+            ],
+            "followUps": [
+                "where-did-blocks-go",
+                "sprite-has-own-code"
+            ],
+            "pointers": [
+                {
+                    "label": "Click a sprite to see its code",
+                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
+                }
+            ]
+        },
+        "touching-wrong-color": {
+            "id": "touching-wrong-color",
+            "title": "Fix color detection",
+            "text": "If \"touching color\" isn't working, make sure you picked the exact right color — use the eyedropper tool on the color square to sample it from the stage!",
+            "tags": [
+                "debugging",
+                "sensing"
+            ],
+            "followUps": [
+                "detect-collision",
+                "touching-color"
+            ],
+            "pointers": [
+                {
+                    "label": "Find \"touching color?\" in Sensing",
+                    "blockOpcode": "sensing_touchingcolor",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "wait-vs-no-wait": {
+            "id": "wait-vs-no-wait",
+            "title": "Add a wait",
+            "text": "If things happen too fast to see, try adding \"wait\" blocks between actions — even \"wait 0.1 seconds\" can help!",
+            "tags": [
+                "debugging",
+                "control",
+                "timing"
+            ],
+            "followUps": [
+                "too-fast",
+                "understand-seconds"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"wait\" into your code",
+                    "blockOpcode": "control_wait",
+                    "category": "control"
+                }
+            ]
+        },
+        "where-did-blocks-go": {
+            "id": "where-did-blocks-go",
+            "title": "Find your blocks",
+            "text": "Each sprite has its own code! Click on a sprite in the sprite pane to see its blocks.",
+            "tags": [
+                "sprites",
+                "beginner",
+                "meta"
+            ],
+            "followUps": [
+                "sprite-has-own-code",
+                "wrong-sprite-selected"
+            ],
+            "pointers": [
+                {
+                    "label": "Click a sprite to see its code",
+                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
+                }
+            ]
+        },
+        "sprite-has-own-code": {
+            "id": "sprite-has-own-code",
+            "title": "Separate code",
+            "text": "Remember, each sprite has its own separate code, costumes, and sounds — check you're editing the right sprite!",
+            "tags": [
+                "sprites",
+                "meta",
+                "beginner"
+            ],
+            "followUps": [
+                "where-did-blocks-go",
+                "wrong-sprite-selected"
+            ]
+        },
+        "blocks-run-in-order": {
+            "id": "blocks-run-in-order",
+            "title": "Block order",
+            "text": "Blocks in a stack run one at a time, from top to bottom — the order matters!",
+            "tags": [
+                "control",
+                "beginner",
+                "meta"
+            ],
+            "followUps": [
+                "two-stacks-same-time",
+                "add-event-block"
+            ]
+        },
+        "two-stacks-same-time": {
+            "id": "two-stacks-same-time",
+            "title": "Do two things at once",
+            "text": "You can run two stacks at the same time! Use two \"when green flag clicked\" blocks to do things in parallel.",
+            "tags": [
+                "events",
+                "control",
+                "meta"
+            ],
+            "followUps": [
+                "blocks-run-in-order",
+                "nothing-happens"
+            ],
+            "blockExample": "twoFlagStacks",
+            "pointers": [
+                {
+                    "label": "Drag \"when green flag clicked\" into your code",
+                    "blockOpcode": "event_whenflagclicked",
+                    "category": "events"
+                }
+            ]
+        },
+        "if-not-forever": {
+            "id": "if-not-forever",
+            "title": "Keep checking",
+            "text": "\"If\" checks only once! Wrap it inside a \"forever\" loop to keep checking over and over.",
+            "tags": [
+                "control",
+                "beginner",
+                "meta"
+            ],
+            "followUps": [
+                "forever-loop",
+                "detect-collision"
+            ],
+            "blockExample": "foreverIfCheck",
+            "pointers": [
+                {
+                    "label": "Drag \"if\" into your code",
+                    "blockOpcode": "control_if",
+                    "category": "control"
+                }
+            ]
+        },
+        "deleting-sprite-deletes-code": {
+            "id": "deleting-sprite-deletes-code",
+            "title": "Don't lose code",
+            "text": "Careful — deleting a sprite also deletes all the code, costumes, and sounds inside it!",
+            "tags": [
+                "sprites",
+                "meta",
+                "beginner"
+            ],
+            "followUps": [
+                "sprite-has-own-code",
+                "add-sprite"
+            ]
+        },
+        "drag-blocks-to-workspace": {
+            "id": "drag-blocks-to-workspace",
+            "title": "Start coding",
+            "text": "Drag blocks from the block palette on the left into the workspace to start coding!",
+            "tags": [
+                "beginner",
+                "meta"
+            ],
+            "followUps": [
+                "click-block-to-try",
+                "add-event-block"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag blocks from here into the workspace",
+                    "blockOpcode": "motion_movesteps",
+                    "category": "motion"
+                }
+            ]
+        },
+        "click-block-to-try": {
+            "id": "click-block-to-try",
+            "title": "Try a block",
+            "text": "You can click on any block in the workspace to try it! Click a whole stack to run all of them.",
+            "tags": [
+                "beginner",
+                "meta"
+            ],
+            "followUps": [
+                "drag-blocks-to-workspace",
+                "nothing-happens"
+            ]
+        },
+        "remove-block-from-stack": {
+            "id": "remove-block-from-stack",
+            "title": "Remove a block",
+            "text": "To remove a block from the middle of a stack, drag it out to the side — the blocks above and below will reconnect!",
+            "tags": [
+                "beginner",
+                "meta",
+                "editing"
+            ],
+            "followUps": [
+                "right-click-duplicate",
+                "drag-blocks-to-workspace"
+            ]
+        },
+        "add-event-block": {
+            "id": "add-event-block",
+            "title": "Add a hat block",
+            "text": "Every script needs a \"hat block\" (the rounded ones) on top to know when to start running.",
+            "tags": [
+                "events",
+                "beginner",
+                "meta"
+            ],
+            "followUps": [
+                "nothing-happens",
+                "green-flag"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"when green flag clicked\" into your code",
+                    "blockOpcode": "event_whenflagclicked",
+                    "category": "events"
+                }
+            ]
+        },
+        "batched-updates": {
+            "id": "batched-updates",
+            "title": "Why no effect?",
+            "text": "Blocks that undo each other (like \"turn 15\" then \"turn -15\") happen so fast you won't see anything — add a \"wait\" block between them!",
+            "tags": [
+                "motion",
+                "control",
+                "meta"
+            ],
+            "followUps": [
+                "wait-vs-no-wait",
+                "too-fast"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"wait\" into your code",
+                    "blockOpcode": "control_wait",
+                    "category": "control"
+                }
+            ]
+        },
+        "negative-numbers": {
+            "id": "negative-numbers",
+            "title": "Go backward",
+            "text": "Use a minus sign (-) before a number to go backward! For example, \"move -10 steps\" makes your sprite go the other way.",
+            "tags": [
+                "motion",
+                "math",
+                "beginner"
+            ],
+            "followUps": [
+                "move-sprite",
+                "decimal-numbers"
+            ]
+        },
+        "decimal-numbers": {
+            "id": "decimal-numbers",
+            "title": "Use decimals",
+            "text": "You can use decimal numbers like 0.5! Try \"wait 0.5 seconds\" for a shorter pause, or \"move 0.5 steps\" for tiny movements.",
+            "tags": [
+                "math",
+                "beginner",
+                "control"
+            ],
+            "followUps": [
+                "negative-numbers",
+                "understand-seconds"
+            ]
+        },
+        "greater-less-than": {
+            "id": "greater-less-than",
+            "title": "Compare numbers",
+            "text": "The pointy symbols compare numbers: < means \"less than\" and > means \"greater than\" — the open end faces the bigger number!",
+            "tags": [
+                "operators",
+                "math",
+                "beginner"
+            ],
+            "followUps": [
+                "use-variables",
+                "if-not-forever"
+            ],
+            "pointers": [
+                {
+                    "label": "Operators are here",
+                    "target": ".blocklyToolboxCategory#operators"
+                }
+            ]
+        },
+        "find-block-by-color": {
+            "id": "find-block-by-color",
+            "title": "Find blocks",
+            "text": "Blocks are color-coded by category! Blue = Motion, Purple = Looks, Pink = Sound, Yellow = Events, Orange = Control.",
+            "tags": [
+                "beginner",
+                "meta"
+            ],
+            "followUps": [
+                "drag-blocks-to-workspace",
+                "add-event-block"
+            ]
+        },
+        "change-block-menu": {
+            "id": "change-block-menu",
+            "title": "Change options",
+            "text": "See a dropdown on a block? Click it to change the option — like picking a different key, sound, or direction!",
+            "tags": [
+                "beginner",
+                "meta"
+            ],
+            "followUps": [
+                "insert-reporter",
+                "click-block-to-try"
+            ]
+        },
+        "insert-reporter": {
+            "id": "insert-reporter",
+            "title": "Dynamic values",
+            "text": "You can drag a round or pointed block into an input on another block to make it dynamic!",
+            "tags": [
+                "beginner",
+                "meta",
+                "advanced"
+            ],
+            "followUps": [
+                "random-numbers",
+                "use-variables"
+            ],
+            "blockExample": "moveRandomSteps",
+            "pointers": [
+                {
+                    "label": "Find \"pick random\" in Operators",
+                    "blockOpcode": "operator_random",
+                    "category": "operators"
+                }
+            ]
+        },
+        "right-click-duplicate": {
+            "id": "right-click-duplicate",
+            "title": "Duplicate blocks",
+            "text": "Right-click (or long-press) on a block to duplicate it, add a comment, or get help!",
+            "tags": [
+                "beginner",
+                "meta",
+                "editing"
+            ],
+            "followUps": [
+                "remove-block-from-stack",
+                "click-block-to-try"
+            ]
+        },
+        "change-xy-explanation": {
+            "id": "change-xy-explanation",
+            "title": "Stage coordinates",
+            "text": "The stage is like a grid: X goes left (-240) to right (240), and Y goes down (-180) to up (180), with center at (0, 0).",
+            "tags": [
+                "motion",
+                "coordinates"
+            ],
+            "followUps": [
+                "go-to-position",
+                "change-xy-position"
+            ]
+        },
+        "understand-seconds": {
+            "id": "understand-seconds",
+            "title": "Timing tips",
+            "text": "1 second = a quick pause. \"Wait 10 seconds\" = a long pause. \"Wait 0.1 seconds\" = super fast! Try different numbers to get the right speed.",
+            "tags": [
+                "control",
+                "timing"
+            ],
+            "followUps": [
+                "too-fast",
+                "decimal-numbers"
+            ]
+        },
+        "custom-blocks": {
+            "id": "custom-blocks",
+            "title": "Make custom blocks",
+            "text": "Click \"Make a Block\" in My Blocks to create your own custom block — great for cleaning up long scripts!",
+            "tags": [
+                "myblocks",
+                "advanced"
+            ],
+            "followUps": [
+                "forever-loop",
+                "repeat-loop"
+            ],
+            "pointers": [
+                {
+                    "label": "Find My Blocks here",
+                    "target": ".blocklyToolboxCategory#myBlocks"
+                }
+            ]
+        },
+        "pen-extension": {
+            "id": "pen-extension",
+            "title": "Draw with Pen",
+            "text": "Add the Pen extension to draw lines and shapes as your sprite moves — try \"pen down\" + \"move\" + \"turn\" in a loop!",
+            "tags": [
+                "extensions",
+                "pen",
+                "drawing"
+            ],
+            "followUps": [
+                "add-extension",
+                "stamp-block",
+                "make-art"
+            ],
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ]
+        },
+        "music-extension": {
+            "id": "music-extension",
+            "title": "Play music",
+            "text": "Add the Music extension to play drums and instruments — use it in a loop to make a beat!",
+            "tags": [
+                "extensions",
+                "music",
+                "sound"
+            ],
+            "followUps": [
+                "add-extension",
+                "make-music-project"
+            ],
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ]
+        },
+        "text-to-speech-extension": {
+            "id": "text-to-speech-extension",
+            "title": "Sprite talks out loud",
+            "text": "Add the Text to Speech extension to make your sprite actually talk out loud!",
+            "tags": [
+                "extensions",
+                "speech"
+            ],
+            "followUps": [
+                "add-extension",
+                "say-think"
+            ],
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ]
+        },
+        "random-numbers": {
+            "id": "random-numbers",
+            "title": "Use random",
+            "text": "Use \"pick random 1 to 10\" from Operators to add surprises — great for random positions, sizes, or colors!",
+            "tags": [
+                "operators",
+                "math"
+            ],
+            "followUps": [
+                "insert-reporter",
+                "surprise-sprite"
+            ],
+            "pointers": [
+                {
+                    "label": "Operators are here",
+                    "target": ".blocklyToolboxCategory#operators"
+                }
+            ]
+        },
+        "ask-and-answer": {
+            "id": "ask-and-answer",
+            "title": "Ask a question",
+            "text": "Use \"ask and wait\" from Sensing to ask the player a question — their response goes into the \"answer\" block!",
+            "tags": [
+                "sensing",
+                "input"
+            ],
+            "followUps": [
+                "make-quiz",
+                "use-variables"
+            ],
+            "blockExample": "askAndSay",
+            "pointers": [
+                {
+                    "label": "Drag \"ask and wait\" into your code",
+                    "blockOpcode": "sensing_askandwait",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "touching-color": {
+            "id": "touching-color",
+            "title": "Detect colors",
+            "text": "Use \"touching color?\" from Sensing — click the color square to pick any color from the stage with the eyedropper!",
+            "tags": [
+                "sensing",
+                "color"
+            ],
+            "followUps": [
+                "detect-collision",
+                "touching-wrong-color"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"touching color?\" into your code",
+                    "blockOpcode": "sensing_touchingcolor",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "timer-block": {
+            "id": "timer-block",
+            "title": "Use the timer",
+            "text": "Use the \"timer\" block from Sensing to time things — combine with \"reset timer\" to make countdowns or speedruns!",
+            "tags": [
+                "sensing",
+                "timing"
+            ],
+            "followUps": [
+                "use-variables",
+                "make-game"
+            ],
+            "pointers": [
+                {
+                    "label": "Find \"timer\" in Sensing",
+                    "blockOpcode": "sensing_timer",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "change-size": {
+            "id": "change-size",
+            "title": "Change size",
+            "text": "Use \"change size by 10\" or \"set size to\" from Looks to make your sprite grow or shrink!",
+            "tags": [
+                "looks",
+                "size"
+            ],
+            "followUps": [
+                "sprite-too-small",
+                "growing-shrinking"
+            ],
+            "blockExample": "changeSizeBy",
+            "pointers": [
+                {
+                    "label": "Drag \"change size by\" into your code",
+                    "blockOpcode": "looks_changesizeby",
+                    "category": "looks"
+                }
+            ]
+        },
+        "graphic-effects": {
+            "id": "graphic-effects",
+            "title": "Visual effects",
+            "text": "Try \"set color effect\" or \"set whirl effect\" from Looks to add wild visual effects to your sprite!",
+            "tags": [
+                "looks",
+                "effects"
+            ],
+            "followUps": [
+                "sprite-ghost-effect",
+                "color-changing"
+            ],
+            "blockExample": "setColorEffect",
+            "pointers": [
+                {
+                    "label": "Drag \"set effect to\" from Looks",
+                    "blockOpcode": "looks_seteffectto",
+                    "category": "looks"
+                }
+            ]
+        },
+        "stamp-block": {
+            "id": "stamp-block",
+            "title": "Stamp copies",
+            "text": "Use \"stamp\" from the Pen extension to leave a copy of your sprite on the stage — like a trail of footprints!",
+            "tags": [
+                "pen",
+                "effects",
+                "advanced"
+            ],
+            "followUps": [
+                "pen-extension",
+                "trail-of-stamps"
+            ],
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ]
+        },
+        "play-vs-play-until-done": {
+            "id": "play-vs-play-until-done",
+            "title": "Sound timing",
+            "text": "\"Start sound\" plays and keeps going. \"Play sound until done\" waits for it to finish. Use \"start sound\" for background music!",
+            "tags": [
+                "sound"
+            ],
+            "followUps": [
+                "add-sound",
+                "play-sound-until-done"
+            ],
+            "pointers": [
+                {
+                    "label": "Sound blocks are here",
+                    "target": ".blocklyToolboxCategory#sound"
+                }
+            ]
+        },
+        "backdrop-events": {
+            "id": "backdrop-events",
+            "title": "Backdrop triggers",
+            "text": "Use \"when backdrop switches to\" to trigger code when the scene changes — perfect for levels in a game!",
+            "tags": [
+                "events",
+                "backdrop",
+                "game"
+            ],
+            "followUps": [
+                "change-backdrop",
+                "broadcast-for-levels"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"when backdrop switches to\" into your code",
+                    "blockOpcode": "event_whenbackdropswitchesto",
+                    "category": "events"
+                }
+            ]
+        },
+        "mouse-pointer": {
+            "id": "mouse-pointer",
+            "title": "Follow mouse",
+            "text": "Use \"go to mouse-pointer\" or \"point towards mouse-pointer\" to make sprites follow your mouse!",
+            "tags": [
+                "motion",
+                "sensing",
+                "mouse"
+            ],
+            "followUps": [
+                "move-sprite",
+                "forever-loop"
+            ],
+            "blockExample": "followMouse",
+            "pointers": [
+                {
+                    "label": "Drag \"go to\" into your code",
+                    "blockOpcode": "motion_goto",
+                    "category": "motion"
+                }
+            ]
+        },
+        "clone-basics": {
+            "id": "clone-basics",
+            "title": "Clone behavior",
+            "text": "When you create a clone, use \"when I start as a clone\" to give the clone its own behavior — it's like a copy that can do its own thing!",
+            "tags": [
+                "control",
+                "clones",
+                "advanced"
+            ],
+            "followUps": [
+                "clone-sprite",
+                "clone-delete"
+            ],
+            "blockExample": "cloneBasicsPair",
+            "pointers": [
+                {
+                    "label": "Drag \"when I start as a clone\" into your code",
+                    "blockOpcode": "control_start_as_clone",
+                    "category": "control"
+                }
+            ]
+        },
+        "show-hide-variable": {
+            "id": "show-hide-variable",
+            "title": "Variable display",
+            "text": "Right-click a variable on the stage to change how it looks — you can make it a slider for testing!",
+            "tags": [
+                "variables",
+                "debugging"
+            ],
+            "followUps": [
+                "use-variables",
+                "debug-with-say"
+            ],
+            "pointers": [
+                {
+                    "label": "Variables are here",
+                    "target": ".blocklyToolboxCategory#variables"
+                }
+            ]
+        },
+        "reset-at-start": {
+            "id": "reset-at-start",
+            "title": "Reset at start",
+            "text": "Put \"go to x: y:\" and \"set size to 100\" under \"when green flag clicked\" to reset your sprite at the start!",
+            "tags": [
+                "events",
+                "motion",
+                "beginner"
+            ],
+            "followUps": [
+                "green-flag",
+                "go-to-position"
+            ],
+            "blockExample": "whenFlagGoToReset",
+            "pointers": [
+                {
+                    "label": "Drag \"go to x: y:\" into your code",
+                    "blockOpcode": "motion_gotoxy",
+                    "category": "motion"
+                }
+            ]
+        },
+        "broadcast-for-levels": {
+            "id": "broadcast-for-levels",
+            "title": "Game levels",
+            "text": "Use \"broadcast\" to switch between levels or scenes — each sprite can listen for the same message and react differently!",
+            "tags": [
+                "events",
+                "broadcast",
+                "game",
+                "advanced"
+            ],
+            "followUps": [
+                "broadcast-message",
+                "backdrop-events"
+            ],
+            "blockExample": "broadcastLevels",
+            "pointers": [
+                {
+                    "label": "Drag \"broadcast\" into your code",
+                    "blockOpcode": "event_broadcast",
+                    "category": "events"
+                }
+            ]
+        },
+        "clone-delete": {
+            "id": "clone-delete",
+            "title": "Delete clones",
+            "text": "Don't forget to \"delete this clone\" when you're done with it — otherwise you might hit the 300 clone limit!",
+            "tags": [
+                "control",
+                "clones",
+                "advanced"
+            ],
+            "followUps": [
+                "clone-basics",
+                "clone-sprite"
+            ],
+            "blockExample": "deleteClone",
+            "pointers": [
+                {
+                    "label": "Drag \"delete this clone\" into your code",
+                    "blockOpcode": "control_delete_this_clone",
+                    "category": "control"
+                }
+            ]
+        },
+        "repeat-until": {
+            "id": "repeat-until",
+            "title": "Repeat until",
+            "text": "Use \"repeat until\" to keep doing something until a condition is met — like moving until you reach the edge!",
+            "tags": [
+                "control",
+                "loops"
+            ],
+            "followUps": [
+                "forever-loop",
+                "if-not-forever"
+            ],
+            "blockExample": "repeatUntilEdge",
+            "pointers": [
+                {
+                    "label": "Drag \"repeat until\" into your code",
+                    "blockOpcode": "control_repeat_until",
+                    "category": "control"
+                }
+            ]
+        },
+        "make-story": {
+            "id": "make-story",
+            "title": "Tell a story",
+            "text": "Tell a story! Use \"say for 2 seconds\", \"wait\", and \"switch backdrop\" to create scenes and dialogue.",
+            "tags": [
+                "project-ideas",
+                "looks"
+            ],
+            "followUps": [
+                "change-backdrop"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"say for 2 seconds\" into your code",
+                    "blockOpcode": "looks_sayforsecs",
+                    "category": "looks"
+                }
+            ]
+        },
+        "make-animation": {
+            "id": "make-animation",
+            "title": "Make animation",
+            "text": "Create an animation by switching costumes in a loop — draw your own frames in the Costumes tab!",
+            "tags": [
+                "project-ideas",
+                "animation",
+                "looks"
+            ],
+            "followUps": [
+                "animate-costume",
+                "add-costume"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the Costumes tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
+                }
+            ]
+        },
+        "make-music-project": {
+            "id": "make-music-project",
+            "title": "Compose music",
+            "text": "Make a music project! Use the Music extension with \"play note\" blocks to compose your own song.",
+            "tags": [
+                "project-ideas",
+                "music",
+                "sound"
+            ],
+            "followUps": [
+                "music-extension",
+                "add-sound"
+            ],
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ]
+        },
+        "make-art": {
+            "id": "make-art",
+            "title": "Create art",
+            "text": "Make art! Use the Pen extension with loops and turns to draw amazing patterns and spirals.",
+            "tags": [
+                "project-ideas",
+                "pen",
+                "art"
+            ],
+            "followUps": [
+                "pen-extension",
+                "trail-of-stamps"
+            ],
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ]
+        },
+        "make-quiz": {
+            "id": "make-quiz",
+            "title": "Make a quiz",
+            "text": "Make a quiz! Use \"ask and wait\" + \"if answer =\" to check if the player got it right.",
+            "tags": [
+                "project-ideas",
+                "sensing",
+                "operators"
+            ],
+            "followUps": [
+                "ask-and-answer",
+                "use-variables"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"ask and wait\" into your code",
+                    "blockOpcode": "sensing_askandwait",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "make-platformer": {
+            "id": "make-platformer",
+            "title": "Platformer game",
+            "text": "Make a platformer game! Use \"change y by -2\" in a forever loop for gravity, and \"if touching color\" for the ground.",
+            "tags": [
+                "project-ideas",
+                "game",
+                "advanced"
+            ],
+            "followUps": [
+                "make-game",
+                "touching-color",
+                "move-with-keys"
+            ],
+            "blockExample": "gravityFall",
+            "pointers": [
+                {
+                    "label": "Drag \"change y by\" into your code",
+                    "blockOpcode": "motion_changeyby",
+                    "category": "motion"
+                }
+            ]
+        },
+        "make-clicker": {
+            "id": "make-clicker",
+            "title": "Clicker game",
+            "text": "Make a clicker game! Use \"when this sprite clicked\" + \"change score by 1\" — add costumes to make the sprite react to each click!",
+            "tags": [
+                "project-ideas",
+                "game",
+                "beginner"
+            ],
+            "followUps": [
+                "use-variables",
+                "change-costume"
+            ],
+            "blockExample": "whenClickedChangeScore",
+            "pointers": [
+                {
+                    "label": "Drag \"when this sprite clicked\" into your code",
+                    "blockOpcode": "event_whenthisspriteclicked",
+                    "category": "events"
+                }
+            ]
+        },
+        "make-dance-party": {
+            "id": "make-dance-party",
+            "title": "Dance party",
+            "text": "Make a dance party! Add multiple sprites, give each one a forever loop with costume changes and moves, then add music!",
+            "tags": [
+                "project-ideas",
+                "fun",
+                "animation"
+            ],
+            "followUps": [
+                "add-sprite",
+                "animate-costume",
+                "music-extension"
+            ],
+            "pointers": [
+                {
+                    "label": "Add a new sprite here",
+                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]"
+                }
+            ]
+        },
+        "make-pet": {
+            "id": "make-pet",
+            "title": "Virtual pet",
+            "text": "Make a virtual pet! Use variables to track hunger, happiness, and energy — and buttons to feed, play, and rest.",
+            "tags": [
+                "project-ideas",
+                "game",
+                "variables"
+            ],
+            "followUps": [
+                "use-variables",
+                "change-costume"
+            ],
+            "pointers": [
+                {
+                    "label": "Variables are here",
+                    "target": ".blocklyToolboxCategory#variables"
+                }
+            ]
+        },
+        "surprise-sprite": {
+            "id": "surprise-sprite",
+            "title": "Random surprise",
+            "text": "Try putting \"set size to pick random 50 to 200\" in your project for fun surprises!",
+            "tags": [
+                "fun",
+                "operators"
+            ],
+            "followUps": [
+                "random-numbers",
+                "change-size"
+            ],
+            "pointers": [
+                {
+                    "label": "Find \"pick random\" in Operators",
+                    "blockOpcode": "operator_random",
+                    "category": "operators"
+                }
+            ]
+        },
+        "silly-sounds": {
+            "id": "silly-sounds",
+            "title": "Silly sounds",
+            "text": "Try the sound effects in the Sounds tab — there are funny sounds like \"boing\", \"chomp\", and \"zoop\"!",
+            "tags": [
+                "fun",
+                "sound"
+            ],
+            "followUps": [
+                "add-sound",
+                "sound-remix"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the Sounds tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
+                }
+            ]
+        },
+        "color-changing": {
+            "id": "color-changing",
+            "title": "Rainbow colors",
+            "text": "Put \"change color effect by 25\" inside a forever loop to make your sprite cycle through rainbow colors!",
+            "tags": [
+                "fun",
+                "looks",
+                "effects"
+            ],
+            "followUps": [
+                "graphic-effects",
+                "spinning"
+            ],
+            "blockExample": "foreverColorChange",
+            "pointers": [
+                {
+                    "label": "Drag \"change color effect\" into your code",
+                    "blockOpcode": "looks_changeeffectby",
+                    "category": "looks"
+                }
+            ]
+        },
+        "spinning": {
+            "id": "spinning",
+            "title": "Spin around",
+            "text": "Put \"turn 15 degrees\" inside a forever loop to make your sprite spin! Change the number to spin faster or slower.",
+            "tags": [
+                "fun",
+                "motion"
+            ],
+            "followUps": [
+                "color-changing",
+                "forever-loop"
+            ],
+            "blockExample": "foreverSpin",
+            "pointers": [
+                {
+                    "label": "Drag \"turn\" into your code",
+                    "blockOpcode": "motion_turnright",
+                    "category": "motion"
+                }
+            ]
+        },
+        "growing-shrinking": {
+            "id": "growing-shrinking",
+            "title": "Pulse effect",
+            "text": "Make your sprite pulse! Use \"change size by 5\" and \"wait\", then \"change size by -5\" and \"wait\" in a forever loop.",
+            "tags": [
+                "fun",
+                "looks"
+            ],
+            "followUps": [
+                "change-size",
+                "forever-loop"
+            ],
+            "blockExample": "foreverChangeSizePulse",
+            "pointers": [
+                {
+                    "label": "Drag \"change size by\" into your code",
+                    "blockOpcode": "looks_changesizeby",
+                    "category": "looks"
+                }
+            ]
+        },
+        "trail-of-stamps": {
+            "id": "trail-of-stamps",
+            "title": "Leave a trail",
+            "text": "Turn on pen down and move your sprite around with the keyboard — you'll leave a colorful trail everywhere you go!",
+            "tags": [
+                "fun",
+                "pen",
+                "motion"
+            ],
+            "followUps": [
+                "pen-extension",
+                "move-with-keys"
+            ],
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ]
+        },
+        "sound-remix": {
+            "id": "sound-remix",
+            "title": "Remix sounds",
+            "text": "Record your own voice in the Sounds tab, then use \"set pitch effect\" to make it sound like a chipmunk or a monster!",
+            "tags": [
+                "fun",
+                "sound"
+            ],
+            "followUps": [
+                "record-sound",
+                "silly-sounds"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the Sounds tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
+                }
+            ]
+        },
+        "bouncing-around": {
+            "id": "bouncing-around",
+            "title": "Bouncing screensaver",
+            "text": "Make a screensaver! Use \"point in direction pick random 1 to 360\", then \"forever: move + if on edge bounce\"!",
+            "tags": [
+                "fun",
+                "motion",
+                "project-ideas"
+            ],
+            "followUps": [
+                "forever-loop",
+                "random-numbers"
+            ],
+            "blockExample": "foreverBounce",
+            "pointers": [
+                {
+                    "label": "Drag \"if on edge, bounce\" into your code",
+                    "blockOpcode": "motion_ifonedgebounce",
+                    "category": "motion"
+                }
+            ]
+        },
+        "huge-number": {
+            "id": "huge-number",
+            "title": "Big number issues",
+            "text": "Typed a really huge number? Numbers bigger than about 16 digits lose precision — and really enormous ones get treated as 0!",
+            "tags": [
+                "debugging",
+                "math"
+            ],
+            "followUps": [
+                "decimal-numbers",
+                "use-variables"
+            ]
+        },
+        "rotation-style-vs-turn": {
+            "id": "rotation-style-vs-turn",
+            "title": "Fix rotation",
+            "text": "If \"turn\" doesn't seem to work, check if the rotation style is set to \"left-right\" or \"don't rotate\" — change it to \"all around\" in the sprite info!",
+            "tags": [
+                "motion",
+                "debugging"
+            ],
+            "followUps": [
+                "spinning",
+                "costume-center"
+            ],
+            "pointers": [
+                {
+                    "label": "Check rotation style in sprite info",
+                    "target": "[class*=\"sprite-info\"]"
+                }
+            ]
+        },
+        "costume-center": {
+            "id": "costume-center",
+            "title": "Fix costume center",
+            "text": "If your sprite rotates weirdly, the costume center point might be off — go to the Costumes tab and drag the crosshair to the center of your drawing!",
+            "tags": [
+                "costumes",
+                "motion",
+                "debugging"
+            ],
+            "followUps": [
+                "rotation-style-vs-turn",
+                "change-costume"
+            ],
+            "pointers": [
+                {
+                    "label": "Go to the Costumes tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
+                }
+            ]
+        },
+        "missing-asset": {
+            "id": "missing-asset",
+            "title": "Missing asset",
+            "text": "If a block says a costume or sound name that's grayed out, that asset might be missing — add it back in the Costumes or Sounds tab!",
+            "tags": [
+                "debugging",
+                "costumes",
+                "sound"
+            ],
+            "followUps": [
+                "add-costume",
+                "add-sound"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the Costumes tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
+                }
+            ]
+        },
+        "dragging-to-stage": {
+            "id": "dragging-to-stage",
+            "title": "Drag to workspace",
+            "text": "Make sure you're dragging blocks to the code workspace (the big area in the middle), not onto the stage!",
+            "tags": [
+                "debugging",
+                "beginner",
+                "meta"
+            ],
+            "followUps": [
+                "drag-blocks-to-workspace",
+                "find-block-by-color"
+            ]
+        },
+        "tutorial-getting-started": {
+            "id": "tutorial-getting-started",
+            "tutorialId": "intro-move-sayhello",
+            "text": "Try the \"Getting Started\" tutorial to learn how to make a sprite move and say hello!",
+            "tags": [
+                "beginner",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-getting-started-asl": {
+            "id": "tutorial-getting-started-asl",
+            "tutorialId": "intro-getting-started-ASL",
+            "text": "Try the \"Getting Started - ASL\" tutorial to learn Scratch with American Sign Language!",
+            "tags": [
+                "beginner",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-animate-a-name": {
+            "id": "tutorial-animate-a-name",
+            "tutorialId": "animate-a-name",
+            "text": "Try the \"Animate a Name\" tutorial to make letters spin, grow, and change color!",
+            "tags": [
+                "animation",
+                "art",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-animate-a-character": {
+            "id": "tutorial-animate-a-character",
+            "tutorialId": "Animate-A-Character",
+            "text": "Try the \"Animate a Character\" tutorial to make a character talk, move with arrow keys, and jump!",
+            "tags": [
+                "animation",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-tell-a-story": {
+            "id": "tutorial-tell-a-story",
+            "tutorialId": "Tell-A-Story",
+            "text": "Try the \"Create a Story\" tutorial to make characters have conversations and switch scenes!",
+            "tags": [
+                "stories",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-say-it-out-loud": {
+            "id": "tutorial-say-it-out-loud",
+            "tutorialId": "say-it-out-loud",
+            "text": "Try the \"Create Animations That Talk\" tutorial to use the text-to-speech extension and make sprites speak out loud!",
+            "tags": [
+                "sound",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-imagine": {
+            "id": "tutorial-imagine",
+            "tutorialId": "imagine",
+            "text": "Try the \"Imagine a World\" tutorial to create an interactive world with flying, gliding, and costume changes!",
+            "tags": [
+                "animation",
+                "stories",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-add-effects": {
+            "id": "tutorial-add-effects",
+            "tutorialId": "add-effects",
+            "text": "Try the \"Add Effects\" tutorial to learn about color, fisheye, whirl, pixelate, and other cool effects!",
+            "tags": [
+                "looks",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-make-it-fly": {
+            "id": "tutorial-make-it-fly",
+            "tutorialId": "make-it-fly",
+            "text": "Try the \"Make it Fly\" tutorial to create a flying game with arrow keys, collectibles, and a score!",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-make-music": {
+            "id": "tutorial-make-music",
+            "tutorialId": "Make-Music",
+            "text": "Try the \"Make Music\" tutorial to pick instruments, create songs, and make a beatbox!",
+            "tags": [
+                "music",
+                "sound",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-pong": {
+            "id": "tutorial-pong",
+            "tutorialId": "pong",
+            "text": "Try the \"Pong Game\" tutorial to make a ball bounce off a paddle and keep score!",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-clicker-game": {
+            "id": "tutorial-clicker-game",
+            "tutorialId": "Make-A-Game",
+            "text": "Try the \"Make a Clicker Game\" tutorial to make things pop up, click on them, and keep score!",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-chase-game": {
+            "id": "tutorial-chase-game",
+            "tutorialId": "Chase-Game",
+            "text": "Try the \"Chase Game\" tutorial to make a game where you chase things around the screen with arrow keys!",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-video-sensing": {
+            "id": "tutorial-video-sensing",
+            "tutorialId": "Video-Sensing",
+            "text": "Try the \"Video Sensing\" tutorial to use your camera to pet the cat, animate sprites, and pop balloons!",
+            "tags": [
+                "sensing",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-face-sensing": {
+            "id": "tutorial-face-sensing",
+            "tutorialId": "Face-Sensing",
+            "text": "Try the \"Face Sensing\" tutorial to put accessories on your face and make games that use face tracking!",
+            "tags": [
+                "sensing",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-talking-tales": {
+            "id": "tutorial-talking-tales",
+            "tutorialId": "talking",
+            "text": "Try the \"Talking Tales\" tutorial to make characters speak, switch scenes, dance, and ask questions!",
+            "tags": [
+                "stories",
+                "sound",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-add-sprite": {
+            "id": "tutorial-add-sprite",
+            "tutorialId": "add-sprite",
+            "text": "Try the \"Add a Sprite\" tutorial to learn how to add new characters to your project!",
+            "tags": [
+                "beginner",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-add-backdrop": {
+            "id": "tutorial-add-backdrop",
+            "tutorialId": "add-a-backdrop",
+            "text": "Try the \"Add a Backdrop\" tutorial to learn how to change the background of your project!",
+            "tags": [
+                "beginner",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-arrow-keys": {
+            "id": "tutorial-arrow-keys",
+            "tutorialId": "move-around-with-arrow-keys",
+            "text": "Try the \"Use Arrow Keys\" tutorial to learn how to move a sprite around with the keyboard!",
+            "tags": [
+                "events",
+                "motion",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-change-size": {
+            "id": "tutorial-change-size",
+            "tutorialId": "change-size",
+            "text": "Try the \"Change Size\" tutorial to learn how to make sprites grow and shrink!",
+            "tags": [
+                "looks",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-glide-around": {
+            "id": "tutorial-glide-around",
+            "tutorialId": "glide-around",
+            "text": "Try the \"Glide Around\" tutorial to make your sprite glide smoothly back and forth or to a point!",
+            "tags": [
+                "motion",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-make-it-spin": {
+            "id": "tutorial-make-it-spin",
+            "tutorialId": "spin-video",
+            "text": "Try the \"Make It Spin\" tutorial to learn how to make a sprite turn and set its direction!",
+            "tags": [
+                "motion",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-record-a-sound": {
+            "id": "tutorial-record-a-sound",
+            "tutorialId": "record-a-sound",
+            "text": "Try the \"Record a Sound\" tutorial to record your own sounds and use them in your project!",
+            "tags": [
+                "sound",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-hide-and-show": {
+            "id": "tutorial-hide-and-show",
+            "tutorialId": "hide-and-show",
+            "text": "Try the \"Hide and Show\" tutorial to make sprites appear and disappear!",
+            "tags": [
+                "looks",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tutorial-animate-a-sprite": {
+            "id": "tutorial-animate-a-sprite",
+            "tutorialId": "switch-costume",
+            "text": "Try the \"Animate a Sprite\" tutorial to learn how to switch costumes and create animations!",
+            "tags": [
+                "looks",
+                "animation",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "starter-dance-party": {
+            "id": "starter-dance-party",
+            "title": "Dance Party",
+            "text": "The Dance Party project shows how to make characters dance by switching costumes in a forever loop while the stage plays music!",
+            "tags": [
+                "animation",
+                "looks",
+                "sound",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105113583_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1105113583/",
+            "followUps": [
+                "starter-animate-crab",
+                "starter-walk-cycle",
+                "starter-food-truck"
+            ]
+        },
+        "starter-animate-crab": {
+            "id": "starter-animate-crab",
+            "title": "Animate the Crab",
+            "text": "The Animate the Crab project shows how to bring a character to life with costume expressions, \"if on edge bounce,\" and random positioning!",
+            "tags": [
+                "animation",
+                "motion",
+                "looks",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105114913_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1105114913/",
+            "followUps": [
+                "starter-dance-party",
+                "starter-walk-cycle",
+                "starter-mouse-trail"
+            ]
+        },
+        "starter-walk-cycle": {
+            "id": "starter-walk-cycle",
+            "title": "Walk Cycle",
+            "text": "The Walk Cycle project shows how to create a realistic walking animation by combining \"move steps\" with \"next costume\" in a repeat loop!",
+            "tags": [
+                "animation",
+                "motion",
+                "looks",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105114015_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1105114015/",
+            "followUps": [
+                "starter-dance-party",
+                "starter-animate-crab",
+                "starter-mouse-trail"
+            ]
+        },
+        "starter-mouse-trail": {
+            "id": "starter-mouse-trail",
+            "title": "Mouse Trail",
+            "text": "The Mouse Trail project shows how to use cloning to create a trail of stars that follows your mouse, with each clone shrinking and disappearing!",
+            "tags": [
+                "animation",
+                "clones",
+                "motion",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105118803_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1105118803/",
+            "followUps": [
+                "starter-animate-crab",
+                "starter-walk-cycle",
+                "starter-food-truck"
+            ]
+        },
+        "starter-food-truck": {
+            "id": "starter-food-truck",
+            "title": "Food Truck Animation",
+            "text": "The Food Truck Animation project shows how to make a scrolling background, spinning tires, and flashing graphic effects with multiple sprites!",
+            "tags": [
+                "animation",
+                "motion",
+                "looks",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105114421_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1105114421/",
+            "followUps": [
+                "starter-dance-party",
+                "starter-animate-crab",
+                "starter-walk-cycle"
+            ]
+        },
+        "starter-make-it-fly": {
+            "id": "starter-make-it-fly",
+            "title": "Make It Fly",
+            "text": "The Make It Fly project shows how to use keyboard sensing and forever loops to make a flying cat dodge scrolling buildings!",
+            "tags": [
+                "game",
+                "control",
+                "sensing",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1110545496_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1110545496/",
+            "followUps": [
+                "starter-maze",
+                "starter-pong",
+                "starter-hide-seek"
+            ]
+        },
+        "starter-maze": {
+            "id": "starter-maze",
+            "title": "Maze Starter",
+            "text": "The Maze Starter project shows how to navigate a ball through a maze using arrow keys and color-touching detection for wall collisions!",
+            "tags": [
+                "game",
+                "sensing",
+                "events",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/10128431_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/10128431/",
+            "followUps": [
+                "starter-make-it-fly",
+                "starter-pong",
+                "starter-hide-seek"
+            ]
+        },
+        "starter-dress-up": {
+            "id": "starter-dress-up",
+            "title": "Dress Up Tera",
+            "text": "The Dress Up Tera project shows how to make sprites draggable and use touching detection to create an interactive dress-up game!",
+            "tags": [
+                "game",
+                "sensing",
+                "looks",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105678528_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1105678528/",
+            "followUps": [
+                "starter-make-it-fly",
+                "starter-maze",
+                "starter-hide-seek"
+            ]
+        },
+        "starter-pong": {
+            "id": "starter-pong",
+            "title": "Pong Starter",
+            "text": "The Pong Starter project shows how to make a simple game including mouse movement, ball bouncing, collisions, and sound effects!",
+            "tags": [
+                "game",
+                "motion",
+                "sensing",
+                "sound",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/10128515_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/10128515/",
+            "followUps": [
+                "starter-make-it-fly",
+                "starter-maze",
+                "starter-hide-seek"
+            ]
+        },
+        "starter-hide-seek": {
+            "id": "starter-hide-seek",
+            "title": "Hide and Seek",
+            "text": "The Hide and Seek project shows how to make a clicking game with a score variable, random positioning, and show/hide!",
+            "tags": [
+                "game",
+                "variables",
+                "looks",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/10128368_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/10128368/",
+            "followUps": [
+                "starter-make-it-fly",
+                "starter-maze",
+                "starter-pong"
+            ]
+        },
+        "starter-stamp-studio": {
+            "id": "starter-stamp-studio",
+            "title": "Stamp Studio",
+            "text": "The Stamp Studio project shows how to use the pen stamp block with if-then conditions to draw colorful patterns that follow your mouse!",
+            "tags": [
+                "art",
+                "pen",
+                "sensing",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111541829_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1111541829/",
+            "followUps": [
+                "starter-parallax",
+                "starter-soundflower",
+                "starter-spin-art"
+            ]
+        },
+        "starter-parallax": {
+            "id": "starter-parallax",
+            "title": "Interactive Parallax",
+            "text": "The Interactive Parallax project shows how to use math operators and mouse sensing to move layers at different speeds for a depth effect!",
+            "tags": [
+                "art",
+                "operators",
+                "sensing",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105131011_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1105131011/",
+            "followUps": [
+                "starter-stamp-studio",
+                "starter-art-alive",
+                "starter-spin-art"
+            ]
+        },
+        "starter-soundflower": {
+            "id": "starter-soundflower",
+            "title": "Soundflower",
+            "text": "The Soundflower project shows how to use the loudness sensor and multiply blocks to make a flower that responds to your microphone!",
+            "tags": [
+                "art",
+                "sensing",
+                "operators",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111537402_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1111537402/",
+            "followUps": [
+                "starter-stamp-studio",
+                "starter-art-alive",
+                "starter-spin-art"
+            ]
+        },
+        "starter-art-alive": {
+            "id": "starter-art-alive",
+            "title": "Make Art Come Alive",
+            "text": "The Make Art Come Alive project shows how to use click events, broadcasts, and glide blocks to animate parts of a painting!",
+            "tags": [
+                "art",
+                "events",
+                "motion",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106198418_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106198418/",
+            "followUps": [
+                "starter-stamp-studio",
+                "starter-parallax",
+                "starter-spin-art"
+            ]
+        },
+        "starter-spin-art": {
+            "id": "starter-spin-art",
+            "title": "Spin Art",
+            "text": "The Spin Art project shows how to use slider variables, the stamp block, and move-and-turn to create mesmerizing spiral patterns!",
+            "tags": [
+                "art",
+                "pen",
+                "variables",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105521187_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1105521187/",
+            "followUps": [
+                "starter-stamp-studio",
+                "starter-parallax",
+                "starter-soundflower"
+            ]
+        },
+        "starter-dj": {
+            "id": "starter-dj",
+            "title": "DJ Scratch Cat",
+            "text": "The DJ Scratch Cat project shows how to use key press events and sound blocks to make a DJ mixing board with a looping beat!",
+            "tags": [
+                "music",
+                "sound",
+                "events",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/11640429_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/11640429/",
+            "followUps": [
+                "starter-piano",
+                "starter-fur-elise",
+                "starter-drum-sequencer"
+            ]
+        },
+        "starter-piano": {
+            "id": "starter-piano",
+            "title": "Piano",
+            "text": "The Piano project shows how to build a playable instrument with clickable key sprites using the Music extension's play-note block!",
+            "tags": [
+                "music",
+                "extensions",
+                "events",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106245381_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106245381/",
+            "followUps": [
+                "starter-dj",
+                "starter-fur-elise",
+                "starter-drum-sequencer"
+            ]
+        },
+        "starter-fish-pitch": {
+            "id": "starter-fish-pitch",
+            "title": "Catch the Fish",
+            "text": "The Catch the Fish project shows how to use cloning, a score variable, and the pitch effect to make music play higher as you score!",
+            "tags": [
+                "music",
+                "clones",
+                "variables",
+                "sound",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106268602_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106268602/",
+            "followUps": [
+                "starter-dj",
+                "starter-piano",
+                "starter-drum-sequencer"
+            ]
+        },
+        "starter-fur-elise": {
+            "id": "starter-fur-elise",
+            "title": "Fur Elise",
+            "text": "The Fur Elise project shows how to use custom My Blocks to organize a song into reusable sections with the Music extension!",
+            "tags": [
+                "music",
+                "extensions",
+                "myblocks",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106259376_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106259376/",
+            "followUps": [
+                "starter-dj",
+                "starter-piano",
+                "starter-drum-sequencer"
+            ]
+        },
+        "starter-drum-sequencer": {
+            "id": "starter-drum-sequencer",
+            "title": "Drum Sequencer",
+            "text": "The Drum Sequencer project shows how to use cloning for a button grid and color-sensing on a moving play head to make a drum machine!",
+            "tags": [
+                "music",
+                "clones",
+                "sensing",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111562971_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1111562971/",
+            "followUps": [
+                "starter-dj",
+                "starter-piano",
+                "starter-fish-pitch"
+            ]
+        },
+        "starter-story": {
+            "id": "starter-story",
+            "title": "Story Starter",
+            "text": "The Story Starter project shows how to tell a story with multiple characters using broadcasts to coordinate dialogue and sound!",
+            "tags": [
+                "story",
+                "events",
+                "looks",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1110565816_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1110565816/",
+            "followUps": [
+                "starter-fill-blanks",
+                "starter-stop-motion",
+                "starter-adventure"
+            ]
+        },
+        "starter-random-facts": {
+            "id": "starter-random-facts",
+            "title": "Random Facts",
+            "text": "The 5 Random Facts About Me project shows how to create a slideshow presentation using backdrops and key press events!",
+            "tags": [
+                "story",
+                "events",
+                "looks",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/10014866_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/10014866/",
+            "followUps": [
+                "starter-story",
+                "starter-fill-blanks",
+                "starter-stop-motion"
+            ]
+        },
+        "starter-fill-blanks": {
+            "id": "starter-fill-blanks",
+            "title": "Fill in the Blanks",
+            "text": "The Fill in the Blanks project shows how to make a mad-libs story using ask blocks, variables, and the join operator!",
+            "tags": [
+                "story",
+                "sensing",
+                "variables",
+                "operators",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1110571119_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1110571119/",
+            "followUps": [
+                "starter-story",
+                "starter-random-facts",
+                "starter-adventure"
+            ]
+        },
+        "starter-stop-motion": {
+            "id": "starter-stop-motion",
+            "title": "Stop Motion",
+            "text": "The Stop Motion Animation project shows how to create a flipbook-style animation by switching costumes in a forever loop!",
+            "tags": [
+                "story",
+                "animation",
+                "looks",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105521591_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1105521591/",
+            "followUps": [
+                "starter-story",
+                "starter-random-facts",
+                "starter-adventure"
+            ]
+        },
+        "starter-adventure": {
+            "id": "starter-adventure",
+            "title": "Adventure Game",
+            "text": "The Adventure with Scratch Cat project shows how to build an interactive adventure with collision detection and broadcast-driven scene changes!",
+            "tags": [
+                "story",
+                "game",
+                "sensing",
+                "events",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1107181129_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1107181129/",
+            "followUps": [
+                "starter-story",
+                "starter-fill-blanks",
+                "starter-stop-motion"
+            ]
+        },
+        "starter-gravity": {
+            "id": "starter-gravity",
+            "title": "Gravity Example",
+            "text": "The Gravity Example project shows how to simulate gravity with velocity variables and conditionals for ground collision!",
+            "tags": [
+                "math",
+                "variables",
+                "control",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111567332_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1111567332/",
+            "followUps": [
+                "starter-sound-graph",
+                "starter-math-game",
+                "starter-coordinates"
+            ]
+        },
+        "starter-sound-graph": {
+            "id": "starter-sound-graph",
+            "title": "Sound Graph",
+            "text": "The Sound Graph project shows how to visualize microphone input as a graph using pen blocks, loudness sensing, and math operators!",
+            "tags": [
+                "math",
+                "pen",
+                "sensing",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1105532968_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1105532968/",
+            "followUps": [
+                "starter-gravity",
+                "starter-math-game",
+                "starter-circuit"
+            ]
+        },
+        "starter-math-game": {
+            "id": "starter-math-game",
+            "title": "Math Game",
+            "text": "The Math Game project shows how to make a quiz with random number variables, ask blocks for input, and if-else to check answers!",
+            "tags": [
+                "math",
+                "variables",
+                "sensing",
+                "operators",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106220358_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106220358/",
+            "followUps": [
+                "starter-gravity",
+                "starter-circuit",
+                "starter-coordinates"
+            ]
+        },
+        "starter-circuit": {
+            "id": "starter-circuit",
+            "title": "Circuit Simulation",
+            "text": "The Simple Circuit Simulation project shows how to use draggable sprites, color-touching detection, and boolean logic to simulate a circuit!",
+            "tags": [
+                "math",
+                "sensing",
+                "variables",
+                "operators",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106279050_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106279050/",
+            "followUps": [
+                "starter-gravity",
+                "starter-sound-graph",
+                "starter-coordinates"
+            ]
+        },
+        "starter-coordinates": {
+            "id": "starter-coordinates",
+            "title": "X and Y Coordinates",
+            "text": "The X and Y Coordinates project shows how the Scratch coordinate system works by letting you drag a sprite and see its position update!",
+            "tags": [
+                "math",
+                "motion",
+                "sensing",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106739913_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106739913/",
+            "followUps": [
+                "starter-gravity",
+                "starter-math-game",
+                "starter-circuit"
+            ]
+        },
+        "starter-text-speech": {
+            "id": "starter-text-speech",
+            "title": "Text to Speech",
+            "text": "The Text to Speech project shows how to use the Text-to-Speech extension and broadcasts to make characters have a spoken conversation!",
+            "tags": [
+                "extensions",
+                "sound",
+                "events",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106234816_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106234816/",
+            "followUps": [
+                "starter-pen-flower",
+                "starter-translate",
+                "starter-face-filter"
+            ]
+        },
+        "starter-pen-flower": {
+            "id": "starter-pen-flower",
+            "title": "Pen Flower",
+            "text": "The Pen Flower project shows how to use nested repeat loops and pen blocks to draw a colorful pattern of rotating squares!",
+            "tags": [
+                "extensions",
+                "pen",
+                "control",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106765499_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106765499/",
+            "followUps": [
+                "starter-text-speech",
+                "starter-musical-droplets",
+                "starter-translate"
+            ]
+        },
+        "starter-musical-droplets": {
+            "id": "starter-musical-droplets",
+            "title": "Musical Droplets",
+            "text": "The Musical Droplets project shows how to use clones, the Music extension, and math to turn mouse position into musical notes!",
+            "tags": [
+                "extensions",
+                "music",
+                "clones",
+                "operators",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111576868_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1111576868/",
+            "followUps": [
+                "starter-text-speech",
+                "starter-pen-flower",
+                "starter-face-filter"
+            ]
+        },
+        "starter-translate": {
+            "id": "starter-translate",
+            "title": "Translate This!",
+            "text": "The Translate This! project shows how to use the Translate extension to make characters speak in different languages!",
+            "tags": [
+                "extensions",
+                "looks",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1110579465_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1110579465/",
+            "followUps": [
+                "starter-text-speech",
+                "starter-pen-flower",
+                "starter-face-filter"
+            ]
+        },
+        "starter-face-filter": {
+            "id": "starter-face-filter",
+            "title": "Face Filter",
+            "text": "The Face Filter project shows how to use the Face Sensing extension to make hats and glasses follow your face in real time!",
+            "tags": [
+                "extensions",
+                "sensing",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1208621527_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1208621527/",
+            "followUps": [
+                "starter-text-speech",
+                "starter-musical-droplets",
+                "starter-translate"
+            ]
+        },
+        "starter-greeting-card": {
+            "id": "starter-greeting-card",
+            "title": "Greeting Card",
+            "text": "The Greeting Card project shows how to make an interactive card with backdrop switches, glide animations, and sound effects!",
+            "tags": [
+                "kindness",
+                "events",
+                "looks",
+                "sound",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/11806234_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/11806234/",
+            "followUps": [
+                "starter-quiz",
+                "starter-trophy",
+                "starter-kindness"
+            ]
+        },
+        "starter-quiz": {
+            "id": "starter-quiz",
+            "title": "Community Quiz",
+            "text": "The Community Quiz project shows how to build a quiz with custom blocks, ask-and-wait input, if-else logic, and Text-to-Speech!",
+            "tags": [
+                "kindness",
+                "myblocks",
+                "sensing",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106806960_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106806960/",
+            "followUps": [
+                "starter-greeting-card",
+                "starter-trophy",
+                "starter-paper-plane"
+            ]
+        },
+        "starter-trophy": {
+            "id": "starter-trophy",
+            "title": "Small Wins Trophy",
+            "text": "The Small Wins Trophy project shows how to click on sprite parts to cycle through costumes and design a custom award!",
+            "tags": [
+                "kindness",
+                "looks",
+                "events",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1106823880_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1106823880/",
+            "followUps": [
+                "starter-greeting-card",
+                "starter-quiz",
+                "starter-kindness"
+            ]
+        },
+        "starter-kindness": {
+            "id": "starter-kindness",
+            "title": "Acts of Kindness",
+            "text": "The Random Acts of Kindness project shows how to pick a random item from a list using broadcasts and the pick-random operator!",
+            "tags": [
+                "kindness",
+                "data",
+                "operators",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1110573738_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1110573738/",
+            "followUps": [
+                "starter-greeting-card",
+                "starter-quiz",
+                "starter-paper-plane"
+            ]
+        },
+        "starter-paper-plane": {
+            "id": "starter-paper-plane",
+            "title": "Paper Plane Tutorial",
+            "text": "The Paper Plane Tutorial project shows how to make a step-by-step guide with broadcasts, repeat-until loops, and costume switching!",
+            "tags": [
+                "kindness",
+                "control",
+                "events",
+                "starter-project"
+            ],
+            "thumbnail": "https://uploads.scratch.mit.edu/get_image/project/1111552152_480x360.png",
+            "projectUrl": "https://scratch.mit.edu/projects/1111552152/",
+            "followUps": [
+                "starter-greeting-card",
+                "starter-trophy",
+                "starter-kindness"
+            ]
+        },
+        "follow-another-sprite": {
+            "id": "follow-another-sprite",
+            "title": "Follow a sprite",
+            "text": "Use \"go to [sprite]\" inside a \"forever\" loop to make one sprite follow another — like a basketball following the cat!",
+            "tags": [
+                "motion",
+                "game",
+                "sports"
+            ],
+            "followUps": [
+                "follow-with-offset",
+                "bounce-up-down",
+                "forever-loop"
+            ],
+            "blockExample": "followMouse",
+            "pointers": [
+                {
+                    "label": "Drag \"go to\" into your code",
+                    "blockOpcode": "motion_goto",
+                    "category": "motion"
+                }
+            ]
+        },
+        "follow-with-offset": {
+            "id": "follow-with-offset",
+            "title": "Follow with offset",
+            "text": "To make a sprite follow below another, use \"go to [sprite]\" then \"change y by -30\" — the negative number puts it lower!",
+            "tags": [
+                "motion",
+                "position"
+            ],
+            "followUps": [
+                "follow-another-sprite",
+                "change-xy-position"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"change y by\" into your code",
+                    "blockOpcode": "motion_changeyby",
+                    "category": "motion"
+                }
+            ]
+        },
+        "bounce-up-down": {
+            "id": "bounce-up-down",
+            "title": "Bounce up & down",
+            "text": "Make a sprite bounce! Use \"repeat 10: change y by 5\" then \"repeat 10: change y by -5\" inside a forever loop.",
+            "tags": [
+                "motion",
+                "animation",
+                "sports"
+            ],
+            "followUps": [
+                "bounce-speed",
+                "bounce-height",
+                "forever-loop"
+            ],
+            "blockExample": "bounceUpDown",
+            "pointers": [
+                {
+                    "label": "Drag \"change y by\" into your code",
+                    "blockOpcode": "motion_changeyby",
+                    "category": "motion"
+                }
+            ]
+        },
+        "bounce-speed": {
+            "id": "bounce-speed",
+            "title": "Bounce speed",
+            "text": "To change bounce speed, adjust the \"repeat\" number — fewer repeats = faster bounce, more repeats = slower bounce!",
+            "tags": [
+                "motion",
+                "animation"
+            ],
+            "followUps": [
+                "bounce-up-down",
+                "bounce-height",
+                "too-fast"
+            ]
+        },
+        "bounce-height": {
+            "id": "bounce-height",
+            "title": "Bounce height",
+            "text": "To change how high the bounce goes, change the number in \"change y by\" — bigger number = higher bounce!",
+            "tags": [
+                "motion",
+                "animation"
+            ],
+            "followUps": [
+                "bounce-up-down",
+                "bounce-speed"
+            ]
+        },
+        "shoot-at-target": {
+            "id": "shoot-at-target",
+            "title": "Shoot at a target",
+            "text": "Use \"glide 0.5 secs to x: y:\" to make a sprite fly toward a target — set x and y to where the hoop or goal is!",
+            "tags": [
+                "motion",
+                "game",
+                "sports"
+            ],
+            "followUps": [
+                "glide-to-position",
+                "detect-collision",
+                "follow-another-sprite"
+            ],
+            "blockExample": "glideTo",
+            "pointers": [
+                {
+                    "label": "Drag \"glide\" into your code",
+                    "blockOpcode": "motion_glidesecstoxy",
+                    "category": "motion"
+                }
+            ]
+        },
+        "sprite-hop-jump": {
+            "id": "sprite-hop-jump",
+            "title": "Make it hop",
+            "text": "Press space to hop! Use \"change y by 50\", \"wait 0.3 seconds\", then \"change y by -50\" — that's up, pause, and back down!",
+            "tags": [
+                "motion",
+                "animation",
+                "beginner"
+            ],
+            "followUps": [
+                "bounce-up-down",
+                "move-with-keys",
+                "sprite-walk-animate"
+            ],
+            "blockExample": "hopJump",
+            "pointers": [
+                {
+                    "label": "Drag \"change y by\" into your code",
+                    "blockOpcode": "motion_changeyby",
+                    "category": "motion"
+                }
+            ]
+        },
+        "sprite-walk-animate": {
+            "id": "sprite-walk-animate",
+            "title": "Make it walk",
+            "text": "To make a sprite walk, use \"next costume\" with \"move 10 steps\" inside a forever loop — the costume changes make it look like walking!",
+            "tags": [
+                "motion",
+                "looks",
+                "animation",
+                "beginner"
+            ],
+            "followUps": [
+                "animate-costume",
+                "move-sprite",
+                "sprite-hop-jump"
+            ],
+            "blockExample": "foreverNextCostume",
+            "pointers": [
+                {
+                    "label": "Drag \"next costume\" into your code",
+                    "blockOpcode": "looks_nextcostume",
+                    "category": "looks"
+                }
+            ]
+        },
+        "sprite-backflip": {
+            "id": "sprite-backflip",
+            "title": "Do a backflip",
+            "text": "Make a sprite do a backflip! Use \"change y by 50\", then \"repeat 10: turn 36 degrees\", then \"change y by -50\" to jump, spin, and land!",
+            "tags": [
+                "motion",
+                "animation",
+                "fun"
+            ],
+            "followUps": [
+                "sprite-hop-jump",
+                "spinning",
+                "repeat-loop"
+            ],
+            "blockExample": "backflipSpin",
+            "pointers": [
+                {
+                    "label": "Drag \"turn\" into your code",
+                    "blockOpcode": "motion_turnright",
+                    "category": "motion"
+                }
+            ]
+        },
+        "sprite-lay-down": {
+            "id": "sprite-lay-down",
+            "title": "Lay down",
+            "text": "Use \"point in direction 0\" to make a sprite lay down (facing up), or \"point in direction 180\" to face down — set rotation style to \"all around\" first!",
+            "tags": [
+                "motion",
+                "looks",
+                "animation"
+            ],
+            "followUps": [
+                "rotation-style-vs-turn",
+                "face-without-flip"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"point in direction\" into your code",
+                    "blockOpcode": "motion_pointindirection",
+                    "category": "motion"
+                }
+            ]
+        },
+        "crowd-surf-effect": {
+            "id": "crowd-surf-effect",
+            "title": "Crowd surf",
+            "text": "Make a sprite crowd surf! Use \"glide 2 secs to x:240 y:50\" to slide across, and add \"change y by 5\" then \"change y by -5\" in a loop for a bobbing effect!",
+            "tags": [
+                "motion",
+                "animation",
+                "fun"
+            ],
+            "followUps": [
+                "glide-to-position",
+                "bounce-up-down",
+                "make-dance-party"
+            ],
+            "blockExample": "glideTo",
+            "pointers": [
+                {
+                    "label": "Drag \"glide\" into your code",
+                    "blockOpcode": "motion_glidesecstoxy",
+                    "category": "motion"
+                }
+            ]
+        },
+        "duplicate-code-to-sprite": {
+            "id": "duplicate-code-to-sprite",
+            "title": "Copy code to sprite",
+            "text": "Yes! Drag your code stack from the workspace onto another sprite's thumbnail in the sprite pane — it copies the whole stack!",
+            "tags": [
+                "sprites",
+                "meta",
+                "beginner"
+            ],
+            "followUps": [
+                "sprite-has-own-code",
+                "right-click-duplicate",
+                "add-sprite"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag code onto a sprite thumbnail to copy it",
+                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
+                }
+            ]
+        },
+        "explore-sprite-abilities": {
+            "id": "explore-sprite-abilities",
+            "title": "What can it do?",
+            "text": "Every sprite can move, change costumes, play sounds, and run code! Click the Costumes tab to see its different looks, and the Sounds tab for its sounds.",
+            "tags": [
+                "sprites",
+                "beginner",
+                "meta"
+            ],
+            "followUps": [
+                "access-other-costumes",
+                "add-sound",
+                "move-sprite"
+            ],
+            "pointers": [
+                {
+                    "label": "Click Costumes to see its looks",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
+                }
+            ]
+        },
+        "access-other-costumes": {
+            "id": "access-other-costumes",
+            "title": "See all costumes",
+            "text": "Click the Costumes tab at the top to see all the costumes your sprite has — you can switch between them with \"switch costume to\" or \"next costume\"!",
+            "tags": [
+                "costumes",
+                "beginner"
+            ],
+            "followUps": [
+                "change-costume",
+                "animate-costume",
+                "add-costume"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the Costumes tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
+                }
+            ]
+        },
+        "find-sprite-in-library": {
+            "id": "find-sprite-in-library",
+            "title": "Find a sprite",
+            "text": "Click the cat button below the stage to open the sprite library, then use the search bar to find any sprite by name!",
+            "tags": [
+                "sprites",
+                "beginner"
+            ],
+            "followUps": [
+                "add-sprite",
+                "add-many-same-sprite"
+            ],
+            "pointers": [
+                {
+                    "label": "Add a new sprite here",
+                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]"
+                }
+            ]
+        },
+        "add-many-same-sprite": {
+            "id": "add-many-same-sprite",
+            "title": "Add more copies",
+            "text": "To add more copies of a sprite, right-click the sprite in the sprite pane and choose \"duplicate\" — or add it again from the library! For lots of copies, try cloning.",
+            "tags": [
+                "sprites",
+                "beginner"
+            ],
+            "followUps": [
+                "clone-sprite",
+                "find-sprite-in-library",
+                "add-sprite"
+            ],
+            "pointers": [
+                {
+                    "label": "Right-click a sprite to duplicate",
+                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
+                }
+            ]
+        },
+        "move-side-to-side": {
+            "id": "move-side-to-side",
+            "title": "Move side to side",
+            "text": "Use \"move 5 steps\" with \"if on edge, bounce\" inside a forever loop to make a sprite go back and forth automatically!",
+            "tags": [
+                "motion",
+                "animation"
+            ],
+            "followUps": [
+                "waddle-side-to-side",
+                "forever-loop",
+                "bouncing-around"
+            ],
+            "blockExample": "moveSideToSide",
+            "pointers": [
+                {
+                    "label": "Drag \"if on edge, bounce\" into your code",
+                    "blockOpcode": "motion_ifonedgebounce",
+                    "category": "motion"
+                }
+            ]
+        },
+        "waddle-side-to-side": {
+            "id": "waddle-side-to-side",
+            "title": "Waddle effect",
+            "text": "Make a sprite waddle! Use \"turn right 10\" then \"wait 0.1\" then \"turn left 10\" then \"wait 0.1\" inside a forever loop.",
+            "tags": [
+                "motion",
+                "animation",
+                "fun"
+            ],
+            "followUps": [
+                "move-side-to-side",
+                "fix-upright-rotation",
+                "forever-loop"
+            ],
+            "blockExample": "waddleTurn",
+            "pointers": [
+                {
+                    "label": "Drag \"turn\" into your code",
+                    "blockOpcode": "motion_turnright",
+                    "category": "motion"
+                }
+            ]
+        },
+        "fix-upright-rotation": {
+            "id": "fix-upright-rotation",
+            "title": "Stay upright",
+            "text": "Use \"point in direction 90\" to make your sprite sit upright, or set rotation style to \"don't rotate\" so it always stays right-side up!",
+            "tags": [
+                "motion",
+                "looks"
+            ],
+            "followUps": [
+                "face-without-flip",
+                "rotation-style-vs-turn"
+            ],
+            "pointers": [
+                {
+                    "label": "Check rotation style in sprite info",
+                    "target": "[class*=\"sprite-info\"]"
+                }
+            ]
+        },
+        "face-without-flip": {
+            "id": "face-without-flip",
+            "title": "Face left (no flip)",
+            "text": "Set rotation style to \"left-right\" in the sprite info area — then your sprite will mirror horizontally without flipping upside down!",
+            "tags": [
+                "motion",
+                "looks",
+                "beginner"
+            ],
+            "followUps": [
+                "rotation-style-vs-turn",
+                "fix-upright-rotation"
+            ],
+            "pointers": [
+                {
+                    "label": "Set rotation style in sprite info",
+                    "target": "[class*=\"sprite-info\"]"
+                }
+            ]
+        },
+        "continuous-key-hold": {
+            "id": "continuous-key-hold",
+            "title": "Hold key to move",
+            "text": "Use \"forever: if key pressed then change x by 5\" instead of \"when key pressed\" — this way holding the key gives smooth, continuous movement!",
+            "tags": [
+                "motion",
+                "events",
+                "control"
+            ],
+            "followUps": [
+                "move-with-keys",
+                "forever-loop",
+                "wasd-controls"
+            ],
+            "blockExample": "foreverIfKeySmooth",
+            "pointers": [
+                {
+                    "label": "Drag \"key pressed?\" from Sensing",
+                    "blockOpcode": "sensing_keypressed",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "wasd-controls": {
+            "id": "wasd-controls",
+            "title": "WASD controls",
+            "text": "For WASD movement, use \"forever: if key w pressed, change y by 5 / if key a pressed, change x by -5\" and so on for each letter!",
+            "tags": [
+                "motion",
+                "events",
+                "control"
+            ],
+            "followUps": [
+                "continuous-key-hold",
+                "move-with-keys",
+                "change-xy-position"
+            ],
+            "blockExample": "foreverIfKeySmooth",
+            "pointers": [
+                {
+                    "label": "Drag \"key pressed?\" from Sensing",
+                    "blockOpcode": "sensing_keypressed",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "sprite-return-to-position": {
+            "id": "sprite-return-to-position",
+            "title": "Go back to start",
+            "text": "Use \"go to x: -200 y: 0\" to send a sprite back to a specific position — great for resetting enemies or obstacles!",
+            "tags": [
+                "motion",
+                "game"
+            ],
+            "followUps": [
+                "reset-at-start",
+                "go-to-position"
+            ],
+            "blockExample": "goToCenter",
+            "pointers": [
+                {
+                    "label": "Drag \"go to x: y:\" into your code",
+                    "blockOpcode": "motion_gotoxy",
+                    "category": "motion"
+                }
+            ]
+        },
+        "move-multiple-sprites": {
+            "id": "move-multiple-sprites",
+            "title": "Move both sprites",
+            "text": "Each sprite needs its own code! Click a sprite in the sprite pane, then add movement blocks to it — do this for each sprite you want to move.",
+            "tags": [
+                "sprites",
+                "motion",
+                "beginner"
+            ],
+            "followUps": [
+                "sprite-has-own-code",
+                "wrong-sprite-selected",
+                "move-with-keys"
+            ],
+            "pointers": [
+                {
+                    "label": "Click a sprite to add code to it",
+                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
+                }
+            ]
+        },
+        "find-specific-sound": {
+            "id": "find-specific-sound",
+            "title": "Find a sound",
+            "text": "Click the Sounds tab, then click the speaker button to open the sound library — use the search bar to look for sounds like \"chirp\", \"bird\", or any sound you want!",
+            "tags": [
+                "sound",
+                "beginner"
+            ],
+            "followUps": [
+                "add-sound",
+                "record-sound",
+                "silly-sounds"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the Sounds tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
+                }
+            ]
+        },
+        "insert-audio-file": {
+            "id": "insert-audio-file",
+            "title": "Upload a sound",
+            "text": "To add your own audio file, go to the Sounds tab, hover over the speaker button, and choose \"Upload Sound\" to pick a file from your computer!",
+            "tags": [
+                "sound",
+                "beginner"
+            ],
+            "followUps": [
+                "add-sound",
+                "record-sound",
+                "play-vs-play-until-done"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the Sounds tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
+                }
+            ]
+        },
+        "debug-sound-on-collision": {
+            "id": "debug-sound-on-collision",
+            "title": "Fix sound on touch",
+            "text": "If your sound isn't playing when sprites touch, make sure the \"if touching\" and \"play sound\" are both inside a \"forever\" loop — and use \"play sound until done\" so it doesn't restart every frame!",
+            "tags": [
+                "sound",
+                "debugging",
+                "sensing"
+            ],
+            "followUps": [
+                "detect-collision",
+                "play-vs-play-until-done",
+                "if-not-forever"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"play sound until done\" into your code",
+                    "blockOpcode": "sound_playuntildone",
+                    "category": "sound"
+                }
+            ]
+        },
+        "solid-wall-collision": {
+            "id": "solid-wall-collision",
+            "title": "Solid walls",
+            "text": "To stop a sprite from going through walls, use \"if touching color [wall color] then move back\" — put it in a forever loop so it's always checking!",
+            "tags": [
+                "sensing",
+                "game",
+                "collision"
+            ],
+            "followUps": [
+                "touching-color",
+                "detect-collision",
+                "obstacle-course-game"
+            ],
+            "blockExample": "touchingColorGoto",
+            "pointers": [
+                {
+                    "label": "Drag \"touching color?\" into your code",
+                    "blockOpcode": "sensing_touchingcolor",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "obstacle-course-game": {
+            "id": "obstacle-course-game",
+            "title": "Obstacle course",
+            "text": "Make an obstacle course! Draw obstacles on the backdrop, then use \"if touching color\" to detect them. Add keyboard controls and a \"go to start\" reset!",
+            "tags": [
+                "game",
+                "project-ideas"
+            ],
+            "followUps": [
+                "solid-wall-collision",
+                "color-touch-restart",
+                "move-with-keys",
+                "countdown-timer-variable"
+            ],
+            "blockExample": "touchingColorGoto",
+            "pointers": [
+                {
+                    "label": "Drag \"touching color?\" into your code",
+                    "blockOpcode": "sensing_touchingcolor",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "score-on-event": {
+            "id": "score-on-event",
+            "title": "Score points",
+            "text": "Make a \"score\" variable, set it to 0 at the start, then use \"if touching [sprite]\" with \"change score by 1\" inside a forever loop to score when sprites meet!",
+            "tags": [
+                "variables",
+                "game",
+                "sensing"
+            ],
+            "followUps": [
+                "use-variables",
+                "detect-collision",
+                "change-variable"
+            ],
+            "pointers": [
+                {
+                    "label": "Make a Variable here",
+                    "target": ".blocklyToolboxCategory#variables"
+                }
+            ]
+        },
+        "countdown-timer-variable": {
+            "id": "countdown-timer-variable",
+            "title": "Countdown timer",
+            "text": "Make a \"timer\" variable, set it to 30, then use \"repeat 30: wait 1 second, change timer by -1\" — when it hits 0, stop the game!",
+            "tags": [
+                "variables",
+                "game",
+                "control"
+            ],
+            "followUps": [
+                "use-variables",
+                "timer-block",
+                "make-game"
+            ],
+            "pointers": [
+                {
+                    "label": "Make a Variable here",
+                    "target": ".blocklyToolboxCategory#variables"
+                }
+            ]
+        },
+        "color-touch-restart": {
+            "id": "color-touch-restart",
+            "title": "Color = restart",
+            "text": "Use \"forever: if touching color [pick a color] then go to x: y:\" — this sends your sprite back to the start whenever it touches that color!",
+            "tags": [
+                "sensing",
+                "game",
+                "control"
+            ],
+            "followUps": [
+                "touching-color",
+                "solid-wall-collision",
+                "reset-at-start"
+            ],
+            "blockExample": "touchingColorGoto",
+            "pointers": [
+                {
+                    "label": "Drag \"touching color?\" into your code",
+                    "blockOpcode": "sensing_touchingcolor",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "kill-brick-game-over": {
+            "id": "kill-brick-game-over",
+            "title": "Game over trigger",
+            "text": "To make a sprite end the game when touched, use \"forever: if touching [sprite] then stop all\" — you can also broadcast \"game over\" to show a message first!",
+            "tags": [
+                "game",
+                "control",
+                "sensing"
+            ],
+            "followUps": [
+                "detect-collision",
+                "broadcast-message",
+                "make-game"
+            ],
+            "blockExample": "foreverIfTouching",
+            "pointers": [
+                {
+                    "label": "Drag \"stop all\" into your code",
+                    "blockOpcode": "control_stop",
+                    "category": "control"
+                }
+            ]
+        },
+        "ball-bounce-off-sprite": {
+            "id": "ball-bounce-off-sprite",
+            "title": "Bounce off sprite",
+            "text": "To make a ball bounce off a player, use \"if touching [player]\" inside a forever loop, then \"point in direction (pick random)\" or \"turn 180 degrees\" to reverse it!",
+            "tags": [
+                "motion",
+                "sensing",
+                "game",
+                "sports"
+            ],
+            "followUps": [
+                "detect-collision",
+                "bouncing-around",
+                "volleyball-game"
+            ],
+            "blockExample": "foreverIfTouching",
+            "pointers": [
+                {
+                    "label": "Drag \"touching?\" into your code",
+                    "blockOpcode": "sensing_touchingobject",
+                    "category": "sensing"
+                }
+            ]
+        },
+        "falling-obstacle": {
+            "id": "falling-obstacle",
+            "title": "Falling obstacles",
+            "text": "To make a sprite fall from the sky, start it at the top with \"go to x:0 y:180\" then use \"forever: change y by -5\" to make it fall down!",
+            "tags": [
+                "motion",
+                "game"
+            ],
+            "followUps": [
+                "solid-wall-collision",
+                "detect-collision",
+                "clone-sprite"
+            ],
+            "blockExample": "fallingFromSky",
+            "pointers": [
+                {
+                    "label": "Drag \"change y by\" into your code",
+                    "blockOpcode": "motion_changeyby",
+                    "category": "motion"
+                }
+            ]
+        },
+        "game-types-overview": {
+            "id": "game-types-overview",
+            "title": "Game ideas",
+            "text": "You can make so many games! Maze games, chase games, platformers, clicker games, pong, quiz games, dodge games, catching games, and more — pick one that sounds fun!",
+            "tags": [
+                "project-ideas",
+                "game"
+            ],
+            "followUps": [
+                "make-game",
+                "make-platformer",
+                "obstacle-course-game",
+                "volleyball-game"
+            ]
+        },
+        "advanced-scratch-examples": {
+            "id": "advanced-scratch-examples",
+            "title": "Amazing Scratch projects",
+            "text": "People have made incredible things in Scratch — 3D engines, full RPG games, music studios, and even working computers! Start with something simple and keep building your skills.",
+            "tags": [
+                "project-ideas",
+                "inspiration"
+            ],
+            "followUps": [
+                "game-types-overview",
+                "make-game",
+                "project-idea-suggestion"
+            ]
+        },
+        "project-idea-suggestion": {
+            "id": "project-idea-suggestion",
+            "title": "Get an idea",
+            "text": "How about making a game where your sprite dodges falling objects? Or an animation of your favorite animal? Or a music machine? Start small — you can always add more!",
+            "tags": [
+                "project-ideas",
+                "beginner"
+            ],
+            "followUps": [
+                "game-types-overview",
+                "make-game",
+                "make-animation",
+                "make-music-project"
+            ]
+        },
+        "make-tetris-game": {
+            "id": "make-tetris-game",
+            "title": "Tetris-style game",
+            "text": "Tetris is an advanced project! Start by making one block that falls and stops at the bottom, then add keyboard controls to move it left and right. Build up from there!",
+            "tags": [
+                "project-ideas",
+                "game",
+                "advanced"
+            ],
+            "followUps": [
+                "falling-obstacle",
+                "continuous-key-hold",
+                "use-variables"
+            ],
+            "blockExample": "fallingFromSky",
+            "pointers": [
+                {
+                    "label": "Drag \"change y by\" into your code",
+                    "blockOpcode": "motion_changeyby",
+                    "category": "motion"
+                }
+            ]
+        },
+        "volleyball-game": {
+            "id": "volleyball-game",
+            "title": "Volleyball game",
+            "text": "For a volleyball game, make a ball sprite that bounces, two player sprites with keyboard controls, and use \"if touching\" to make the ball bounce off the players!",
+            "tags": [
+                "project-ideas",
+                "game",
+                "sports"
+            ],
+            "followUps": [
+                "ball-bounce-off-sprite",
+                "move-with-keys",
+                "bouncing-around"
+            ],
+            "blockExample": "foreverBounce",
+            "pointers": [
+                {
+                    "label": "Drag \"if on edge, bounce\" into your code",
+                    "blockOpcode": "motion_ifonedgebounce",
+                    "category": "motion"
+                }
+            ]
+        },
+        "make-game-more-interesting": {
+            "id": "make-game-more-interesting",
+            "title": "Improve your game",
+            "text": "Try adding: a score variable, sound effects when things happen, a timer, extra levels with backdrops, or power-ups using clones — these all make games more exciting!",
+            "tags": [
+                "project-ideas",
+                "game"
+            ],
+            "followUps": [
+                "use-variables",
+                "add-sound",
+                "countdown-timer-variable",
+                "clone-sprite"
+            ]
+        },
+        "scrolling-backdrop": {
+            "id": "scrolling-backdrop",
+            "title": "Scrolling background",
+            "text": "For a continuously moving backdrop, make two copies of the background as sprites. Move both left in a forever loop — when one goes off screen, jump it to the right side!",
+            "tags": [
+                "motion",
+                "game",
+                "advanced"
+            ],
+            "followUps": [
+                "change-backdrop",
+                "forever-loop",
+                "make-platformer"
+            ],
+            "blockExample": "moveSideToSide",
+            "pointers": [
+                {
+                    "label": "Drag \"change x by\" into your code",
+                    "blockOpcode": "motion_changexby",
+                    "category": "motion"
+                }
+            ]
+        },
+        "multiple-backdrops": {
+            "id": "multiple-backdrops",
+            "title": "Multiple backdrops",
+            "text": "Click the backdrop area below the stage and add more backdrops! Use \"switch backdrop to\" or \"next backdrop\" blocks to switch between them in your code.",
+            "tags": [
+                "looks",
+                "backdrop",
+                "beginner"
+            ],
+            "followUps": [
+                "change-backdrop",
+                "backdrop-events",
+                "broadcast-for-levels"
+            ],
+            "pointers": [
+                {
+                    "label": "Add a backdrop here",
+                    "target": "[class*=\"stage-selector\"] [class*=\"add-button\"]"
+                }
+            ]
+        },
+        "find-sprite-x-position": {
+            "id": "find-sprite-x-position",
+            "title": "Find X position",
+            "text": "Hover over a sprite on the stage to see its x and y position in the sprite info area below, or use the \"x position\" reporter block from Motion!",
+            "tags": [
+                "motion",
+                "sensing",
+                "coordinates"
+            ],
+            "followUps": [
+                "change-xy-explanation",
+                "go-to-position"
+            ],
+            "pointers": [
+                {
+                    "label": "Find \"x position\" in Motion",
+                    "blockOpcode": "motion_xposition",
+                    "category": "motion"
+                }
+            ]
+        },
+        "other-turn-options": {
+            "id": "other-turn-options",
+            "title": "Turn options",
+            "text": "You can \"turn right\" or \"turn left\" by any number of degrees, or use \"point in direction\" to face a specific way (90=right, -90=left, 0=up, 180=down)!",
+            "tags": [
+                "motion",
+                "beginner"
+            ],
+            "followUps": [
+                "spinning",
+                "rotation-style-vs-turn",
+                "face-without-flip"
+            ],
+            "pointers": [
+                {
+                    "label": "Drag \"point in direction\" into your code",
+                    "blockOpcode": "motion_pointindirection",
+                    "category": "motion"
+                }
+            ]
+        },
+        "forever-block-explained": {
+            "id": "forever-block-explained",
+            "title": "Why use forever?",
+            "text": "Without \"forever\", your code runs once and stops! The \"forever\" loop keeps repeating your blocks over and over — that's why your sprite stops moving when you remove it.",
+            "tags": [
+                "control",
+                "meta",
+                "beginner"
+            ],
+            "followUps": [
+                "forever-loop",
+                "repeat-loop",
+                "if-not-forever"
+            ],
+            "blockExample": "foreverMove"
+        },
+        "no-code-interactions": {
+            "id": "no-code-interactions",
+            "title": "Without code",
+            "text": "You can drag sprites around the stage with your mouse, draw costumes, record sounds, and change the backdrop — all without any code! But code is what makes things interactive.",
+            "tags": [
+                "meta",
+                "beginner"
+            ],
+            "followUps": [
+                "drag-blocks-to-workspace",
+                "add-costume",
+                "add-sound"
+            ]
+        },
+        "green-flag-not-moving": {
+            "id": "green-flag-not-moving",
+            "title": "Nothing moves",
+            "text": "If clicking the green flag does nothing, check: do you have a \"when green flag clicked\" block on top of your code? Is your code connected in a stack? Is it on the right sprite?",
+            "tags": [
+                "debugging",
+                "events",
+                "beginner"
+            ],
+            "followUps": [
+                "nothing-happens",
+                "wrong-sprite-selected",
+                "add-event-block"
+            ],
+            "blockExample": "whenFlagMove",
+            "pointers": [
+                {
+                    "label": "Drag \"when green flag clicked\" into your code",
+                    "blockOpcode": "event_whenflagclicked",
+                    "category": "events"
+                }
+            ]
+        },
+        "make-sprite-bigger": {
+            "id": "make-sprite-bigger",
+            "title": "Make it bigger",
+            "text": "Use \"set size to 200%\" from Looks to make your sprite bigger — 100% is normal, higher numbers make it larger!",
+            "tags": [
+                "looks",
+                "size",
+                "beginner"
+            ],
+            "followUps": [
+                "change-size",
+                "sprite-too-small"
+            ],
+            "blockExample": "setSizeTo100",
+            "pointers": [
+                {
+                    "label": "Drag \"set size to\" into your code",
+                    "blockOpcode": "looks_setsizeto",
+                    "category": "looks"
+                }
+            ]
+        },
+        "costume-masking": {
+            "id": "costume-masking",
+            "title": "Edit part of costume",
+            "text": "Scratch doesn't have masking, but you can select just part of a costume to edit! In the Costumes tab, use the select tool to click and drag around the area you want to change.",
+            "tags": [
+                "costumes",
+                "drawing"
+            ],
+            "followUps": [
+                "add-costume",
+                "change-costume"
+            ],
+            "pointers": [
+                {
+                    "label": "Click the Costumes tab",
+                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
+                }
+            ]
+        }
+    },
+    "quickPicks": [
+        {
+            "label": "Starting your project",
+            "query": "nothing happens when I click green flag",
+            "color": "#FFBF00"
+        },
+        {
+            "label": "Moving a sprite",
+            "query": "how do I make my sprite move",
+            "color": "#4C97FF"
+        },
+        {
+            "label": "Animation",
+            "query": "how do I animate my sprite",
+            "color": "#9966FF"
+        },
+        {
+            "label": "Adding sounds",
+            "query": "how do I add a sound",
+            "color": "#CF63CF"
+        },
+        {
+            "label": "Making a game",
+            "query": "how do I make a game",
+            "color": "#FFAB19"
+        },
+        {
+            "label": "Making art",
+            "query": "how do I draw and make art",
+            "color": "#0FBD8C"
+        },
+        {
+            "label": "Fun effects",
+            "query": "rainbow spinning color effects",
+            "color": "#FF6680"
+        },
+        {
+            "label": "What went wrong?",
+            "query": "my code is not working something is broken",
+            "color": "#FF8C1A"
+        }
+    ]
+}

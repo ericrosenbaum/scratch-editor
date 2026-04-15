@@ -27,6 +27,7 @@ import settingsReducer, {settingsInitialState} from './settings';
 import timeoutReducer, {timeoutInitialState} from './timeout';
 import timeTravelReducer, {timeTravelInitialState} from './time-travel';
 import toolboxReducer, {toolboxInitialState} from './toolbox';
+import unstuckReducer, {unstuckInitialState} from './unstuck';
 import vmReducer, {vmInitialState} from './vm';
 import vmStatusReducer, {vmStatusInitialState} from './vm-status';
 import workspaceMetricsReducer, {workspaceMetricsInitialState} from './workspace-metrics';
@@ -67,6 +68,7 @@ const buildInitialState = (config: GUIConfig) => ({
     timeout: timeoutInitialState,
     timeTravel: timeTravelInitialState,
     toolbox: toolboxInitialState,
+    unstuck: unstuckInitialState,
     vm: vmInitialState(config),
     vmStatus: vmStatusInitialState,
     workspaceMetrics: workspaceMetricsInitialState
@@ -177,6 +179,7 @@ const guiReducer = combineReducers({
     timeout: timeoutReducer,
     timeTravel: timeTravelReducer,
     toolbox: toolboxReducer,
+    unstuck: unstuckReducer,
     vm: vmReducer,
     vmStatus: vmStatusReducer,
     workspaceMetrics: workspaceMetricsReducer
