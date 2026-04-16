@@ -52,7 +52,7 @@ class QADataModal extends React.Component {
     handleAddDataset () {
         this.setState(state => {
             const datasets = state.datasets.concat({
-                name: `dataset ${state.datasets.length + 1}`,
+                name: `data set ${state.datasets.length + 1}`,
                 pairs: []
             });
             return {datasets, activeDatasetIndex: datasets.length - 1};

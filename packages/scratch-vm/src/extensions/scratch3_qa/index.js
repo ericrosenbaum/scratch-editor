@@ -40,7 +40,7 @@ class Scratch3QABlocks {
             blocks: [
                 {
                     blockType: BlockType.BUTTON,
-                    text: 'Edit QA Data',
+                    text: 'Edit Q+A Data',
                     func: 'EDIT_QA_DATA'
                 },
                 {
@@ -77,7 +77,7 @@ class Scratch3QABlocks {
     getQADatasetMenu () {
         const items = this._qaDatasets.map(d => ({text: d.name, value: d.name}));
         if (items.length === 0) {
-            items.push({text: '(no datasets)', value: ''});
+            items.push({text: '(no data sets)', value: ''});
         }
         return items;
     }

@@ -34,7 +34,6 @@
 .dataset-list {
     flex: 1;
     overflow-y: auto;
-    margin-bottom: 0.5rem;
 }
 
 .dataset-item {
@@ -128,7 +127,7 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
-    align-items: stretch;
+    align-items: flex-start;
 }
 
 .pair-input {
@@ -138,8 +137,10 @@
     border-radius: 0.25rem;
     font-size: 0.85rem;
     font-family: inherit;
-    resize: vertical;
-    min-height: 3rem;
+    resize: none;
+    overflow: hidden;
+    min-height: 1.85rem;
+    line-height: 1.3;
 }
 
 .remove-button {
@@ -162,6 +163,7 @@
     color: $looks-secondary;
     cursor: pointer;
     margin-top: 0.5rem;
+    flex-shrink: 0;
 }
 
 .empty {
