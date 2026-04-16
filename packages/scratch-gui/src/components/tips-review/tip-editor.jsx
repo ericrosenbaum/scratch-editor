@@ -199,12 +199,13 @@ class TipEditor extends React.Component {
         this.updateDraft(draft => {
             const arr = [...(draft.pointers || [])];
             arr[index] = {...arr[index], [field]: value};
-            // If selecting a block opcode, set category too
+            // If selecting a block opcode, set category and clear UI target
             if (field === 'blockOpcode') {
+                delete arr[index].target;
+                delete arr[index].category;
                 for (const [cat, opcodes] of Object.entries(blockOpcodesByCategory)) {
                     if (opcodes.find(o => o.opcode === value)) {
                         arr[index].category = cat;
-                        delete arr[index].target;
                         break;
                     }
                 }
@@ -373,7 +374,7 @@ class TipEditor extends React.Component {
     }
 
     renderPointerTargetSelect (pointer, index) {
-        const isBlockType = !!pointer.blockOpcode;
+        const isBlockType = 'blockOpcode' in pointer;
 
         return (
             <div className={styles.editorPointerTarget}>
