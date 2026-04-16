@@ -1031,6 +1031,22 @@
     background: #e6f4ea;
 }
 
+.editor-open-link-button {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #4c9ced;
+    background: transparent;
+    color: #4c9ced;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+
+.editor-open-link-button:hover {
+    background: #e8f0fe;
+}
+
 .editor-capture-preview {
     margin-top: 12px;
     padding: 12px;

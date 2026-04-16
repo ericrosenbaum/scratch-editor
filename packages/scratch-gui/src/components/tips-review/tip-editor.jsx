@@ -248,6 +248,31 @@ class TipEditor extends React.Component {
         );
     }
 
+    renderProjectUrlField () {
+        const {draft} = this.state;
+        return (
+            <div className={styles.editorField}>
+                <label className={styles.editorLabel}>{'Project URL'}</label>
+                <div className={styles.editorListRow}>
+                    <input
+                        className={styles.editorInput}
+                        placeholder="https://scratch.mit.edu/projects/..."
+                        value={draft.projectUrl || ''}
+                        onChange={e => this.updateDraft(() => ({projectUrl: e.target.value || undefined}))}
+                    />
+                    {draft.projectUrl ? (
+                        <button
+                            className={styles.editorOpenLinkButton}
+                            onClick={() => window.open(draft.projectUrl, '_blank', 'noopener,noreferrer')}
+                        >
+                            {'Open \u2197'}
+                        </button>
+                    ) : null}
+                </div>
+            </div>
+        );
+    }
+
     renderTagsEditor () {
         const {draft} = this.state;
         const currentTags = draft.tags || [];
@@ -666,6 +691,8 @@ class TipEditor extends React.Component {
                     <div className={styles.editorForm}>
                         {this.renderTextField('Title', 'title')}
                         {this.renderTextArea('Text', 'text')}
+                        {this.renderProjectUrlField()}
+                        {this.renderTextField('Tutorial ID', 'tutorialId')}
                         {this.renderTagsEditor()}
                         {this.renderFollowUpsEditor()}
                         {this.renderBlockExampleEditor()}

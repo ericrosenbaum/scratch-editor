@@ -5872,5 +5872,1268 @@
             "shadow": true,
             "topLevel": false
         }
+    ],
+    "captured_sprite-ghost-effect_1776285977612": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenthisspriteclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "control_repeat",
+            "next": null,
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "TIMES": {
+                    "name": "TIMES",
+                    "block": "unstuck_s0_3",
+                    "shadow": "unstuck_s0_3"
+                },
+                "SUBSTACK": {
+                    "name": "SUBSTACK",
+                    "block": "unstuck_s0_4",
+                    "shadow": null
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "math_whole_number",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "20"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_4",
+            "opcode": "looks_changeeffectby",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {
+                "CHANGE": {
+                    "name": "CHANGE",
+                    "block": "unstuck_s0_5",
+                    "shadow": "unstuck_s0_5"
+                }
+            },
+            "fields": {
+                "EFFECT": {
+                    "name": "EFFECT",
+                    "value": "GHOST"
+                }
+            },
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_5",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_4",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "5"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_blocks-run-in-order_1776367353544": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "looks_sayforsecs",
+            "next": "unstuck_s0_3",
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_s0_9",
+                    "shadow": "unstuck_s0_9"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_s0_10",
+                    "shadow": "unstuck_s0_10"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "looks_sayforsecs",
+            "next": "unstuck_s0_4",
+            "parent": "unstuck_s0_2",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_s0_7",
+                    "shadow": "unstuck_s0_7"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_s0_8",
+                    "shadow": "unstuck_s0_8"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_4",
+            "opcode": "looks_sayforsecs",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_s0_5",
+                    "shadow": "unstuck_s0_5"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_s0_6",
+                    "shadow": "unstuck_s0_6"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_5",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_4",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "3rd"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_6",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_4",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "2"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_7",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "2nd"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_8",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_9",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "1st"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_10",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_blocks-run-in-order_1776367367915": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "looks_sayforsecs",
+            "next": "unstuck_s0_3",
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_s0_9",
+                    "shadow": "unstuck_s0_9"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_s0_10",
+                    "shadow": "unstuck_s0_10"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "looks_sayforsecs",
+            "next": "unstuck_s0_4",
+            "parent": "unstuck_s0_2",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_s0_7",
+                    "shadow": "unstuck_s0_7"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_s0_8",
+                    "shadow": "unstuck_s0_8"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_4",
+            "opcode": "looks_sayforsecs",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_s0_5",
+                    "shadow": "unstuck_s0_5"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_s0_6",
+                    "shadow": "unstuck_s0_6"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_5",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_4",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "3rd"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_6",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_4",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_7",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "2nd"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_8",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_9",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "1st"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_10",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_use-variables_1776368479429": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenthisspriteclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "data_changevariableby",
+            "next": "unstuck_s0_3",
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "VALUE": {
+                    "name": "VALUE",
+                    "block": "unstuck_s0_7",
+                    "shadow": "unstuck_s0_7"
+                }
+            },
+            "fields": {
+                "VARIABLE": {
+                    "name": "VARIABLE",
+                    "value": "score",
+                    "id": "z(5E=;vO:52}XDYn^h9D"
+                }
+            },
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "looks_sayforsecs",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_s0_4",
+                    "shadow": "unstuck_s0_5"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_s0_6",
+                    "shadow": "unstuck_s0_6"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_4",
+            "opcode": "data_variable",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "VARIABLE": {
+                    "name": "VARIABLE",
+                    "value": "score",
+                    "id": "z(5E=;vO:52}XDYn^h9D",
+                    "variableType": ""
+                }
+            },
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_5",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "Hello!"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_6",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "2"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_7",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_broadcast-message_1776368576316": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "event_broadcast",
+            "next": null,
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "BROADCAST_INPUT": {
+                    "name": "BROADCAST_INPUT",
+                    "block": "unstuck_s0_3",
+                    "shadow": "unstuck_s0_3"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "event_broadcast_menu",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "BROADCAST_OPTION": {
+                    "name": "BROADCAST_OPTION",
+                    "value": "message1",
+                    "id": "DYyGQPoAu2V1-Utd~eul",
+                    "variableType": "broadcast_msg"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s1_1",
+            "opcode": "event_whenbroadcastreceived",
+            "next": "unstuck_s1_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {
+                "BROADCAST_OPTION": {
+                    "name": "BROADCAST_OPTION",
+                    "value": "message1",
+                    "id": "DYyGQPoAu2V1-Utd~eul",
+                    "variableType": "broadcast_msg"
+                }
+            },
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s1_2",
+            "opcode": "looks_sayforsecs",
+            "next": null,
+            "parent": "unstuck_s1_1",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_s1_3",
+                    "shadow": "unstuck_s1_3"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_s1_4",
+                    "shadow": "unstuck_s1_4"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s1_3",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s1_2",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "Hello!"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s1_4",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s1_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "2"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_if-not-forever_1776369190883": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "control_forever",
+            "next": null,
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "SUBSTACK": {
+                    "name": "SUBSTACK",
+                    "block": "unstuck_s0_3",
+                    "shadow": null
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "control_if",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {
+                "CONDITION": {
+                    "name": "CONDITION",
+                    "block": "unstuck_s0_4",
+                    "shadow": null
+                },
+                "SUBSTACK": {
+                    "name": "SUBSTACK",
+                    "block": "unstuck_s0_6",
+                    "shadow": null
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_4",
+            "opcode": "sensing_touchingobject",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {
+                "TOUCHINGOBJECTMENU": {
+                    "name": "TOUCHINGOBJECTMENU",
+                    "block": "unstuck_s0_5",
+                    "shadow": "unstuck_s0_5"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_5",
+            "opcode": "sensing_touchingobjectmenu",
+            "next": null,
+            "parent": "unstuck_s0_4",
+            "inputs": {},
+            "fields": {
+                "TOUCHINGOBJECTMENU": {
+                    "name": "TOUCHINGOBJECTMENU",
+                    "value": "_mouse_"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_6",
+            "opcode": "motion_goto",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {
+                "TO": {
+                    "name": "TO",
+                    "block": "unstuck_s0_7",
+                    "shadow": "unstuck_s0_7"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_7",
+            "opcode": "motion_goto_menu",
+            "next": null,
+            "parent": "unstuck_s0_6",
+            "inputs": {},
+            "fields": {
+                "TO": {
+                    "name": "TO",
+                    "value": "_random_"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_batched-updates_1776369473654": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "control_forever",
+            "next": null,
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "SUBSTACK": {
+                    "name": "SUBSTACK",
+                    "block": "unstuck_s0_3",
+                    "shadow": null
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "motion_turnright",
+            "next": "unstuck_s0_4",
+            "parent": "unstuck_s0_2",
+            "inputs": {
+                "DEGREES": {
+                    "name": "DEGREES",
+                    "block": "unstuck_s0_10",
+                    "shadow": "unstuck_s0_10"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_4",
+            "opcode": "control_wait",
+            "next": "unstuck_s0_5",
+            "parent": "unstuck_s0_3",
+            "inputs": {
+                "DURATION": {
+                    "name": "DURATION",
+                    "block": "unstuck_s0_9",
+                    "shadow": "unstuck_s0_9"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_5",
+            "opcode": "motion_turnleft",
+            "next": "unstuck_s0_6",
+            "parent": "unstuck_s0_4",
+            "inputs": {
+                "DEGREES": {
+                    "name": "DEGREES",
+                    "block": "unstuck_s0_8",
+                    "shadow": "unstuck_s0_8"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_6",
+            "opcode": "control_wait",
+            "next": null,
+            "parent": "unstuck_s0_5",
+            "inputs": {
+                "DURATION": {
+                    "name": "DURATION",
+                    "block": "unstuck_s0_7",
+                    "shadow": "unstuck_s0_7"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_7",
+            "opcode": "math_positive_number",
+            "next": null,
+            "parent": "unstuck_s0_6",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": ".1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_8",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_5",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "15"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_9",
+            "opcode": "math_positive_number",
+            "next": null,
+            "parent": "unstuck_s0_4",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": ".1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_10",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "15"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_negative-numbers_1776369524762": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenkeypressed",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {
+                "KEY_OPTION": {
+                    "name": "KEY_OPTION",
+                    "value": "left arrow"
+                }
+            },
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "motion_movesteps",
+            "next": null,
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "STEPS": {
+                    "name": "STEPS",
+                    "block": "unstuck_s0_3",
+                    "shadow": "unstuck_s0_3"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "-10"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_greater-less-than_1776369966865": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "control_forever",
+            "next": null,
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "SUBSTACK": {
+                    "name": "SUBSTACK",
+                    "block": "unstuck_s0_3",
+                    "shadow": null
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "motion_goto",
+            "next": "unstuck_s0_4",
+            "parent": "unstuck_s0_2",
+            "inputs": {
+                "TO": {
+                    "name": "TO",
+                    "block": "unstuck_s0_11",
+                    "shadow": "unstuck_s0_11"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_4",
+            "opcode": "control_if",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {
+                "CONDITION": {
+                    "name": "CONDITION",
+                    "block": "unstuck_s0_5",
+                    "shadow": null
+                },
+                "SUBSTACK": {
+                    "name": "SUBSTACK",
+                    "block": "unstuck_s0_9",
+                    "shadow": null
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_5",
+            "opcode": "operator_lt",
+            "next": null,
+            "parent": "unstuck_s0_4",
+            "inputs": {
+                "OPERAND1": {
+                    "name": "OPERAND1",
+                    "block": "unstuck_s0_6",
+                    "shadow": "unstuck_s0_7"
+                },
+                "OPERAND2": {
+                    "name": "OPERAND2",
+                    "block": "unstuck_s0_8",
+                    "shadow": "unstuck_s0_8"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_6",
+            "opcode": "motion_yposition",
+            "next": null,
+            "parent": "unstuck_s0_5",
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_7",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_5",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": ""
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_8",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_5",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "0"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_9",
+            "opcode": "motion_sety",
+            "next": null,
+            "parent": "unstuck_s0_4",
+            "inputs": {
+                "Y": {
+                    "name": "Y",
+                    "block": "unstuck_s0_10",
+                    "shadow": "unstuck_s0_10"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_10",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_9",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "0"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_11",
+            "opcode": "motion_goto_menu",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "TO": {
+                    "name": "TO",
+                    "value": "_mouse_"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
+    ],
+    "captured_insert-reporter_1776370055922": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "looks_sayforsecs",
+            "next": null,
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_s0_3",
+                    "shadow": "unstuck_s0_6"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_s0_7",
+                    "shadow": "unstuck_s0_7"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "operator_random",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {
+                "FROM": {
+                    "name": "FROM",
+                    "block": "unstuck_s0_4",
+                    "shadow": "unstuck_s0_4"
+                },
+                "TO": {
+                    "name": "TO",
+                    "block": "unstuck_s0_5",
+                    "shadow": "unstuck_s0_5"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_4",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_5",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "10"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_6",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "Hello!"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_7",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "2"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
     ]
 }
