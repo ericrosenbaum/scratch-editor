@@ -27,7 +27,8 @@ const webBuilder = new ScratchWebpackConfigBuilder(common)
     .setTarget('browserslist')
     .merge({
         entry: {
-            'extension-worker': path.join(__dirname, 'src/extension-support/extension-worker.js')
+            'extension-worker': path.join(__dirname, 'src/extension-support/extension-worker.js'),
+            'whisper-worker': path.join(__dirname, 'src/extensions/scratch3_speech2text/whisper-worker.js')
         },
         resolve: {
             fallback: {

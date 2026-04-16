@@ -97,6 +97,17 @@ const baseConfig = new ScratchWebpackConfigBuilder(
                 noErrorOnMissing: true
             },
             {
+                context: '../../node_modules/@scratch/scratch-vm/dist/web',
+                from: 'whisper-worker.{js,js.map}',
+                to: 'static/',
+                noErrorOnMissing: true
+            },
+            {
+                from: 'src/lib/libraries/extensions/speech2text/whisper-worker.js',
+                to: 'static/whisper-worker.js',
+                noErrorOnMissing: true
+            },
+            {
                 context: '../../node_modules/scratch-storage/dist/web',
                 from: 'chunks/fetch-worker.*.{js,js.map}',
                 noErrorOnMissing: true
@@ -113,6 +124,11 @@ const baseConfig = new ScratchWebpackConfigBuilder(
             {
                 from: 'src/lib/unstuck/embedding-worker.js',
                 to: 'static/embedding-worker.js'
+            },
+            {
+                from: '../../node_modules/onnxruntime-web/dist/*.wasm',
+                to: 'chunks/onnx/[name][ext]',
+                noErrorOnMissing: true
             }
         ]
     }));

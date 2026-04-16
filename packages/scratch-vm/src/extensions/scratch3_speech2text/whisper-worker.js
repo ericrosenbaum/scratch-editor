@@ -1,10 +1,6 @@
 /* eslint-env worker */
 
-/**
- * Web Worker for Whisper speech-to-text inference.
- * Loads @huggingface/transformers from CDN via dynamic import.
- */
-
+let pipeline = null;
 let transcriber = null;
 
 self.onmessage = async function (event) {
@@ -13,11 +9,12 @@ self.onmessage = async function (event) {
     if (type === 'init') {
         try {
             console.log('[Speech2Text Worker] Received init message');
-            console.log('[Speech2Text Worker] Importing @huggingface/transformers from CDN...');
+            console.log('[Speech2Text Worker] Importing @huggingface/transformers...');
 
-            const {pipeline} = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3');
+            const {pipeline: createPipeline} = await import('@huggingface/transformers');
+            pipeline = createPipeline;
 
-            console.log('[Speech2Text Worker] Library loaded, creating ASR pipeline...');
+            console.log('[Speech2Text Worker] Import successful, creating ASR pipeline...');
             console.log('[Speech2Text Worker] Model: onnx-community/whisper-tiny, dtype: q8, device: wasm');
 
             transcriber = await pipeline(

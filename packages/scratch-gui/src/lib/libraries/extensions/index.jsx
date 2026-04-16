@@ -52,6 +52,9 @@ import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 import qaIconURL from './qa/qa.svg';
 import qaInsetIconURL from './qa/qa-small.svg';
 
+import speech2textIconURL from './speech2text/speech.png';
+import speech2textInsetIconURL from './speech2text/speech2text-small.svg';
+
 export default [
     {
         name: (
@@ -149,6 +152,26 @@ export default [
                 defaultMessage="Sense faces with the camera."
                 description="Description for the 'Face Sensing' extension"
                 id="gui.extension.faceSensing.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Speech to Text"
+                description="Name for the 'Speech to Text' extension"
+                id="gui.extension.speech2text.name"
+            />
+        ),
+        extensionId: 'speech2text',
+        iconURL: speech2textIconURL,
+        insetIconURL: speech2textInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Transcribe speech using your microphone."
+                description="Description for the 'Speech to Text' extension"
+                id="gui.extension.speech2text.description"
             />
         ),
         featured: true
