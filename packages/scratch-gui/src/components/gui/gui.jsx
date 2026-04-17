@@ -235,6 +235,12 @@ const GUIComponent = props => {
         }
     }, [theme, hasActiveMembership, props.setTheme]);
 
+    useEffect(() => {
+        if (colorMode) {
+            document.documentElement.setAttribute('data-colormode', colorMode);
+        }
+    }, [colorMode]);
+
     const tabClassNames = {
         tabs: styles.tabs,
         tab: classNames(tabStyles.reactTabsTab, styles.tab),

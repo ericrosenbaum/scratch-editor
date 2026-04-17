@@ -1,0 +1,777 @@
+/*
+ * Comprehensive dark-mode overrides for the Scratch editor.
+ *
+ * How this works:
+ *   - All rules are wrapped in `:global { }` so CSS Modules does not hash them.
+ *   - Selectors use `[class*="kebab-name"]` substring matches because CSS Modules
+ *     hashes local class names but preserves the original kebab-case as a prefix.
+ *   - The cascade order matters: colors.css (mint) loads first, this file loads
+ *     second, and `[data-colormode="dark"] ...` selectors add enough specificity
+ *     to override the default rules only when dark mode is active.
+ *   - Dark is the default color mode (see color-mode/persistence.js), so these
+ *     rules apply to fresh loads before the user picks anything.
+ */
+
+/*
+ * Dark-mode palette.
+ *   surface-0  page bg        #14141A
+ *   surface-1  panels, modals #1E1E2E
+ *   surface-2  cards, inputs  #2A2A3E
+ *   surface-3  hover/selected #35354A
+ *   border                    #3A3A4A
+ *   text-primary              #E5E5E5
+ *   text-secondary            #A0A0B0
+ *   menu bar                  #0F1420
+ *   accent (kept mint)        #3FB08A
+ */
+
+:global {
+
+/* ---------- Page shell ---------- */
+
+[data-colormode="dark"] [class*="page-wrapper"],
+[data-colormode="dark"] [class*="body-wrapper"] {
+    background-color: #14141A;
+    color: #E5E5E5;
+}
+
+[data-colormode="dark"] body,
+[data-colormode="dark"] #app {
+    background-color: #14141A;
+    color: #E5E5E5;
+}
+
+/* ---------- Menu bar ---------- */
+
+[data-colormode="dark"] [class*="menu-bar_menu-bar_"] {
+    background-color: #0F1420;
+    border-bottom: 1px solid #3A3A4A;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="menu-bar_menu-bar-menu"] {
+    background-color: #1E1E2E;
+    color: #E5E5E5;
+    border: 1px solid #3A3A4A;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+[data-colormode="dark"] [class*="menu-bar_hoverable"]:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+[data-colormode="dark"] [class*="menu-bar_feedback-button"] {
+    background-color: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="menu-bar_save-status"],
+[data-colormode="dark"] [class*="menu-bar_title-field"] {
+    background-color: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+
+/* ---------- Menus / submenus (generic Menu component) ---------- */
+
+[data-colormode="dark"] [class*="menu_menu"],
+[data-colormode="dark"] [class*="menu_menu-item"] {
+    background-color: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="menu_menu-item"]:hover,
+[data-colormode="dark"] [class*="menu_menu-item_hoverable"]:hover {
+    background-color: #35354A;
+}
+[data-colormode="dark"] [class*="menu_menu-section"] {
+    border-color: #3A3A4A;
+}
+
+/* ---------- Tab bar (Code / Costumes / Sounds) ---------- */
+
+[data-colormode="dark"] [class*="gui_tab_"] {
+    background: transparent;
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="gui_tab_"]:hover {
+    background: #2A2A3E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="gui_tab_"][class*="is-selected"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="gui_tabs_"] {
+    background: transparent;
+}
+[data-colormode="dark"] [class*="gui_editor-wrapper"] {
+    background: #1E1E2E;
+}
+
+/* Tab icons: originally dark-on-light; invert for dark surfaces. */
+[data-colormode="dark"] [class*="gui_tab_"] img {
+    filter: brightness(0) invert(0.92);
+}
+
+/* ---------- Blocks workspace (Blockly surround) ---------- */
+
+[data-colormode="dark"] [class*="blocks_blocks"] {
+    background: #14141A;
+}
+[data-colormode="dark"] [class*="blocks_blocks"] .injectionDiv {
+    background: #14141A;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] .blocklyMainBackground {
+    stroke: none;
+}
+[data-colormode="dark"] .blocklyFlyoutBackground {
+    fill: #14141A !important;
+    fill-opacity: 1 !important;
+}
+[data-colormode="dark"] .blocklyToolboxDiv {
+    background-color: #1E1E2E !important;
+    border-right: 1px solid #3A3A4A;
+}
+[data-colormode="dark"] .scratchCategoryMenuItem {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] .scratchCategoryMenuItem:hover {
+    background-color: #35354A;
+}
+[data-colormode="dark"] .scratchCategoryMenuItemLabel {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] .blocklyWidgetDiv .goog-menu {
+    background-color: #1E1E2E !important;
+    border-color: #3A3A4A !important;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] .blocklyWidgetDiv .goog-menuitem {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] .blocklyWidgetDiv .goog-menuitem-highlight,
+[data-colormode="dark"] .blocklyWidgetDiv .goog-menuitem-hover {
+    background-color: #35354A !important;
+}
+[data-colormode="dark"] .blocklyHtmlInput {
+    background: #2A2A3E !important;
+    color: #E5E5E5 !important;
+    border-color: #3A3A4A !important;
+}
+
+/* ---------- Stage wrapper + header ---------- */
+
+[data-colormode="dark"] [class*="stage-wrapper_stage-wrapper"] {
+    background: #14141A;
+}
+[data-colormode="dark"] [class*="stage-wrapper_full-screen"] {
+    background: #14141A;
+}
+[data-colormode="dark"] [class*="stage-header_stage-header-wrapper"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="stage-header_stage-header-wrapper-overlay"] {
+    background: rgba(15, 20, 32, 0.7);
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="stage-header_stage-button"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="stage-header_stage-button"]:hover {
+    background: #35354A;
+}
+[data-colormode="dark"] [class*="stage-header_stage-size-row"] img {
+    filter: brightness(0) invert(0.92);
+}
+[data-colormode="dark"] [class*="stage_stage"] {
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="green-flag-overlay_green-flag-overlay"] {
+    background: rgba(0, 0, 0, 0.4);
+}
+[data-colormode="dark"] [class*="green-flag-overlay_green-flag"] {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- Sprite selector / target pane ---------- */
+
+[data-colormode="dark"] [class*="target-pane_target-pane"] {
+    background: #14141A;
+}
+[data-colormode="dark"] [class*="sprite-selector_sprite-selector"] {
+    background: #1E1E2E;
+    border-color: #3A3A4A;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="sprite-info_sprite-info"] {
+    background: #1E1E2E;
+    border-color: #3A3A4A;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="sprite-info_label"] {
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="sprite-selector-item_sprite-selector-item"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: transparent;
+}
+[data-colormode="dark"] [class*="sprite-selector-item_is-selected"] {
+    background: #35354A;
+    border-color: #3FB08A;
+}
+[data-colormode="dark"] [class*="sprite-selector-item_sprite-name"] {
+    background: transparent;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="sprite-selector_scroll-wrapper"] {
+    background: transparent;
+}
+[data-colormode="dark"] [class*="stage-selector_stage-selector"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="stage-selector_is-selected"] {
+    border-color: #3FB08A;
+}
+[data-colormode="dark"] [class*="stage-selector_header"] {
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="stage-selector_label"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="stage-selector_count"] {
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="sprite-info_input-wrapper"] input,
+[data-colormode="dark"] [class*="sprite-info_input"] input {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+
+/* ---------- Action menu + buttons ---------- */
+
+[data-colormode="dark"] [class*="action-menu_main-icon"] {
+    background: #2A2A3E;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="action-menu_more-button"] {
+    background: #2A2A3E;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="action-menu_more-button"]:hover {
+    background: #35354A;
+}
+[data-colormode="dark"] [class*="action-menu_more-button"] img {
+    filter: brightness(0) invert(0.92);
+}
+
+/* ---------- Monitors (stage value readouts) ---------- */
+
+[data-colormode="dark"] [class*="monitor_monitor-container"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="monitor_list-header"],
+[data-colormode="dark"] [class*="monitor_list-footer"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="monitor_input-wrapper"] {
+    background: rgba(255, 255, 255, 0.08);
+}
+[data-colormode="dark"] [class*="monitor_value"] {
+    color: #E5E5E5;
+}
+
+/* ---------- Modals ---------- */
+
+[data-colormode="dark"] [class*="modal_modal-overlay"] {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+[data-colormode="dark"] [class*="modal_modal-content"],
+[data-colormode="dark"] [class*="modal_modal-content-full"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+    border: 1px solid #3A3A4A;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+[data-colormode="dark"] [class*="modal_header"] {
+    background: #0F1420;
+    color: #E5E5E5;
+    border-bottom: 1px solid #3A3A4A;
+}
+[data-colormode="dark"] [class*="modal_header-item"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="modal_close-button"] img {
+    filter: brightness(0) invert(0.92);
+}
+
+/* ---------- Library (modal with scrollable grid) ---------- */
+
+[data-colormode="dark"] [class*="library_library-scroll-grid"] {
+    background: #14141A;
+    border-top: 1px solid #3A3A4A;
+}
+[data-colormode="dark"] [class*="library_filter-bar"] {
+    background: #1E1E2E;
+    border-bottom: 1px solid #3A3A4A;
+}
+[data-colormode="dark"] [class*="library-item_library-item"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="library-item_library-item"]:hover,
+[data-colormode="dark"] [class*="library-item_featured-item"]:hover {
+    background: #35354A;
+    border-color: #3FB08A;
+}
+[data-colormode="dark"] [class*="library-item_library-item-name"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="library-item_featured-description"] {
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="library-item_internet-connection-tag"],
+[data-colormode="dark"] [class*="library-item_collaborator-list"] {
+    background: #2A2A3E;
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="tag-button_tag-button"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="tag-button_tag-button"]:hover,
+[data-colormode="dark"] [class*="tag-button_active"] {
+    background: #3FB08A;
+    color: #FFFFFF;
+    border-color: #3FB08A;
+}
+
+/* ---------- Filter / search inputs ---------- */
+
+[data-colormode="dark"] [class*="filter_filter"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="filter_filter"] input {
+    background: transparent;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="filter_filter"] input::placeholder {
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="filter_icon"] {
+    filter: brightness(0) invert(0.7);
+}
+
+/* ---------- Generic text inputs, textareas, selects ---------- */
+
+[data-colormode="dark"] input[type="text"],
+[data-colormode="dark"] input[type="search"],
+[data-colormode="dark"] input[type="number"],
+[data-colormode="dark"] input[type="password"],
+[data-colormode="dark"] textarea,
+[data-colormode="dark"] select {
+    background-color: #2A2A3E;
+    color: #E5E5E5;
+    border: 1px solid #3A3A4A;
+}
+[data-colormode="dark"] input::placeholder,
+[data-colormode="dark"] textarea::placeholder {
+    color: #6E6E82;
+}
+
+/* ---------- Asset panel (costumes / sounds tab layout) ---------- */
+
+[data-colormode="dark"] [class*="asset-panel_wrapper"] {
+    background: #1E1E2E;
+}
+[data-colormode="dark"] [class*="asset-panel_detail-area"] {
+    background: #14141A;
+}
+[data-colormode="dark"] [class*="selector_wrapper"] {
+    background: #1E1E2E;
+    border-color: #3A3A4A;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="selector_list-item"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: transparent;
+}
+[data-colormode="dark"] [class*="selector_list-item"]:hover {
+    background: #35354A;
+}
+[data-colormode="dark"] [class*="selector_is-selected"] {
+    background: #35354A;
+    border-color: #3FB08A;
+}
+[data-colormode="dark"] [class*="selector_button-wrapper"] {
+    background: #0F1420;
+    border-top: 1px solid #3A3A4A;
+}
+
+/* ---------- Costume / sound / code tab panels ---------- */
+
+[data-colormode="dark"] [class*="costume-tab_"],
+[data-colormode="dark"] [class*="sound-tab_"] {
+    background: #14141A;
+    color: #E5E5E5;
+}
+
+/* ---------- Sound editor ---------- */
+
+[data-colormode="dark"] [class*="sound-editor_editor-container"],
+[data-colormode="dark"] [class*="sound-editor_sound-editor"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="sound-editor_row"] {
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="sound-editor_input-group"] label {
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="sound-editor_input-group"] input {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="sound-editor_button"] img {
+    filter: brightness(0) invert(0.92);
+}
+[data-colormode="dark"] [class*="sound-editor_waveform-container"] {
+    background: rgba(63, 176, 138, 0.15);
+}
+
+/* ---------- Audio-trimmer / waveform SVG ---------- */
+
+[data-colormode="dark"] [class*="waveform_mask"] {
+    fill: rgba(63, 176, 138, 0.35);
+}
+[data-colormode="dark"] [class*="waveform_waveform-path"] {
+    fill: hsl(157, 47%, 72%);
+    stroke: #3FB08A;
+}
+[data-colormode="dark"] [class*="waveform_baseline"] {
+    stroke: #55556A;
+}
+[data-colormode="dark"] [class*="audio-trimmer_playhead"] {
+    stroke: #E5E5E5;
+}
+[data-colormode="dark"] [class*="audio-trimmer_trim-background"] {
+    fill: #1E1E2E;
+}
+
+/* ---------- Cards (tutorials) ---------- */
+
+[data-colormode="dark"] [class*="card_card-container"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+    border: 1px solid #3A3A4A;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+[data-colormode="dark"] [class*="card_header_"] {
+    background: #0F1420;
+    border-bottom: 1px solid #3A3A4A;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="card_video-cover"] {
+    background: #2A2A3E;
+}
+[data-colormode="dark"] [class*="card_step-image"] {
+    background: #14141A;
+    border: 1px solid #3A3A4A;
+}
+[data-colormode="dark"] [class*="card_step-description"] {
+    color: #E5E5E5;
+}
+
+/* ---------- Tips review overlay (heavy hardcoded palette) ---------- */
+
+[data-colormode="dark"] [class*="tips-review_"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="tips-review_tips-review-overlay"],
+[data-colormode="dark"] [class*="tips-review_overlay"] {
+    background: #14141A;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="tips-review_sidebar"] {
+    background: #1E1E2E;
+    border-color: #3A3A4A;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="tips-review_card"],
+[data-colormode="dark"] [class*="tips-review_tip-card"] {
+    background: #1E1E2E;
+    border-color: #3A3A4A;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="tips-review_header"] {
+    background: #0F1420;
+    color: #E5E5E5;
+}
+
+/* ---------- Alerts ---------- */
+
+[data-colormode="dark"] [class*="alert_alert"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+    border: 1px solid #3A3A4A;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+[data-colormode="dark"] [class*="alert_alert-message"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="alert_alert-button"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="alert_alert-button"]:hover {
+    background: #35354A;
+}
+
+/* ---------- Prompt modal ---------- */
+
+[data-colormode="dark"] [class*="prompt_prompt"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+    border: 1px solid #3A3A4A;
+}
+[data-colormode="dark"] [class*="prompt_variable-name-text-input"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+
+/* ---------- Context menu ---------- */
+
+[data-colormode="dark"] [class*="context-menu_context-menu"] {
+    background: #1E1E2E !important;
+    color: #E5E5E5 !important;
+    border: 1px solid #3A3A4A;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+[data-colormode="dark"] [class*="context-menu_menu-item"]:hover {
+    background: #35354A !important;
+    color: #FFFFFF !important;
+}
+
+/* ---------- Confirmation / delete confirmation ---------- */
+
+[data-colormode="dark"] [class*="confirmation-prompt_confirmation-prompt"],
+[data-colormode="dark"] [class*="delete-confirmation-prompt_delete-confirmation-prompt"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+    border: 1px solid #3A3A4A;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Browser / connection / debug / telemetry modals ---------- */
+
+[data-colormode="dark"] [class*="browser-modal_modal-content"],
+[data-colormode="dark"] [class*="browser-modal_body"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="browser-modal_button-row"] button,
+[data-colormode="dark"] [class*="browser-modal_label-text"] {
+    color: #FFFFFF;
+}
+[data-colormode="dark"] [class*="connection-modal_"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="connection-modal_activity-area"] {
+    background: #14141A;
+}
+[data-colormode="dark"] [class*="connection-modal_bottom-area"] {
+    background: #0F1420;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="debug-modal_container"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="debug-modal_active-topic-item"] {
+    background: #35354A;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="telemetry-modal_"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="telemetry-modal_body"],
+[data-colormode="dark"] [class*="telemetry-modal_option-block"] {
+    background: #1E1E2E;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="telemetry-modal_highlight"] {
+    background: rgba(63, 176, 138, 0.1);
+}
+
+/* ---------- Backpack ---------- */
+
+[data-colormode="dark"] [class*="backpack_backpack-container"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+    border: 1px solid #3A3A4A;
+}
+[data-colormode="dark"] [class*="backpack_backpack-header"] {
+    background: #0F1420;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="backpack_backpack-list"] {
+    background: #14141A;
+}
+
+/* ---------- Extension button ---------- */
+
+[data-colormode="dark"] [class*="extension-button_extension-button"] {
+    background: #3FB08A;
+    color: #FFFFFF;
+    border-color: #2E8F6E;
+}
+[data-colormode="dark"] [class*="extension-button_extension-button"]:hover {
+    background: #2E8F6E;
+}
+
+/* ---------- Paint editor (external scratch-paint package) ---------- */
+
+/* Scratch-paint renders its CSS-Modules classes into the same document, so
+ * we can target them from here without patching the bundle. Only the
+ * toolbars, panels, and inputs get tinted — the drawing canvas itself stays
+ * light, which is standard practice for color-accurate image editing. */
+[data-colormode="dark"] [class*="paint-editor-wrapper_"],
+[data-colormode="dark"] [class*="costume-tab_editor"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="paint-editor_editor-container"],
+[data-colormode="dark"] [class*="paint-editor_editor-container-top"] {
+    background: #1E1E2E !important;
+    color: #E5E5E5 !important;
+}
+[data-colormode="dark"] [class*="paint-editor_controls-container"],
+[data-colormode="dark"] [class*="paint-editor_row"] {
+    background: #0F1420 !important;
+    border-color: #3A3A4A !important;
+    color: #E5E5E5 !important;
+}
+[data-colormode="dark"] [class*="paint-editor_mod-dashed-border"] {
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="paint-editor_mode-selector"] {
+    background: #0F1420 !important;
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="paint-editor_button-group-button"],
+[data-colormode="dark"] [class*="paint-editor_bitmap-button"] {
+    background: #2A2A3E !important;
+    color: #E5E5E5 !important;
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="paint-editor_button-group-button"]:hover,
+[data-colormode="dark"] [class*="paint-editor_bitmap-button"]:hover {
+    background: #35354A !important;
+}
+[data-colormode="dark"] [class*="paint-editor_button-text"] {
+    color: #E5E5E5 !important;
+}
+[data-colormode="dark"] [class*="tool-select-base_mod-tool-select"] {
+    background: transparent !important;
+    color: #E5E5E5 !important;
+}
+[data-colormode="dark"] [class*="tool-select-base_mod-tool-select"]:hover {
+    background: #35354A !important;
+}
+[data-colormode="dark"] [class*="tool-select-base_is-selected"] {
+    background: rgba(63, 176, 138, 0.2) !important;
+    border-color: #3FB08A !important;
+}
+[data-colormode="dark"] [class*="tool-select-base_tool-select-icon"] {
+    filter: brightness(0) invert(0.92);
+}
+[data-colormode="dark"] [class*="paint-editor_bitmap-button-icon"],
+[data-colormode="dark"] [class*="paint-editor_button-group-button-icon"] {
+    filter: brightness(0) invert(0.92);
+}
+[data-colormode="dark"] [class*="input_input-form"],
+[data-colormode="dark"] [class*="input_input-small"] {
+    background: #2A2A3E !important;
+    color: #E5E5E5 !important;
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="dropdown_dropdown"] {
+    background: #2A2A3E !important;
+    color: #E5E5E5 !important;
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="dropdown_dropdown-icon"] {
+    filter: brightness(0) invert(0.92);
+}
+[data-colormode="dark"] [class*="font-dropdown_font-dropdown"] {
+    background: #1E1E2E !important;
+    color: #E5E5E5 !important;
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="font-dropdown_mod-menu-item"]:hover {
+    background: #35354A !important;
+}
+[data-colormode="dark"] [class*="color-picker_"] {
+    background: #1E1E2E !important;
+    color: #E5E5E5 !important;
+}
+[data-colormode="dark"] [class*="color-picker_row-header"],
+[data-colormode="dark"] [class*="color-picker_label-name"],
+[data-colormode="dark"] [class*="color-picker_label-readout"] {
+    color: #E5E5E5 !important;
+}
+[data-colormode="dark"] [class*="color-picker_divider"] {
+    background: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="color-picker_inactive-gradient"] {
+    background: #2A2A3E !important;
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="paper-canvas_paper-canvas"] {
+    /* Keep the drawing surface light for color-accurate editing. */
+    background: #FFFFFF !important;
+}
+
+/* ---------- Loader ---------- */
+
+[data-colormode="dark"] [class*="loader_background"] {
+    background: rgba(20, 20, 26, 0.95);
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="loader_message-container-outer"] {
+    color: #E5E5E5;
+}
+
+/* ---------- Mic indicator (record modal) ---------- */
+
+[data-colormode="dark"] [class*="mic-indicator_"] {
+    fill: #3FB08A;
+}
+[data-colormode="dark"] [class*="record-modal_"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+
+/* ---------- Watermarks / misc ---------- */
+
+[data-colormode="dark"] [class*="watermark_"] {
+    color: #6E6E82;
+}
+
+} /* :global */

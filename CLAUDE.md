@@ -209,6 +209,35 @@ page.locator('.stage_stage_1fD7k')               // Full hashed class — breaks
 
 **Exception**: Blockly elements use non-hashed class names directly: `.scratchCategoryMenuItem`, `[class*="blocklyFlyout"]`.
 
+## Color Modes (Default / Dark / High Contrast)
+
+The editor ships three selectable color modes, managed by the code under `packages/scratch-gui/src/lib/settings/color-mode/`:
+
+- **`default`** — the light mint palette defined by `packages/scratch-gui/src/css/colors.css` (PostCSS `$vars` compiled at build time).
+- **`dark`** — the app's default; a comprehensive dark palette defined in `packages/scratch-gui/src/css/colors-dark.css`.
+- **`high-contrast`** — the accessibility-focused palette, picked automatically when the OS reports `prefers-contrast: more`.
+
+**How runtime switching works:**
+1. `state.scratchGui.settings.colorMode` holds the active mode.
+2. `gui.jsx` has a `useEffect` that writes `document.documentElement.setAttribute('data-colormode', colorMode)` whenever it changes.
+3. `colors-dark.css` is imported from `gui.css`, wraps all its rules in `:global { }` so CSS Modules doesn't hash them, and targets everything via `[data-colormode="dark"] [class*="…"]` selectors. Mint and high-contrast bypass these rules.
+4. Blockly block colors come from `color-mode/<mode>/index.js` and are re-applied by `containers/blocks.jsx` when `colorMode` changes.
+
+**Adding dark support to a new component:**
+If your new component uses hardcoded or mint-specific colors, add a block at the bottom of `colors-dark.css` targeting its kebab-case class name:
+```css
+[data-colormode="dark"] [class*="my-component_container"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+```
+Dark surfaces use this palette: page bg `#14141A`, panels `#1E1E2E`, inputs/cards `#2A2A3E`, hover/selected `#35354A`, borders `#3A3A4A`, text `#E5E5E5`, secondary text `#A0A0B0`, mint accent `#3FB08A`. Keep Blockly block category hues bright (readable on dark) — only tint the chrome around them.
+
+**Default behavior:** On fresh load with no `scratchtheme` cookie, `persistence.js` returns `dark` (overriding historical default). `prefers-contrast: more` still wins and produces high-contrast.
+
+**Testing:** Mirror `test/playwright/dark-theme.spec.js` — assert `documentElement` `data-colormode`, inspect computed backgrounds on key surfaces, check that block fills stay bright.
+
 ## Testing Priorities
 
 **Prefer full end-to-end Playwright tests over unit tests when a feature involves blocks, the stage, or editor UI interactions.** Unit tests are fine for pure utilities and reducers, but anything user-visible should be verified by driving the real editor and observing the real result.

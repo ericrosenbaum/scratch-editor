@@ -1,79 +1,114 @@
+// Dark mode palette. Keeps category brand hues for block legibility, darkens
+// all surrounding chrome (workspace, toolbox, flyout, menus, scrollbars).
+// This object is passed directly to Blockly, hence the colour* fields need to
+// be named exactly as they are, including the UK spelling of "colour".
 const blockColors = {
     motion: {
-        colourPrimary: '#0F1E33',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#4C97FF',
-        colorQuaternary: '#4C97FF'
+        colourPrimary: '#4C97FF',
+        colourSecondary: '#3373CC',
+        colourTertiary: '#1E4D99',
+        colourQuaternary: '#1E4D99'
     },
     looks: {
-        colourPrimary: '#1E1433',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#9966FF',
-        colorQuaternary: '#9966FF'
+        colourPrimary: '#9966FF',
+        colourSecondary: '#774DCB',
+        colourTertiary: '#5C3B9C',
+        colourQuaternary: '#5C3B9C'
     },
     sounds: {
-        colourPrimary: '#291329',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#CF63CF',
-        colorQuaternary: '#CF63CF'
+        colourPrimary: '#CF63CF',
+        colourSecondary: '#BD42BD',
+        colourTertiary: '#8A2E8A',
+        colourQuaternary: '#8A2E8A'
     },
     control: {
-        colourPrimary: '#332205',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#FFAB19',
-        colorQuaternary: '#FFAB19'
+        colourPrimary: '#FFAB19',
+        colourSecondary: '#CF8B17',
+        colourTertiary: '#A16C10',
+        colourQuaternary: '#A16C10'
     },
     event: {
-        colourPrimary: '#332600',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#FFBF00',
-        colorQuaternary: '#FFBF00'
+        colourPrimary: '#FFBF00',
+        colourSecondary: '#CC9900',
+        colourTertiary: '#996F00',
+        colourQuaternary: '#996F00'
     },
     sensing: {
-        colourPrimary: '#12232A',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#5CB1D6',
-        colorQuaternary: '#5CB1D6'
+        colourPrimary: '#5CB1D6',
+        colourSecondary: '#2E8EB8',
+        colourTertiary: '#21678B',
+        colourQuaternary: '#21678B'
     },
     pen: {
-        colourPrimary: '#03251C',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#0fBD8C',
-        colorQuaternary: '#0fBD8C'
+        colourPrimary: '#0FBD8C',
+        colourSecondary: '#0B8E69',
+        colourTertiary: '#086548',
+        colourQuaternary: '#086548'
     },
     operators: {
-        colourPrimary: '#112611',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#59C059',
-        colorQuaternary: '#59C059'
+        colourPrimary: '#59C059',
+        colourSecondary: '#389438',
+        colourTertiary: '#276C27',
+        colourQuaternary: '#276C27'
     },
     data: {
-        colourPrimary: '#331C05',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#FF8C1A',
-        colorQuaternary: '#FF8C1A'
+        colourPrimary: '#FF8C1A',
+        colourSecondary: '#DB6E00',
+        colourTertiary: '#A35200',
+        colourQuaternary: '#A35200'
     },
+    // This is not a new category, but rather for differentiation
+    // between lists and scalar variables.
     data_lists: {
-        colourPrimary: '#331405',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#FF661A',
-        colorQuaternary: '#FF661A'
+        colourPrimary: '#FF661A',
+        colourSecondary: '#E64D00',
+        colourTertiary: '#AD3A00',
+        colourQuaternary: '#AD3A00'
     },
     more: {
-        colourPrimary: '#331419',
-        colourSecondary: '#4C4C4C',
-        colourTertiary: '#FF6680',
-        colorQuaternary: '#FF6680'
+        colourPrimary: '#FF6680',
+        colourSecondary: '#FF3355',
+        colourTertiary: '#C41F3E',
+        colourQuaternary: '#C41F3E'
     },
-    text: 'rgba(255, 255, 255, .7)',
-    textFieldText: '#E5E5E5',
-    workspace: '#121212',
-    toolboxSelected: '#4C4C4C',
+
+    // Workspace / toolbox / flyout chrome
+    workspace: '#14141A',
+    toolbox: '#1E1E2E',
+    toolboxHover: '#3FB08A',
+    toolboxSelected: '#2A2A3E',
     toolboxText: '#E5E5E5',
-    toolbox: '#121212',
-    flyout: '#121212',
-    textField: '#4C4C4C',
-    menuHover: 'rgba(255, 255, 255, 0.3)'
+    flyout: '#14141A',
+    scrollbar: '#3A3A4A',
+    scrollbarHover: '#55556A',
+
+    // Text and fields
+    text: '#FFFFFF',
+    textField: '#2A2A3E',
+    textFieldText: '#E5E5E5',
+
+    // Interaction affordances
+    insertionMarker: '#FFFFFF',
+    insertionMarkerOpacity: 0.3,
+    dragShadowOpacity: 0.7,
+    stackGlow: '#3FB08A',
+    stackGlowSize: 4,
+    stackGlowOpacity: 1,
+    replacementGlow: '#3FB08A',
+    replacementGlowSize: 2,
+    replacementGlowOpacity: 1,
+    colourPickerStroke: '#E5E5E5',
+
+    // CSS colours: support RGBA
+    fieldShadow: 'rgba(0, 0, 0, 0.3)',
+    dropDownShadow: 'rgba(0, 0, 0, 0.6)',
+    numPadBackground: '#2A2A3E',
+    numPadBorder: '#3A3A4A',
+    numPadActiveBackground: '#3FB08A',
+    numPadText: 'white', // Do not use hex here, it cannot be inlined with data-uri SVG
+    valueReportBackground: '#1E1E2E',
+    valueReportBorder: '#3A3A4A',
+    menuHover: 'rgba(255, 255, 255, 0.15)'
 };
 
 const extensions = {};

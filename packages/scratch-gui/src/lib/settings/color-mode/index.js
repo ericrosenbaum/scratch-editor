@@ -11,6 +11,7 @@ import {
 } from './high-contrast';
 import {blockColors as defaultColors} from './default';
 
+import darkIcon from './dark/icon.svg';
 import defaultIcon from './default/icon.svg';
 import highContrastIcon from './high-contrast/icon.svg';
 
@@ -50,7 +51,8 @@ const colorModeMap = {
         blocksMediaFolder: 'blocks-media/default',
         colors: mergeWithDefaults(darkModeBlockColors),
         extensions: darkModeExtensions,
-        label: messages[DARK_MODE]
+        label: messages[DARK_MODE],
+        icon: darkIcon
     },
     [HIGH_CONTRAST_MODE]: {
         blocksMediaFolder: 'blocks-media/high-contrast',
