@@ -25,7 +25,7 @@
  *   text-primary              #E5E5E5
  *   text-secondary            #A0A0B0
  *   menu bar                  #0F1420
- *   accent (kept mint)        #3FB08A
+ *   accent (scratch purple)   #855CD6
  */
 
 /* ---------- Page shell ---------- */
@@ -200,14 +200,14 @@
     filter: brightness(0) invert(0.92);
 }
 [data-colormode="dark"] [class*="toggle-buttons_button"][aria-pressed='true'] {
-    background-color: rgba(63, 176, 138, 0.25);
-    border-color: #3FB08A;
+    background-color: rgba(133, 92, 214,0.25);
+    border-color: #855CD6;
 }
 [data-colormode="dark"] [class*="toggle-buttons_button"][aria-pressed='true'] > img {
     filter: brightness(0) invert(0.92);
 }
 [data-colormode="dark"] [class*="toggle-buttons_button"]:active {
-    background-color: rgba(63, 176, 138, 0.4);
+    background-color: rgba(133, 92, 214,0.4);
 }
 [data-colormode="dark"] [class*="stage_stage"] {
     border-color: #3A3A4A;
@@ -244,7 +244,7 @@
 }
 [data-colormode="dark"] [class*="sprite-selector-item_is-selected"] {
     background: #35354A;
-    border-color: #3FB08A;
+    border-color: #855CD6;
 }
 [data-colormode="dark"] [class*="sprite-selector-item_sprite-name"] {
     background: transparent;
@@ -259,7 +259,7 @@
     border-color: #3A3A4A;
 }
 [data-colormode="dark"] [class*="stage-selector_is-selected"] {
-    border-color: #3FB08A;
+    border-color: #855CD6;
 }
 [data-colormode="dark"] [class*="stage-selector_header"] {
     background-color: #2A2A3E;
@@ -267,7 +267,7 @@
     border-bottom-color: #3A3A4A;
 }
 [data-colormode="dark"] [class*="stage-selector_is-selected"] [class*="stage-selector_header"] {
-    background-color: #3FB08A;
+    background-color: #855CD6;
     color: #FFFFFF;
 }
 [data-colormode="dark"] [class*="stage-selector_header-title"] {
@@ -365,7 +365,7 @@
 [data-colormode="dark"] [class*="library-item_library-item"]:hover,
 [data-colormode="dark"] [class*="library-item_featured-item"]:hover {
     background: #35354A;
-    border-color: #3FB08A;
+    border-color: #855CD6;
 }
 [data-colormode="dark"] [class*="library-item_library-item-name"] {
     color: #E5E5E5;
@@ -385,9 +385,9 @@
 }
 [data-colormode="dark"] [class*="tag-button_tag-button"]:hover,
 [data-colormode="dark"] [class*="tag-button_active"] {
-    background: #3FB08A;
+    background: #855CD6;
     color: #FFFFFF;
-    border-color: #3FB08A;
+    border-color: #855CD6;
 }
 
 /* ---------- Filter / search inputs ---------- */
@@ -448,7 +448,7 @@
 }
 [data-colormode="dark"] [class*="selector_is-selected"] {
     background: #35354A;
-    border-color: #3FB08A;
+    border-color: #855CD6;
 }
 [data-colormode="dark"] [class*="selector_button-wrapper"] {
     background: #0F1420;
@@ -485,17 +485,17 @@
     filter: brightness(0) invert(0.92);
 }
 [data-colormode="dark"] [class*="sound-editor_waveform-container"] {
-    background: rgba(63, 176, 138, 0.15);
+    background: rgba(133, 92, 214,0.15);
 }
 
 /* ---------- Audio-trimmer / waveform SVG ---------- */
 
 [data-colormode="dark"] [class*="waveform_mask"] {
-    fill: rgba(63, 176, 138, 0.35);
+    fill: rgba(133, 92, 214,0.35);
 }
 [data-colormode="dark"] [class*="waveform_waveform-path"] {
-    fill: rgba(63, 176, 138, 0.45);
-    stroke: #3FB08A;
+    fill: rgba(133, 92, 214,0.45);
+    stroke: #855CD6;
 }
 [data-colormode="dark"] [class*="waveform_baseline"] {
     stroke: #55556A;
@@ -651,7 +651,7 @@
     border-color: #3A3A4A;
 }
 [data-colormode="dark"] [class*="telemetry-modal_highlight"] {
-    background: rgba(63, 176, 138, 0.1);
+    background: rgba(133, 92, 214,0.1);
 }
 
 /* ---------- Backpack ---------- */
@@ -672,12 +672,12 @@
 /* ---------- Extension button ---------- */
 
 [data-colormode="dark"] [class*="extension-button_extension-button"] {
-    background: #3FB08A;
+    background: #855CD6;
     color: #FFFFFF;
-    border-color: #2E8F6E;
+    border-color: #714EB6;
 }
 [data-colormode="dark"] [class*="extension-button_extension-button"]:hover {
-    background: #2E8F6E;
+    background: #714EB6;
 }
 
 /* ---------- Paint editor (external scratch-paint package) ---------- */
@@ -730,8 +730,8 @@
     background: #35354A !important;
 }
 [data-colormode="dark"] [class*="tool-select-base_is-selected"] {
-    background: rgba(63, 176, 138, 0.2) !important;
-    border-color: #3FB08A !important;
+    background: rgba(133, 92, 214,0.2) !important;
+    border-color: #855CD6 !important;
 }
 [data-colormode="dark"] [class*="tool-select-base_tool-select-icon"] {
     filter: brightness(0) invert(0.92);
@@ -796,7 +796,7 @@
 /* ---------- Mic indicator (record modal) ---------- */
 
 [data-colormode="dark"] [class*="mic-indicator_"] {
-    fill: #3FB08A;
+    fill: #855CD6;
 }
 [data-colormode="dark"] [class*="record-modal_"] {
     background: #1E1E2E;
@@ -837,7 +837,7 @@
 }
 [data-colormode="dark"] [class*="unstuck-card_quick-pick"]:hover {
     background: #35354A !important;
-    border-color: #3FB08A !important;
+    border-color: #855CD6 !important;
 }
 [data-colormode="dark"] [class*="unstuck-card_quick-pick-label"] {
     color: #E5E5E5 !important;
@@ -853,7 +853,7 @@
 [data-colormode="dark"] [class*="unstuck-card_tip-item"]:hover,
 [data-colormode="dark"] [class*="unstuck-card_suggestion"]:hover {
     background: #35354A !important;
-    border-color: #3FB08A !important;
+    border-color: #855CD6 !important;
 }
 [data-colormode="dark"] [class*="unstuck-card_query-input"],
 [data-colormode="dark"] [class*="unstuck-card_input"] {
@@ -871,7 +871,7 @@
 }
 [data-colormode="dark"] [class*="unstuck-card_browse-all"]:hover,
 [data-colormode="dark"] [class*="unstuck-card_footer-link"]:hover {
-    color: #3FB08A !important;
+    color: #855CD6 !important;
 }
 [data-colormode="dark"] [class*="unstuck-card_back-button"] {
     color: #E5E5E5 !important;

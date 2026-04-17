@@ -232,7 +232,7 @@ If your new component uses hardcoded or mint-specific colors, add a block at the
     border-color: #3A3A4A;
 }
 ```
-Dark surfaces use this palette: page bg `#14141A`, panels `#1E1E2E`, inputs/cards `#2A2A3E`, hover/selected `#35354A`, borders `#3A3A4A`, text `#E5E5E5`, secondary text `#A0A0B0`, mint accent `#3FB08A`. Keep Blockly block category hues bright (readable on dark) — only tint the chrome around them.
+Dark surfaces use this palette: page bg `#14141A`, panels `#1E1E2E`, inputs/cards `#2A2A3E`, hover/selected `#35354A`, borders `#3A3A4A`, text `#E5E5E5`, secondary text `#A0A0B0`, Scratch purple accent `#855CD6`. Keep Blockly block category hues bright (readable on dark) — only tint the chrome around them.
 
 **Default behavior:** On fresh load with no `scratchtheme` cookie, `persistence.js` returns `dark` (overriding historical default). `prefers-contrast: more` still wins and produces high-contrast.
 
