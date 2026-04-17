@@ -2,14 +2,17 @@
  * Comprehensive dark-mode overrides for the Scratch editor.
  *
  * How this works:
- *   - All rules are wrapped in `:global { }` so CSS Modules does not hash them.
- *   - Selectors use `[class*="kebab-name"]` substring matches because CSS Modules
- *     hashes local class names but preserves the original kebab-case as a prefix.
- *   - The cascade order matters: colors.css (mint) loads first, this file loads
- *     second, and `[data-colormode="dark"] ...` selectors add enough specificity
- *     to override the default rules only when dark mode is active.
- *   - Dark is the default color mode (see color-mode/persistence.js), so these
- *     rules apply to fresh loads before the user picks anything.
+ *   - This file has the `.raw.css` extension, which the webpack config
+ *     (scratch-gui/webpack.config.js `cssModuleExceptions`) routes through
+ *     the non-CSS-Modules pipeline. Everything here is pure global CSS.
+ *   - Selectors use `[class*="kebab-name"]` substring matches because CSS
+ *     Modules hashes local class names but preserves the original
+ *     kebab-case as a prefix.
+ *   - Cascade: colors.css (mint) loads first, this file loads second, and
+ *     `[data-colormode="dark"] ...` selectors add enough specificity to
+ *     override the default rules only when dark mode is active.
+ *   - Dark is the default color mode (see color-mode/persistence.js), so
+ *     these rules apply on fresh loads before the user picks anything.
  */
 
 /*
@@ -24,8 +27,6 @@
  *   menu bar                  #0F1420
  *   accent (kept mint)        #3FB08A
  */
-
-:global {
 
 /* ---------- Page shell ---------- */
 
@@ -773,5 +774,3 @@
 [data-colormode="dark"] [class*="watermark_"] {
     color: #6E6E82;
 }
-
-} /* :global */

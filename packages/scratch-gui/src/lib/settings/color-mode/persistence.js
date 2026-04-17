@@ -20,10 +20,14 @@ const detectColorMode = () => {
     const obj = cookie.parse(document.cookie) || {};
     const colorModeCookie = obj.scratchtheme;
 
-    if (isValidColorMode(colorModeCookie)) return colorModeCookie;
+    const mode = isValidColorMode(colorModeCookie) ? colorModeCookie : systemPreferencesColorMode();
 
-    // No cookie set. Fall back to system preferences
-    return systemPreferencesColorMode();
+    // Apply the attribute synchronously so dark-mode CSS paints on first frame
+    // (before React mounts and the useEffect in gui.jsx runs).
+    if (typeof document !== 'undefined' && document.documentElement) {
+        document.documentElement.setAttribute('data-colormode', mode);
+    }
+    return mode;
 };
 
 const persistColorMode = mode => {
