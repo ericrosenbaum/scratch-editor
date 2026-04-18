@@ -559,7 +559,7 @@ class TipDisplay extends React.Component {
         this.props.onPointerClick(index);
     }
     render () {
-        const {tip, tips, onAddToProject, codeExpanded, onToggleCode} = this.props;
+        const {tip, tips, onAddToProject, codeExpanded, colorMode, onToggleCode} = this.props;
         const pointers = tip.pointers || [];
         const hasPointers = pointers.length > 0;
         const multiplePointers = pointers.length > 1;
@@ -651,6 +651,7 @@ class TipDisplay extends React.Component {
                         >
                             <div className={styles.codeSectionInner}>
                                 <BlockPreview
+                                    colorMode={colorMode}
                                     templateName={tip.blockExample}
                                 />
                                 <button
@@ -714,6 +715,7 @@ const UnstuckCard = ({
     browseAll,
     browseFilter,
     codeExpanded,
+    colorMode,
     expanded,
     listening,
     loading,
@@ -797,6 +799,7 @@ const UnstuckCard = ({
                                 ) : activeTip ? (
                                     <TipDisplay
                                         codeExpanded={codeExpanded}
+                                        colorMode={colorMode}
                                         tip={activeTip}
                                         tips={tips}
                                         onAddToProject={onAddToProject}

@@ -108,6 +108,7 @@ class Blocks extends React.Component {
         this.ScratchBlocks.ScratchProcedures.externalProcedureDefCallback = this.props.onActivateCustomProcedures;
         this.ScratchBlocks.ScratchMsgs.setLocale(this.props.locale);
 
+        const isDarkMode = this.props.colorMode === 'dark';
         const workspaceConfig = defaultsDeep({},
             Blocks.defaultOptions,
             this.props.options,
@@ -119,7 +120,12 @@ class Blocks extends React.Component {
                     getColorsForMode(this.props.colorMode)
                 ),
                 // TODO: use scratch-blocks constants instead of bare strings
-                scratchTheme: this.props.useCatBlocks ? 'catblocks' : 'classic'
+                scratchTheme: this.props.useCatBlocks ? 'catblocks' : 'classic',
+                grid: {
+                    spacing: 40,
+                    length: 2,
+                    colour: isDarkMode ? '#222233' : '#ddd'
+                }
             }
         );
         this.workspace = this.ScratchBlocks.inject(this.blocks, workspaceConfig);

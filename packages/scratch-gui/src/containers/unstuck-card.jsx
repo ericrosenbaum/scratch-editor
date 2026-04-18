@@ -215,6 +215,7 @@ class UnstuckCard extends React.Component {
                 browseAll={this.props.browseAll}
                 browseFilter={this.props.browseFilter}
                 codeExpanded={this.props.codeExpanded}
+                colorMode={this.props.colorMode}
                 expanded={this.props.expanded}
                 listening={this.state.listening}
                 loading={this.props.loading}
@@ -289,6 +290,7 @@ const mapStateToProps = state => ({
     browseAll: state.scratchGui.unstuck.browseAll,
     browseFilter: state.scratchGui.unstuck.browseFilter,
     codeExpanded: state.scratchGui.unstuck.codeExpanded,
+    colorMode: state.scratchGui.settings.colorMode,
     expanded: state.scratchGui.unstuck.expanded,
     loading: state.scratchGui.unstuck.loading,
     query: state.scratchGui.unstuck.query,

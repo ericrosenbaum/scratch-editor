@@ -189,28 +189,18 @@
     background: rgba(15, 20, 32, 0.7);
     color: #E5E5E5;
 }
-[data-colormode="dark"] [class*="stage-header_stage-button"] {
-    background: #2A2A3E;
-    color: #E5E5E5;
-    border-color: #3A3A4A;
-}
-[data-colormode="dark"] [class*="stage-header_stage-button"]:hover {
-    background: #35354A;
-}
 [data-colormode="dark"] [class*="stage-header_stage-size-row"] > *,
-[data-colormode="dark"] [class*="stage-header_unselect-wrapper"] {
-    background-color: transparent !important;
-}
-[data-colormode="dark"] [class*="stage-header_stage-button"] {
-    background: #2A2A3E;
-    color: #E5E5E5;
-    border-color: #3A3A4A;
-}
-[data-colormode="dark"] [class*="stage-header_stage-button"]:hover {
-    background: #35354A;
-}
+[data-colormode="dark"] [class*="stage-header_unselect-wrapper"],
 [data-colormode="dark"] [class*="stage-header_right-section"] {
     background-color: transparent !important;
+}
+[data-colormode="dark"] [class*="stage-header_stage-button"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="stage-header_stage-button"]:hover {
+    background: #35354A;
 }
 
 /* Toggle buttons (stage-size toggles, sound-editor view toggles, etc.) */
@@ -221,6 +211,7 @@
 }
 [data-colormode="dark"] [class*="toggle-buttons_button"] > img {
     filter: brightness(0) invert(0.92);
+    background: transparent !important;
 }
 [data-colormode="dark"] [class*="toggle-buttons_button"][aria-pressed='true'] {
     background-color: rgba(133, 92, 214,0.25);
@@ -228,15 +219,17 @@
 }
 [data-colormode="dark"] [class*="toggle-buttons_button"][aria-pressed='true'] > img {
     filter: brightness(0) invert(0.92);
+    background: transparent !important;
 }
 [data-colormode="dark"] [class*="toggle-buttons_button"]:active {
     background-color: rgba(133, 92, 214,0.4);
 }
-/* Stage size + fullscreen icons: these use purple strokes/fills, so brighten
+/* Stage size + fullscreen icons: purple strokes/fills — brighten
    instead of the generic black→white inversion which makes white rectangles. */
 [data-colormode="dark"] [class*="stage-header_stage-size-row"] [class*="toggle-buttons_button"] > img,
 [data-colormode="dark"] [class*="stage-header_stage-size-row"] [class*="stage-header_stage-button"] img {
     filter: brightness(1.8) saturate(0.3);
+    background: transparent !important;
 }
 [data-colormode="dark"] [class*="stage_stage"] {
     border-color: #3A3A4A;
@@ -481,6 +474,9 @@
     background: #0F1420;
     border-top: 1px solid #3A3A4A;
 }
+[data-colormode="dark"] [class*="selector_new-buttons"]::before {
+    background: none !important;
+}
 
 /* ---------- Costume / sound / code tab panels ---------- */
 
@@ -508,8 +504,21 @@
     color: #E5E5E5;
     border-color: #3A3A4A;
 }
-[data-colormode="dark"] [class*="sound-editor_button"] img {
+/* Undo/redo and other toolbar buttons in the sound editor */
+[data-colormode="dark"] [class*="sound-editor_button_"] {
+    background: #2A2A3E !important;
+    border-color: #3A3A4A !important;
+    color: #E5E5E5 !important;
+}
+[data-colormode="dark"] [class*="sound-editor_button_"] img {
     filter: brightness(0) invert(0.92);
+}
+/* Play/stop round button — keep purple bg, make the icon white */
+[data-colormode="dark"] [class*="sound-editor_round-button"] {
+    border-color: rgba(255, 255, 255, 0.25);
+}
+[data-colormode="dark"] [class*="sound-editor_round-button"] img {
+    filter: none;
 }
 [data-colormode="dark"] [class*="sound-editor_waveform-container"] {
     background: rgba(133, 92, 214,0.15);
@@ -697,25 +706,24 @@
 [data-colormode="dark"] [class*="confirmation-prompt_modal-container"] {
     background: #855CD6;
 }
-[data-colormode="dark"] [class*="delete-confirmation-prompt_delete-confirmation-prompt"] {
-    background: #1E1E2E;
-    color: #E5E5E5;
-    border: 1px solid #3A3A4A;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+[data-colormode="dark"] [class*="confirmation-prompt_confirm-button"] {
+    color: #855CD6;
 }
-[data-colormode="dark"] [class*="delete-confirmation-prompt_body"] {
-    background: #1E1E2E;
-    color: #E5E5E5;
+/* Delete-sprite confirmation — "yes" / "no" buttons */
+[data-colormode="dark"] [class*="delete-confirmation-prompt_button-row-button"] {
+    background: #FFFFFF;
+    color: #855CD6;
+    border-color: transparent;
 }
-[data-colormode="dark"] [class*="delete-confirmation-prompt_button-row"] button {
-    background: #2A2A3E;
-    color: #E5E5E5;
-    border-color: #3A3A4A;
+[data-colormode="dark"] [class*="delete-confirmation-prompt_body"] [class*="confirmation-prompt_confirm-button"] {
+    background: #d93025;
+    color: #FFFFFF;
+    border-color: transparent;
 }
-[data-colormode="dark"] [class*="delete-confirmation-prompt_ok-button"] {
-    background: #d93025 !important;
-    color: #FFFFFF !important;
-    border-color: #d93025 !important;
+[data-colormode="dark"] [class*="delete-confirmation-prompt_body"] [class*="confirmation-prompt_cancel-button"] {
+    background: transparent;
+    color: #FFFFFF;
+    border-color: #FFFFFF;
 }
 
 /* ---------- Browser / connection / debug / telemetry modals ---------- */
@@ -739,13 +747,41 @@
     background: #0F1420;
     border-color: #3A3A4A;
 }
-[data-colormode="dark"] [class*="debug-modal_container"] {
+[data-colormode="dark"] [class*="debug-modal_debug-modal-container"] {
     background: #1E1E2E;
     color: #E5E5E5;
 }
-[data-colormode="dark"] [class*="debug-modal_active-topic-item"] {
+[data-colormode="dark"] [class*="debug-modal_modal-header"] {
+    background: #855CD6;
+}
+[data-colormode="dark"] [class*="debug-modal_topic-list"] {
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="debug-modal_topic-item"] {
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="debug-modal_topic-item"][class*="active"],
+[data-colormode="dark"] [class*="debug-modal_active"] {
     background: #35354A;
     color: #E5E5E5;
+    font-weight: bold;
+}
+[data-colormode="dark"] [class*="debug-modal_topic-item"]:hover {
+    background: #2A2A3E;
+}
+[data-colormode="dark"] [class*="debug-modal_info-container"] {
+    color: #E5E5E5 !important;
+}
+[data-colormode="dark"] [class*="debug-modal_title-text"],
+[data-colormode="dark"] [class*="debug-modal_description"] {
+    color: #E5E5E5 !important;
+}
+[data-colormode="dark"] [class*="debug-modal_close-button"] img {
+    filter: brightness(0) invert(1);
+}
+[data-colormode="dark"] [class*="debug-modal_nextIcon"] img,
+[data-colormode="dark"] [class*="debug-modal_previousIcon"] img {
+    filter: brightness(0) invert(0.92);
 }
 [data-colormode="dark"] [class*="telemetry-modal_"] {
     color: #E5E5E5;
@@ -886,6 +922,63 @@
     background: #2A2A3E !important;
     border-color: #3A3A4A !important;
 }
+/* Paint editor labeled icon buttons (Group, Ungroup, Copy, Paste, Forward, etc.) */
+[data-colormode="dark"] [class*="labeled-icon-button_mod-edit-field"] {
+    color: #E5E5E5 !important;
+}
+[data-colormode="dark"] [class*="labeled-icon-button_edit-field-icon"] {
+    filter: brightness(0) invert(0.92);
+}
+[data-colormode="dark"] [class*="labeled-icon-button_edit-field-title"] {
+    color: #A0A0B0 !important;
+}
+/* Mode tools (extra tool options bar) */
+[data-colormode="dark"] [class*="mode-tools_mod-dashed-border"] {
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="mode-tools_mode-tools-icon"] {
+    filter: brightness(0) invert(0.92);
+}
+/* Paint editor selected tool highlight — use purple instead of green */
+[data-colormode="dark"] [class*="tool-select-base_is-selected"] {
+    background: rgba(133, 92, 214, 0.2) !important;
+    border-color: #855CD6 !important;
+}
+/* Canvas border */
+[data-colormode="dark"] [class*="paint-editor_canvas-container"] {
+    border-color: #3A3A4A !important;
+}
+/* Fixed tools bar (undo/redo, zoom, mode selector) */
+[data-colormode="dark"] [class*="fixed-tools_button"] {
+    background: #2A2A3E !important;
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="fixed-tools_button"]:hover {
+    background: #35354A !important;
+}
+[data-colormode="dark"] [class*="fixed-tools_button"] > img {
+    filter: brightness(0) invert(0.92);
+}
+/* Color button swatches (fill/outline selectors) */
+[data-colormode="dark"] [class*="color-button_color-button-arrow"] {
+    border-color: #3A3A4A !important;
+    color: #E5E5E5 !important;
+}
+/* Color picker popover */
+[data-colormode="dark"] .Popover-body {
+    background: #1E1E2E !important;
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] .Popover-tipShape {
+    fill: #1E1E2E !important;
+    stroke: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="color-picker_swatch"] {
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="color-picker_active-swatch"] {
+    border-color: #855CD6 !important;
+}
 [data-colormode="dark"] [class*="paper-canvas_paper-canvas"] {
     /* Keep the drawing surface light for color-accurate editing. */
     background: #FFFFFF !important;
@@ -989,6 +1082,22 @@
 }
 [data-colormode="dark"] [class*="unstuck-card_empty-state"],
 [data-colormode="dark"] [class*="unstuck-card_placeholder"] {
+    color: #A0A0B0;
+}
+/* Search result cards */
+[data-colormode="dark"] [class*="unstuck-card_result-card"] {
+    background: #2A2A3E;
+    border-color: #3A3A4A;
+    border-left-color: #855CD6;
+}
+[data-colormode="dark"] [class*="unstuck-card_result-card"]:hover {
+    border-color: #855CD6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+[data-colormode="dark"] [class*="unstuck-card_result-card-text"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="unstuck-card_search-results"] {
     color: #A0A0B0;
 }
 /* Code section (block preview within tip display) */
@@ -1108,6 +1217,20 @@
 }
 [data-colormode="dark"] [class*="close-button_close-icon"] {
     filter: brightness(0) invert(0.92);
+}
+
+/* ---------- Direction picker popover ---------- */
+
+[data-colormode="dark"] [class*="direction-picker_"] .Popover-body {
+    background: #1E1E2E !important;
+    border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="direction-picker_"] .Popover-tipShape {
+    fill: #1E1E2E !important;
+    stroke: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="dial_container"] {
+    color: #E5E5E5;
 }
 
 /* ---------- Generic button / icon fixes ---------- */
