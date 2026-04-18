@@ -88,16 +88,19 @@
 /* ---------- Tab bar (Code / Costumes / Sounds) ---------- */
 
 [data-colormode="dark"] [class*="gui_tab_"] {
-    background: transparent;
+    background: #2A2A3E;
     color: #A0A0B0;
+    border-color: #3A3A4A;
 }
 [data-colormode="dark"] [class*="gui_tab_"]:hover {
-    background: #2A2A3E;
+    background: #35354A;
     color: #E5E5E5;
 }
 [data-colormode="dark"] [class*="gui_tab_"][class*="is-selected"] {
     background: #1E1E2E;
     color: #E5E5E5;
+    border-color: #3A3A4A;
+    border-bottom-color: #1E1E2E;
 }
 [data-colormode="dark"] [class*="gui_tabs_"] {
     background: transparent;
@@ -158,6 +161,19 @@
     border-color: #3A3A4A !important;
 }
 
+/* Blockly zoom controls — the SVG icons have a baked-in white circle fill.
+   Use CSS filter to darken them for dark mode. */
+[data-colormode="dark"] .blocklyZoom image {
+    filter: invert(0.85) hue-rotate(180deg);
+}
+[data-colormode="dark"] .blocklyZoom {
+    cursor: pointer;
+    opacity: 0.8;
+}
+[data-colormode="dark"] .blocklyZoom:hover {
+    opacity: 1;
+}
+
 /* ---------- Stage wrapper + header ---------- */
 
 [data-colormode="dark"] [class*="stage-wrapper_stage-wrapper"] {
@@ -181,13 +197,20 @@
 [data-colormode="dark"] [class*="stage-header_stage-button"]:hover {
     background: #35354A;
 }
-[data-colormode="dark"] [class*="stage-header_stage-size-row"] img {
-    filter: brightness(0) invert(0.92);
-}
 [data-colormode="dark"] [class*="stage-header_stage-size-row"] > *,
 [data-colormode="dark"] [class*="stage-header_unselect-wrapper"] {
-    background-color: #2A2A3E !important;
-    border-color: #3A3A4A !important;
+    background-color: transparent !important;
+}
+[data-colormode="dark"] [class*="stage-header_stage-button"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="stage-header_stage-button"]:hover {
+    background: #35354A;
+}
+[data-colormode="dark"] [class*="stage-header_right-section"] {
+    background-color: transparent !important;
 }
 
 /* Toggle buttons (stage-size toggles, sound-editor view toggles, etc.) */
@@ -208,6 +231,12 @@
 }
 [data-colormode="dark"] [class*="toggle-buttons_button"]:active {
     background-color: rgba(133, 92, 214,0.4);
+}
+/* Stage size + fullscreen icons: these use purple strokes/fills, so brighten
+   instead of the generic black→white inversion which makes white rectangles. */
+[data-colormode="dark"] [class*="stage-header_stage-size-row"] [class*="toggle-buttons_button"] > img,
+[data-colormode="dark"] [class*="stage-header_stage-size-row"] [class*="stage-header_stage-button"] img {
+    filter: brightness(1.8) saturate(0.3);
 }
 [data-colormode="dark"] [class*="stage_stage"] {
     border-color: #3A3A4A;
@@ -288,19 +317,17 @@
 
 /* ---------- Action menu + buttons ---------- */
 
-[data-colormode="dark"] [class*="action-menu_main-icon"] {
-    background: #2A2A3E;
-    border-color: #3A3A4A;
+/* The main circular button and its expandable siblings use $looks-secondary
+   (purple) as their base — keep that in dark mode. Only the outer container
+   and tooltip need dark treatment, not the icons (they are already white). */
+[data-colormode="dark"] [class*="action-menu_more-buttons-outer"] {
+    background: #3D2B7A;
 }
 [data-colormode="dark"] [class*="action-menu_more-button"] {
-    background: #2A2A3E;
-    border-color: #3A3A4A;
+    background: #3D2B7A;
 }
 [data-colormode="dark"] [class*="action-menu_more-button"]:hover {
-    background: #35354A;
-}
-[data-colormode="dark"] [class*="action-menu_more-button"] img {
-    filter: brightness(0) invert(0.92);
+    background: #4A3490;
 }
 
 /* ---------- Monitors (stage value readouts) ---------- */
@@ -577,17 +604,44 @@
     background: #35354A;
 }
 
-/* ---------- Prompt modal ---------- */
+/* ---------- Prompt modal (variables, lists) ---------- */
 
 [data-colormode="dark"] [class*="prompt_prompt"] {
     background: #1E1E2E;
     color: #E5E5E5;
     border: 1px solid #3A3A4A;
 }
+[data-colormode="dark"] [class*="prompt_body"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="prompt_label"] {
+    color: #E5E5E5;
+}
 [data-colormode="dark"] [class*="prompt_variable-name-text-input"] {
     background: #2A2A3E;
     color: #E5E5E5;
     border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="prompt_button-row"] button {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="prompt_button-row"] button[class*="ok-button"] {
+    background: #855CD6;
+    border-color: #855CD6;
+    color: #FFFFFF;
+}
+[data-colormode="dark"] [class*="prompt_options-row"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="prompt_cloud-option"] {
+    border-color: #3A3A4A;
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="prompt_info-message"] {
+    color: #A0A0B0;
 }
 
 /* ---------- Context menu ---------- */
@@ -603,14 +657,65 @@
     color: #FFFFFF !important;
 }
 
+/* ---------- Custom procedures modal (Make a Block) ---------- */
+
+[data-colormode="dark"] [class*="custom-procedures_body"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="custom-procedures_workspace"] :global(.blocklySvg) {
+    background-color: #14141A !important;
+}
+[data-colormode="dark"] [class*="custom-procedures_option-card"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="custom-procedures_option-card"]:hover {
+    border-color: #855CD6;
+    box-shadow: 0 0 0 4px rgba(133, 92, 214, 0.25);
+}
+[data-colormode="dark"] [class*="custom-procedures_option-title"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="custom-procedures_checkbox-row"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="custom-procedures_button-row"] button {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="custom-procedures_button-row"] button[class*="ok-button"] {
+    background: #855CD6;
+    border-color: #855CD6;
+    color: #FFFFFF;
+}
+
 /* ---------- Confirmation / delete confirmation ---------- */
 
-[data-colormode="dark"] [class*="confirmation-prompt_confirmation-prompt"],
+[data-colormode="dark"] [class*="confirmation-prompt_modal-container"] {
+    background: #855CD6;
+}
 [data-colormode="dark"] [class*="delete-confirmation-prompt_delete-confirmation-prompt"] {
     background: #1E1E2E;
     color: #E5E5E5;
     border: 1px solid #3A3A4A;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+[data-colormode="dark"] [class*="delete-confirmation-prompt_body"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="delete-confirmation-prompt_button-row"] button {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="delete-confirmation-prompt_ok-button"] {
+    background: #d93025 !important;
+    color: #FFFFFF !important;
+    border-color: #d93025 !important;
 }
 
 /* ---------- Browser / connection / debug / telemetry modals ---------- */
@@ -710,12 +815,14 @@
     border-color: #3A3A4A !important;
 }
 [data-colormode="dark"] [class*="paint-editor_button-group-button"],
+[data-colormode="dark"] [class*="fixed-tools_button-group-button"],
 [data-colormode="dark"] [class*="paint-editor_bitmap-button"] {
     background: #2A2A3E !important;
     color: #E5E5E5 !important;
     border-color: #3A3A4A !important;
 }
 [data-colormode="dark"] [class*="paint-editor_button-group-button"]:hover,
+[data-colormode="dark"] [class*="fixed-tools_button-group-button"]:hover,
 [data-colormode="dark"] [class*="paint-editor_bitmap-button"]:hover {
     background: #35354A !important;
 }
@@ -737,7 +844,8 @@
     filter: brightness(0) invert(0.92);
 }
 [data-colormode="dark"] [class*="paint-editor_bitmap-button-icon"],
-[data-colormode="dark"] [class*="paint-editor_button-group-button-icon"] {
+[data-colormode="dark"] [class*="paint-editor_button-group-button-icon"],
+[data-colormode="dark"] [class*="fixed-tools_button-group-button-icon"] {
     filter: brightness(0) invert(0.92);
 }
 [data-colormode="dark"] [class*="input_input-form"],
@@ -883,6 +991,29 @@
 [data-colormode="dark"] [class*="unstuck-card_placeholder"] {
     color: #A0A0B0;
 }
+/* Code section (block preview within tip display) */
+[data-colormode="dark"] [class*="unstuck-card_code-section"] {
+    border-color: #3A3A4A;
+    border-left-color: #855CD6;
+}
+[data-colormode="dark"] [class*="unstuck-card_code-section-header"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="unstuck-card_code-section-header"]:hover {
+    background: #35354A;
+}
+[data-colormode="dark"] [class*="unstuck-card_code-section-inner"] {
+    background: #1E1E2E;
+}
+/* BlockPreview workspace container (inside tips and unstuck card) */
+[data-colormode="dark"] [class*="block-preview_workspace-container"] {
+    background: #14141A;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="block-preview_workspace-container"] .blocklySvg {
+    background: #14141A !important;
+}
 
 /* ---------- Tips-review overlay (standalone tips viewer) ---------- */
 
@@ -894,6 +1025,106 @@
     background: #1E1E2E !important;
     color: #E5E5E5 !important;
     border-color: #3A3A4A !important;
+}
+[data-colormode="dark"] [class*="tips-review_block-row"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="tips-review_block-example"] {
+    background: #2A2A3E;
+    color: #A0A0B0;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="tips-review_block-preview-wrapper"] {
+    background: #14141A;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="tips-review_opcode-chain"] {
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="tips-review_opcode-arrow"] {
+    color: #6E6E82;
+}
+
+/* ---------- Slider prompt modal ---------- */
+
+[data-colormode="dark"] [class*="slider-prompt_body"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="slider-prompt_label"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="slider-prompt_min-input"],
+[data-colormode="dark"] [class*="slider-prompt_max-input"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="slider-prompt_button-row"] button {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="slider-prompt_button-row"] button[class*="ok-button"] {
+    background: #855CD6;
+    border-color: #855CD6;
+    color: #FFFFFF;
+}
+
+/* ---------- Question prompt (ask and wait) ---------- */
+
+[data-colormode="dark"] [class*="question_question-container"] {
+    background: #1E1E2E;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="question_question-label"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="question_question-input"] input {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+
+/* ---------- Record modal ---------- */
+
+[data-colormode="dark"] [class*="record-modal_body"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="record-modal_waveform-container"] {
+    background: #14141A;
+}
+[data-colormode="dark"] [class*="record-modal_button-row"] button {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+
+/* ---------- Close button (modal close X) ---------- */
+
+[data-colormode="dark"] [class*="close-button_close-button"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="close-button_close-icon"] {
+    filter: brightness(0) invert(0.92);
+}
+
+/* ---------- Generic button / icon fixes ---------- */
+
+/* Sprite-info panel input labels */
+[data-colormode="dark"] [class*="sprite-info_sprite-info"] label {
+    color: #A0A0B0;
+}
+
+/* Crash message */
+[data-colormode="dark"] [class*="crash-message_crash-message"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="crash-message_crash-message"] button {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
 }
 
 /* ---------- Stage canvas border / outline only (keep canvas itself light) ---------- */
