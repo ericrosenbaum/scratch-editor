@@ -100,13 +100,16 @@
     background: #1E1E2E;
     color: #E5E5E5;
     border-color: #3A3A4A;
-    border-bottom-color: #1E1E2E;
+    border-bottom-color: #14141A;
 }
 [data-colormode="dark"] [class*="gui_tabs_"] {
     background: transparent;
 }
+[data-colormode="dark"] [class*="gui_tab-list_"] {
+    background: #14141A;
+}
 [data-colormode="dark"] [class*="gui_editor-wrapper"] {
-    background: #1E1E2E;
+    background: #14141A;
 }
 
 /* Tab icons: originally dark-on-light; invert for dark surfaces. */
@@ -129,6 +132,8 @@
 [data-colormode="dark"] .blocklyFlyoutBackground {
     fill: #14141A !important;
     fill-opacity: 1 !important;
+    stroke: #2A2A3E !important;
+    stroke-width: 1px !important;
 }
 [data-colormode="dark"] .blocklyToolboxDiv {
     background-color: #1E1E2E !important;
@@ -154,6 +159,27 @@
 [data-colormode="dark"] .blocklyWidgetDiv .goog-menuitem-highlight,
 [data-colormode="dark"] .blocklyWidgetDiv .goog-menuitem-hover {
     background-color: #35354A !important;
+}
+[data-colormode="dark"] .blocklyFlyoutLabelText {
+    fill: #A0A0B0 !important;
+}
+/* Override scratch-blocks' hardcoded white text for dark-theme blocks.
+   We use high-contrast block colors which pair with dark text.
+   These rules mirror what high-contrast-theme does in scratch-blocks. */
+[data-colormode="dark"] .scratch-renderer.dark-theme .blocklyText,
+[data-colormode="dark"] .scratch-renderer.dark-theme .blocklyEditableField .blocklyDropdownText {
+    fill: #000000 !important;
+}
+[data-colormode="dark"] .scratch-renderer.dark-theme .blocklyEditableText > .blocklyEditableLabel {
+    fill: #000000 !important;
+}
+/* Invert white inline icons (dropdown arrows, turn cw/ccw, etc.) to dark */
+[data-colormode="dark"] .scratch-renderer.dark-theme .blocklyEditableField image:last-child {
+    filter: invert(1);
+}
+/* Keep flyout button text (Make a Variable, etc.) light */
+[data-colormode="dark"] .scratch-renderer.dark-theme .blocklyFlyoutButton .blocklyText {
+    fill: #E5E5E5 !important;
 }
 [data-colormode="dark"] .blocklyHtmlInput {
     background: #2A2A3E !important;
@@ -879,10 +905,15 @@
 [data-colormode="dark"] [class*="tool-select-base_tool-select-icon"] {
     filter: brightness(0) invert(0.92);
 }
+/* Icon images inside buttons — make transparent so they don't create a
+   visible inner rectangle, and invert for dark mode visibility.
+   The -icon classes also match the parent -button selectors above via
+   substring, so we must reset background here. */
 [data-colormode="dark"] [class*="paint-editor_bitmap-button-icon"],
 [data-colormode="dark"] [class*="paint-editor_button-group-button-icon"],
 [data-colormode="dark"] [class*="fixed-tools_button-group-button-icon"] {
     filter: brightness(0) invert(0.92);
+    background: transparent !important;
 }
 [data-colormode="dark"] [class*="input_input-form"],
 [data-colormode="dark"] [class*="input_input-small"] {
@@ -948,17 +979,8 @@
 [data-colormode="dark"] [class*="paint-editor_canvas-container"] {
     border-color: #3A3A4A !important;
 }
-/* Fixed tools bar (undo/redo, zoom, mode selector) */
-[data-colormode="dark"] [class*="fixed-tools_button"] {
-    background: #2A2A3E !important;
-    border-color: #3A3A4A !important;
-}
-[data-colormode="dark"] [class*="fixed-tools_button"]:hover {
-    background: #35354A !important;
-}
-[data-colormode="dark"] [class*="fixed-tools_button"] > img {
-    filter: brightness(0) invert(0.92);
-}
+/* (Fixed tools undo/redo buttons are already covered by the
+   fixed-tools_button-group-button rule above.) */
 /* Color button swatches (fill/outline selectors) */
 [data-colormode="dark"] [class*="color-button_color-button-arrow"] {
     border-color: #3A3A4A !important;

@@ -109,9 +109,7 @@ class Blocks extends React.Component {
         this.ScratchBlocks.ScratchMsgs.setLocale(this.props.locale);
 
         const isDarkMode = this.props.colorMode === 'dark';
-        const workspaceConfig = defaultsDeep({},
-            Blocks.defaultOptions,
-            this.props.options,
+        const workspaceConfig = defaultsDeep(
             {
                 rtl: this.props.isRtl,
                 toolbox: this.props.toolboxXML,
@@ -126,7 +124,9 @@ class Blocks extends React.Component {
                     length: 2,
                     colour: isDarkMode ? '#222233' : '#ddd'
                 }
-            }
+            },
+            Blocks.defaultOptions,
+            this.props.options
         );
         this.workspace = this.ScratchBlocks.inject(this.blocks, workspaceConfig);
         this.workspace.registerToolboxCategoryCallback(
