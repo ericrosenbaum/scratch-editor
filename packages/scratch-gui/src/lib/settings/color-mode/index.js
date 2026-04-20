@@ -48,7 +48,7 @@ const colorModeMap = {
         icon: defaultIcon
     },
     [DARK_MODE]: {
-        blocksMediaFolder: 'blocks-media/default',
+        blocksMediaFolder: 'blocks-media/high-contrast',
         colors: mergeWithDefaults(darkModeBlockColors),
         extensions: darkModeExtensions,
         label: messages[DARK_MODE],

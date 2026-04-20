@@ -2,7 +2,10 @@
 // legibility on dark backgrounds, with dark chrome for everything else.
 // This object is passed directly to Blockly, hence the colour* fields need to
 // be named exactly as they are, including the UK spelling of "colour".
-import {blockColors as highContrastBlockColors} from '../high-contrast';
+import {
+    blockColors as highContrastBlockColors,
+    extensions as highContrastExtensions
+} from '../high-contrast';
 
 const blockColors = {
     // Pull block category colors directly from high-contrast mode
@@ -58,7 +61,8 @@ const blockColors = {
     menuHover: 'rgba(255, 255, 255, 0.15)'
 };
 
-const extensions = {};
+// Use same dark extension icons as high-contrast mode
+const extensions = highContrastExtensions;
 
 export {
     blockColors,

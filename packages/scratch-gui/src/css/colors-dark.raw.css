@@ -177,6 +177,9 @@
 [data-colormode="dark"] .scratch-renderer.dark-theme .blocklyEditableField image:last-child {
     filter: invert(1);
 }
+[data-colormode="dark"] .scratch-renderer.dark-theme .blocklyImageField {
+    filter: invert(1);
+}
 /* Keep flyout button text (Make a Variable, etc.) light */
 [data-colormode="dark"] .scratch-renderer.dark-theme .blocklyFlyoutButton .blocklyText {
     fill: #E5E5E5 !important;
@@ -1215,6 +1218,67 @@
     background: #2A2A3E;
     color: #E5E5E5;
     border-color: #3A3A4A;
+}
+
+/* ---------- Q+A data modal ---------- */
+
+[data-colormode="dark"] [class*="qa-data-modal_body"] {
+    background: #1E1E2E;
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="qa-data-modal_sidebar"] {
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="qa-data-modal_sidebar-header"] {
+    color: #E5E5E5;
+}
+[data-colormode="dark"] [class*="qa-data-modal_dataset-item"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="qa-data-modal_dataset-item-active"] {
+    background: #855CD6;
+    color: #FFFFFF;
+    border-color: #855CD6;
+}
+[data-colormode="dark"] [class*="qa-data-modal_name-input"],
+[data-colormode="dark"] [class*="qa-data-modal_pair-input"] {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="qa-data-modal_pairs-header"] {
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="qa-data-modal_delete-dataset-button"] {
+    background: #2A2A3E;
+    color: #d93025;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="qa-data-modal_add-button"] {
+    background: #2A2A3E;
+    color: #855CD6;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="qa-data-modal_button-row"] {
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="qa-data-modal_button-row"] button {
+    background: #2A2A3E;
+    color: #E5E5E5;
+    border-color: #3A3A4A;
+}
+[data-colormode="dark"] [class*="qa-data-modal_button-row"] button[class*="ok-button"] {
+    background: #855CD6;
+    border-color: #855CD6;
+    color: #FFFFFF;
+}
+[data-colormode="dark"] [class*="qa-data-modal_empty"] {
+    color: #A0A0B0;
+}
+[data-colormode="dark"] [class*="qa-data-modal_remove-button"] {
+    color: #d93025;
 }
 
 /* ---------- Record modal ---------- */
