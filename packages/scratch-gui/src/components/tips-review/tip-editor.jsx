@@ -644,12 +644,12 @@ class TipEditor extends React.Component {
     }
 
     render () {
-        const {tipId} = this.props;
+        const {tipId, isReviewed, onToggleReviewed} = this.props;
         const {dirty, lastSavedAt} = this.state;
         const isOverridden = hasOverride(tipId);
         const saveLabel = dirty ?
-            'Saving…' :
-            (lastSavedAt ? 'Saved ✓' : 'Saved');
+            'Saving\u2026' :
+            (lastSavedAt ? 'Saved \u2713' : 'Saved');
 
         return (
             <div className={styles.editorPanel}>
@@ -658,6 +658,12 @@ class TipEditor extends React.Component {
                     {isOverridden ? (
                         <span className={styles.editorOverrideBadge}>{'Modified'}</span>
                     ) : null}
+                    <button
+                        className={`${styles.editorReviewedButton} ${isReviewed ? styles.editorReviewedButtonActive : ''}`}
+                        onClick={onToggleReviewed}
+                    >
+                        {isReviewed ? '\u2713 Reviewed' : 'Mark reviewed'}
+                    </button>
                     <div className={styles.editorActions}>
                         {isOverridden ? (
                             <button
@@ -692,11 +698,11 @@ class TipEditor extends React.Component {
                         {this.renderTextField('Title', 'title')}
                         {this.renderTextArea('Text', 'text')}
                         {this.renderProjectUrlField()}
-                        {this.renderTextField('Tutorial ID', 'tutorialId')}
-                        {this.renderTagsEditor()}
-                        {this.renderFollowUpsEditor()}
-                        {this.renderBlockExampleEditor()}
                         {this.renderPointersEditor()}
+                        {this.renderBlockExampleEditor()}
+                        {this.renderFollowUpsEditor()}
+                        {this.renderTagsEditor()}
+                        {this.renderTextField('Tutorial ID', 'tutorialId')}
                     </div>
                     {this.renderPreview()}
                 </div>

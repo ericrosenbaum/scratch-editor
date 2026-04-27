@@ -2,14 +2,14 @@
    jsdoc/require-returns, jsdoc/require-param, react/jsx-no-bind,
    react/jsx-handler-names, no-negated-condition, arrow-parens */
 import React from 'react';
-import tips, {quickPicks} from '../../lib/libraries/tips/index.js';
+import {quickPicks} from '../../lib/libraries/tips/index.js';
 import blockTemplates from '../../lib/unstuck/block-templates.js';
-import BlockPreview from '../unstuck-card/block-preview.jsx';
 import TipEditor from './tip-editor.jsx';
 import {
     loadMergedTips, hasOverride, deleteOverride,
     exportTipsJson, exportBlockTemplatesJson, importTips,
-    persistToSource, clearAllOverrides, getCustomBlockTemplates
+    persistToSource, clearAllOverrides, getCustomBlockTemplates,
+    getReviewedSet, setReviewed
 } from '../../lib/unstuck/tip-overrides.js';
 
 const CAPTURE_STATE_KEY = 'scratch-tips-editor-capture-state';
@@ -53,8 +53,8 @@ const DEFAULT_TAG_COLOR = {bg: '#f0f2f5', fg: '#333'};
 /**
  * Compute validation warnings and metadata for all tips.
  */
-function computeAnalysis () {
-    const allTipIds = new Set(Object.keys(tips));
+function computeAnalysis (workingTips) {
+    const allTipIds = new Set(Object.keys(workingTips));
     const warnings = {};
     const referencedIds = new Set();
     const referencedByMap = {};
@@ -64,7 +64,7 @@ function computeAnalysis () {
         referencedByMap[tipId] = [];
     }
 
-    for (const [tipId, tip] of Object.entries(tips)) {
+    for (const [tipId, tip] of Object.entries(workingTips)) {
         const tipWarnings = [];
 
         if (tip.tags) {
@@ -100,286 +100,25 @@ function computeAnalysis () {
         }
     }
 
+    const orphanIds = new Set();
     for (const tipId of allTipIds) {
         if (!referencedIds.has(tipId)) {
+            orphanIds.add(tipId);
             if (!warnings[tipId]) warnings[tipId] = [];
             warnings[tipId].push('Orphaned: no other tip references this one');
         }
     }
 
-    const tipEntries = Object.entries(tips);
+    const tipEntries = Object.entries(workingTips);
     const stats = {
         total: tipEntries.length,
         withBlocks: tipEntries.filter(([, t]) => t.blockExample).length,
         withPointers: tipEntries.filter(([, t]) => t.pointers && t.pointers.length > 0).length,
-        warningCount: Object.keys(warnings).length
+        warningCount: Object.keys(warnings).length,
+        orphanCount: orphanIds.size
     };
 
-    return {warnings, referencedByMap, tagCounts, stats};
-}
-
-/**
- * Extract opcode chain from a block template array.
- */
-function getOpcodeChain (templateBlocks) {
-    if (!templateBlocks) return [];
-    const byId = {};
-    for (const b of templateBlocks) {
-        byId[b.id] = b;
-    }
-    const topBlock = templateBlocks.find(b => b.topLevel && !b.shadow);
-    if (!topBlock) return [];
-
-    const chain = [];
-    let current = topBlock;
-    while (current) {
-        if (!current.shadow) {
-            chain.push(current.opcode);
-        }
-        current = current.next ? byId[current.next] : null;
-    }
-    return chain;
-}
-
-function tipMatchesFilter (tipId, tip, searchQuery, activeTag, warningsOnly, orphansOnly, warnings) {
-    if (activeTag && !(tip.tags && tip.tags.includes(activeTag))) return false;
-    if (warningsOnly && !warnings[tipId]) return false;
-    if (orphansOnly) {
-        const isOrphan = warnings[tipId] &&
-            warnings[tipId].some(w => w.startsWith('Orphaned'));
-        if (!isOrphan) return false;
-    }
-
-    if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        const haystack = [
-            tipId,
-            tip.text,
-            tip.title,
-            ...(tip.tags || [])
-        ].join(' ').toLowerCase();
-        if (!haystack.includes(q)) return false;
-    }
-
-    return true;
-}
-
-/* ===== TIP CARD ===== */
-class TipCard extends React.Component {
-    constructor (props) {
-        super(props);
-        this.state = {copied: false, showBlocks: false, showJson: false, showTipJson: false};
-        this.handleCopyId = this.handleCopyId.bind(this);
-        this.handleShowBlocks = this.handleShowBlocks.bind(this);
-        this.handleShowJson = this.handleShowJson.bind(this);
-        this.handleShowTipJson = this.handleShowTipJson.bind(this);
-    }
-    handleCopyId () {
-        const searchString = `'${this.props.tipId}': {`;
-        navigator.clipboard.writeText(searchString).then(() => {
-            this.setState({copied: true});
-            setTimeout(() => this.setState({copied: false}), 1500);
-        });
-    }
-    handleShowBlocks () {
-        this.setState(prev => ({showBlocks: !prev.showBlocks}));
-    }
-    handleShowJson () {
-        this.setState(prev => ({showJson: !prev.showJson}));
-    }
-    handleShowTipJson () {
-        this.setState(prev => ({showTipJson: !prev.showTipJson}));
-    }
-    render () {
-        const {tipId, tip, warnings, referencedBy, onTagClick} = this.props;
-        const tipWarnings = warnings[tipId];
-        const hasPointers = tip.pointers && tip.pointers.length > 0;
-        const hasBlocks = !!tip.blockExample;
-        const hasFollowUps = tip.followUps && tip.followUps.length > 0;
-        const refs = referencedBy[tipId] || [];
-
-        const opcodeChain = hasBlocks ? getOpcodeChain(blockTemplates[tip.blockExample]) : [];
-
-        return (
-            <div
-                className={styles.card}
-                id={tipId}
-            >
-                {tipWarnings ? (
-                    <div className={styles.cardWarnings}>
-                        {tipWarnings.map((w, i) => (
-                            <div
-                                className={styles.warningItem}
-                                key={i}
-                            >
-                                <span className={styles.warningIcon}>{'⚠'}</span>
-                                {w}
-                            </div>
-                        ))}
-                    </div>
-                ) : null}
-
-                <div>
-                    <span
-                        className={styles.tipId}
-                        title="Click to copy search string"
-                        onClick={this.handleCopyId}
-                    >
-                        {tipId}
-                    </span>
-                    {this.state.copied ? (
-                        <span className={styles.copiedToast}>{'Copied!'}</span>
-                    ) : null}
-                    {tip.title ? (
-                        <span className={styles.tipTitle}>
-                            {tip.title}
-                        </span>
-                    ) : null}
-                    <button
-                        className={styles.tipJsonButton}
-                        onClick={this.handleShowTipJson}
-                    >
-                        {this.state.showTipJson ? 'Hide JSON' : 'JSON'}
-                    </button>
-                </div>
-
-                {this.state.showTipJson ? (
-                    <pre className={styles.jsonBlock}>
-                        {JSON.stringify(tip, null, 2)}
-                    </pre>
-                ) : null}
-
-                <div className={styles.tipText}>{tip.text}</div>
-
-                {tip.tags && tip.tags.length > 0 ? (
-                    <div className={styles.section}>
-                        <div className={styles.sectionLabel}>{'Tags'}</div>
-                        <div className={styles.tags}>
-                            {tip.tags.map(tag => {
-                                const colors = TAG_COLORS[tag] || DEFAULT_TAG_COLOR;
-                                return (
-                                    <button
-                                        className={styles.tag}
-                                        key={tag}
-                                        style={{
-                                            background: colors.bg,
-                                            color: colors.fg
-                                        }}
-                                        onClick={() => onTagClick(tag)}
-                                    >
-                                        {tag}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                ) : null}
-
-                {hasBlocks ? (
-                    <div className={styles.section}>
-                        <div className={styles.sectionLabel}>{'Block Example'}</div>
-                        <div className={styles.blockRow}>
-                            <code className={styles.blockExample}>{tip.blockExample}</code>
-                            <button
-                                className={styles.renderBlocksButton}
-                                onClick={this.handleShowBlocks}
-                            >
-                                {this.state.showBlocks ? 'Hide blocks' : 'Show blocks'}
-                            </button>
-                            <button
-                                className={styles.renderBlocksButton}
-                                onClick={this.handleShowJson}
-                            >
-                                {this.state.showJson ? 'Hide JSON' : 'Show JSON'}
-                            </button>
-                        </div>
-                        {opcodeChain.length > 0 ? (
-                            <div className={styles.opcodeChain}>
-                                {opcodeChain.map((op, i) => (
-                                    <span key={i}>
-                                        {i > 0 ? (
-                                            <span className={styles.opcodeArrow}>{'\u2192'}</span>
-                                        ) : null}
-                                        {op}
-                                    </span>
-                                ))}
-                            </div>
-                        ) : null}
-                        {this.state.showBlocks ? (
-                            <div className={styles.blockPreviewWrapper}>
-                                <BlockPreview templateName={tip.blockExample} />
-                            </div>
-                        ) : null}
-                        {this.state.showJson ? (
-                            <pre className={styles.jsonBlock}>
-                                {JSON.stringify(blockTemplates[tip.blockExample], null, 2)}
-                            </pre>
-                        ) : null}
-                    </div>
-                ) : null}
-
-                {hasPointers ? (
-                    <div className={styles.section}>
-                        <div className={styles.sectionLabel}>{'Pointers'}</div>
-                        <table className={styles.pointerTable}>
-                            <thead>
-                                <tr>
-                                    <th>{'Label'}</th>
-                                    <th>{'Target'}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tip.pointers.map((p, i) => (
-                                    <tr key={i}>
-                                        <td>{p.label}</td>
-                                        <td>{p.target}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                ) : null}
-
-                {hasFollowUps ? (
-                    <div className={styles.section}>
-                        <div className={styles.sectionLabel}>{'Follow-ups'}</div>
-                        <div className={styles.followUpLinks}>
-                            {tip.followUps.map(fid => {
-                                const exists = !!tips[fid];
-                                return (
-                                    <a
-                                        className={`${styles.followUpLink} ${exists ? '' : styles.brokenLink}`}
-                                        href={`#${fid}`}
-                                        key={fid}
-                                    >
-                                        {exists ? (tips[fid].title || fid) : `${fid} (missing!)`}
-                                    </a>
-                                );
-                            })}
-                        </div>
-                    </div>
-                ) : null}
-
-                {refs.length > 0 ? (
-                    <div className={styles.section}>
-                        <div className={styles.sectionLabel}>{`Referenced by (${refs.length})`}</div>
-                        <div className={styles.followUpLinks}>
-                            {refs.map(refId => (
-                                <a
-                                    className={styles.refLink}
-                                    href={`#${refId}`}
-                                    key={refId}
-                                >
-                                    {refId}
-                                </a>
-                            ))}
-                        </div>
-                    </div>
-                ) : null}
-
-            </div>
-        );
-    }
+    return {warnings, referencedByMap, tagCounts, stats, orphanIds};
 }
 
 /* ===== MAIN COMPONENT ===== */
@@ -387,23 +126,20 @@ class TipsReview extends React.Component {
     constructor (props) {
         super(props);
         const pendingCapture = loadCaptureState();
+        const workingTips = loadMergedTips();
         this.state = {
-            mode: 'edit',
-            searchQuery: '',
-            activeTag: null,
-            warningsOnly: false,
-            orphansOnly: false,
-            // Edit mode state
             editSearchQuery: '',
             selectedTipId: pendingCapture ? pendingCapture.tipId : null,
             pendingCapture: !!pendingCapture,
-            workingTips: loadMergedTips(),
-            saveToSourceStatus: null // null | 'saving' | 'saved' | 'error'
+            workingTips,
+            saveToSourceStatus: null, // null | 'saving' | 'saved' | 'error'
+            activeTag: null,
+            warningsOnly: false,
+            orphansOnly: false,
+            reviewedFilter: null, // null | 'reviewed' | 'unreviewed'
+            reviewedSet: getReviewedSet()
         };
-        this.analysis = computeAnalysis();
-        this.handleSearchChange = this.handleSearchChange.bind(this);
-        this.handleTagClick = this.handleTagClick.bind(this);
-        this.clearTag = this.clearTag.bind(this);
+        this.analysis = computeAnalysis(workingTips);
         this.handleExportTips = this.handleExportTips.bind(this);
         this.handleExportBlocks = this.handleExportBlocks.bind(this);
         this.handleImport = this.handleImport.bind(this);
@@ -412,22 +148,15 @@ class TipsReview extends React.Component {
         this.handleTipDelete = this.handleTipDelete.bind(this);
         this.handleRequestCapture = this.handleRequestCapture.bind(this);
         this.handleSaveToSource = this.handleSaveToSource.bind(this);
+        this.handleTagClick = this.handleTagClick.bind(this);
         this.importInputRef = React.createRef();
         this.tipEditorRef = React.createRef();
-    }
-
-    handleSearchChange (e) {
-        this.setState({searchQuery: e.target.value});
     }
 
     handleTagClick (tag) {
         this.setState(prev => ({
             activeTag: prev.activeTag === tag ? null : tag
         }));
-    }
-
-    clearTag () {
-        this.setState({activeTag: null});
     }
 
     handleExportTips () {
@@ -463,30 +192,37 @@ class TipsReview extends React.Component {
         reader.onload = event => {
             try {
                 importTips(event.target.result);
-                this.setState({workingTips: loadMergedTips()});
+                const workingTips = loadMergedTips();
+                this.analysis = computeAnalysis(workingTips);
+                this.setState({workingTips});
             } catch (err) {
                 // eslint-disable-next-line no-alert
                 alert(`Import failed: ${err.message}`);
             }
         };
         reader.readAsText(file);
-        // Reset so same file can be re-imported
         e.target.value = '';
     }
 
-    handleTipSave (tipId, tipData) {
-        this.setState({workingTips: loadMergedTips()});
+    handleTipSave () {
+        const workingTips = loadMergedTips();
+        this.analysis = computeAnalysis(workingTips);
+        this.setState({workingTips});
     }
 
-    handleTipRevert (tipId) {
-        this.setState({workingTips: loadMergedTips()});
+    handleTipRevert () {
+        const workingTips = loadMergedTips();
+        this.analysis = computeAnalysis(workingTips);
+        this.setState({workingTips});
     }
 
     handleTipDelete (tipId) {
         deleteOverride(tipId);
+        const workingTips = loadMergedTips();
+        this.analysis = computeAnalysis(workingTips);
         this.setState({
             selectedTipId: null,
-            workingTips: loadMergedTips()
+            workingTips
         });
     }
 
@@ -496,9 +232,14 @@ class TipsReview extends React.Component {
         this.props.onClose();
     }
 
+    handleToggleReviewed (tipId) {
+        const {reviewedSet} = this.state;
+        const isCurrentlyReviewed = reviewedSet.has(tipId);
+        setReviewed(tipId, !isCurrentlyReviewed);
+        this.setState({reviewedSet: getReviewedSet()});
+    }
+
     async handleSaveToSource () {
-        // Flush any in-flight autosave so the latest keystrokes make it into
-        // localStorage before we read it.
         if (this.tipEditorRef.current) {
             this.tipEditorRef.current.flushAutosave();
         }
@@ -514,13 +255,12 @@ class TipsReview extends React.Component {
                 quickPicks,
                 blockTemplates: mergedBlockTemplates
             });
-            // Drop all overrides so the next read comes from the freshly
-            // written source files. Dev-server HMR will reload the page
-            // once the JSON files change on disk.
             clearAllOverrides();
+            const workingTips = loadMergedTips();
+            this.analysis = computeAnalysis(workingTips);
             this.setState({
                 saveToSourceStatus: 'saved',
-                workingTips: loadMergedTips()
+                workingTips
             });
             setTimeout(() => this.setState({saveToSourceStatus: null}), 2000);
         } catch (err) {
@@ -531,268 +271,92 @@ class TipsReview extends React.Component {
         }
     }
 
-    renderReviewMode () {
-        const {warnings, referencedByMap, tagCounts, stats} = this.analysis;
-        const {searchQuery, activeTag, warningsOnly, orphansOnly} = this.state;
-
+    render () {
+        const {
+            editSearchQuery, selectedTipId, pendingCapture, workingTips,
+            activeTag, warningsOnly, orphansOnly, reviewedFilter, reviewedSet
+        } = this.state;
+        const {vm} = this.props;
+        const {warnings, tagCounts, stats, orphanIds} = this.analysis;
+        const allTipIds = Object.keys(workingTips);
         const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
 
-        const filteredTips = Object.entries(tips).filter(
-            ([tipId, tip]) => tipMatchesFilter(
-                tipId, tip, searchQuery, activeTag, warningsOnly, orphansOnly, warnings
-            )
-        );
-
-        return (
-            <React.Fragment>
-                <div className={styles.layout}>
-                    <div className={styles.sidebar}>
-                        <div className={styles.sidebarTitle}>{'Tags'}</div>
-                        <button
-                            className={`${styles.tagListItem} ${!activeTag ? styles.tagListItemActive : ''}`}
-                            onClick={this.clearTag}
-                        >
-                            <span>{'All'}</span>
-                            <span className={styles.tagCount}>{stats.total}</span>
-                        </button>
-                        {sortedTags.map(([tag, count]) => (
-                            <button
-                                className={`${styles.tagListItem} ${activeTag === tag ? styles.tagListItemActive : ''}`}
-                                key={tag}
-                                onClick={() => this.handleTagClick(tag)}
-                            >
-                                <span>{tag}</span>
-                                <span className={styles.tagCount}>{count}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className={styles.main}>
-                        <div className={styles.statsBar}>
-                            <div className={styles.stat}>
-                                <div className={styles.statValue}>{stats.total}</div>
-                                <div className={styles.statLabel}>{'Total tips'}</div>
-                            </div>
-                            <div className={styles.stat}>
-                                <div className={styles.statValue}>{stats.withBlocks}</div>
-                                <div className={styles.statLabel}>{'With blocks'}</div>
-                            </div>
-                            <div className={styles.stat}>
-                                <div className={styles.statValue}>{stats.withPointers}</div>
-                                <div className={styles.statLabel}>{'With pointers'}</div>
-                            </div>
-                            <div className={styles.warningsStat}>
-                                <div className={styles.statValue}>{stats.warningCount}</div>
-                                <div className={styles.statLabel}>{'Warnings'}</div>
-                            </div>
-                        </div>
-
-                        {filteredTips.length === 0 ? (
-                            <div className={styles.noResults}>{'No tips match your filters.'}</div>
-                        ) : (
-                            filteredTips.map(([tipId, tip]) => (
-                                <TipCard
-                                    key={tipId}
-                                    onTagClick={this.handleTagClick}
-                                    referencedBy={referencedByMap}
-                                    tip={tip}
-                                    tipId={tipId}
-                                    warnings={warnings}
-                                />
-                            ))
-                        )}
-
-                        <div className={styles.quickPicksSection}>
-                            <div className={styles.quickPicksTitle}>{'Quick Picks'}</div>
-                            <div className={styles.quickPicksGrid}>
-                                {quickPicks.map(pick => (
-                                    <div
-                                        className={styles.quickPickItem}
-                                        key={pick.query}
-                                    >
-                                        <span
-                                            className={styles.quickPickDot}
-                                            style={{backgroundColor: pick.color}}
-                                        />
-                                        <span>{pick.label}</span>
-                                        <span className={styles.quickPickQuery}>{pick.query}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </React.Fragment>
-        );
-    }
-
-    renderEditMode () {
-        const {editSearchQuery, selectedTipId, pendingCapture, workingTips} = this.state;
-        const {vm} = this.props;
-        const allTipIds = Object.keys(workingTips);
+        const reviewedCount = allTipIds.filter(id => reviewedSet.has(id)).length;
 
         const filteredIds = allTipIds.filter(id => {
-            if (!editSearchQuery) return true;
-            const q = editSearchQuery.toLowerCase();
             const tip = workingTips[id];
-            const haystack = [
-                id,
-                tip.title || '',
-                tip.text || ''
-            ].join(' ').toLowerCase();
-            return haystack.includes(q);
+
+            // Tag filter
+            if (activeTag && !(tip.tags && tip.tags.includes(activeTag))) return false;
+
+            // Warnings filter
+            if (warningsOnly && !warnings[id]) return false;
+
+            // Orphans filter
+            if (orphansOnly && !orphanIds.has(id)) return false;
+
+            // Reviewed filter
+            if (reviewedFilter === 'reviewed' && !reviewedSet.has(id)) return false;
+            if (reviewedFilter === 'unreviewed' && reviewedSet.has(id)) return false;
+
+            // Text search
+            if (editSearchQuery) {
+                const q = editSearchQuery.toLowerCase();
+                const haystack = [
+                    id,
+                    tip.title || '',
+                    tip.text || '',
+                    ...(tip.tags || [])
+                ].join(' ').toLowerCase();
+                if (!haystack.includes(q)) return false;
+            }
+
+            return true;
         });
 
         const selectedTip = selectedTipId ? workingTips[selectedTipId] : null;
 
         return (
-            <div className={styles.editLayout}>
-                <div className={styles.editTipList}>
-                    <div className={styles.editTipListHeader}>
-                        <input
-                            className={styles.editTipSearch}
-                            placeholder="Filter tips..."
-                            value={editSearchQuery}
-                            onChange={e => this.setState({editSearchQuery: e.target.value})}
-                        />
-                    </div>
-                    {filteredIds.map(id => {
-                        const tip = workingTips[id];
-                        const isModified = hasOverride(id);
-                        const isActive = id === selectedTipId;
-                        return (
-                            <button
-                                className={
-                                    `${isModified ? styles.editTipItemModified : styles.editTipItem} ` +
-                                    `${isActive ? styles.editTipItemActive : ''}`
-                                }
-                                key={id}
-                                onClick={() => this.setState({selectedTipId: id})}
-                            >
-                                <span className={styles.editTipItemId}>{id}</span>
-                                <span className={styles.editTipItemLabel}>
-                                    {tip.title || tip.text}
-                                </span>
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {selectedTip ? (
-                    <TipEditor
-                        allTipIds={allTipIds}
-                        key={selectedTipId}
-                        ref={this.tipEditorRef}
-                        onCaptureConsumed={() => this.setState({pendingCapture: false})}
-                        onDelete={this.handleTipDelete}
-                        onRequestCapture={this.handleRequestCapture}
-                        onRevert={this.handleTipRevert}
-                        onSave={this.handleTipSave}
-                        pendingCapture={pendingCapture}
-                        tip={selectedTip}
-                        tipId={selectedTipId}
-                        vm={vm}
-                    />
-                ) : (
-                    <div className={styles.editorPanel}>
-                        <div className={styles.editorNoSelection}>
-                            {'Select a tip from the list to edit it'}
-                        </div>
-                    </div>
-                )}
-            </div>
-        );
-    }
-
-    render () {
-        const {mode, searchQuery} = this.state;
-        const {stats} = this.analysis;
-
-        return (
             <div className={styles.overlay}>
                 <div className={styles.header}>
                     <div className={styles.title}>
-                        {mode === 'review' ? 'Tips Review' : 'Tips Editor'}
+                        {'Tips Editor'}
                     </div>
 
-                    <div className={styles.modeToggle}>
-                        <button
-                            className={`${styles.modeButton} ${mode === 'edit' ? styles.modeButtonActive : ''}`}
-                            onClick={() => this.setState({mode: 'edit', workingTips: loadMergedTips()})}
-                        >
-                            {'Edit'}
-                        </button>
-                        <button
-                            className={`${styles.modeButton} ${mode === 'review' ? styles.modeButtonActive : ''}`}
-                            onClick={() => this.setState({mode: 'review'})}
-                        >
-                            {'Review'}
-                        </button>
-                    </div>
-
-                    {mode === 'review' ? (
-                        <React.Fragment>
-                            <input
-                                className={styles.searchInput}
-                                placeholder="Search by ID, text, tag, keyword..."
-                                value={searchQuery}
-                                onChange={this.handleSearchChange}
-                            />
-                            <button
-                                className={`${styles.toggleButton} ${
-                                    this.state.warningsOnly ? styles.toggleButtonActive : ''
-                                }`}
-                                onClick={() => this.setState(prev => ({warningsOnly: !prev.warningsOnly}))}
-                            >
-                                {`Warnings (${stats.warningCount})`}
-                            </button>
-                            <button
-                                className={`${styles.toggleButton} ${
-                                    this.state.orphansOnly ? styles.toggleButtonActive : ''
-                                }`}
-                                onClick={() => this.setState(prev => ({orphansOnly: !prev.orphansOnly}))}
-                            >
-                                {'Orphans'}
-                            </button>
-                        </React.Fragment>
-                    ) : (
-                        <React.Fragment>
-                            <button
-                                className={styles.exportButton}
-                                disabled={this.state.saveToSourceStatus === 'saving'}
-                                onClick={this.handleSaveToSource}
-                            >
-                                {this.state.saveToSourceStatus === 'saving' ? 'Saving…' :
-                                    this.state.saveToSourceStatus === 'saved' ? 'Saved ✓' :
-                                        'Save to source'}
-                            </button>
-                            <button
-                                className={styles.exportButton}
-                                onClick={this.handleExportTips}
-                            >
-                                {'Export tips.json'}
-                            </button>
-                            <button
-                                className={styles.exportButton}
-                                onClick={this.handleExportBlocks}
-                            >
-                                {'Export block-templates.json'}
-                            </button>
-                            <button
-                                className={styles.importButton}
-                                onClick={this.handleImport}
-                            >
-                                {'Import'}
-                            </button>
-                            <input
-                                accept=".json"
-                                ref={this.importInputRef}
-                                style={{display: 'none'}}
-                                type="file"
-                                onChange={e => this.handleImportFile(e)}
-                            />
-                        </React.Fragment>
-                    )}
+                    <button
+                        className={styles.exportButton}
+                        disabled={this.state.saveToSourceStatus === 'saving'}
+                        onClick={this.handleSaveToSource}
+                    >
+                        {this.state.saveToSourceStatus === 'saving' ? 'Saving\u2026' :
+                            this.state.saveToSourceStatus === 'saved' ? 'Saved \u2713' :
+                                'Save to source'}
+                    </button>
+                    <button
+                        className={styles.exportButton}
+                        onClick={this.handleExportTips}
+                    >
+                        {'Export tips.json'}
+                    </button>
+                    <button
+                        className={styles.exportButton}
+                        onClick={this.handleExportBlocks}
+                    >
+                        {'Export block-templates.json'}
+                    </button>
+                    <button
+                        className={styles.importButton}
+                        onClick={this.handleImport}
+                    >
+                        {'Import'}
+                    </button>
+                    <input
+                        accept=".json"
+                        ref={this.importInputRef}
+                        style={{display: 'none'}}
+                        type="file"
+                        onChange={e => this.handleImportFile(e)}
+                    />
 
                     <button
                         className={styles.closeButton}
@@ -802,7 +366,152 @@ class TipsReview extends React.Component {
                     </button>
                 </div>
 
-                {mode === 'review' ? this.renderReviewMode() : this.renderEditMode()}
+                <div className={styles.editLayout}>
+                    {/* Tag sidebar */}
+                    <div className={styles.sidebar}>
+                        <div className={styles.sidebarTitle}>{'Tags'}</div>
+                        <button
+                            className={`${styles.tagListItem} ${!activeTag ? styles.tagListItemActive : ''}`}
+                            onClick={() => this.setState({activeTag: null})}
+                        >
+                            <span>{'All'}</span>
+                            <span className={styles.tagCount}>{stats.total}</span>
+                        </button>
+                        {sortedTags.map(([tag, count]) => {
+                            const colors = TAG_COLORS[tag] || DEFAULT_TAG_COLOR;
+                            return (
+                                <button
+                                    className={`${styles.tagListItem} ${activeTag === tag ? styles.tagListItemActive : ''}`}
+                                    key={tag}
+                                    onClick={() => this.handleTagClick(tag)}
+                                >
+                                    <span
+                                        className={styles.tagDot}
+                                        style={{backgroundColor: colors.bg}}
+                                    />
+                                    <span className={styles.tagName}>{tag}</span>
+                                    <span className={styles.tagCount}>{count}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Tip list */}
+                    <div className={styles.editTipList}>
+                        <div className={styles.editTipListHeader}>
+                            <input
+                                className={styles.editTipSearch}
+                                placeholder="Search tips..."
+                                value={editSearchQuery}
+                                onChange={e => this.setState({editSearchQuery: e.target.value})}
+                            />
+                            <div className={styles.filterBar}>
+                                <button
+                                    className={`${styles.filterButton} ${warningsOnly ? styles.filterButtonActive : ''}`}
+                                    onClick={() => this.setState(prev => ({warningsOnly: !prev.warningsOnly}))}
+                                >
+                                    {`Warnings (${stats.warningCount})`}
+                                </button>
+                                <button
+                                    className={`${styles.filterButton} ${orphansOnly ? styles.filterButtonActive : ''}`}
+                                    onClick={() => this.setState(prev => ({orphansOnly: !prev.orphansOnly}))}
+                                >
+                                    {`Orphans (${stats.orphanCount})`}
+                                </button>
+                                <button
+                                    className={`${styles.filterButton} ${reviewedFilter === 'reviewed' ? styles.filterButtonActive : ''}`}
+                                    onClick={() => this.setState(prev => ({
+                                        reviewedFilter: prev.reviewedFilter === 'reviewed' ? null : 'reviewed'
+                                    }))}
+                                >
+                                    {`Reviewed (${reviewedCount})`}
+                                </button>
+                                <button
+                                    className={`${styles.filterButton} ${reviewedFilter === 'unreviewed' ? styles.filterButtonActive : ''}`}
+                                    onClick={() => this.setState(prev => ({
+                                        reviewedFilter: prev.reviewedFilter === 'unreviewed' ? null : 'unreviewed'
+                                    }))}
+                                >
+                                    {`Unreviewed (${stats.total - reviewedCount})`}
+                                </button>
+                            </div>
+                            <div className={styles.statsRow}>
+                                <span className={styles.statChip}>{`${stats.total} tips`}</span>
+                                <span className={styles.statChip}>{`${stats.withBlocks} blocks`}</span>
+                                <span className={styles.statChip}>{`${stats.withPointers} pointers`}</span>
+                            </div>
+                        </div>
+                        <div className={styles.editTipListCount}>
+                            {`Showing ${filteredIds.length} of ${stats.total}`}
+                        </div>
+                        {filteredIds.map(id => {
+                            const tip = workingTips[id];
+                            const isModified = hasOverride(id);
+                            const isActive = id === selectedTipId;
+                            const isItemReviewed = reviewedSet.has(id);
+                            const hasWarnings = !!warnings[id];
+                            return (
+                                <div
+                                    className={
+                                        `${styles.editTipItem} ` +
+                                        `${isActive ? styles.editTipItemActive : ''} ` +
+                                        `${isModified ? styles.editTipItemModified : ''} ` +
+                                        `${isItemReviewed ? styles.editTipItemReviewed : ''}`
+                                    }
+                                    key={id}
+                                >
+                                    <button
+                                        className={styles.editTipItemContent}
+                                        onClick={() => this.setState({selectedTipId: id})}
+                                    >
+                                        <span className={styles.editTipItemId}>
+                                            {hasWarnings ? (
+                                                <span className={styles.warningDot} />
+                                            ) : null}
+                                            {id}
+                                        </span>
+                                        <span className={styles.editTipItemLabel}>
+                                            {tip.title || tip.text}
+                                        </span>
+                                    </button>
+                                    <button
+                                        className={`${styles.reviewedCheckbox} ${isItemReviewed ? styles.reviewedCheckboxChecked : ''}`}
+                                        title={isItemReviewed ? 'Mark as unreviewed' : 'Mark as reviewed'}
+                                        onClick={() => this.handleToggleReviewed(id)}
+                                    >
+                                        {isItemReviewed ? '\u2713' : ''}
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Editor panel */}
+                    {selectedTip ? (
+                        <TipEditor
+                            allTipIds={allTipIds}
+                            isReviewed={reviewedSet.has(selectedTipId)}
+                            key={selectedTipId}
+                            ref={this.tipEditorRef}
+                            onCaptureConsumed={() => this.setState({pendingCapture: false})}
+                            onDelete={this.handleTipDelete}
+                            onRequestCapture={this.handleRequestCapture}
+                            onRevert={this.handleTipRevert}
+                            onSave={this.handleTipSave}
+                            onToggleReviewed={() => this.handleToggleReviewed(selectedTipId)}
+                            pendingCapture={pendingCapture}
+                            tip={selectedTip}
+                            tipId={selectedTipId}
+                            vm={vm}
+                        />
+                    ) : (
+                        <div className={styles.editorPanel}>
+                            <div className={styles.editorNoSelection}>
+                                {'Select a tip from the list to edit it'}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }

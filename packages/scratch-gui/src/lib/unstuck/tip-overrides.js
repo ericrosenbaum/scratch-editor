@@ -6,6 +6,7 @@ import staticTips from '../libraries/tips/index.js';
 
 const STORAGE_KEY = 'scratch-tip-overrides';
 const BLOCK_TEMPLATES_KEY = 'scratch-tip-block-templates';
+const REVIEWED_KEY = 'scratch-tip-reviewed';
 
 /**
  * Read raw overrides from localStorage.
@@ -211,6 +212,38 @@ const forgetOverride = function (tipId) {
     }
 };
 
+/**
+ * Get the set of reviewed tip IDs from localStorage.
+ */
+const getReviewedSet = function () {
+    try {
+        const stored = localStorage.getItem(REVIEWED_KEY);
+        return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch (e) {
+        return new Set();
+    }
+};
+
+/**
+ * Check if a tip is marked as reviewed.
+ */
+const isReviewed = function (tipId) {
+    return getReviewedSet().has(tipId);
+};
+
+/**
+ * Mark a tip as reviewed or unreviewed.
+ */
+const setReviewed = function (tipId, reviewed) {
+    const set = getReviewedSet();
+    if (reviewed) {
+        set.add(tipId);
+    } else {
+        set.delete(tipId);
+    }
+    localStorage.setItem(REVIEWED_KEY, JSON.stringify([...set]));
+};
+
 export {
     loadMergedTips,
     saveOverride,
@@ -224,5 +257,8 @@ export {
     clearAllOverrides,
     getCustomBlockTemplates,
     persistToSource,
-    forgetOverride
+    forgetOverride,
+    getReviewedSet,
+    isReviewed,
+    setReviewed
 };
