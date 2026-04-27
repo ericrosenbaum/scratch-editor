@@ -251,14 +251,15 @@
         "glide-to-position": {
             "id": "glide-to-position",
             "title": "Smooth movement",
-            "text": "Use \"glide\" instead of \"go to\" for smooth, animated movement!",
+            "text": "Use \"glide\" for smooth movement.",
             "tags": [
                 "motion",
                 "animation"
             ],
             "followUps": [
                 "move-sprite",
-                "too-fast"
+                "too-fast",
+                "glide-to-random"
             ],
             "blockExample": "captured_glide-to-position_1776180803203",
             "pointers": [
@@ -422,12 +423,13 @@
             "blockExample": "playSound",
             "pointers": [
                 {
-                    "label": "Click the Sounds tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
+                    "label": "Add sounds here",
+                    "target": "[class*=\"new-buttons\"]:not(#__sound) [class*=\"main-button\"]"
                 },
                 {
-                    "label": "Sound blocks are here",
-                    "target": ".blocklyToolboxCategory#sound"
+                    "label": "Then play sounds with a block",
+                    "blockOpcode": "sound_playuntildone",
+                    "category": "sound"
                 }
             ]
         },
@@ -450,7 +452,7 @@
                 },
                 {
                     "label": "Choose \"record\"",
-                    "target": "[class*=\"new-buttons\"] [class*=\"main-button\"]"
+                    "target": "[class*=\"new-buttons\"]:not(#__sound) [class*=\"main-button\"]"
                 }
             ]
         },
@@ -710,7 +712,7 @@
         "change-costume": {
             "id": "change-costume",
             "title": "Change costume",
-            "text": "Use \"next costume\" to change how your sprite looks",
+            "text": "Use \"next costume\" to change how your sprite looks, and animate it",
             "tags": [
                 "looks",
                 "costumes",
@@ -729,7 +731,31 @@
                     "category": "looks"
                 }
             ],
-            "blockExample": "foreverNextCostume"
+            "blockExample": "captured_change-costume_1777320851379",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenthisspriteclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_nextcostume",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                }
+            ]
         },
         "add-costume": {
             "id": "add-costume",
@@ -757,7 +783,7 @@
         "animate-costume": {
             "id": "animate-costume",
             "title": "Animate",
-            "text": "Put \"next costume\" inside a \"forever\" loop with a \"wait\" block to make a simple animation!",
+            "text": "Put \"next costume\" inside a \"forever\" loop to make a simple animation",
             "tags": [
                 "looks",
                 "costumes",
@@ -802,8 +828,8 @@
         },
         "repeat-loop": {
             "id": "repeat-loop",
-            "title": "Repeat N times",
-            "text": "Use \"repeat\" to do something a specific number of times!",
+            "title": "Repeat 10",
+            "text": "Use \"repeat\" to do something a specific number of times",
             "tags": [
                 "control",
                 "loops"
@@ -939,7 +965,7 @@
         "use-variables": {
             "id": "use-variables",
             "title": "Make a variable",
-            "text": "Click \"Make a Variable\" in the Variables category to keep track of things like score!",
+            "text": "Click \"Make a Variable\" in the Variables category to keep track of things like score",
             "tags": [
                 "variables",
                 "data",
@@ -1247,7 +1273,7 @@
         "use-lists": {
             "id": "use-lists",
             "title": "Use lists",
-            "text": "Click \"Make a List\" under Variables to store multiple things, like a collection of names or numbers",
+            "text": "Click \"Make a List\" under Variables to store a list of things, like names or numbers",
             "tags": [
                 "variables",
                 "lists",
@@ -1504,7 +1530,7 @@
         "broadcast-message": {
             "id": "broadcast-message",
             "title": "Send messages",
-            "text": "Use \"broadcast\" and \"when I receive\" to send messages. Any sprite can receive the message.",
+            "text": "Use \"broadcast\" and \"when I receive\" to send messages. A different sprite can receive the message.",
             "tags": [
                 "events",
                 "broadcast",
@@ -1513,7 +1539,8 @@
             "followUps": [
                 "add-sprite",
                 "make-game",
-                "broadcast-for-levels"
+                "broadcast-for-levels",
+                "starter-story"
             ],
             "blockExample": "captured_broadcast-message_1776368576316",
             "pointers": [
@@ -1644,7 +1671,7 @@
         "add-sprite": {
             "id": "add-sprite",
             "title": "Add a sprite",
-            "text": "Click the cat button below the stage to add a new sprite to your project!",
+            "text": "Click the \"add sprite\" button below the stage to add a new sprite to your project",
             "tags": [
                 "sprites",
                 "beginner"
@@ -5951,6 +5978,166 @@
                 {
                     "label": "Click the Costumes tab",
                     "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
+                }
+            ]
+        },
+        "glide-to-random": {
+            "id": "glide-to-random",
+            "title": "Random glide",
+            "text": "Use \"glide\" to move smoothly to a random position, to your mouse pointer, or to another sprite.",
+            "tags": [
+                "motion",
+                "animation"
+            ],
+            "followUps": [
+                "move-sprite",
+                "too-fast",
+                "glide-to-position"
+            ],
+            "blockExample": "captured_glide-to-random_1777319625819",
+            "pointers": [
+                {
+                    "label": "Drag \"glide\" into your code",
+                    "blockOpcode": "motion_glideto",
+                    "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenthisspriteclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "motion_glideto",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        },
+                        "TO": {
+                            "name": "TO",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "motion_glideto_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TO": {
+                            "name": "TO",
+                            "value": "_random_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "change-y-position": {
+            "id": "change-y-position",
+            "title": "Change y",
+            "text": "Use \"change y by\" for up and down movement",
+            "tags": [
+                "motion",
+                "coordinates",
+                "position"
+            ],
+            "followUps": [
+                "move-with-keys",
+                "go-to-position",
+                "change-xy-position"
+            ],
+            "blockExample": "captured_change-y-position_1777320252117",
+            "pointers": [
+                {
+                    "label": "Drag \"change y by\" into your code",
+                    "blockOpcode": "motion_changeyby",
+                    "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenkeypressed",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "up arrow"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "motion_changeyby",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "DY": {
+                            "name": "DY",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         }

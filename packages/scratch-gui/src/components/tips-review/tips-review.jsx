@@ -6,7 +6,7 @@ import {quickPicks} from '../../lib/libraries/tips/index.js';
 import blockTemplates from '../../lib/unstuck/block-templates.js';
 import TipEditor from './tip-editor.jsx';
 import {
-    loadMergedTips, hasOverride, deleteOverride,
+    loadMergedTips, hasOverride, deleteOverride, saveOverride,
     exportTipsJson, exportBlockTemplatesJson, importTips,
     persistToSource, clearAllOverrides, getCustomBlockTemplates,
     getReviewedSet, setReviewed
@@ -232,6 +232,49 @@ class TipsReview extends React.Component {
         this.props.onClose();
     }
 
+    handleNewTip () {
+        // eslint-disable-next-line no-alert
+        const newId = prompt('Enter an ID for the new tip:');
+        if (!newId || !newId.trim()) return;
+        const id = newId.trim();
+        if (this.state.workingTips[id]) {
+            // eslint-disable-next-line no-alert
+            alert(`A tip with ID "${id}" already exists.`);
+            return;
+        }
+        const tip = {id, text: '', tags: [], followUps: []};
+        saveOverride(id, tip);
+        const workingTips = loadMergedTips();
+        this.analysis = computeAnalysis(workingTips);
+        this.setState({workingTips, selectedTipId: id});
+    }
+
+    handleDuplicateTip () {
+        const {selectedTipId, workingTips} = this.state;
+        if (!selectedTipId) return;
+        // Flush any pending edits on the current tip before duplicating
+        if (this.tipEditorRef.current) {
+            this.tipEditorRef.current.flushAutosave();
+        }
+        const sourceTip = loadMergedTips()[selectedTipId];
+        if (!sourceTip) return;
+        // eslint-disable-next-line no-alert
+        const newId = prompt('Enter an ID for the duplicate tip:', `${selectedTipId}_copy`);
+        if (!newId || !newId.trim()) return;
+        const id = newId.trim();
+        if (workingTips[id]) {
+            // eslint-disable-next-line no-alert
+            alert(`A tip with ID "${id}" already exists.`);
+            return;
+        }
+        const duplicate = JSON.parse(JSON.stringify(sourceTip));
+        duplicate.id = id;
+        saveOverride(id, duplicate);
+        const updatedTips = loadMergedTips();
+        this.analysis = computeAnalysis(updatedTips);
+        this.setState({workingTips: updatedTips, selectedTipId: id});
+    }
+
     handleToggleReviewed (tipId) {
         const {reviewedSet} = this.state;
         const isCurrentlyReviewed = reviewedSet.has(tipId);
@@ -399,12 +442,21 @@ class TipsReview extends React.Component {
                     {/* Tip list */}
                     <div className={styles.editTipList}>
                         <div className={styles.editTipListHeader}>
-                            <input
-                                className={styles.editTipSearch}
-                                placeholder="Search tips..."
-                                value={editSearchQuery}
-                                onChange={e => this.setState({editSearchQuery: e.target.value})}
-                            />
+                            <div className={styles.editTipSearchRow}>
+                                <input
+                                    className={styles.editTipSearch}
+                                    placeholder="Search tips..."
+                                    value={editSearchQuery}
+                                    onChange={e => this.setState({editSearchQuery: e.target.value})}
+                                />
+                                <button
+                                    className={styles.newTipButton}
+                                    onClick={() => this.handleNewTip()}
+                                    title="Create a new blank tip"
+                                >
+                                    {'+'}
+                                </button>
+                            </div>
                             <div className={styles.filterBar}>
                                 <button
                                     className={`${styles.filterButton} ${warningsOnly ? styles.filterButtonActive : ''}`}
@@ -495,6 +547,7 @@ class TipsReview extends React.Component {
                             ref={this.tipEditorRef}
                             onCaptureConsumed={() => this.setState({pendingCapture: false})}
                             onDelete={this.handleTipDelete}
+                            onDuplicate={() => this.handleDuplicateTip()}
                             onRequestCapture={this.handleRequestCapture}
                             onRevert={this.handleTipRevert}
                             onSave={this.handleTipSave}

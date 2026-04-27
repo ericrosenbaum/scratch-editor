@@ -665,6 +665,16 @@ class TipEditor extends React.Component {
                         {isReviewed ? '\u2713 Reviewed' : 'Mark reviewed'}
                     </button>
                     <div className={styles.editorActions}>
+                        <button
+                            className={styles.editorDuplicateButton}
+                            onClick={() => {
+                                if (this.props.onDuplicate) {
+                                    this.props.onDuplicate();
+                                }
+                            }}
+                        >
+                            {'Duplicate'}
+                        </button>
                         {isOverridden ? (
                             <button
                                 className={styles.editorRevertButton}

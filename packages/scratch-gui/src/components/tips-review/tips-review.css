@@ -168,8 +168,14 @@
     z-index: 1;
 }
 
+.edit-tip-search-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
 .edit-tip-search {
-    width: 100%;
+    flex: 1;
     padding: 8px 10px;
     border-radius: 6px;
     border: 1px solid #ddd;
@@ -180,6 +186,29 @@
 
 .edit-tip-search:focus {
     border-color: #4c9ced;
+}
+
+.new-tip-button {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    border: 1px solid #34a853;
+    background: #fff;
+    color: #34a853;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    line-height: 1;
+}
+
+.new-tip-button:hover {
+    background: #34a853;
+    color: #fff;
 }
 
 /* ===== Filter bar ===== */
@@ -424,6 +453,22 @@
 
 .editor-save-button-dirty:hover {
     background: #3a8bdc;
+}
+
+.editor-duplicate-button {
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid #888;
+    background: transparent;
+    color: #555;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.editor-duplicate-button:hover {
+    background: #f0f2f5;
+    border-color: #555;
 }
 
 .editor-revert-button {
