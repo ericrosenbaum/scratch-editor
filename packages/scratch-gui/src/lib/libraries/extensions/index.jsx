@@ -49,6 +49,9 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
+import localNetworkIconURL from './localNetwork/localNetwork.svg';
+import localNetworkInsetIconURL from './localNetwork/localNetwork-small.svg';
+
 export default [
     {
         name: (
@@ -129,6 +132,27 @@ export default [
             />
         ),
         featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Local Network"
+                description="Name for the 'Local Network' extension"
+                id="gui.extension.localNetwork.name"
+            />
+        ),
+        extensionId: 'localNetwork',
+        iconURL: localNetworkIconURL,
+        insetIconURL: localNetworkInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Share broadcasts and variables with other editors in the same room."
+                description="Description for the 'Local Network' extension"
+                id="gui.extension.localNetwork.description"
+            />
+        ),
+        featured: true,
+        internetConnectionRequired: true
     },
     {
         name: (
