@@ -1690,7 +1690,7 @@
         "change-backdrop": {
             "id": "change-backdrop",
             "title": "Change backdrop",
-            "text": "Click the button below the stage to add a backdrop, then use \"next backdrop\"",
+            "text": "Click the button below the stage to add a backdrop, then try \"next backdrop\"",
             "tags": [
                 "looks",
                 "backdrop",
@@ -1748,8 +1748,8 @@
             ],
             "followUps": [
                 "move-with-keys",
-                "detect-collision",
-                "use-variables"
+                "starter-maze",
+                "starter-pong"
             ],
             "pointers": [
                 {
@@ -1769,9 +1769,8 @@
                 "advanced"
             ],
             "followUps": [
-                "make-game",
-                "detect-collision",
-                "clone-delete"
+                "clone-delete",
+                "starter-mouse-trail"
             ],
             "blockExample": "captured_clone-sprite_1776284738439",
             "pointers": [
@@ -1909,7 +1908,7 @@
         "add-extension": {
             "id": "add-extension",
             "title": "Add extensions",
-            "text": "Click the blue \"Add Extension\" button at the bottom-left to get extra blocks like Music or Pen",
+            "text": "Click the blue \"Add Extension\" button at the bottom-left to get extra blocks to do things like draw, play musical notes, or speak out loud.",
             "tags": [
                 "extensions",
                 "beginner"
@@ -1974,7 +1973,7 @@
         "sprite-ghost-effect": {
             "id": "sprite-ghost-effect",
             "title": "Fade with ghost effect",
-            "text": "You can use the ghost effect to make your sprite fade out. Click the green flag to remove the effect.",
+            "text": "You can use the ghost effect to make your sprite fade out. Click the green flag or stop button to remove the effect.",
             "tags": [
                 "looks",
                 "debugging",
@@ -2093,7 +2092,7 @@
             ],
             "pointers": [
                 {
-                    "label": "Drag \"go to x: y:\" into your code",
+                    "label": "Drag \"go to x: y:\" into your code and set x and y to 0",
                     "blockOpcode": "motion_gotoxy",
                     "category": "motion"
                 }
@@ -2102,7 +2101,7 @@
         "stop-project": {
             "id": "stop-project",
             "title": "Stop everything",
-            "text": "Click the red stop sign to stop all running scripts.",
+            "text": "Click the red stop button to stop all running scripts.",
             "tags": [
                 "control",
                 "beginner"
@@ -2113,7 +2112,7 @@
             ],
             "pointers": [
                 {
-                    "label": "Click the red stop sign",
+                    "label": "Click the stop button",
                     "target": "button[class*=\"stop-all\"]"
                 }
             ]
@@ -2127,9 +2126,7 @@
                 "sprites",
                 "beginner"
             ],
-            "followUps": [
-                "where-did-blocks-go"
-            ],
+            "followUps": [],
             "pointers": [
                 {
                     "label": "Click a sprite to see its code",
@@ -2176,29 +2173,10 @@
                 }
             ]
         },
-        "where-did-blocks-go": {
-            "id": "where-did-blocks-go",
-            "title": "Find your blocks",
-            "text": "Each sprite has its own code! Click on a sprite in the sprite pane to see its blocks.",
-            "tags": [
-                "sprites",
-                "beginner",
-                "meta"
-            ],
-            "followUps": [
-                "wrong-sprite-selected"
-            ],
-            "pointers": [
-                {
-                    "label": "Click a sprite to see its code",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
-                }
-            ]
-        },
         "blocks-run-in-order": {
             "id": "blocks-run-in-order",
             "title": "Block order",
-            "text": "Blocks in a stack run one at a time, from top to bottom — the order matters!",
+            "text": "Blocks in a stack run one at a time, from top to bottom.",
             "tags": [
                 "control",
                 "beginner",
@@ -2533,35 +2511,15 @@
                 }
             ]
         },
-        "drag-blocks-to-workspace": {
-            "id": "drag-blocks-to-workspace",
-            "title": "Start coding",
-            "text": "Drag blocks from the block palette on the left into the workspace to start coding!",
-            "tags": [
-                "beginner",
-                "meta"
-            ],
-            "followUps": [
-                "click-block-to-try"
-            ],
-            "pointers": [
-                {
-                    "label": "Drag blocks from here into the workspace",
-                    "blockOpcode": "motion_movesteps",
-                    "category": "motion"
-                }
-            ]
-        },
         "click-block-to-try": {
             "id": "click-block-to-try",
             "title": "Try a block",
-            "text": "You can click on any block in the workspace to try it! Click a whole stack to run all of them.",
+            "text": "You can click on any block in the workspace to try it! Click a whole stack to run all of them. They'll highlight in yellow while they're running.",
             "tags": [
                 "beginner",
                 "meta"
             ],
             "followUps": [
-                "drag-blocks-to-workspace",
                 "nothing-happens"
             ]
         },
@@ -2575,8 +2533,7 @@
                 "editing"
             ],
             "followUps": [
-                "right-click-duplicate",
-                "drag-blocks-to-workspace"
+                "right-click-duplicate"
             ]
         },
         "batched-updates": {
@@ -2758,7 +2715,7 @@
         "negative-numbers": {
             "id": "negative-numbers",
             "title": "Go backward",
-            "text": "Use a minus sign (-) before a number to go backward! For example, \"move -10 steps\" makes your sprite go the other way.",
+            "text": "Use a minus sign (-) to make negative numbers. For example, \"move -10 steps\" makes your sprite go backward.",
             "tags": [
                 "motion",
                 "math",
@@ -2823,7 +2780,7 @@
         "decimal-numbers": {
             "id": "decimal-numbers",
             "title": "Use decimals",
-            "text": "You can use decimal numbers like 0.5. Try \"wait 0.5 seconds\" for a shorter pause, or \"move 0.5 steps\" for tiny movements.",
+            "text": "You can use decimal numbers like 0.5. Try \"wait 0.5 seconds\" for a shorter pause, or \"move 0.5 steps\" for smaller movements.",
             "tags": [
                 "math",
                 "beginner",
@@ -3032,7 +2989,7 @@
         "insert-reporter": {
             "id": "insert-reporter",
             "title": "Dynamic values",
-            "text": "You can drag a round or pointed block into an input on another block to make it dynamic!",
+            "text": "You can drag any round reporter block into an input on another block to make it dynamic.",
             "tags": [
                 "beginner",
                 "meta",
@@ -3197,7 +3154,7 @@
         "pen-extension": {
             "id": "pen-extension",
             "title": "Draw with Pen",
-            "text": "Add the Pen extension to draw lines and shapes as your sprite moves — try \"pen down\" + \"move\" + \"turn\" in a loop!",
+            "text": "Add the Pen extension to draw lines and shapes as your sprite moves. Try \"pen down\" + \"move\" + \"turn\" in a loop.",
             "tags": [
                 "extensions",
                 "pen",
@@ -3212,6 +3169,119 @@
                 {
                     "label": "Add extensions here",
                     "target": "button[class*=\"extension-button\"]"
+                }
+            ],
+            "blockExample": "captured_pen-extension_1777485078006",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "pen_clear",
+                    "next": "unstuck_s0_3",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "pen_penDown",
+                    "next": "unstuck_s0_4",
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_5",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "motion_movesteps",
+                    "next": "unstuck_s0_6",
+                    "parent": "unstuck_s0_4",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_s0_8",
+                            "shadow": "unstuck_s0_8"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "motion_turnright",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {
+                        "DEGREES": {
+                            "name": "DEGREES",
+                            "block": "unstuck_s0_7",
+                            "shadow": "unstuck_s0_7"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_6",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "15"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -3233,6 +3303,225 @@
                     "label": "Add extensions here",
                     "target": "button[class*=\"extension-button\"]"
                 }
+            ],
+            "blockExample": "captured_music-extension_1777485159322",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "music_playNoteForBeats",
+                    "next": "unstuck_s0_3",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "NOTE": {
+                            "name": "NOTE",
+                            "block": "unstuck_s0_12",
+                            "shadow": "unstuck_s0_12"
+                        },
+                        "BEATS": {
+                            "name": "BEATS",
+                            "block": "unstuck_s0_13",
+                            "shadow": "unstuck_s0_13"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "music_playNoteForBeats",
+                    "next": "unstuck_s0_4",
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "NOTE": {
+                            "name": "NOTE",
+                            "block": "unstuck_s0_10",
+                            "shadow": "unstuck_s0_10"
+                        },
+                        "BEATS": {
+                            "name": "BEATS",
+                            "block": "unstuck_s0_11",
+                            "shadow": "unstuck_s0_11"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "music_playNoteForBeats",
+                    "next": "unstuck_s0_5",
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "NOTE": {
+                            "name": "NOTE",
+                            "block": "unstuck_s0_8",
+                            "shadow": "unstuck_s0_8"
+                        },
+                        "BEATS": {
+                            "name": "BEATS",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "music_playDrumForBeats",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {
+                        "DRUM": {
+                            "name": "DRUM",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
+                        },
+                        "BEATS": {
+                            "name": "BEATS",
+                            "block": "unstuck_s0_7",
+                            "shadow": "unstuck_s0_7"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "music_menu_DRUM",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "DRUM": {
+                            "name": "DRUM",
+                            "value": "17"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0.25"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "note",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "NOTE": {
+                            "name": "NOTE",
+                            "value": "67"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0.25"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_10",
+                    "opcode": "note",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NOTE": {
+                            "name": "NOTE",
+                            "value": "64"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_11",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0.25"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_12",
+                    "opcode": "note",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NOTE": {
+                            "name": "NOTE",
+                            "value": "60"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_13",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0.25"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "text-to-speech-extension": {
@@ -3252,12 +3541,58 @@
                     "label": "Add extensions here",
                     "target": "button[class*=\"extension-button\"]"
                 }
+            ],
+            "blockExample": "captured_text-to-speech-extension_1777485189706",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "text2speech_speakAndWait",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "WORDS": {
+                            "name": "WORDS",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "hello"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "random-numbers": {
             "id": "random-numbers",
             "title": "Use random",
-            "text": "Use \"pick random 1 to 10\" from Operators to add surprises — great for random positions, sizes, or colors!",
+            "text": "Use the \"pick random\" block for random positions, sizes, or colors",
             "tags": [
                 "operators",
                 "math"
@@ -3271,12 +3606,196 @@
                     "label": "Operators are here",
                     "target": ".blocklyToolboxCategory#operators"
                 }
+            ],
+            "blockExample": "captured_random-numbers_1777487011256",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenthisspriteclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_setsizeto",
+                    "next": "unstuck_s0_3",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SIZE": {
+                            "name": "SIZE",
+                            "block": "unstuck_s0_8",
+                            "shadow": "unstuck_s0_11"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "looks_seteffectto",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "VALUE": {
+                            "name": "VALUE",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_7"
+                        }
+                    },
+                    "fields": {
+                        "EFFECT": {
+                            "name": "EFFECT",
+                            "value": "COLOR"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "operator_random",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "FROM": {
+                            "name": "FROM",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        },
+                        "TO": {
+                            "name": "TO",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "200"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "operator_random",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "FROM": {
+                            "name": "FROM",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
+                        },
+                        "TO": {
+                            "name": "TO",
+                            "block": "unstuck_s0_10",
+                            "shadow": "unstuck_s0_10"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_8",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "50"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_10",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_8",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "200"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_11",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "100"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "ask-and-answer": {
             "id": "ask-and-answer",
             "title": "Ask a question",
-            "text": "Use \"ask and wait\" from Sensing to ask the player a question — their response goes into the \"answer\" block!",
+            "text": "Use the \"ask\" block to ask the user a question. The response goes into the \"answer\" block.",
             "tags": [
                 "sensing",
                 "input"
@@ -3297,7 +3816,7 @@
         "timer-block": {
             "id": "timer-block",
             "title": "Use the timer",
-            "text": "Use the \"timer\" block from Sensing to time things — combine with \"reset timer\" to make countdowns or speedruns!",
+            "text": "Use the \"timer\" block to measure how long something takes.",
             "tags": [
                 "sensing",
                 "timing"
@@ -3312,12 +3831,146 @@
                     "blockOpcode": "sensing_timer",
                     "category": "sensing"
                 }
+            ],
+            "blockExample": "captured_timer-block_1777490162195",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "motion_goto",
+                    "next": "unstuck_s0_3",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "TO": {
+                            "name": "TO",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "control_wait_until",
+                    "next": "unstuck_s0_4",
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "CONDITION": {
+                            "name": "CONDITION",
+                            "block": "unstuck_s0_7",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "looks_say",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "sensing_timer",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Hello!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "sensing_touchingobject",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "TOUCHINGOBJECTMENU": {
+                            "name": "TOUCHINGOBJECTMENU",
+                            "block": "unstuck_s0_8",
+                            "shadow": "unstuck_s0_8"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "sensing_touchingobjectmenu",
+                    "next": null,
+                    "parent": "unstuck_s0_7",
+                    "inputs": {},
+                    "fields": {
+                        "TOUCHINGOBJECTMENU": {
+                            "name": "TOUCHINGOBJECTMENU",
+                            "value": "_mouse_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "motion_goto_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TO": {
+                            "name": "TO",
+                            "value": "_random_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "change-size": {
             "id": "change-size",
             "title": "Change size",
-            "text": "Use \"change size by 10\" or \"set size to\" from Looks to make your sprite grow or shrink!",
+            "text": "Use \"change size\" to make your sprite grow or shrink",
             "tags": [
                 "looks",
                 "size"
@@ -3325,19 +3978,107 @@
             "followUps": [
                 "growing-shrinking"
             ],
-            "blockExample": "changeSizeBy",
+            "blockExample": "captured_change-size_1777490274923",
             "pointers": [
                 {
                     "label": "Drag \"change size by\" into your code",
                     "blockOpcode": "looks_changesizeby",
                     "category": "looks"
                 }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenthisspriteclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_changesizeby",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "CHANGE": {
+                            "name": "CHANGE",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s1_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s1_2",
+                    "opcode": "looks_setsizeto",
+                    "next": null,
+                    "parent": "unstuck_s1_1",
+                    "inputs": {
+                        "SIZE": {
+                            "name": "SIZE",
+                            "block": "unstuck_s1_3",
+                            "shadow": "unstuck_s1_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_3",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s1_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "100"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "graphic-effects": {
             "id": "graphic-effects",
             "title": "Visual effects",
-            "text": "Try \"set color effect\" or \"set whirl effect\" from Looks to add wild visual effects to your sprite!",
+            "text": "Try \"set effect\" to apply color, whirl, fisheye, ghost and other effects to your sprite",
             "tags": [
                 "looks",
                 "effects"
@@ -3346,19 +4087,95 @@
                 "sprite-ghost-effect",
                 "color-changing"
             ],
-            "blockExample": "setColorEffect",
+            "blockExample": "captured_graphic-effects_1777490463500",
             "pointers": [
                 {
                     "label": "Drag \"set effect to\" from Looks",
                     "blockOpcode": "looks_seteffectto",
                     "category": "looks"
                 }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "looks_seteffectto",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "VALUE": {
+                            "name": "VALUE",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {
+                        "EFFECT": {
+                            "name": "EFFECT",
+                            "value": "WHIRL"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "sensing_mousey",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "stamp-block": {
             "id": "stamp-block",
             "title": "Stamp copies",
-            "text": "Use \"stamp\" from the Pen extension to leave a copy of your sprite on the stage — like a trail of footprints!",
+            "text": "Use \"stamp\" from the Pen extension to leave a picture of your sprite on the stage.",
             "tags": [
                 "pen",
                 "effects",
@@ -3373,12 +4190,94 @@
                     "label": "Add extensions here",
                     "target": "button[class*=\"extension-button\"]"
                 }
+            ],
+            "blockExample": "captured_stamp-block_1777490567646",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "pen_clear",
+                    "next": "unstuck_s0_3",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_4",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "motion_goto",
+                    "next": "unstuck_s0_5",
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "TO": {
+                            "name": "TO",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "pen_stamp",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "motion_goto_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "TO": {
+                            "name": "TO",
+                            "value": "_mouse_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "play-vs-play-until-done": {
             "id": "play-vs-play-until-done",
             "title": "Sound timing",
-            "text": "\"Start sound\" plays and keeps going. \"Play sound until done\" waits for it to finish. Use \"start sound\" for background music!",
+            "text": "\"Start sound\" starts the sound then keeps going to the next block. \"Play sound until done\" waits for it to finish before continuing. Use the \"until done\" version for music loops.",
             "tags": [
                 "sound"
             ],
@@ -3388,15 +4287,78 @@
             ],
             "pointers": [
                 {
-                    "label": "Sound blocks are here",
-                    "target": ".blocklyToolboxCategory#sound"
+                    "label": "Try the \"play sound until done\" block",
+                    "blockOpcode": "sound_playuntildone",
+                    "category": "sound"
+                }
+            ],
+            "blockExample": "captured_play-vs-play-until-done_1777491407778",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "sound_playuntildone",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "sound_sounds_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "value": "Bossa Nova"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
         "backdrop-events": {
             "id": "backdrop-events",
             "title": "Backdrop triggers",
-            "text": "Use \"when backdrop switches to\" to trigger code when the scene changes — perfect for levels in a game!",
+            "text": "Use \"when backdrop switches to\" to do something when the scene changes.",
             "tags": [
                 "events",
                 "backdrop",
@@ -3411,6 +4373,77 @@
                     "label": "Drag \"when backdrop switches to\" into your code",
                     "blockOpcode": "event_whenbackdropswitchesto",
                     "category": "events"
+                }
+            ],
+            "blockExample": "captured_backdrop-events_1777491821666",
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenbackdropswitchesto",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "BACKDROP": {
+                            "name": "BACKDROP",
+                            "value": "Underwater 1"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Hello!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -3971,9 +5004,7 @@
                 "beginner",
                 "meta"
             ],
-            "followUps": [
-                "drag-blocks-to-workspace"
-            ]
+            "followUps": []
         },
         "tutorial-getting-started": {
             "id": "tutorial-getting-started",
@@ -4234,7 +5265,7 @@
         "starter-dance-party": {
             "id": "starter-dance-party",
             "title": "Dance Party",
-            "text": "The Dance Party project shows how to make characters dance by switching costumes in a forever loop while the stage plays music!",
+            "text": "The Dance Party project shows how to make characters dance by switching costumes in a forever loop while the stage plays music",
             "tags": [
                 "animation",
                 "looks",
@@ -4324,7 +5355,7 @@
         "starter-make-it-fly": {
             "id": "starter-make-it-fly",
             "title": "Make It Fly",
-            "text": "The Make It Fly project shows how to use keyboard sensing and forever loops to make a flying cat dodge scrolling buildings!",
+            "text": "The Make It Fly project shows how to use keyboard controls to make a flying cat dodge scrolling buildings",
             "tags": [
                 "game",
                 "control",
@@ -4342,7 +5373,7 @@
         "starter-maze": {
             "id": "starter-maze",
             "title": "Maze Starter",
-            "text": "The Maze Starter project shows how to navigate a ball through a maze using arrow keys and color-touching detection for wall collisions!",
+            "text": "The Maze Starter project shows how to navigate a ball through a maze using arrow keys, with color touching detection for wall collisions",
             "tags": [
                 "game",
                 "sensing",
@@ -4360,7 +5391,7 @@
         "starter-dress-up": {
             "id": "starter-dress-up",
             "title": "Dress Up Tera",
-            "text": "The Dress Up Tera project shows how to make sprites draggable and use touching detection to create an interactive dress-up game!",
+            "text": "The Dress Up Tera project shows how to make sprites draggable and detect if a sprite is touching another sprite to create an interactive dress-up game",
             "tags": [
                 "game",
                 "sensing",
@@ -4378,7 +5409,7 @@
         "starter-pong": {
             "id": "starter-pong",
             "title": "Pong Starter",
-            "text": "The Pong Starter project shows how to make a simple game including mouse movement, ball bouncing, collisions, and sound effects!",
+            "text": "The Pong Starter project shows how to make a simple game including mouse movement, ball bouncing, collisions, and sound effects",
             "tags": [
                 "game",
                 "motion",
@@ -4397,7 +5428,7 @@
         "starter-hide-seek": {
             "id": "starter-hide-seek",
             "title": "Hide and Seek",
-            "text": "The Hide and Seek project shows how to make a clicking game with a score variable, random positioning, and show/hide!",
+            "text": "The Hide and Seek project shows how to make a clicker game with a score variable, random positioning, and show and hide",
             "tags": [
                 "game",
                 "variables",
@@ -4415,7 +5446,7 @@
         "starter-stamp-studio": {
             "id": "starter-stamp-studio",
             "title": "Stamp Studio",
-            "text": "The Stamp Studio project shows how to use the pen stamp block with if-then conditions to draw colorful patterns that follow your mouse!",
+            "text": "The Stamp Studio project shows how to use the pen stamp block with if-then conditions to draw colorful patterns that follow your mouse",
             "tags": [
                 "art",
                 "pen",
@@ -4451,7 +5482,7 @@
         "starter-soundflower": {
             "id": "starter-soundflower",
             "title": "Soundflower",
-            "text": "The Soundflower project shows how to use the loudness sensor and multiply blocks to make a flower that responds to your microphone!",
+            "text": "The Soundflower project shows how to use the loudness and multiply blocks to make a flower that responds to your microphone",
             "tags": [
                 "art",
                 "sensing",
@@ -4469,7 +5500,7 @@
         "starter-art-alive": {
             "id": "starter-art-alive",
             "title": "Make Art Come Alive",
-            "text": "The Make Art Come Alive project shows how to use click events, broadcasts, and glide blocks to animate parts of a painting!",
+            "text": "The Make Art Come Alive project shows how to use click events, broadcasts, and glide blocks to animate parts of a painting",
             "tags": [
                 "art",
                 "events",
@@ -4487,7 +5518,7 @@
         "starter-spin-art": {
             "id": "starter-spin-art",
             "title": "Spin Art",
-            "text": "The Spin Art project shows how to use slider variables, the stamp block, and move-and-turn to create mesmerizing spiral patterns!",
+            "text": "The Spin Art project shows how to use variable sliders, the stamp block, and movement to create mesmerizing spiral patterns!",
             "tags": [
                 "art",
                 "pen",
@@ -4523,7 +5554,7 @@
         "starter-piano": {
             "id": "starter-piano",
             "title": "Piano",
-            "text": "The Piano project shows how to build a playable instrument with clickable key sprites using the Music extension's play-note block!",
+            "text": "The Piano project shows how to build a playable instrument with clickable key sprites using the Music extension's play note block!",
             "tags": [
                 "music",
                 "extensions",
@@ -4578,7 +5609,7 @@
         "starter-drum-sequencer": {
             "id": "starter-drum-sequencer",
             "title": "Drum Sequencer",
-            "text": "The Drum Sequencer project shows how to use cloning for a button grid and color-sensing on a moving play head to make a drum machine!",
+            "text": "The Drum Sequencer project shows how to use clones to make a row of buttons, and color sensing to trigger sounds",
             "tags": [
                 "music",
                 "clones",
@@ -4596,7 +5627,7 @@
         "starter-story": {
             "id": "starter-story",
             "title": "Story Starter",
-            "text": "The Story Starter project shows how to tell a story with multiple characters using broadcasts to coordinate dialogue and sound!",
+            "text": "The Story Starter project shows how to make characters take turns talking with the broadcast and when I receive blocks",
             "tags": [
                 "story",
                 "events",
@@ -4632,7 +5663,7 @@
         "starter-fill-blanks": {
             "id": "starter-fill-blanks",
             "title": "Fill in the Blanks",
-            "text": "The Fill in the Blanks project shows how to make a mad-libs story using ask blocks, variables, and the join operator!",
+            "text": "The Fill in the Blanks project shows how to make a mad-libs story using the ask block, variables, and the join block",
             "tags": [
                 "story",
                 "sensing",
@@ -4706,7 +5737,7 @@
         "starter-sound-graph": {
             "id": "starter-sound-graph",
             "title": "Sound Graph",
-            "text": "The Sound Graph project shows how to visualize microphone input as a graph using pen blocks, loudness sensing, and math operators!",
+            "text": "The Sound Graph project shows how to visualize microphone input as a graph using pen blocks, loudness sensing, and math operators",
             "tags": [
                 "math",
                 "pen",
@@ -4780,7 +5811,7 @@
         "starter-text-speech": {
             "id": "starter-text-speech",
             "title": "Text to Speech",
-            "text": "The Text to Speech project shows how to use the Text-to-Speech extension and broadcasts to make characters have a spoken conversation!",
+            "text": "The Text to Speech project shows how to make your characters speak out loud",
             "tags": [
                 "extensions",
                 "sound",
@@ -4924,7 +5955,7 @@
         "starter-kindness": {
             "id": "starter-kindness",
             "title": "Acts of Kindness",
-            "text": "The Random Acts of Kindness project shows how to pick a random item from a list using broadcasts and the pick-random operator!",
+            "text": "The Random Acts of Kindness project shows how to pick a random item from a list using  the pick random block",
             "tags": [
                 "kindness",
                 "data",
@@ -5914,7 +6945,6 @@
                 "beginner"
             ],
             "followUps": [
-                "drag-blocks-to-workspace",
                 "add-costume",
                 "add-sound"
             ]
