@@ -1105,7 +1105,7 @@
         "change-variable": {
             "id": "change-variable",
             "title": "Update a variable",
-            "text": "Use \"set\" variable at the beginning, then \"change\" to update it",
+            "text": "Use \"set\" variable at the beginning, then \"change\" to update it. Try making a clicker game!",
             "tags": [
                 "variables",
                 "data"
@@ -1539,7 +1539,6 @@
             "followUps": [
                 "add-sprite",
                 "make-game",
-                "broadcast-for-levels",
                 "starter-story"
             ],
             "blockExample": "captured_broadcast-message_1776368576316",
@@ -3162,8 +3161,7 @@
             ],
             "followUps": [
                 "add-extension",
-                "stamp-block",
-                "make-art"
+                "stamp-block"
             ],
             "pointers": [
                 {
@@ -3295,8 +3293,7 @@
                 "sound"
             ],
             "followUps": [
-                "add-extension",
-                "make-music-project"
+                "add-extension"
             ],
             "pointers": [
                 {
@@ -3598,8 +3595,7 @@
                 "math"
             ],
             "followUps": [
-                "insert-reporter",
-                "surprise-sprite"
+                "insert-reporter"
             ],
             "pointers": [
                 {
@@ -3801,7 +3797,6 @@
                 "input"
             ],
             "followUps": [
-                "make-quiz",
                 "use-variables"
             ],
             "blockExample": "askAndSay",
@@ -4182,8 +4177,7 @@
                 "advanced"
             ],
             "followUps": [
-                "pen-extension",
-                "trail-of-stamps"
+                "pen-extension"
             ],
             "pointers": [
                 {
@@ -4365,8 +4359,7 @@
                 "game"
             ],
             "followUps": [
-                "change-backdrop",
-                "broadcast-for-levels"
+                "change-backdrop"
             ],
             "pointers": [
                 {
@@ -4450,7 +4443,7 @@
         "mouse-pointer": {
             "id": "mouse-pointer",
             "title": "Follow mouse",
-            "text": "Use \"go to mouse-pointer\" or \"point towards mouse-pointer\" to make sprites follow your mouse!",
+            "text": "Use \"go to mouse-pointer\" to make sprites follow your mouse!",
             "tags": [
                 "motion",
                 "sensing",
@@ -4472,7 +4465,7 @@
         "show-hide-variable": {
             "id": "show-hide-variable",
             "title": "Variable display",
-            "text": "Right-click a variable on the stage to change how it looks — you can make it a slider for testing!",
+            "text": "Check the box next to a variable in the menu to show its monitor on the stage. Right-click the monitor to change how it looks. You can make it a slider to tweak the values, too.",
             "tags": [
                 "variables",
                 "debugging"
@@ -4490,7 +4483,7 @@
         "reset-at-start": {
             "id": "reset-at-start",
             "title": "Reset at start",
-            "text": "Put \"go to x: y:\" and \"set size to 100\" under \"when green flag clicked\" to reset your sprite at the start!",
+            "text": "Put \"go to x: y:\" and \"point in direction 90\" under \"when green flag clicked\" to reset your sprite at the start. ",
             "tags": [
                 "events",
                 "motion",
@@ -4500,42 +4493,115 @@
                 "green-flag",
                 "go-to-position"
             ],
-            "blockExample": "whenFlagGoToReset",
+            "blockExample": "captured_reset-at-start_1777495133977",
             "pointers": [
                 {
                     "label": "Drag \"go to x: y:\" into your code",
                     "blockOpcode": "motion_gotoxy",
                     "category": "motion"
                 }
-            ]
-        },
-        "broadcast-for-levels": {
-            "id": "broadcast-for-levels",
-            "title": "Game levels",
-            "text": "Use \"broadcast\" to switch between levels or scenes — each sprite can listen for the same message and react differently!",
-            "tags": [
-                "events",
-                "broadcast",
-                "game",
-                "advanced"
             ],
-            "followUps": [
-                "broadcast-message",
-                "backdrop-events"
-            ],
-            "blockExample": "broadcastLevels",
-            "pointers": [
+            "_capturedBlocks": [
                 {
-                    "label": "Drag \"broadcast\" into your code",
-                    "blockOpcode": "event_broadcast",
-                    "category": "events"
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "motion_gotoxy",
+                    "next": "unstuck_s0_3",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "X": {
+                            "name": "X",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        },
+                        "Y": {
+                            "name": "Y",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "motion_pointindirection",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "DIRECTION": {
+                            "name": "DIRECTION",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "math_angle",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "90"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
         "clone-delete": {
             "id": "clone-delete",
             "title": "Delete clones",
-            "text": "Don't forget to \"delete this clone\" when you're done with it — otherwise you might hit the 300 clone limit!",
+            "text": "You can use \"delete this clone\" under \"when I start as a clone\" to make it go away.",
             "tags": [
                 "control",
                 "clones",
@@ -4544,19 +4610,173 @@
             "followUps": [
                 "clone-sprite"
             ],
-            "blockExample": "deleteClone",
+            "blockExample": "captured_clone-delete_1777495245826",
             "pointers": [
                 {
                     "label": "Drag \"delete this clone\" into your code",
                     "blockOpcode": "control_delete_this_clone",
                     "category": "control"
                 }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_repeat",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "TIMES": {
+                            "name": "TIMES",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_4",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "math_whole_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "control_create_clone_of",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "CLONE_OPTION": {
+                            "name": "CLONE_OPTION",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "control_create_clone_of_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "CLONE_OPTION": {
+                            "name": "CLONE_OPTION",
+                            "value": "_myself_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_1",
+                    "opcode": "control_start_as_clone",
+                    "next": "unstuck_s1_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s1_2",
+                    "opcode": "motion_glideto",
+                    "next": "unstuck_s1_3",
+                    "parent": "unstuck_s1_1",
+                    "inputs": {
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s1_4",
+                            "shadow": "unstuck_s1_4"
+                        },
+                        "TO": {
+                            "name": "TO",
+                            "block": "unstuck_s1_5",
+                            "shadow": "unstuck_s1_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_3",
+                    "opcode": "control_delete_this_clone",
+                    "next": null,
+                    "parent": "unstuck_s1_2",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_4",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s1_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_5",
+                    "opcode": "motion_glideto_menu",
+                    "next": null,
+                    "parent": "unstuck_s1_2",
+                    "inputs": {},
+                    "fields": {
+                        "TO": {
+                            "name": "TO",
+                            "value": "_random_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
             ]
         },
         "repeat-until": {
             "id": "repeat-until",
             "title": "Repeat until",
-            "text": "Use \"repeat until\" to keep doing something until a condition is met — like moving until you reach the edge!",
+            "text": "Use \"repeat until\" to keep doing something until a condition is met, like moving until you reach the edge",
             "tags": [
                 "control",
                 "loops"
@@ -4574,234 +4794,10 @@
                 }
             ]
         },
-        "make-story": {
-            "id": "make-story",
-            "title": "Tell a story",
-            "text": "Tell a story! Use \"say for 2 seconds\", \"wait\", and \"switch backdrop\" to create scenes and dialogue.",
-            "tags": [
-                "project-ideas",
-                "looks"
-            ],
-            "followUps": [
-                "change-backdrop"
-            ],
-            "pointers": [
-                {
-                    "label": "Drag \"say for 2 seconds\" into your code",
-                    "blockOpcode": "looks_sayforsecs",
-                    "category": "looks"
-                }
-            ]
-        },
-        "make-animation": {
-            "id": "make-animation",
-            "title": "Make animation",
-            "text": "Create an animation by switching costumes in a loop — draw your own frames in the Costumes tab!",
-            "tags": [
-                "project-ideas",
-                "animation",
-                "looks"
-            ],
-            "followUps": [
-                "animate-costume",
-                "add-costume"
-            ],
-            "pointers": [
-                {
-                    "label": "Click the Costumes tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
-                }
-            ]
-        },
-        "make-music-project": {
-            "id": "make-music-project",
-            "title": "Compose music",
-            "text": "Make a music project! Use the Music extension with \"play note\" blocks to compose your own song.",
-            "tags": [
-                "project-ideas",
-                "music",
-                "sound"
-            ],
-            "followUps": [
-                "music-extension",
-                "add-sound"
-            ],
-            "pointers": [
-                {
-                    "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]"
-                }
-            ]
-        },
-        "make-art": {
-            "id": "make-art",
-            "title": "Create art",
-            "text": "Make art! Use the Pen extension with loops and turns to draw amazing patterns and spirals.",
-            "tags": [
-                "project-ideas",
-                "pen",
-                "art"
-            ],
-            "followUps": [
-                "pen-extension",
-                "trail-of-stamps"
-            ],
-            "pointers": [
-                {
-                    "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]"
-                }
-            ]
-        },
-        "make-quiz": {
-            "id": "make-quiz",
-            "title": "Make a quiz",
-            "text": "Make a quiz! Use \"ask and wait\" + \"if answer =\" to check if the player got it right.",
-            "tags": [
-                "project-ideas",
-                "sensing",
-                "operators"
-            ],
-            "followUps": [
-                "ask-and-answer",
-                "use-variables"
-            ],
-            "pointers": [
-                {
-                    "label": "Drag \"ask and wait\" into your code",
-                    "blockOpcode": "sensing_askandwait",
-                    "category": "sensing"
-                }
-            ]
-        },
-        "make-platformer": {
-            "id": "make-platformer",
-            "title": "Platformer game",
-            "text": "Make a platformer game! Use \"change y by -2\" in a forever loop for gravity, and \"if touching color\" for the ground.",
-            "tags": [
-                "project-ideas",
-                "game",
-                "advanced"
-            ],
-            "followUps": [
-                "make-game",
-                "move-with-keys"
-            ],
-            "blockExample": "gravityFall",
-            "pointers": [
-                {
-                    "label": "Drag \"change y by\" into your code",
-                    "blockOpcode": "motion_changeyby",
-                    "category": "motion"
-                }
-            ]
-        },
-        "make-clicker": {
-            "id": "make-clicker",
-            "title": "Clicker game",
-            "text": "Make a clicker game! Use \"when this sprite clicked\" + \"change score by 1\" — add costumes to make the sprite react to each click!",
-            "tags": [
-                "project-ideas",
-                "game",
-                "beginner"
-            ],
-            "followUps": [
-                "use-variables",
-                "change-costume"
-            ],
-            "blockExample": "whenClickedChangeScore",
-            "pointers": [
-                {
-                    "label": "Drag \"when this sprite clicked\" into your code",
-                    "blockOpcode": "event_whenthisspriteclicked",
-                    "category": "events"
-                }
-            ]
-        },
-        "make-dance-party": {
-            "id": "make-dance-party",
-            "title": "Dance party",
-            "text": "Make a dance party! Add multiple sprites, give each one a forever loop with costume changes and moves, then add music!",
-            "tags": [
-                "project-ideas",
-                "fun",
-                "animation"
-            ],
-            "followUps": [
-                "add-sprite",
-                "animate-costume",
-                "music-extension"
-            ],
-            "pointers": [
-                {
-                    "label": "Add a new sprite here",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]"
-                }
-            ]
-        },
-        "make-pet": {
-            "id": "make-pet",
-            "title": "Virtual pet",
-            "text": "Make a virtual pet! Use variables to track hunger, happiness, and energy — and buttons to feed, play, and rest.",
-            "tags": [
-                "project-ideas",
-                "game",
-                "variables"
-            ],
-            "followUps": [
-                "use-variables",
-                "change-costume"
-            ],
-            "pointers": [
-                {
-                    "label": "Variables are here",
-                    "target": ".blocklyToolboxCategory#variables"
-                }
-            ]
-        },
-        "surprise-sprite": {
-            "id": "surprise-sprite",
-            "title": "Random surprise",
-            "text": "Try putting \"set size to pick random 50 to 200\" in your project for fun surprises!",
-            "tags": [
-                "fun",
-                "operators"
-            ],
-            "followUps": [
-                "random-numbers",
-                "change-size"
-            ],
-            "pointers": [
-                {
-                    "label": "Find \"pick random\" in Operators",
-                    "blockOpcode": "operator_random",
-                    "category": "operators"
-                }
-            ]
-        },
-        "silly-sounds": {
-            "id": "silly-sounds",
-            "title": "Silly sounds",
-            "text": "Try the sound effects in the Sounds tab — there are funny sounds like \"boing\", \"chomp\", and \"zoop\"!",
-            "tags": [
-                "fun",
-                "sound"
-            ],
-            "followUps": [
-                "add-sound",
-                "sound-remix"
-            ],
-            "pointers": [
-                {
-                    "label": "Click the Sounds tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
-                }
-            ]
-        },
         "color-changing": {
             "id": "color-changing",
             "title": "Rainbow colors",
-            "text": "Put \"change color effect by 25\" inside a forever loop to make your sprite cycle through rainbow colors!",
+            "text": "Put \"change color effect\" inside a forever loop to make your sprite cycle through rainbow colors",
             "tags": [
                 "fun",
                 "looks",
@@ -4811,12 +4807,78 @@
                 "graphic-effects",
                 "spinning"
             ],
-            "blockExample": "foreverColorChange",
+            "blockExample": "captured_color-changing_1777495615321",
             "pointers": [
                 {
                     "label": "Drag \"change color effect\" into your code",
                     "blockOpcode": "looks_changeeffectby",
                     "category": "looks"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "looks_changeeffectby",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "CHANGE": {
+                            "name": "CHANGE",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
+                    "fields": {
+                        "EFFECT": {
+                            "name": "EFFECT",
+                            "value": "COLOR"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -4862,78 +4924,110 @@
                 }
             ]
         },
-        "trail-of-stamps": {
-            "id": "trail-of-stamps",
-            "title": "Leave a trail",
-            "text": "Turn on pen down and move your sprite around with the keyboard — you'll leave a colorful trail everywhere you go!",
-            "tags": [
-                "fun",
-                "pen",
-                "motion"
-            ],
-            "followUps": [
-                "pen-extension",
-                "move-with-keys"
-            ],
-            "pointers": [
-                {
-                    "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]"
-                }
-            ]
-        },
         "sound-remix": {
             "id": "sound-remix",
             "title": "Remix sounds",
-            "text": "Record your own voice in the Sounds tab, then use \"set pitch effect\" to make it sound like a chipmunk or a monster!",
+            "text": "Use \"change pitch effect\" to make sounds higher or lower",
             "tags": [
                 "fun",
                 "sound"
             ],
             "followUps": [
-                "record-sound",
-                "silly-sounds"
+                "record-sound"
             ],
             "pointers": [
                 {
                     "label": "Click the Sounds tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
+                    "blockOpcode": "sound_changeeffectby",
+                    "category": "sound"
                 }
-            ]
-        },
-        "bouncing-around": {
-            "id": "bouncing-around",
-            "title": "Bouncing screensaver",
-            "text": "Make a screensaver! Use \"point in direction pick random 1 to 360\", then \"forever: move + if on edge bounce\"!",
-            "tags": [
-                "fun",
-                "motion",
-                "project-ideas"
             ],
-            "followUps": [
-                "forever-loop",
-                "random-numbers"
-            ],
-            "blockExample": "foreverBounce",
-            "pointers": [
+            "blockExample": "captured_sound-remix_1777496758214",
+            "_capturedBlocks": [
                 {
-                    "label": "Drag \"if on edge, bounce\" into your code",
-                    "blockOpcode": "motion_ifonedgebounce",
-                    "category": "motion"
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenkeypressed",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "up arrow"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "sound_changeeffectby",
+                    "next": "unstuck_s0_3",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "VALUE": {
+                            "name": "VALUE",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {
+                        "EFFECT": {
+                            "name": "EFFECT",
+                            "value": "PITCH"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "sound_play",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "sound_sounds_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "value": "Meow"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
-            ]
-        },
-        "huge-number": {
-            "id": "huge-number",
-            "title": "Big number issues",
-            "text": "Typed a really huge number? Numbers bigger than about 16 digits lose precision — and really enormous ones get treated as 0!",
-            "tags": [
-                "debugging",
-                "math"
-            ],
-            "followUps": [
-                "decimal-numbers",
-                "use-variables"
             ]
         },
         "rotation-style-vs-turn": {
@@ -6206,8 +6300,7 @@
             ],
             "followUps": [
                 "glide-to-position",
-                "bounce-up-down",
-                "make-dance-party"
+                "bounce-up-down"
             ],
             "blockExample": "glideTo",
             "pointers": [
@@ -6328,8 +6421,7 @@
             ],
             "followUps": [
                 "waddle-side-to-side",
-                "forever-loop",
-                "bouncing-around"
+                "forever-loop"
             ],
             "blockExample": "moveSideToSide",
             "pointers": [
@@ -6499,8 +6591,7 @@
             ],
             "followUps": [
                 "add-sound",
-                "record-sound",
-                "silly-sounds"
+                "record-sound"
             ],
             "pointers": [
                 {
@@ -6695,7 +6786,6 @@
             ],
             "followUps": [
                 "detect-collision",
-                "bouncing-around",
                 "volleyball-game"
             ],
             "blockExample": "foreverIfTouching",
@@ -6739,7 +6829,6 @@
             ],
             "followUps": [
                 "make-game",
-                "make-platformer",
                 "obstacle-course-game",
                 "volleyball-game"
             ]
@@ -6754,8 +6843,7 @@
             ],
             "followUps": [
                 "game-types-overview",
-                "make-game",
-                "project-idea-suggestion"
+                "make-game"
             ]
         },
         "project-idea-suggestion": {
@@ -6768,9 +6856,7 @@
             ],
             "followUps": [
                 "game-types-overview",
-                "make-game",
-                "make-animation",
-                "make-music-project"
+                "make-game"
             ]
         },
         "make-tetris-game": {
@@ -6807,8 +6893,7 @@
             ],
             "followUps": [
                 "ball-bounce-off-sprite",
-                "move-with-keys",
-                "bouncing-around"
+                "move-with-keys"
             ],
             "blockExample": "foreverBounce",
             "pointers": [
@@ -6845,8 +6930,7 @@
             ],
             "followUps": [
                 "change-backdrop",
-                "forever-loop",
-                "make-platformer"
+                "forever-loop"
             ],
             "blockExample": "moveSideToSide",
             "pointers": [
@@ -6868,8 +6952,7 @@
             ],
             "followUps": [
                 "change-backdrop",
-                "backdrop-events",
-                "broadcast-for-levels"
+                "backdrop-events"
             ],
             "pointers": [
                 {
