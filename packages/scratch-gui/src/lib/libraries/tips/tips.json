@@ -5033,7 +5033,7 @@
         "rotation-style-vs-turn": {
             "id": "rotation-style-vs-turn",
             "title": "Fix rotation",
-            "text": "If \"turn\" doesn't seem to work, check if the rotation style is set to \"left-right\" or \"don't rotate\" — change it to \"all around\" in the sprite info!",
+            "text": "If \"turn\" doesn't seem to work, check the rotation style in the sprite info area. If it's is set to \"left-right\" or \"don't rotate\", change it to \"all around.\"",
             "tags": [
                 "motion",
                 "debugging"
@@ -5052,7 +5052,7 @@
         "costume-center": {
             "id": "costume-center",
             "title": "Fix costume center",
-            "text": "If your sprite rotates weirdly, the costume center point might be off — go to the Costumes tab and drag the crosshair to the center of your drawing!",
+            "text": "If your sprite rotates weirdly, the costume center point might be off. Go to the Costumes tab and center your drawing on the crosshairs.",
             "tags": [
                 "costumes",
                 "motion",
@@ -5068,37 +5068,6 @@
                     "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
                 }
             ]
-        },
-        "missing-asset": {
-            "id": "missing-asset",
-            "title": "Missing asset",
-            "text": "If a block says a costume or sound name that's grayed out, that asset might be missing — add it back in the Costumes or Sounds tab!",
-            "tags": [
-                "debugging",
-                "costumes",
-                "sound"
-            ],
-            "followUps": [
-                "add-costume",
-                "add-sound"
-            ],
-            "pointers": [
-                {
-                    "label": "Click the Costumes tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
-                }
-            ]
-        },
-        "dragging-to-stage": {
-            "id": "dragging-to-stage",
-            "title": "Drag to workspace",
-            "text": "Make sure you're dragging blocks to the code workspace (the big area in the middle), not onto the stage!",
-            "tags": [
-                "debugging",
-                "beginner",
-                "meta"
-            ],
-            "followUps": []
         },
         "tutorial-getting-started": {
             "id": "tutorial-getting-started",
@@ -6085,58 +6054,127 @@
         "follow-another-sprite": {
             "id": "follow-another-sprite",
             "title": "Follow a sprite",
-            "text": "Use \"go to [sprite]\" inside a \"forever\" loop to make one sprite follow another — like a basketball following the cat!",
+            "text": "Use \"point towards [sprite]\" and a move block inside a \"forever\" loop to make one sprite follow another.",
             "tags": [
                 "motion",
                 "game",
                 "sports"
             ],
             "followUps": [
-                "follow-with-offset",
                 "bounce-up-down",
                 "forever-loop"
             ],
-            "blockExample": "followMouse",
+            "blockExample": "captured_follow-another-sprite_1777560709420",
             "pointers": [
                 {
                     "label": "Drag \"go to\" into your code",
                     "blockOpcode": "motion_goto",
                     "category": "motion"
                 }
-            ]
-        },
-        "follow-with-offset": {
-            "id": "follow-with-offset",
-            "title": "Follow with offset",
-            "text": "To make a sprite follow below another, use \"go to [sprite]\" then \"change y by -30\" — the negative number puts it lower!",
-            "tags": [
-                "motion",
-                "position"
             ],
-            "followUps": [
-                "follow-another-sprite",
-                "change-xy-position"
-            ],
-            "pointers": [
+            "_capturedBlocks": [
                 {
-                    "label": "Drag \"change y by\" into your code",
-                    "blockOpcode": "motion_changeyby",
-                    "category": "motion"
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "motion_pointtowards",
+                    "next": "unstuck_s0_4",
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "TOWARDS": {
+                            "name": "TOWARDS",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "motion_movesteps",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "motion_pointtowards_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "TOWARDS": {
+                            "name": "TOWARDS",
+                            "value": "Sprite1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
         "bounce-up-down": {
             "id": "bounce-up-down",
             "title": "Bounce up & down",
-            "text": "Make a sprite bounce! Use \"repeat 10: change y by 5\" then \"repeat 10: change y by -5\" inside a forever loop.",
+            "text": "One way to bounce is \"repeat 10: change y by 5\" then \"repeat 10: change y by -5\" inside a forever loop.",
             "tags": [
                 "motion",
                 "animation",
                 "sports"
             ],
             "followUps": [
-                "bounce-speed",
-                "bounce-height",
                 "forever-loop"
             ],
             "blockExample": "bounceUpDown",
@@ -6148,173 +6186,10 @@
                 }
             ]
         },
-        "bounce-speed": {
-            "id": "bounce-speed",
-            "title": "Bounce speed",
-            "text": "To change bounce speed, adjust the \"repeat\" number — fewer repeats = faster bounce, more repeats = slower bounce!",
-            "tags": [
-                "motion",
-                "animation"
-            ],
-            "followUps": [
-                "bounce-up-down",
-                "bounce-height",
-                "too-fast"
-            ]
-        },
-        "bounce-height": {
-            "id": "bounce-height",
-            "title": "Bounce height",
-            "text": "To change how high the bounce goes, change the number in \"change y by\" — bigger number = higher bounce!",
-            "tags": [
-                "motion",
-                "animation"
-            ],
-            "followUps": [
-                "bounce-up-down",
-                "bounce-speed"
-            ]
-        },
-        "shoot-at-target": {
-            "id": "shoot-at-target",
-            "title": "Shoot at a target",
-            "text": "Use \"glide 0.5 secs to x: y:\" to make a sprite fly toward a target — set x and y to where the hoop or goal is!",
-            "tags": [
-                "motion",
-                "game",
-                "sports"
-            ],
-            "followUps": [
-                "glide-to-position",
-                "detect-collision",
-                "follow-another-sprite"
-            ],
-            "blockExample": "glideTo",
-            "pointers": [
-                {
-                    "label": "Drag \"glide\" into your code",
-                    "blockOpcode": "motion_glidesecstoxy",
-                    "category": "motion"
-                }
-            ]
-        },
-        "sprite-hop-jump": {
-            "id": "sprite-hop-jump",
-            "title": "Make it hop",
-            "text": "Press space to hop! Use \"change y by 50\", \"wait 0.3 seconds\", then \"change y by -50\" — that's up, pause, and back down!",
-            "tags": [
-                "motion",
-                "animation",
-                "beginner"
-            ],
-            "followUps": [
-                "bounce-up-down",
-                "move-with-keys",
-                "sprite-walk-animate"
-            ],
-            "blockExample": "hopJump",
-            "pointers": [
-                {
-                    "label": "Drag \"change y by\" into your code",
-                    "blockOpcode": "motion_changeyby",
-                    "category": "motion"
-                }
-            ]
-        },
-        "sprite-walk-animate": {
-            "id": "sprite-walk-animate",
-            "title": "Make it walk",
-            "text": "To make a sprite walk, use \"next costume\" with \"move 10 steps\" inside a forever loop — the costume changes make it look like walking!",
-            "tags": [
-                "motion",
-                "looks",
-                "animation",
-                "beginner"
-            ],
-            "followUps": [
-                "animate-costume",
-                "move-sprite",
-                "sprite-hop-jump"
-            ],
-            "blockExample": "foreverNextCostume",
-            "pointers": [
-                {
-                    "label": "Drag \"next costume\" into your code",
-                    "blockOpcode": "looks_nextcostume",
-                    "category": "looks"
-                }
-            ]
-        },
-        "sprite-backflip": {
-            "id": "sprite-backflip",
-            "title": "Do a backflip",
-            "text": "Make a sprite do a backflip! Use \"change y by 50\", then \"repeat 10: turn 36 degrees\", then \"change y by -50\" to jump, spin, and land!",
-            "tags": [
-                "motion",
-                "animation",
-                "fun"
-            ],
-            "followUps": [
-                "sprite-hop-jump",
-                "spinning",
-                "repeat-loop"
-            ],
-            "blockExample": "backflipSpin",
-            "pointers": [
-                {
-                    "label": "Drag \"turn\" into your code",
-                    "blockOpcode": "motion_turnright",
-                    "category": "motion"
-                }
-            ]
-        },
-        "sprite-lay-down": {
-            "id": "sprite-lay-down",
-            "title": "Lay down",
-            "text": "Use \"point in direction 0\" to make a sprite lay down (facing up), or \"point in direction 180\" to face down — set rotation style to \"all around\" first!",
-            "tags": [
-                "motion",
-                "looks",
-                "animation"
-            ],
-            "followUps": [
-                "rotation-style-vs-turn",
-                "face-without-flip"
-            ],
-            "pointers": [
-                {
-                    "label": "Drag \"point in direction\" into your code",
-                    "blockOpcode": "motion_pointindirection",
-                    "category": "motion"
-                }
-            ]
-        },
-        "crowd-surf-effect": {
-            "id": "crowd-surf-effect",
-            "title": "Crowd surf",
-            "text": "Make a sprite crowd surf! Use \"glide 2 secs to x:240 y:50\" to slide across, and add \"change y by 5\" then \"change y by -5\" in a loop for a bobbing effect!",
-            "tags": [
-                "motion",
-                "animation",
-                "fun"
-            ],
-            "followUps": [
-                "glide-to-position",
-                "bounce-up-down"
-            ],
-            "blockExample": "glideTo",
-            "pointers": [
-                {
-                    "label": "Drag \"glide\" into your code",
-                    "blockOpcode": "motion_glidesecstoxy",
-                    "category": "motion"
-                }
-            ]
-        },
         "duplicate-code-to-sprite": {
             "id": "duplicate-code-to-sprite",
             "title": "Copy code to sprite",
-            "text": "Yes! Drag your code stack from the workspace onto another sprite's thumbnail in the sprite pane — it copies the whole stack!",
+            "text": "You can drag a stack of blocks from onto a another sprite in the sprite selector, to copy it there.",
             "tags": [
                 "sprites",
                 "meta",
@@ -6326,166 +6201,22 @@
             ],
             "pointers": [
                 {
-                    "label": "Drag code onto a sprite thumbnail to copy it",
+                    "label": "Drag code onto a sprite to copy it",
                     "target": "[class*=\"sprite-selector_sprite-selector\"]"
-                }
-            ]
-        },
-        "explore-sprite-abilities": {
-            "id": "explore-sprite-abilities",
-            "title": "What can it do?",
-            "text": "Every sprite can move, change costumes, play sounds, and run code! Click the Costumes tab to see its different looks, and the Sounds tab for its sounds.",
-            "tags": [
-                "sprites",
-                "beginner",
-                "meta"
-            ],
-            "followUps": [
-                "access-other-costumes",
-                "add-sound",
-                "move-sprite"
-            ],
-            "pointers": [
-                {
-                    "label": "Click Costumes to see its looks",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
-                }
-            ]
-        },
-        "access-other-costumes": {
-            "id": "access-other-costumes",
-            "title": "See all costumes",
-            "text": "Click the Costumes tab at the top to see all the costumes your sprite has — you can switch between them with \"switch costume to\" or \"next costume\"!",
-            "tags": [
-                "costumes",
-                "beginner"
-            ],
-            "followUps": [
-                "change-costume",
-                "animate-costume",
-                "add-costume"
-            ],
-            "pointers": [
-                {
-                    "label": "Click the Costumes tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
-                }
-            ]
-        },
-        "find-sprite-in-library": {
-            "id": "find-sprite-in-library",
-            "title": "Find a sprite",
-            "text": "Click the cat button below the stage to open the sprite library, then use the search bar to find any sprite by name!",
-            "tags": [
-                "sprites",
-                "beginner"
-            ],
-            "followUps": [
-                "add-sprite",
-                "add-many-same-sprite"
-            ],
-            "pointers": [
-                {
-                    "label": "Add a new sprite here",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"] [class*=\"add-button\"]"
-                }
-            ]
-        },
-        "add-many-same-sprite": {
-            "id": "add-many-same-sprite",
-            "title": "Add more copies",
-            "text": "To add more copies of a sprite, right-click the sprite in the sprite pane and choose \"duplicate\" — or add it again from the library! For lots of copies, try cloning.",
-            "tags": [
-                "sprites",
-                "beginner"
-            ],
-            "followUps": [
-                "clone-sprite",
-                "find-sprite-in-library",
-                "add-sprite"
-            ],
-            "pointers": [
-                {
-                    "label": "Right-click a sprite to duplicate",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
-                }
-            ]
-        },
-        "move-side-to-side": {
-            "id": "move-side-to-side",
-            "title": "Move side to side",
-            "text": "Use \"move 5 steps\" with \"if on edge, bounce\" inside a forever loop to make a sprite go back and forth automatically!",
-            "tags": [
-                "motion",
-                "animation"
-            ],
-            "followUps": [
-                "waddle-side-to-side",
-                "forever-loop"
-            ],
-            "blockExample": "moveSideToSide",
-            "pointers": [
-                {
-                    "label": "Drag \"if on edge, bounce\" into your code",
-                    "blockOpcode": "motion_ifonedgebounce",
-                    "category": "motion"
-                }
-            ]
-        },
-        "waddle-side-to-side": {
-            "id": "waddle-side-to-side",
-            "title": "Waddle effect",
-            "text": "Make a sprite waddle! Use \"turn right 10\" then \"wait 0.1\" then \"turn left 10\" then \"wait 0.1\" inside a forever loop.",
-            "tags": [
-                "motion",
-                "animation",
-                "fun"
-            ],
-            "followUps": [
-                "move-side-to-side",
-                "fix-upright-rotation",
-                "forever-loop"
-            ],
-            "blockExample": "waddleTurn",
-            "pointers": [
-                {
-                    "label": "Drag \"turn\" into your code",
-                    "blockOpcode": "motion_turnright",
-                    "category": "motion"
-                }
-            ]
-        },
-        "fix-upright-rotation": {
-            "id": "fix-upright-rotation",
-            "title": "Stay upright",
-            "text": "Use \"point in direction 90\" to make your sprite sit upright, or set rotation style to \"don't rotate\" so it always stays right-side up!",
-            "tags": [
-                "motion",
-                "looks"
-            ],
-            "followUps": [
-                "face-without-flip",
-                "rotation-style-vs-turn"
-            ],
-            "pointers": [
-                {
-                    "label": "Check rotation style in sprite info",
-                    "target": "[class*=\"sprite-info\"]"
                 }
             ]
         },
         "face-without-flip": {
             "id": "face-without-flip",
             "title": "Face left (no flip)",
-            "text": "Set rotation style to \"left-right\" in the sprite info area — then your sprite will mirror horizontally without flipping upside down!",
+            "text": "Set rotation style to \"left-right\" in the sprite info area — then your sprite will flip horizontally without going upside down!",
             "tags": [
                 "motion",
                 "looks",
                 "beginner"
             ],
             "followUps": [
-                "rotation-style-vs-turn",
-                "fix-upright-rotation"
+                "rotation-style-vs-turn"
             ],
             "pointers": [
                 {
@@ -6497,7 +6228,7 @@
         "continuous-key-hold": {
             "id": "continuous-key-hold",
             "title": "Hold key to move",
-            "text": "Use \"forever: if key pressed then change x by 5\" instead of \"when key pressed\" — this way holding the key gives smooth, continuous movement!",
+            "text": "Use \"forever if key pressed\" instead of \"when key pressed\" for smooth, continuous movement",
             "tags": [
                 "motion",
                 "events",
@@ -6505,31 +6236,7 @@
             ],
             "followUps": [
                 "move-with-keys",
-                "forever-loop",
-                "wasd-controls"
-            ],
-            "blockExample": "foreverIfKeySmooth",
-            "pointers": [
-                {
-                    "label": "Drag \"key pressed?\" from Sensing",
-                    "blockOpcode": "sensing_keypressed",
-                    "category": "sensing"
-                }
-            ]
-        },
-        "wasd-controls": {
-            "id": "wasd-controls",
-            "title": "WASD controls",
-            "text": "For WASD movement, use \"forever: if key w pressed, change y by 5 / if key a pressed, change x by -5\" and so on for each letter!",
-            "tags": [
-                "motion",
-                "events",
-                "control"
-            ],
-            "followUps": [
-                "continuous-key-hold",
-                "move-with-keys",
-                "change-xy-position"
+                "forever-loop"
             ],
             "blockExample": "foreverIfKeySmooth",
             "pointers": [
@@ -6543,7 +6250,7 @@
         "sprite-return-to-position": {
             "id": "sprite-return-to-position",
             "title": "Go back to start",
-            "text": "Use \"go to x: -200 y: 0\" to send a sprite back to a specific position — great for resetting enemies or obstacles!",
+            "text": "Use \"go to x: 0 y: 0\" to send a sprite back to the center",
             "tags": [
                 "motion",
                 "game"
@@ -6555,55 +6262,16 @@
             "blockExample": "goToCenter",
             "pointers": [
                 {
-                    "label": "Drag \"go to x: y:\" into your code",
+                    "label": "Drag \"go to x: y:\" into your code and change the numbers",
                     "blockOpcode": "motion_gotoxy",
                     "category": "motion"
-                }
-            ]
-        },
-        "move-multiple-sprites": {
-            "id": "move-multiple-sprites",
-            "title": "Move both sprites",
-            "text": "Each sprite needs its own code! Click a sprite in the sprite pane, then add movement blocks to it — do this for each sprite you want to move.",
-            "tags": [
-                "sprites",
-                "motion",
-                "beginner"
-            ],
-            "followUps": [
-                "wrong-sprite-selected",
-                "move-with-keys"
-            ],
-            "pointers": [
-                {
-                    "label": "Click a sprite to add code to it",
-                    "target": "[class*=\"sprite-selector_sprite-selector\"]"
-                }
-            ]
-        },
-        "find-specific-sound": {
-            "id": "find-specific-sound",
-            "title": "Find a sound",
-            "text": "Click the Sounds tab, then click the speaker button to open the sound library — use the search bar to look for sounds like \"chirp\", \"bird\", or any sound you want!",
-            "tags": [
-                "sound",
-                "beginner"
-            ],
-            "followUps": [
-                "add-sound",
-                "record-sound"
-            ],
-            "pointers": [
-                {
-                    "label": "Click the Sounds tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
                 }
             ]
         },
         "insert-audio-file": {
             "id": "insert-audio-file",
             "title": "Upload a sound",
-            "text": "To add your own audio file, go to the Sounds tab, hover over the speaker button, and choose \"Upload Sound\" to pick a file from your computer!",
+            "text": "To add your own audio file, go to the Sounds tab, hover over the speaker button, and choose \"Upload Sound\" to pick a file from your computer",
             "tags": [
                 "sound",
                 "beginner"
@@ -6617,183 +6285,10 @@
                 {
                     "label": "Click the Sounds tab",
                     "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(3)"
-                }
-            ]
-        },
-        "debug-sound-on-collision": {
-            "id": "debug-sound-on-collision",
-            "title": "Fix sound on touch",
-            "text": "If your sound isn't playing when sprites touch, make sure the \"if touching\" and \"play sound\" are both inside a \"forever\" loop — and use \"play sound until done\" so it doesn't restart every frame!",
-            "tags": [
-                "sound",
-                "debugging",
-                "sensing"
-            ],
-            "followUps": [
-                "detect-collision",
-                "play-vs-play-until-done",
-                "if-not-forever"
-            ],
-            "pointers": [
+                },
                 {
-                    "label": "Drag \"play sound until done\" into your code",
-                    "blockOpcode": "sound_playuntildone",
-                    "category": "sound"
-                }
-            ]
-        },
-        "solid-wall-collision": {
-            "id": "solid-wall-collision",
-            "title": "Solid walls",
-            "text": "To stop a sprite from going through walls, use \"if touching color [wall color] then move back\" — put it in a forever loop so it's always checking!",
-            "tags": [
-                "sensing",
-                "game",
-                "collision"
-            ],
-            "followUps": [
-                "detect-collision",
-                "obstacle-course-game"
-            ],
-            "blockExample": "touchingColorGoto",
-            "pointers": [
-                {
-                    "label": "Drag \"touching color?\" into your code",
-                    "blockOpcode": "sensing_touchingcolor",
-                    "category": "sensing"
-                }
-            ]
-        },
-        "obstacle-course-game": {
-            "id": "obstacle-course-game",
-            "title": "Obstacle course",
-            "text": "Make an obstacle course! Draw obstacles on the backdrop, then use \"if touching color\" to detect them. Add keyboard controls and a \"go to start\" reset!",
-            "tags": [
-                "game",
-                "project-ideas"
-            ],
-            "followUps": [
-                "solid-wall-collision",
-                "color-touch-restart",
-                "move-with-keys",
-                "countdown-timer-variable"
-            ],
-            "blockExample": "touchingColorGoto",
-            "pointers": [
-                {
-                    "label": "Drag \"touching color?\" into your code",
-                    "blockOpcode": "sensing_touchingcolor",
-                    "category": "sensing"
-                }
-            ]
-        },
-        "score-on-event": {
-            "id": "score-on-event",
-            "title": "Score points",
-            "text": "Make a \"score\" variable, set it to 0 at the start, then use \"if touching [sprite]\" with \"change score by 1\" inside a forever loop to score when sprites meet!",
-            "tags": [
-                "variables",
-                "game",
-                "sensing"
-            ],
-            "followUps": [
-                "use-variables",
-                "detect-collision",
-                "change-variable"
-            ],
-            "pointers": [
-                {
-                    "label": "Make a Variable here",
-                    "target": ".blocklyToolboxCategory#variables"
-                }
-            ]
-        },
-        "countdown-timer-variable": {
-            "id": "countdown-timer-variable",
-            "title": "Countdown timer",
-            "text": "Make a \"timer\" variable, set it to 30, then use \"repeat 30: wait 1 second, change timer by -1\" — when it hits 0, stop the game!",
-            "tags": [
-                "variables",
-                "game",
-                "control"
-            ],
-            "followUps": [
-                "use-variables",
-                "timer-block",
-                "make-game"
-            ],
-            "pointers": [
-                {
-                    "label": "Make a Variable here",
-                    "target": ".blocklyToolboxCategory#variables"
-                }
-            ]
-        },
-        "color-touch-restart": {
-            "id": "color-touch-restart",
-            "title": "Color = restart",
-            "text": "Use \"forever: if touching color [pick a color] then go to x: y:\" — this sends your sprite back to the start whenever it touches that color!",
-            "tags": [
-                "sensing",
-                "game",
-                "control"
-            ],
-            "followUps": [
-                "solid-wall-collision",
-                "reset-at-start"
-            ],
-            "blockExample": "touchingColorGoto",
-            "pointers": [
-                {
-                    "label": "Drag \"touching color?\" into your code",
-                    "blockOpcode": "sensing_touchingcolor",
-                    "category": "sensing"
-                }
-            ]
-        },
-        "kill-brick-game-over": {
-            "id": "kill-brick-game-over",
-            "title": "Game over trigger",
-            "text": "To make a sprite end the game when touched, use \"forever: if touching [sprite] then stop all\" — you can also broadcast \"game over\" to show a message first!",
-            "tags": [
-                "game",
-                "control",
-                "sensing"
-            ],
-            "followUps": [
-                "detect-collision",
-                "broadcast-message",
-                "make-game"
-            ],
-            "blockExample": "foreverIfTouching",
-            "pointers": [
-                {
-                    "label": "Drag \"stop all\" into your code",
-                    "blockOpcode": "control_stop",
-                    "category": "control"
-                }
-            ]
-        },
-        "ball-bounce-off-sprite": {
-            "id": "ball-bounce-off-sprite",
-            "title": "Bounce off sprite",
-            "text": "To make a ball bounce off a player, use \"if touching [player]\" inside a forever loop, then \"point in direction (pick random)\" or \"turn 180 degrees\" to reverse it!",
-            "tags": [
-                "motion",
-                "sensing",
-                "game",
-                "sports"
-            ],
-            "followUps": [
-                "detect-collision",
-                "volleyball-game"
-            ],
-            "blockExample": "foreverIfTouching",
-            "pointers": [
-                {
-                    "label": "Drag \"touching?\" into your code",
-                    "blockOpcode": "sensing_touchingobject",
-                    "category": "sensing"
+                    "label": "Choose \"Upload Sound\"",
+                    "target": "[class*=\"new-buttons\"]:not(#__sound) [class*=\"main-button\"]"
                 }
             ]
         },
@@ -6806,7 +6301,6 @@
                 "game"
             ],
             "followUps": [
-                "solid-wall-collision",
                 "detect-collision",
                 "clone-sprite"
             ],
@@ -6819,152 +6313,10 @@
                 }
             ]
         },
-        "game-types-overview": {
-            "id": "game-types-overview",
-            "title": "Game ideas",
-            "text": "You can make so many games! Maze games, chase games, platformers, clicker games, pong, quiz games, dodge games, catching games, and more — pick one that sounds fun!",
-            "tags": [
-                "project-ideas",
-                "game"
-            ],
-            "followUps": [
-                "make-game",
-                "obstacle-course-game",
-                "volleyball-game"
-            ]
-        },
-        "advanced-scratch-examples": {
-            "id": "advanced-scratch-examples",
-            "title": "Amazing Scratch projects",
-            "text": "People have made incredible things in Scratch — 3D engines, full RPG games, music studios, and even working computers! Start with something simple and keep building your skills.",
-            "tags": [
-                "project-ideas",
-                "inspiration"
-            ],
-            "followUps": [
-                "game-types-overview",
-                "make-game"
-            ]
-        },
-        "project-idea-suggestion": {
-            "id": "project-idea-suggestion",
-            "title": "Get an idea",
-            "text": "How about making a game where your sprite dodges falling objects? Or an animation of your favorite animal? Or a music machine? Start small — you can always add more!",
-            "tags": [
-                "project-ideas",
-                "beginner"
-            ],
-            "followUps": [
-                "game-types-overview",
-                "make-game"
-            ]
-        },
-        "make-tetris-game": {
-            "id": "make-tetris-game",
-            "title": "Tetris-style game",
-            "text": "Tetris is an advanced project! Start by making one block that falls and stops at the bottom, then add keyboard controls to move it left and right. Build up from there!",
-            "tags": [
-                "project-ideas",
-                "game",
-                "advanced"
-            ],
-            "followUps": [
-                "falling-obstacle",
-                "continuous-key-hold",
-                "use-variables"
-            ],
-            "blockExample": "fallingFromSky",
-            "pointers": [
-                {
-                    "label": "Drag \"change y by\" into your code",
-                    "blockOpcode": "motion_changeyby",
-                    "category": "motion"
-                }
-            ]
-        },
-        "volleyball-game": {
-            "id": "volleyball-game",
-            "title": "Volleyball game",
-            "text": "For a volleyball game, make a ball sprite that bounces, two player sprites with keyboard controls, and use \"if touching\" to make the ball bounce off the players!",
-            "tags": [
-                "project-ideas",
-                "game",
-                "sports"
-            ],
-            "followUps": [
-                "ball-bounce-off-sprite",
-                "move-with-keys"
-            ],
-            "blockExample": "foreverBounce",
-            "pointers": [
-                {
-                    "label": "Drag \"if on edge, bounce\" into your code",
-                    "blockOpcode": "motion_ifonedgebounce",
-                    "category": "motion"
-                }
-            ]
-        },
-        "make-game-more-interesting": {
-            "id": "make-game-more-interesting",
-            "title": "Improve your game",
-            "text": "Try adding: a score variable, sound effects when things happen, a timer, extra levels with backdrops, or power-ups using clones — these all make games more exciting!",
-            "tags": [
-                "project-ideas",
-                "game"
-            ],
-            "followUps": [
-                "use-variables",
-                "add-sound",
-                "countdown-timer-variable",
-                "clone-sprite"
-            ]
-        },
-        "scrolling-backdrop": {
-            "id": "scrolling-backdrop",
-            "title": "Scrolling background",
-            "text": "For a continuously moving backdrop, make two copies of the background as sprites. Move both left in a forever loop — when one goes off screen, jump it to the right side!",
-            "tags": [
-                "motion",
-                "game",
-                "advanced"
-            ],
-            "followUps": [
-                "change-backdrop",
-                "forever-loop"
-            ],
-            "blockExample": "moveSideToSide",
-            "pointers": [
-                {
-                    "label": "Drag \"change x by\" into your code",
-                    "blockOpcode": "motion_changexby",
-                    "category": "motion"
-                }
-            ]
-        },
-        "multiple-backdrops": {
-            "id": "multiple-backdrops",
-            "title": "Multiple backdrops",
-            "text": "Click the backdrop area below the stage and add more backdrops! Use \"switch backdrop to\" or \"next backdrop\" blocks to switch between them in your code.",
-            "tags": [
-                "looks",
-                "backdrop",
-                "beginner"
-            ],
-            "followUps": [
-                "change-backdrop",
-                "backdrop-events"
-            ],
-            "pointers": [
-                {
-                    "label": "Add a backdrop here",
-                    "target": "[class*=\"stage-selector\"] [class*=\"add-button\"]"
-                }
-            ]
-        },
         "find-sprite-x-position": {
             "id": "find-sprite-x-position",
             "title": "Find X position",
-            "text": "Hover over a sprite on the stage to see its x and y position in the sprite info area below, or use the \"x position\" reporter block from Motion!",
+            "text": "Select a sprite to see its x and y position in the sprite info area below, or use the \"x position\" reporter block",
             "tags": [
                 "motion",
                 "sensing",
@@ -6976,121 +6328,13 @@
             ],
             "pointers": [
                 {
-                    "label": "Find \"x position\" in Motion",
+                    "label": "See x and y position here",
+                    "target": "[class*=\"sprite-info\"]"
+                },
+                {
+                    "label": "Check the box to show the x position",
                     "blockOpcode": "motion_xposition",
                     "category": "motion"
-                }
-            ]
-        },
-        "other-turn-options": {
-            "id": "other-turn-options",
-            "title": "Turn options",
-            "text": "You can \"turn right\" or \"turn left\" by any number of degrees, or use \"point in direction\" to face a specific way (90=right, -90=left, 0=up, 180=down)!",
-            "tags": [
-                "motion",
-                "beginner"
-            ],
-            "followUps": [
-                "spinning",
-                "rotation-style-vs-turn",
-                "face-without-flip"
-            ],
-            "pointers": [
-                {
-                    "label": "Drag \"point in direction\" into your code",
-                    "blockOpcode": "motion_pointindirection",
-                    "category": "motion"
-                }
-            ]
-        },
-        "forever-block-explained": {
-            "id": "forever-block-explained",
-            "title": "Why use forever?",
-            "text": "Without \"forever\", your code runs once and stops! The \"forever\" loop keeps repeating your blocks over and over — that's why your sprite stops moving when you remove it.",
-            "tags": [
-                "control",
-                "meta",
-                "beginner"
-            ],
-            "followUps": [
-                "forever-loop",
-                "repeat-loop",
-                "if-not-forever"
-            ],
-            "blockExample": "foreverMove"
-        },
-        "no-code-interactions": {
-            "id": "no-code-interactions",
-            "title": "Without code",
-            "text": "You can drag sprites around the stage with your mouse, draw costumes, record sounds, and change the backdrop — all without any code! But code is what makes things interactive.",
-            "tags": [
-                "meta",
-                "beginner"
-            ],
-            "followUps": [
-                "add-costume",
-                "add-sound"
-            ]
-        },
-        "green-flag-not-moving": {
-            "id": "green-flag-not-moving",
-            "title": "Nothing moves",
-            "text": "If clicking the green flag does nothing, check: do you have a \"when green flag clicked\" block on top of your code? Is your code connected in a stack? Is it on the right sprite?",
-            "tags": [
-                "debugging",
-                "events",
-                "beginner"
-            ],
-            "followUps": [
-                "nothing-happens",
-                "wrong-sprite-selected"
-            ],
-            "blockExample": "whenFlagMove",
-            "pointers": [
-                {
-                    "label": "Drag \"when green flag clicked\" into your code",
-                    "blockOpcode": "event_whenflagclicked",
-                    "category": "events"
-                }
-            ]
-        },
-        "make-sprite-bigger": {
-            "id": "make-sprite-bigger",
-            "title": "Make it bigger",
-            "text": "Use \"set size to 200%\" from Looks to make your sprite bigger — 100% is normal, higher numbers make it larger!",
-            "tags": [
-                "looks",
-                "size",
-                "beginner"
-            ],
-            "followUps": [
-                "change-size"
-            ],
-            "blockExample": "setSizeTo100",
-            "pointers": [
-                {
-                    "label": "Drag \"set size to\" into your code",
-                    "blockOpcode": "looks_setsizeto",
-                    "category": "looks"
-                }
-            ]
-        },
-        "costume-masking": {
-            "id": "costume-masking",
-            "title": "Edit part of costume",
-            "text": "Scratch doesn't have masking, but you can select just part of a costume to edit! In the Costumes tab, use the select tool to click and drag around the area you want to change.",
-            "tags": [
-                "costumes",
-                "drawing"
-            ],
-            "followUps": [
-                "add-costume",
-                "change-costume"
-            ],
-            "pointers": [
-                {
-                    "label": "Click the Costumes tab",
-                    "target": "[class*=\"tab-list\"] [class*=\"tab\"]:nth-child(2)"
                 }
             ]
         },

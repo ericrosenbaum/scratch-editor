@@ -8743,5 +8743,97 @@
             "shadow": true,
             "topLevel": false
         }
+    ],
+    "captured_follow-another-sprite_1777560709420": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "control_forever",
+            "next": null,
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "SUBSTACK": {
+                    "name": "SUBSTACK",
+                    "block": "unstuck_s0_3",
+                    "shadow": null
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "motion_pointtowards",
+            "next": "unstuck_s0_4",
+            "parent": "unstuck_s0_2",
+            "inputs": {
+                "TOWARDS": {
+                    "name": "TOWARDS",
+                    "block": "unstuck_s0_6",
+                    "shadow": "unstuck_s0_6"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_4",
+            "opcode": "motion_movesteps",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {
+                "STEPS": {
+                    "name": "STEPS",
+                    "block": "unstuck_s0_5",
+                    "shadow": "unstuck_s0_5"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_5",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_4",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "10"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_6",
+            "opcode": "motion_pointtowards_menu",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "TOWARDS": {
+                    "name": "TOWARDS",
+                    "value": "Sprite1"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
     ]
 }
