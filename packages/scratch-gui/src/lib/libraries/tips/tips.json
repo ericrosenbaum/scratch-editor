@@ -13,7 +13,6 @@
             "followUps": [
                 "green-flag"
             ],
-            "blockExample": "captured_nothing-happens_1776172322032",
             "pointers": [
                 {
                     "label": "Drag \"when green flag clicked\" into your code",
@@ -123,7 +122,6 @@
                 "glide-to-position",
                 "negative-numbers"
             ],
-            "blockExample": "captured_move-sprite_1776276387827",
             "pointers": [
                 {
                     "label": "Drag \"move 10 steps\" into your code",
@@ -196,12 +194,61 @@
                 "move-sprite",
                 "change-xy-position"
             ],
-            "blockExample": "whenKeyMoveRight",
             "pointers": [
                 {
                     "label": "Drag \"when key pressed\" into your code",
                     "blockOpcode": "event_whenkeypressed",
                     "category": "events"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_key_1",
+                    "opcode": "event_whenkeypressed",
+                    "next": "unstuck_key_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "right arrow"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_key_2",
+                    "opcode": "motion_changexby",
+                    "next": null,
+                    "parent": "unstuck_key_1",
+                    "inputs": {
+                        "DX": {
+                            "name": "DX",
+                            "block": "unstuck_key_2_dx",
+                            "shadow": "unstuck_key_2_dx"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_key_2_dx",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_key_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -218,12 +265,61 @@
                 "move-with-keys",
                 "go-to-position"
             ],
-            "blockExample": "whenKeyMoveRight",
             "pointers": [
                 {
                     "label": "Drag \"change x by\" into your code",
                     "blockOpcode": "motion_changexby",
                     "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_key_1",
+                    "opcode": "event_whenkeypressed",
+                    "next": "unstuck_key_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "right arrow"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_key_2",
+                    "opcode": "motion_changexby",
+                    "next": null,
+                    "parent": "unstuck_key_1",
+                    "inputs": {
+                        "DX": {
+                            "name": "DX",
+                            "block": "unstuck_key_2_dx",
+                            "shadow": "unstuck_key_2_dx"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_key_2_dx",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_key_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -239,12 +335,76 @@
                 "change-xy-position",
                 "glide-to-position"
             ],
-            "blockExample": "goToCenter",
             "pointers": [
                 {
                     "label": "Drag \"go to x: y:\" into your code",
                     "blockOpcode": "motion_gotoxy",
                     "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_gotoc_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_gotoc_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_gotoc_2",
+                    "opcode": "motion_gotoxy",
+                    "next": null,
+                    "parent": "unstuck_gotoc_1",
+                    "inputs": {
+                        "X": {
+                            "name": "X",
+                            "block": "unstuck_gotoc_2_x",
+                            "shadow": "unstuck_gotoc_2_x"
+                        },
+                        "Y": {
+                            "name": "Y",
+                            "block": "unstuck_gotoc_2_y",
+                            "shadow": "unstuck_gotoc_2_y"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_gotoc_2_x",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_gotoc_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_gotoc_2_y",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_gotoc_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -261,7 +421,6 @@
                 "too-fast",
                 "glide-to-random"
             ],
-            "blockExample": "captured_glide-to-position_1776180803203",
             "pointers": [
                 {
                     "label": "Drag \"glide\" into your code",
@@ -420,7 +579,6 @@
                 "play-sound-until-done",
                 "play-vs-play-until-done"
             ],
-            "blockExample": "playSound",
             "pointers": [
                 {
                     "label": "Add sounds here",
@@ -430,6 +588,51 @@
                     "label": "Then play sounds with a block",
                     "blockOpcode": "sound_playuntildone",
                     "category": "sound"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_snd_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_snd_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_snd_2",
+                    "opcode": "sound_playuntildone",
+                    "next": null,
+                    "parent": "unstuck_snd_1",
+                    "inputs": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "block": "unstuck_snd_2_menu",
+                            "shadow": "unstuck_snd_2_menu"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_snd_2_menu",
+                    "opcode": "sound_sounds_menu",
+                    "next": null,
+                    "parent": "unstuck_snd_2",
+                    "inputs": {},
+                    "fields": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "value": "Meow"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -474,7 +677,6 @@
                     "category": "sound"
                 }
             ],
-            "blockExample": "captured_play-sound-until-done_1776182323807",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_capture_1",
@@ -584,7 +786,6 @@
             "followUps": [
                 "change-costume"
             ],
-            "blockExample": "captured_say-think_1776182424711",
             "pointers": [
                 {
                     "label": "Drag \"say Hello!\" into your code",
@@ -731,7 +932,6 @@
                     "category": "looks"
                 }
             ],
-            "blockExample": "captured_change-costume_1777320851379",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -794,12 +994,82 @@
                 "change-costume",
                 "forever-loop"
             ],
-            "blockExample": "foreverNextCostume",
             "pointers": [
                 {
                     "label": "Drag \"next costume\" into your code",
                     "blockOpcode": "looks_nextcostume",
                     "category": "looks"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_anim_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_anim_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_anim_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_anim_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_anim_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_anim_3",
+                    "opcode": "looks_nextcostume",
+                    "next": "unstuck_anim_4",
+                    "parent": "unstuck_anim_2",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_anim_4",
+                    "opcode": "control_wait",
+                    "next": null,
+                    "parent": "unstuck_anim_3",
+                    "inputs": {
+                        "DURATION": {
+                            "name": "DURATION",
+                            "block": "unstuck_anim_4_dur",
+                            "shadow": "unstuck_anim_4_dur"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_anim_4_dur",
+                    "opcode": "math_positive_number",
+                    "next": null,
+                    "parent": "unstuck_anim_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0.25"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -817,12 +1087,72 @@
                 "too-fast",
                 "if-not-forever"
             ],
-            "blockExample": "foreverMove",
             "pointers": [
                 {
                     "label": "Drag \"forever\" into your code",
                     "blockOpcode": "control_forever",
                     "category": "control"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_fmove_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_fmove_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_fmove_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_fmove_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_fmove_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_fmove_3",
+                    "opcode": "motion_movesteps",
+                    "next": null,
+                    "parent": "unstuck_fmove_2",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_fmove_3_steps",
+                            "shadow": "unstuck_fmove_3_steps"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_fmove_3_steps",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_fmove_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -838,12 +1168,123 @@
                 "forever-loop",
                 "too-fast"
             ],
-            "blockExample": "repeatTurn",
             "pointers": [
                 {
                     "label": "Drag \"repeat\" into your code",
                     "blockOpcode": "control_repeat",
                     "category": "control"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_rpt_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_rpt_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_rpt_2",
+                    "opcode": "control_repeat",
+                    "next": null,
+                    "parent": "unstuck_rpt_1",
+                    "inputs": {
+                        "TIMES": {
+                            "name": "TIMES",
+                            "block": "unstuck_rpt_2_times",
+                            "shadow": "unstuck_rpt_2_times"
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_rpt_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_rpt_2_times",
+                    "opcode": "math_whole_number",
+                    "next": null,
+                    "parent": "unstuck_rpt_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_rpt_3",
+                    "opcode": "motion_movesteps",
+                    "next": "unstuck_rpt_4",
+                    "parent": "unstuck_rpt_2",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_rpt_3_steps",
+                            "shadow": "unstuck_rpt_3_steps"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_rpt_3_steps",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_rpt_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_rpt_4",
+                    "opcode": "motion_turnright",
+                    "next": null,
+                    "parent": "unstuck_rpt_3",
+                    "inputs": {
+                        "DEGREES": {
+                            "name": "DEGREES",
+                            "block": "unstuck_rpt_4_deg",
+                            "shadow": "unstuck_rpt_4_deg"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_rpt_4_deg",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_rpt_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "36"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -861,7 +1302,6 @@
                 "glide-to-position",
                 "wait-vs-no-wait"
             ],
-            "blockExample": "captured_too-fast_1776261807097",
             "pointers": [
                 {
                     "label": "Drag \"wait 1 seconds\" into your code",
@@ -981,7 +1421,6 @@
                     "target": ".blocklyToolboxCategory#variables"
                 }
             ],
-            "blockExample": "captured_use-variables_1776368479429",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -1120,7 +1559,6 @@
                     "target": ".blocklyToolboxCategory#variables"
                 }
             ],
-            "blockExample": "captured_change-variable_1776281114514",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -1303,7 +1741,6 @@
                 "make-game",
                 "touching-wrong-color"
             ],
-            "blockExample": "captured_detect-collision_1776284455988",
             "pointers": [
                 {
                     "label": "Drag \"touching?\" into your code",
@@ -1541,7 +1978,6 @@
                 "make-game",
                 "starter-story"
             ],
-            "blockExample": "captured_broadcast-message_1776368576316",
             "pointers": [
                 {
                     "label": "Drag \"broadcast\" into your code",
@@ -1706,7 +2142,6 @@
                     "target": "[class*=\"stage-selector\"] [class*=\"add-button\"]"
                 }
             ],
-            "blockExample": "captured_change-backdrop_1776284601615",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -1771,7 +2206,6 @@
                 "clone-delete",
                 "starter-mouse-trail"
             ],
-            "blockExample": "captured_clone-sprite_1776284738439",
             "pointers": [
                 {
                     "label": "Drag \"create clone of\" into your code",
@@ -1982,7 +2416,6 @@
                 "sprite-is-hidden",
                 "graphic-effects"
             ],
-            "blockExample": "captured_sprite-ghost-effect_1776285977612",
             "pointers": [
                 {
                     "label": "Try the \"change effect\" block",
@@ -2184,7 +2617,6 @@
             "followUps": [
                 "two-stacks-same-time"
             ],
-            "blockExample": "captured_blocks-run-in-order_1776367367915",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -2366,12 +2798,151 @@
                 "blocks-run-in-order",
                 "nothing-happens"
             ],
-            "blockExample": "twoFlagStacks",
             "pointers": [
                 {
                     "label": "Drag \"when green flag clicked\" into your code",
                     "blockOpcode": "event_whenflagclicked",
                     "category": "events"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_tfs_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_tfs_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_tfs_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_tfs_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_tfs_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_tfs_3",
+                    "opcode": "motion_movesteps",
+                    "next": "unstuck_tfs_4",
+                    "parent": "unstuck_tfs_2",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_tfs_3_val",
+                            "shadow": "unstuck_tfs_3_val"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_tfs_3_val",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_tfs_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_tfs_4",
+                    "opcode": "motion_ifonedgebounce",
+                    "next": null,
+                    "parent": "unstuck_tfs_3",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_tfs_5",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_tfs_6",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 300
+                },
+                {
+                    "id": "unstuck_tfs_6",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_tfs_5",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_tfs_7",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_tfs_7",
+                    "opcode": "looks_nextcostume",
+                    "next": "unstuck_tfs_8",
+                    "parent": "unstuck_tfs_6",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_tfs_8",
+                    "opcode": "control_wait",
+                    "next": null,
+                    "parent": "unstuck_tfs_7",
+                    "inputs": {
+                        "DURATION": {
+                            "name": "DURATION",
+                            "block": "unstuck_tfs_8_dur",
+                            "shadow": "unstuck_tfs_8_dur"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_tfs_8_dur",
+                    "opcode": "math_positive_number",
+                    "next": null,
+                    "parent": "unstuck_tfs_8",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0.25"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -2388,7 +2959,6 @@
                 "forever-loop",
                 "detect-collision"
             ],
-            "blockExample": "captured_if-not-forever_1776369190883",
             "pointers": [
                 {
                     "label": "Drag \"if\" into your code",
@@ -2555,7 +3125,6 @@
                     "category": "control"
                 }
             ],
-            "blockExample": "captured_batched-updates_1776369473654",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -2724,7 +3293,6 @@
                 "move-sprite",
                 "decimal-numbers"
             ],
-            "blockExample": "captured_negative-numbers_1776369524762",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -2788,7 +3356,160 @@
             "followUps": [
                 "negative-numbers"
             ],
-            "blockExample": "foreverChangeSizePulse"
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_pulse_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_pulse_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_pulse_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_pulse_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_pulse_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_3",
+                    "opcode": "looks_changesizeby",
+                    "next": "unstuck_pulse_4",
+                    "parent": "unstuck_pulse_2",
+                    "inputs": {
+                        "CHANGE": {
+                            "name": "CHANGE",
+                            "block": "unstuck_pulse_3_val",
+                            "shadow": "unstuck_pulse_3_val"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_3_val",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_pulse_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_4",
+                    "opcode": "control_wait",
+                    "next": "unstuck_pulse_5",
+                    "parent": "unstuck_pulse_3",
+                    "inputs": {
+                        "DURATION": {
+                            "name": "DURATION",
+                            "block": "unstuck_pulse_4_dur",
+                            "shadow": "unstuck_pulse_4_dur"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_4_dur",
+                    "opcode": "math_positive_number",
+                    "next": null,
+                    "parent": "unstuck_pulse_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0.5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_5",
+                    "opcode": "looks_changesizeby",
+                    "next": "unstuck_pulse_6",
+                    "parent": "unstuck_pulse_4",
+                    "inputs": {
+                        "CHANGE": {
+                            "name": "CHANGE",
+                            "block": "unstuck_pulse_5_val",
+                            "shadow": "unstuck_pulse_5_val"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_5_val",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_pulse_5",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "-5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_6",
+                    "opcode": "control_wait",
+                    "next": null,
+                    "parent": "unstuck_pulse_5",
+                    "inputs": {
+                        "DURATION": {
+                            "name": "DURATION",
+                            "block": "unstuck_pulse_6_dur",
+                            "shadow": "unstuck_pulse_6_dur"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_6_dur",
+                    "opcode": "math_positive_number",
+                    "next": null,
+                    "parent": "unstuck_pulse_6",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0.5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
         },
         "greater-less-than": {
             "id": "greater-less-than",
@@ -2809,7 +3530,6 @@
                     "target": ".blocklyToolboxCategory#operators"
                 }
             ],
-            "blockExample": "captured_greater-less-than_1776369966865",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -2998,7 +3718,6 @@
                 "random-numbers",
                 "use-variables"
             ],
-            "blockExample": "captured_insert-reporter_1776370055922",
             "pointers": [
                 {
                     "label": "Find \"pick random\" in Operators",
@@ -3169,7 +3888,6 @@
                     "target": "button[class*=\"extension-button\"]"
                 }
             ],
-            "blockExample": "captured_pen-extension_1777485078006",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -3301,7 +4019,6 @@
                     "target": "button[class*=\"extension-button\"]"
                 }
             ],
-            "blockExample": "captured_music-extension_1777485159322",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -3539,7 +4256,6 @@
                     "target": "button[class*=\"extension-button\"]"
                 }
             ],
-            "blockExample": "captured_text-to-speech-extension_1777485189706",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -3603,7 +4319,6 @@
                     "target": ".blocklyToolboxCategory#operators"
                 }
             ],
-            "blockExample": "captured_random-numbers_1777487011256",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -3799,12 +4514,97 @@
             "followUps": [
                 "use-variables"
             ],
-            "blockExample": "askAndSay",
             "pointers": [
                 {
                     "label": "Drag \"ask and wait\" into your code",
                     "blockOpcode": "sensing_askandwait",
                     "category": "sensing"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_ask_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_ask_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_ask_2",
+                    "opcode": "sensing_askandwait",
+                    "next": "unstuck_ask_3",
+                    "parent": "unstuck_ask_1",
+                    "inputs": {
+                        "QUESTION": {
+                            "name": "QUESTION",
+                            "block": "unstuck_ask_2_q",
+                            "shadow": "unstuck_ask_2_q"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_ask_2_q",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_ask_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "What's your name?"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_ask_3",
+                    "opcode": "looks_say",
+                    "next": null,
+                    "parent": "unstuck_ask_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_ask_3_answer",
+                            "shadow": "unstuck_ask_3_msg"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_ask_3_answer",
+                    "opcode": "sensing_answer",
+                    "next": null,
+                    "parent": "unstuck_ask_3",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_ask_3_msg",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_ask_3",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": ""
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -3827,7 +4627,6 @@
                     "category": "sensing"
                 }
             ],
-            "blockExample": "captured_timer-block_1777490162195",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -3973,7 +4772,6 @@
             "followUps": [
                 "growing-shrinking"
             ],
-            "blockExample": "captured_change-size_1777490274923",
             "pointers": [
                 {
                     "label": "Drag \"change size by\" into your code",
@@ -4082,7 +4880,6 @@
                 "sprite-ghost-effect",
                 "color-changing"
             ],
-            "blockExample": "captured_graphic-effects_1777490463500",
             "pointers": [
                 {
                     "label": "Drag \"set effect to\" from Looks",
@@ -4185,7 +4982,6 @@
                     "target": "button[class*=\"extension-button\"]"
                 }
             ],
-            "blockExample": "captured_stamp-block_1777490567646",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -4286,7 +5082,6 @@
                     "category": "sound"
                 }
             ],
-            "blockExample": "captured_play-vs-play-until-done_1777491407778",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -4368,7 +5163,6 @@
                     "category": "events"
                 }
             ],
-            "blockExample": "captured_backdrop-events_1777491821666",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -4453,12 +5247,72 @@
                 "move-sprite",
                 "forever-loop"
             ],
-            "blockExample": "followMouse",
             "pointers": [
                 {
                     "label": "Drag \"go to\" into your code",
                     "blockOpcode": "motion_goto",
                     "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_mouse_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_mouse_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_mouse_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_mouse_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_mouse_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_mouse_3",
+                    "opcode": "motion_goto",
+                    "next": null,
+                    "parent": "unstuck_mouse_2",
+                    "inputs": {
+                        "TO": {
+                            "name": "TO",
+                            "block": "unstuck_mouse_3_menu",
+                            "shadow": "unstuck_mouse_3_menu"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_mouse_3_menu",
+                    "opcode": "motion_goto_menu",
+                    "next": null,
+                    "parent": "unstuck_mouse_3",
+                    "inputs": {},
+                    "fields": {
+                        "TO": {
+                            "name": "TO",
+                            "value": "_mouse_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -4493,7 +5347,6 @@
                 "green-flag",
                 "go-to-position"
             ],
-            "blockExample": "captured_reset-at-start_1777495133977",
             "pointers": [
                 {
                     "label": "Drag \"go to x: y:\" into your code",
@@ -4610,7 +5463,6 @@
             "followUps": [
                 "clone-sprite"
             ],
-            "blockExample": "captured_clone-delete_1777495245826",
             "pointers": [
                 {
                     "label": "Drag \"delete this clone\" into your code",
@@ -4785,12 +5637,108 @@
                 "forever-loop",
                 "if-not-forever"
             ],
-            "blockExample": "repeatUntilEdge",
             "pointers": [
                 {
                     "label": "Drag \"repeat until\" into your code",
                     "blockOpcode": "control_repeat_until",
                     "category": "control"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_ru_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_ru_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_ru_2",
+                    "opcode": "control_repeat_until",
+                    "next": null,
+                    "parent": "unstuck_ru_1",
+                    "inputs": {
+                        "CONDITION": {
+                            "name": "CONDITION",
+                            "block": "unstuck_ru_3",
+                            "shadow": null
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_ru_4",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_ru_3",
+                    "opcode": "sensing_touchingobject",
+                    "next": null,
+                    "parent": "unstuck_ru_2",
+                    "inputs": {
+                        "TOUCHINGOBJECTMENU": {
+                            "name": "TOUCHINGOBJECTMENU",
+                            "block": "unstuck_ru_3_menu",
+                            "shadow": "unstuck_ru_3_menu"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_ru_3_menu",
+                    "opcode": "sensing_touchingobjectmenu",
+                    "next": null,
+                    "parent": "unstuck_ru_3",
+                    "inputs": {},
+                    "fields": {
+                        "TOUCHINGOBJECTMENU": {
+                            "name": "TOUCHINGOBJECTMENU",
+                            "value": "_edge_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_ru_4",
+                    "opcode": "motion_movesteps",
+                    "next": null,
+                    "parent": "unstuck_ru_2",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_ru_4_steps",
+                            "shadow": "unstuck_ru_4_steps"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_ru_4_steps",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_ru_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -4807,7 +5755,6 @@
                 "graphic-effects",
                 "spinning"
             ],
-            "blockExample": "captured_color-changing_1777495615321",
             "pointers": [
                 {
                     "label": "Drag \"change color effect\" into your code",
@@ -4894,12 +5841,72 @@
                 "color-changing",
                 "forever-loop"
             ],
-            "blockExample": "foreverSpin",
             "pointers": [
                 {
                     "label": "Drag \"turn\" into your code",
                     "blockOpcode": "motion_turnright",
                     "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_spin_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_spin_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_spin_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_spin_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_spin_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_spin_3",
+                    "opcode": "motion_turnright",
+                    "next": null,
+                    "parent": "unstuck_spin_2",
+                    "inputs": {
+                        "DEGREES": {
+                            "name": "DEGREES",
+                            "block": "unstuck_spin_3_deg",
+                            "shadow": "unstuck_spin_3_deg"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_spin_3_deg",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_spin_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "15"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -4915,12 +5922,165 @@
                 "change-size",
                 "forever-loop"
             ],
-            "blockExample": "foreverChangeSizePulse",
             "pointers": [
                 {
                     "label": "Drag \"change size by\" into your code",
                     "blockOpcode": "looks_changesizeby",
                     "category": "looks"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_pulse_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_pulse_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_pulse_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_pulse_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_pulse_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_3",
+                    "opcode": "looks_changesizeby",
+                    "next": "unstuck_pulse_4",
+                    "parent": "unstuck_pulse_2",
+                    "inputs": {
+                        "CHANGE": {
+                            "name": "CHANGE",
+                            "block": "unstuck_pulse_3_val",
+                            "shadow": "unstuck_pulse_3_val"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_3_val",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_pulse_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_4",
+                    "opcode": "control_wait",
+                    "next": "unstuck_pulse_5",
+                    "parent": "unstuck_pulse_3",
+                    "inputs": {
+                        "DURATION": {
+                            "name": "DURATION",
+                            "block": "unstuck_pulse_4_dur",
+                            "shadow": "unstuck_pulse_4_dur"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_4_dur",
+                    "opcode": "math_positive_number",
+                    "next": null,
+                    "parent": "unstuck_pulse_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0.5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_5",
+                    "opcode": "looks_changesizeby",
+                    "next": "unstuck_pulse_6",
+                    "parent": "unstuck_pulse_4",
+                    "inputs": {
+                        "CHANGE": {
+                            "name": "CHANGE",
+                            "block": "unstuck_pulse_5_val",
+                            "shadow": "unstuck_pulse_5_val"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_5_val",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_pulse_5",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "-5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_6",
+                    "opcode": "control_wait",
+                    "next": null,
+                    "parent": "unstuck_pulse_5",
+                    "inputs": {
+                        "DURATION": {
+                            "name": "DURATION",
+                            "block": "unstuck_pulse_6_dur",
+                            "shadow": "unstuck_pulse_6_dur"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_pulse_6_dur",
+                    "opcode": "math_positive_number",
+                    "next": null,
+                    "parent": "unstuck_pulse_6",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0.5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -4942,7 +6102,6 @@
                     "category": "sound"
                 }
             ],
-            "blockExample": "captured_sound-remix_1777496758214",
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
@@ -6064,7 +7223,6 @@
                 "bounce-up-down",
                 "forever-loop"
             ],
-            "blockExample": "captured_follow-another-sprite_1777560709420",
             "pointers": [
                 {
                     "label": "Drag \"go to\" into your code",
@@ -6177,12 +7335,175 @@
             "followUps": [
                 "forever-loop"
             ],
-            "blockExample": "bounceUpDown",
             "pointers": [
                 {
                     "label": "Drag \"change y by\" into your code",
                     "blockOpcode": "motion_changeyby",
                     "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_bnc_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_bnc_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_bnc_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_bnc_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_bnc_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_bnc_3",
+                    "opcode": "control_repeat",
+                    "next": "unstuck_bnc_5",
+                    "parent": "unstuck_bnc_2",
+                    "inputs": {
+                        "TIMES": {
+                            "name": "TIMES",
+                            "block": "unstuck_bnc_3_times",
+                            "shadow": "unstuck_bnc_3_times"
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_bnc_4",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_bnc_3_times",
+                    "opcode": "math_whole_number",
+                    "next": null,
+                    "parent": "unstuck_bnc_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_bnc_4",
+                    "opcode": "motion_changeyby",
+                    "next": null,
+                    "parent": "unstuck_bnc_3",
+                    "inputs": {
+                        "DY": {
+                            "name": "DY",
+                            "block": "unstuck_bnc_4_dy",
+                            "shadow": "unstuck_bnc_4_dy"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_bnc_4_dy",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_bnc_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_bnc_5",
+                    "opcode": "control_repeat",
+                    "next": null,
+                    "parent": "unstuck_bnc_3",
+                    "inputs": {
+                        "TIMES": {
+                            "name": "TIMES",
+                            "block": "unstuck_bnc_5_times",
+                            "shadow": "unstuck_bnc_5_times"
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_bnc_6",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_bnc_5_times",
+                    "opcode": "math_whole_number",
+                    "next": null,
+                    "parent": "unstuck_bnc_5",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_bnc_6",
+                    "opcode": "motion_changeyby",
+                    "next": null,
+                    "parent": "unstuck_bnc_5",
+                    "inputs": {
+                        "DY": {
+                            "name": "DY",
+                            "block": "unstuck_bnc_6_dy",
+                            "shadow": "unstuck_bnc_6_dy"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_bnc_6_dy",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_bnc_6",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "-5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -6238,12 +7559,124 @@
                 "move-with-keys",
                 "forever-loop"
             ],
-            "blockExample": "foreverIfKeySmooth",
             "pointers": [
                 {
                     "label": "Drag \"key pressed?\" from Sensing",
                     "blockOpcode": "sensing_keypressed",
                     "category": "sensing"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_smooth_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_smooth_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_smooth_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_smooth_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_smooth_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_smooth_3",
+                    "opcode": "control_if",
+                    "next": null,
+                    "parent": "unstuck_smooth_2",
+                    "inputs": {
+                        "CONDITION": {
+                            "name": "CONDITION",
+                            "block": "unstuck_smooth_4",
+                            "shadow": null
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_smooth_5",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_smooth_4",
+                    "opcode": "sensing_keypressed",
+                    "next": null,
+                    "parent": "unstuck_smooth_3",
+                    "inputs": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "block": "unstuck_smooth_4_menu",
+                            "shadow": "unstuck_smooth_4_menu"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_smooth_4_menu",
+                    "opcode": "sensing_keyoptions",
+                    "next": null,
+                    "parent": "unstuck_smooth_4",
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "right arrow"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_smooth_5",
+                    "opcode": "motion_changexby",
+                    "next": null,
+                    "parent": "unstuck_smooth_3",
+                    "inputs": {
+                        "DX": {
+                            "name": "DX",
+                            "block": "unstuck_smooth_5_dx",
+                            "shadow": "unstuck_smooth_5_dx"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_smooth_5_dx",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_smooth_5",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -6259,12 +7692,76 @@
                 "reset-at-start",
                 "go-to-position"
             ],
-            "blockExample": "goToCenter",
             "pointers": [
                 {
                     "label": "Drag \"go to x: y:\" into your code and change the numbers",
                     "blockOpcode": "motion_gotoxy",
                     "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_gotoc_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_gotoc_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_gotoc_2",
+                    "opcode": "motion_gotoxy",
+                    "next": null,
+                    "parent": "unstuck_gotoc_1",
+                    "inputs": {
+                        "X": {
+                            "name": "X",
+                            "block": "unstuck_gotoc_2_x",
+                            "shadow": "unstuck_gotoc_2_x"
+                        },
+                        "Y": {
+                            "name": "Y",
+                            "block": "unstuck_gotoc_2_y",
+                            "shadow": "unstuck_gotoc_2_y"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_gotoc_2_x",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_gotoc_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_gotoc_2_y",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_gotoc_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -6304,12 +7801,123 @@
                 "detect-collision",
                 "clone-sprite"
             ],
-            "blockExample": "fallingFromSky",
             "pointers": [
                 {
                     "label": "Drag \"change y by\" into your code",
                     "blockOpcode": "motion_changeyby",
                     "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_fall_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_fall_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_fall_2",
+                    "opcode": "motion_gotoxy",
+                    "next": "unstuck_fall_3",
+                    "parent": "unstuck_fall_1",
+                    "inputs": {
+                        "X": {
+                            "name": "X",
+                            "block": "unstuck_fall_2_x",
+                            "shadow": "unstuck_fall_2_x"
+                        },
+                        "Y": {
+                            "name": "Y",
+                            "block": "unstuck_fall_2_y",
+                            "shadow": "unstuck_fall_2_y"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_fall_2_x",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_fall_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_fall_2_y",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_fall_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "180"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_fall_3",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_fall_2",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_fall_4",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_fall_4",
+                    "opcode": "motion_changeyby",
+                    "next": null,
+                    "parent": "unstuck_fall_3",
+                    "inputs": {
+                        "DY": {
+                            "name": "DY",
+                            "block": "unstuck_fall_4_dy",
+                            "shadow": "unstuck_fall_4_dy"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_fall_4_dy",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_fall_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "-5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
             ]
         },
@@ -6351,7 +7959,6 @@
                 "too-fast",
                 "glide-to-position"
             ],
-            "blockExample": "captured_glide-to-random_1777319625819",
             "pointers": [
                 {
                     "label": "Drag \"glide\" into your code",
@@ -6439,7 +8046,6 @@
                 "go-to-position",
                 "change-xy-position"
             ],
-            "blockExample": "captured_change-y-position_1777320252117",
             "pointers": [
                 {
                     "label": "Drag \"change y by\" into your code",
@@ -6514,7 +8120,6 @@
                 "text-to-speech-extension"
             ],
             "reviewed": false,
-            "blockExample": "captured_translate-extension_1777570785281",
             "pointers": [
                 {
                     "label": "Add extensions here",
@@ -6654,7 +8259,6 @@
                 "face-sensing-extension"
             ],
             "reviewed": false,
-            "blockExample": "captured_video-sensing-extension_1777488000001",
             "pointers": [
                 {
                     "label": "Add extensions here",
@@ -6766,7 +8370,6 @@
                 "starter-face-filter"
             ],
             "reviewed": false,
-            "blockExample": "captured_face-sensing-extension_1777488000002",
             "pointers": [
                 {
                     "label": "Add extensions here",
@@ -6851,7 +8454,6 @@
                 "move-with-keys"
             ],
             "reviewed": false,
-            "blockExample": "captured_makeymakey-extension_1777488000003",
             "pointers": [
                 {
                     "label": "Add extensions here",
@@ -6920,7 +8522,6 @@
                 "ask-and-answer"
             ],
             "reviewed": false,
-            "blockExample": "captured_speech2text-extension_1777488000004",
             "pointers": [
                 {
                     "label": "Add extensions here",
@@ -7028,7 +8629,6 @@
                 "rotation-style-vs-turn"
             ],
             "reviewed": false,
-            "blockExample": "captured_point-direction_1777488000005",
             "pointers": [
                 {
                     "label": "Drag \"point in direction\" into your code",
@@ -7098,7 +8698,6 @@
                 "follow-another-sprite"
             ],
             "reviewed": false,
-            "blockExample": "captured_point-towards_1777488000006",
             "pointers": [
                 {
                     "label": "Drag \"point towards\" into your code",
@@ -7183,7 +8782,6 @@
                 "rotation-style-vs-turn"
             ],
             "reviewed": false,
-            "blockExample": "captured_if-on-edge-bounce_1777488000007",
             "pointers": [
                 {
                     "label": "Drag \"if on edge, bounce\" into your code",
@@ -7279,7 +8877,6 @@
                 "change-y-position"
             ],
             "reviewed": false,
-            "blockExample": "captured_set-position_1777488000008",
             "pointers": [
                 {
                     "label": "Drag \"set x to\" into your code",
@@ -7380,7 +8977,6 @@
                 "add-costume"
             ],
             "reviewed": false,
-            "blockExample": "captured_switch-costume-to_1777488000009",
             "pointers": [
                 {
                     "label": "Drag \"switch costume to\" into your code",
@@ -7448,7 +9044,6 @@
                 "growing-shrinking"
             ],
             "reviewed": false,
-            "blockExample": "captured_set-size-to_1777488000010",
             "pointers": [
                 {
                     "label": "Drag \"set size to\" into your code",
@@ -7516,7 +9111,6 @@
                 "clone-sprite"
             ],
             "reviewed": false,
-            "blockExample": "captured_hide-sprite_1777488000011",
             "pointers": [
                 {
                     "label": "Drag \"hide\" into your code",
@@ -7587,7 +9181,6 @@
                 "reset-at-start"
             ],
             "reviewed": false,
-            "blockExample": "captured_clear-effects_1777488000012",
             "pointers": [
                 {
                     "label": "Drag \"clear graphic effects\" into your code",
@@ -7633,7 +9226,6 @@
                 "backdrop-events"
             ],
             "reviewed": false,
-            "blockExample": "captured_switch-backdrop_1777488000013",
             "pointers": [
                 {
                     "label": "Drag \"switch backdrop to\" into your code",
@@ -7701,7 +9293,6 @@
                 "sound-volume-zero"
             ],
             "reviewed": false,
-            "blockExample": "captured_stop-all-sounds_1777488000014",
             "pointers": [
                 {
                     "label": "Drag \"stop all sounds\" into your code",
@@ -7755,7 +9346,6 @@
                 "broadcast-message"
             ],
             "reviewed": false,
-            "blockExample": "captured_sprite-clicked_1777488000015",
             "pointers": [
                 {
                     "label": "Drag \"when this sprite clicked\" into your code",
@@ -7843,7 +9433,6 @@
                 "blocks-run-in-order"
             ],
             "reviewed": false,
-            "blockExample": "captured_broadcast-and-wait_1777488000016",
             "pointers": [
                 {
                     "label": "Drag \"broadcast and wait\" into your code",
@@ -7943,7 +9532,6 @@
                 "continuous-key-hold"
             ],
             "reviewed": false,
-            "blockExample": "captured_if-else-block_1777488000017",
             "pointers": [
                 {
                     "label": "Drag \"if / else\" into your code",
@@ -8116,7 +9704,6 @@
                 "detect-collision"
             ],
             "reviewed": false,
-            "blockExample": "captured_wait-until-block_1777488000018",
             "pointers": [
                 {
                     "label": "Drag \"wait until\" into your code",
@@ -8232,7 +9819,6 @@
                 "if-not-forever"
             ],
             "reviewed": false,
-            "blockExample": "captured_distance-to_1777488000019",
             "pointers": [
                 {
                     "label": "Drag \"distance to\" into your code",
@@ -8420,7 +10006,6 @@
                 "starter-soundflower"
             ],
             "reviewed": false,
-            "blockExample": "captured_loudness-block_1777488000020",
             "pointers": [
                 {
                     "label": "Find \"loudness\" in Sensing",
@@ -8515,7 +10100,6 @@
                 "pen-extension"
             ],
             "reviewed": false,
-            "blockExample": "captured_mouse-down-block_1777488000021",
             "pointers": [
                 {
                     "label": "Find \"mouse down?\" in Sensing",
@@ -8630,7 +10214,6 @@
                 "if-else-block"
             ],
             "reviewed": false,
-            "blockExample": "captured_equals-comparison_1777488000022",
             "pointers": [
                 {
                     "label": "Drag \"=\" into your code",
@@ -8810,7 +10393,6 @@
                 "say-think"
             ],
             "reviewed": false,
-            "blockExample": "captured_join-strings_1777488000023",
             "pointers": [
                 {
                     "label": "Drag \"join\" into your code",

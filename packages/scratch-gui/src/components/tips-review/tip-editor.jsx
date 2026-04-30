@@ -4,14 +4,13 @@ import React from 'react';
 import BlockPreview from '../unstuck-card/block-preview.jsx';
 import {TipDisplay} from '../unstuck-card/unstuck-card.jsx';
 import allTips from '../../lib/libraries/tips/index.js';
-import blockTemplates from '../../lib/unstuck/block-templates.js';
 import {
     uiTargets,
     blockOpcodesByCategory,
     categoryNames
 } from '../../lib/unstuck/pointer-targets.js';
-import {captureWorkspaceBlocks, blocksToXml, combineScripts} from '../../lib/unstuck/workspace-capture.js';
-import {saveOverride, hasOverride, clearOverride, saveBlockTemplate, getCustomBlockTemplates} from '../../lib/unstuck/tip-overrides.js';
+import {captureWorkspaceBlocks, combineScripts} from '../../lib/unstuck/workspace-capture.js';
+import {saveOverride, hasOverride, clearOverride} from '../../lib/unstuck/tip-overrides.js';
 
 import styles from './tips-review.css';
 import unstuckStyles from '../unstuck-card/unstuck-card.css';
@@ -144,10 +143,7 @@ class TipEditor extends React.Component {
         const picked = capturedScripts.filter((_, i) => selectedScriptIndexes.has(i));
         if (picked.length === 0) return;
         const combined = combineScripts(picked);
-        const templateName = `captured_${this.props.tipId}_${Date.now()}`;
-        saveBlockTemplate(templateName, combined);
         this.updateDraft(() => ({
-            blockExample: templateName,
             _capturedBlocks: combined
         }));
         this.setState({
@@ -506,62 +502,39 @@ class TipEditor extends React.Component {
     renderBlockExampleEditor () {
         const {draft, capturedScripts, selectedScriptIndexes, showCapturePreview} = this.state;
         const {vm} = this.props;
-        const allTemplateNames = Object.keys(blockTemplates);
-        const customTemplates = getCustomBlockTemplates();
-        const customNames = Object.keys(customTemplates);
+        const blockCount = (draft._capturedBlocks || []).length;
 
         return (
             <div className={styles.editorField}>
                 <label className={styles.editorLabel}>{'Block Example'}</label>
                 <div className={styles.editorListRow}>
-                    <select
-                        className={styles.editorSelect}
-                        value={draft.blockExample || ''}
-                        onChange={e => this.updateDraft(() => ({blockExample: e.target.value || undefined}))}
-                    >
-                        <option value="">{'None'}</option>
-                        <optgroup label="Built-in Templates">
-                            {allTemplateNames.map(name => (
-                                <option
-                                    key={name}
-                                    value={name}
-                                >{name}</option>
-                            ))}
-                        </optgroup>
-                        {customNames.length > 0 ? (
-                            <optgroup label="Captured Templates">
-                                {customNames.map(name => (
-                                    <option
-                                        key={name}
-                                        value={name}
-                                    >{name}</option>
-                                ))}
-                            </optgroup>
-                        ) : null}
-                    </select>
+                    <span className={styles.editorBlockCount}>
+                        {blockCount === 0 ? 'No blocks captured' : `${blockCount} block${blockCount === 1 ? '' : 's'} captured`}
+                    </span>
                     {vm ? (
                         <button
                             className={styles.editorCaptureButton}
                             onClick={() => this.handleCapture()}
                         >
-                            {'Capture from Workspace'}
+                            {blockCount === 0 ? 'Capture from Workspace' : 'Re-capture from Workspace'}
+                        </button>
+                    ) : null}
+                    {blockCount > 0 ? (
+                        <button
+                            className={styles.editorCaptureButton}
+                            onClick={() => this.updateDraft(() => ({_capturedBlocks: undefined}))}
+                        >
+                            {'Clear'}
                         </button>
                     ) : null}
                 </div>
 
-                {draft.blockExample && (blockTemplates[draft.blockExample] || customTemplates[draft.blockExample]) ? (
+                {blockCount > 0 ? (
                     <div className={styles.blockPreviewWrapper}>
-                        {customTemplates[draft.blockExample] ? (
-                            <BlockPreview
-                                blockXml={blocksToXml(customTemplates[draft.blockExample])}
-                                vm={vm}
-                            />
-                        ) : (
-                            <BlockPreview
-                                templateName={draft.blockExample}
-                                vm={vm}
-                            />
-                        )}
+                        <BlockPreview
+                            blocks={draft._capturedBlocks}
+                            vm={vm}
+                        />
                     </div>
                 ) : null}
 

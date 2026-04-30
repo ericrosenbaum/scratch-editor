@@ -5,7 +5,6 @@
 import staticTips from '../libraries/tips/index.js';
 
 const STORAGE_KEY = 'scratch-tip-overrides';
-const BLOCK_TEMPLATES_KEY = 'scratch-tip-block-templates';
 const REVIEWED_KEY = 'scratch-tip-reviewed';
 
 /**
@@ -14,18 +13,6 @@ const REVIEWED_KEY = 'scratch-tip-reviewed';
 const getRawOverrides = function () {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? JSON.parse(stored) : {};
-    } catch (e) {
-        return {};
-    }
-};
-
-/**
- * Read custom block templates from localStorage.
- */
-const getCustomBlockTemplates = function () {
-    try {
-        const stored = localStorage.getItem(BLOCK_TEMPLATES_KEY);
         return stored ? JSON.parse(stored) : {};
     } catch (e) {
         return {};
@@ -59,15 +46,6 @@ const saveOverride = function (tipId, tipData) {
     const overrides = getRawOverrides();
     overrides[tipId] = tipData;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
-};
-
-/**
- * Save a custom block template.
- */
-const saveBlockTemplate = function (name, blocks) {
-    const templates = getCustomBlockTemplates();
-    templates[name] = blocks;
-    localStorage.setItem(BLOCK_TEMPLATES_KEY, JSON.stringify(templates));
 };
 
 /**
@@ -127,61 +105,39 @@ const exportTipsJson = function (quickPicks) {
 };
 
 /**
- * Export block templates as JSON matching block-templates.json format.
- * Merges built-in templates with any custom captured ones.
- */
-const exportBlockTemplatesJson = function (builtinTemplates) {
-    const custom = getCustomBlockTemplates();
-    return JSON.stringify({
-        ...builtinTemplates,
-        ...custom
-    }, null, 2);
-};
-
-/**
- * Import tips and block templates from a JSON string.
- * Only stores the diffs from static data as overrides.
+ * Import tips from a JSON string. Stores all imported tips as overrides.
  */
 const importTips = function (jsonString) {
     const data = JSON.parse(jsonString);
     if (data.tips) {
         const overrides = {};
         for (const [id, tip] of Object.entries(data.tips)) {
-            // Store all imported tips as overrides
             overrides[id] = tip;
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
     }
-    if (data.blockTemplates) {
-        localStorage.setItem(BLOCK_TEMPLATES_KEY, JSON.stringify(data.blockTemplates));
-    }
 };
 
 /**
- * Clear all overrides and custom templates.
+ * Clear all tip overrides.
  */
 const clearAllOverrides = function () {
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(BLOCK_TEMPLATES_KEY);
 };
 
 /**
- * POST the current merged tips (and optionally block templates) to the
- * dev-server middleware so they land in tips.json / block-templates.json on
- * disk. Only works when running under `npm start` (dev server). Callers
- * should clear the corresponding overrides on success so subsequent reads
+ * POST the current merged tips to the dev-server middleware so they land
+ * in tips.json on disk. Only works when running under `npm start` (dev
+ * server). Callers should clear overrides on success so subsequent reads
  * come from the freshly written source file.
  */
-const persistToSource = async function ({tips: tipsPayload, quickPicks, blockTemplates} = {}) {
+const persistToSource = async function ({tips: tipsPayload, quickPicks} = {}) {
     const body = {};
     if (tipsPayload) {
         body.tips = {
             tips: tipsPayload,
             quickPicks: quickPicks || []
         };
-    }
-    if (blockTemplates) {
-        body.blockTemplates = blockTemplates;
     }
     const response = await fetch('/__tips-author/save', {
         method: 'POST',
@@ -248,14 +204,11 @@ export {
     loadMergedTips,
     saveOverride,
     deleteOverride,
-    saveBlockTemplate,
     hasOverride,
     clearOverride,
     exportTipsJson,
-    exportBlockTemplatesJson,
     importTips,
     clearAllOverrides,
-    getCustomBlockTemplates,
     persistToSource,
     forgetOverride,
     getReviewedSet,

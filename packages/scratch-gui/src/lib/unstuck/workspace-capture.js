@@ -1,14 +1,15 @@
 /**
  * Capture blocks from the Scratch workspace and convert them
- * to the block-templates.js array format.
+ * to the captured-blocks array format used in tips.json's
+ * `_capturedBlocks` field.
  */
 
 /**
  * Walk a block tree starting from a top-level block and produce
- * an array in the block-templates format.
+ * an array of captured-block objects.
  * @param {object} blocks - The blocks map from vm.editingTarget.blocks._blocks
  * @param {string} topBlockId - The ID of the top-level block to start from
- * @returns {Array} Array of block objects in block-templates format
+ * @returns {Array} Array of captured-block objects
  */
 const walkBlockTree = function (blocks, topBlockId) {
     const result = [];
@@ -137,8 +138,9 @@ const captureWorkspaceBlocks = function (vm) {
 };
 
 /**
- * Convert a block template array (as stored in block-templates.js or captured)
- * into Blockly XML string for rendering in BlockPreview.
+ * Convert a captured-blocks array (as stored in tips.json's `_capturedBlocks`
+ * or freshly captured from a workspace) into a Blockly XML string for
+ * rendering in BlockPreview.
  * @param {Array} templateBlocks - Array of block objects
  * @returns {string} Blockly XML string
  */

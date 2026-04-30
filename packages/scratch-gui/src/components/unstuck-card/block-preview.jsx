@@ -2,8 +2,6 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import * as ScratchBlocks from 'scratch-blocks';
 import {getColorsForMode, colorModeMap} from '../../lib/settings/color-mode';
-import blockTemplates from '../../lib/unstuck/block-templates.js';
-import {getCustomBlockTemplates} from '../../lib/unstuck/tip-overrides.js';
 import {blocksToXml} from '../../lib/unstuck/workspace-capture.js';
 
 import styles from './block-preview.css';
@@ -24,23 +22,11 @@ const extensionIdFromOpcode = function (opcode) {
     return KNOWN_EXTENSION_IDS.has(prefix) ? prefix : null;
 };
 
-const extensionsInTemplate = function (template) {
+const extensionsInTemplate = function (blocks) {
     const ids = new Set();
-    if (!Array.isArray(template)) return ids;
-    for (const block of template) {
+    if (!Array.isArray(blocks)) return ids;
+    for (const block of blocks) {
         const extId = extensionIdFromOpcode(block && block.opcode);
-        if (extId) ids.add(extId);
-    }
-    return ids;
-};
-
-const extensionsInXml = function (xml) {
-    const ids = new Set();
-    if (!xml) return ids;
-    const regex = /type="([^"]+)"/g;
-    let match;
-    while ((match = regex.exec(xml)) !== null) {
-        const extId = extensionIdFromOpcode(match[1]);
         if (extId) ids.add(extId);
     }
     return ids;
@@ -69,8 +55,7 @@ class BlockPreview extends React.Component {
                 this.props.vm.on('EXTENSION_ADDED', this.handleExtensionAdded);
             }
         }
-        if (prevProps.templateName !== this.props.templateName ||
-            prevProps.blockXml !== this.props.blockXml) {
+        if (prevProps.blocks !== this.props.blocks) {
             this.buildBlocks();
         }
     }
@@ -92,12 +77,10 @@ class BlockPreview extends React.Component {
         this.buildBlocks();
     }
 
-    ensureExtensionsLoaded (template, xml) {
+    ensureExtensionsLoaded (blocks) {
         const {vm} = this.props;
         if (!vm || !vm.extensionManager) return;
-        const ids = template ?
-            extensionsInTemplate(template) :
-            extensionsInXml(xml);
+        const ids = extensionsInTemplate(blocks);
         for (const extId of ids) {
             if (!vm.extensionManager.isExtensionLoaded(extId)) {
                 // Fire-and-forget; EXTENSION_ADDED triggers a re-render.
@@ -151,24 +134,15 @@ class BlockPreview extends React.Component {
         if (!this.workspace) return;
         this.workspace.clear();
 
-        // Use explicit blockXml prop, or generate XML from block-templates JSON.
-        // Captured templates live in localStorage via tip-overrides, so check
-        // those too — otherwise the review preview shows nothing after capture.
-        const {templateName} = this.props;
-        const resolveTemplate = (name) => {
-            if (!name) return null;
-            const custom = getCustomBlockTemplates();
-            return custom[name] || blockTemplates[name] || null;
-        };
-        const template = resolveTemplate(templateName);
-        const xml = this.props.blockXml ||
-            (template ? blocksToXml(template) : null);
+        const {blocks} = this.props;
+        if (!blocks || blocks.length === 0) return;
+        const xml = blocksToXml(blocks);
         if (!xml) return;
 
-        // Pre-load any extensions referenced by the template so their block
-        // definitions are registered with ScratchBlocks before we try to
-        // render. EXTENSION_ADDED triggers a re-render once loaded.
-        this.ensureExtensionsLoaded(template, this.props.blockXml ? xml : null);
+        // Pre-load any extensions referenced by the captured blocks so their
+        // definitions are registered with ScratchBlocks before we render.
+        // EXTENSION_ADDED triggers a re-render once loaded.
+        this.ensureExtensionsLoaded(blocks);
 
         try {
             const dom = ScratchBlocks.utils.xml.textToDom(xml);
@@ -276,9 +250,9 @@ class BlockPreview extends React.Component {
 }
 
 BlockPreview.propTypes = {
-    blockXml: PropTypes.string,
+    // eslint-disable-next-line react/forbid-prop-types
+    blocks: PropTypes.array,
     colorMode: PropTypes.string,
-    templateName: PropTypes.string,
     // eslint-disable-next-line react/forbid-prop-types
     vm: PropTypes.object
 };

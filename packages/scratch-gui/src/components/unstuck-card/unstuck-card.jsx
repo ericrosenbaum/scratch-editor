@@ -404,7 +404,7 @@ class SearchResults extends React.Component {
                                         {'Show me'}
                                     </span>
                                 ) : null}
-                                {tip.blockExample ? (
+                                {tip._capturedBlocks && tip._capturedBlocks.length > 0 ? (
                                     <span className={styles.tryCodeBadge}>
                                         {'Try this code'}
                                     </span>
@@ -570,7 +570,7 @@ class TipDisplay extends React.Component {
         const pointers = tip.pointers || [];
         const hasPointers = pointers.length > 0;
         const multiplePointers = pointers.length > 1;
-        const hasBlocks = !!tip.blockExample;
+        const hasBlocks = !!(tip._capturedBlocks && tip._capturedBlocks.length > 0);
         const hasFollowUps = tip.followUps && tip.followUps.length > 0;
 
         return (
@@ -658,7 +658,7 @@ class TipDisplay extends React.Component {
                         >
                             <div className={styles.codeSectionInner}>
                                 <BlockPreview
-                                    templateName={tip.blockExample}
+                                    blocks={tip._capturedBlocks}
                                     vm={vm}
                                 />
                                 <button
@@ -703,7 +703,8 @@ TipDisplay.propTypes = {
     onToggleCode: PropTypes.func.isRequired,
     tip: PropTypes.shape({
         text: PropTypes.string.isRequired,
-        blockExample: PropTypes.string,
+        // eslint-disable-next-line react/forbid-prop-types
+        _capturedBlocks: PropTypes.array,
         thumbnail: PropTypes.string,
         projectUrl: PropTypes.string,
         pointers: PropTypes.arrayOf(PropTypes.shape({

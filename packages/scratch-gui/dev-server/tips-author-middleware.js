@@ -1,10 +1,10 @@
 /**
  * Dev-server-only middleware that lets the tips authoring tool write
- * tips.json and block-templates.json directly to disk.
+ * tips.json directly to disk.
  *
  * Only wired up in webpack.config.js when NODE_ENV is not production.
  * Refuses any request that isn't localhost and any write target outside
- * the two fixed paths.
+ * the fixed path.
  */
 const fs = require('fs');
 const path = require('path');
@@ -12,14 +12,6 @@ const path = require('path');
 const TIPS_JSON_PATH = path.resolve(
     __dirname, '..', 'src', 'lib', 'libraries', 'tips', 'tips.json'
 );
-const BLOCK_TEMPLATES_JSON_PATH = path.resolve(
-    __dirname, '..', 'src', 'lib', 'unstuck', 'block-templates.json'
-);
-
-const ALLOWED_TARGETS = {
-    tips: TIPS_JSON_PATH,
-    blockTemplates: BLOCK_TEMPLATES_JSON_PATH
-};
 
 const isLocalhost = function (req) {
     const addr = req.socket && (req.socket.remoteAddress || '');
@@ -76,29 +68,17 @@ const handleSave = async function (req, res) {
         sendJson(res, 400, {error: `Invalid JSON body: ${e.message}`});
         return;
     }
-    const written = [];
+    if (!body.tips) {
+        sendJson(res, 400, {error: 'No tips in payload'});
+        return;
+    }
+    if (!body.tips.tips || typeof body.tips.tips !== 'object') {
+        sendJson(res, 400, {error: 'tips payload must have a .tips object'});
+        return;
+    }
     try {
-        if (body.tips) {
-            if (!body.tips.tips || typeof body.tips.tips !== 'object') {
-                sendJson(res, 400, {error: 'tips payload must have a .tips object'});
-                return;
-            }
-            writeJsonAtomic(ALLOWED_TARGETS.tips, body.tips);
-            written.push('tips.json');
-        }
-        if (body.blockTemplates) {
-            if (typeof body.blockTemplates !== 'object') {
-                sendJson(res, 400, {error: 'blockTemplates payload must be an object'});
-                return;
-            }
-            writeJsonAtomic(ALLOWED_TARGETS.blockTemplates, body.blockTemplates);
-            written.push('block-templates.json');
-        }
-        if (written.length === 0) {
-            sendJson(res, 400, {error: 'No tips or blockTemplates in payload'});
-            return;
-        }
-        sendJson(res, 200, {ok: true, written});
+        writeJsonAtomic(TIPS_JSON_PATH, body.tips);
+        sendJson(res, 200, {ok: true, written: ['tips.json']});
     } catch (e) {
         sendJson(res, 500, {error: `Write failed: ${e.message}`});
     }
@@ -110,12 +90,8 @@ const handleRead = function (req, res) {
         return;
     }
     try {
-        const tipsRaw = fs.readFileSync(ALLOWED_TARGETS.tips, 'utf8');
-        const templatesRaw = fs.readFileSync(ALLOWED_TARGETS.blockTemplates, 'utf8');
-        sendJson(res, 200, {
-            tips: JSON.parse(tipsRaw),
-            blockTemplates: JSON.parse(templatesRaw)
-        });
+        const tipsRaw = fs.readFileSync(TIPS_JSON_PATH, 'utf8');
+        sendJson(res, 200, {tips: JSON.parse(tipsRaw)});
     } catch (e) {
         sendJson(res, 500, {error: `Read failed: ${e.message}`});
     }
@@ -138,4 +114,3 @@ const tipsAuthorMiddleware = function (req, res, next) {
 
 module.exports = tipsAuthorMiddleware;
 module.exports.TIPS_JSON_PATH = TIPS_JSON_PATH;
-module.exports.BLOCK_TEMPLATES_JSON_PATH = BLOCK_TEMPLATES_JSON_PATH;

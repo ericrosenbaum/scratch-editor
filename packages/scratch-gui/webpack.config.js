@@ -243,7 +243,7 @@ default: config = buildConfig.get(); break;
 const finalConfig = buildDist ? config : buildConfig.get();
 
 // Register dev-server-only middleware for the tips authoring tool, which
-// needs to write directly to tips.json and block-templates.json on disk.
+// needs to write directly to tips.json on disk.
 // Skipped entirely in production builds.
 if (
     process.env.NODE_ENV !== 'production' &&

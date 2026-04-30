@@ -30,8 +30,6 @@ import extractProjectContext from '../lib/unstuck/context-extractor.js';
 import getProjectText from '../lib/unstuck/blocks-to-text.js';
 import buildContextQuery from '../lib/unstuck/context-query-builder.js';
 import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions.js';
-import blockTemplates from '../lib/unstuck/block-templates.js';
-import {getCustomBlockTemplates} from '../lib/unstuck/tip-overrides.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
 
 const keywordProvider = new KeywordTipProvider(tips);
@@ -167,21 +165,18 @@ class UnstuckCard extends React.Component {
 
     handleAddToProject () {
         const activeTip = this.props.activeTipId ? tips[this.props.activeTipId] : null;
-        if (!activeTip || !activeTip.blockExample) return;
-        const custom = getCustomBlockTemplates();
-        const template = custom[activeTip.blockExample] || blockTemplates[activeTip.blockExample];
-        if (!template) return;
+        if (!activeTip || !activeTip._capturedBlocks || activeTip._capturedBlocks.length === 0) return;
 
-        // Captured templates may reference variables/lists/broadcasts that
-        // don't exist in the current project. Always create missing ones as
-        // GLOBAL variables on the stage (or remap to an existing same-named
-        // global variable) before sharing, so every sprite can see them and
-        // the blocks palette picks them up after refresh.
+        // Captured blocks may reference variables/lists/broadcasts that don't
+        // exist in the current project. Always create missing ones as GLOBAL
+        // variables on the stage (or remap to an existing same-named global
+        // variable) before sharing, so every sprite can see them and the
+        // blocks palette picks them up after refresh.
         const vm = this.props.vm;
         const stage = vm.runtime.getTargetForStage();
         const editingTarget = vm.editingTarget;
         const idRemap = {};
-        const prepared = JSON.parse(JSON.stringify(template));
+        const prepared = JSON.parse(JSON.stringify(activeTip._capturedBlocks));
         for (const block of prepared) {
             if (!block.fields) continue;
             for (const field of Object.values(block.fields)) {

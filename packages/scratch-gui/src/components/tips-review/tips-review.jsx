@@ -3,12 +3,11 @@
    react/jsx-handler-names, no-negated-condition, arrow-parens */
 import React from 'react';
 import {quickPicks} from '../../lib/libraries/tips/index.js';
-import blockTemplates from '../../lib/unstuck/block-templates.js';
 import TipEditor from './tip-editor.jsx';
 import {
     loadMergedTips, hasOverride, deleteOverride, saveOverride,
-    exportTipsJson, exportBlockTemplatesJson, importTips,
-    persistToSource, clearAllOverrides, getCustomBlockTemplates,
+    exportTipsJson, importTips,
+    persistToSource, clearAllOverrides,
     getReviewedSet, setReviewed
 } from '../../lib/unstuck/tip-overrides.js';
 
@@ -91,10 +90,6 @@ function computeAnalysis (workingTips) {
             }
         }
 
-        if (tip.blockExample && !blockTemplates[tip.blockExample]) {
-            tipWarnings.push(`Block template '${tip.blockExample}' not found`);
-        }
-
         if (tipWarnings.length > 0) {
             warnings[tipId] = tipWarnings;
         }
@@ -112,7 +107,7 @@ function computeAnalysis (workingTips) {
     const tipEntries = Object.entries(workingTips);
     const stats = {
         total: tipEntries.length,
-        withBlocks: tipEntries.filter(([, t]) => t.blockExample).length,
+        withBlocks: tipEntries.filter(([, t]) => t._capturedBlocks && t._capturedBlocks.length > 0).length,
         withPointers: tipEntries.filter(([, t]) => t.pointers && t.pointers.length > 0).length,
         warningCount: Object.keys(warnings).length,
         orphanCount: orphanIds.size
@@ -141,7 +136,6 @@ class TipsReview extends React.Component {
         };
         this.analysis = computeAnalysis(workingTips);
         this.handleExportTips = this.handleExportTips.bind(this);
-        this.handleExportBlocks = this.handleExportBlocks.bind(this);
         this.handleImport = this.handleImport.bind(this);
         this.handleTipSave = this.handleTipSave.bind(this);
         this.handleTipRevert = this.handleTipRevert.bind(this);
@@ -166,17 +160,6 @@ class TipsReview extends React.Component {
         const a = document.createElement('a');
         a.href = url;
         a.download = 'tips.json';
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    handleExportBlocks () {
-        const json = exportBlockTemplatesJson(blockTemplates);
-        const blob = new Blob([json], {type: 'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'block-templates.json';
         a.click();
         URL.revokeObjectURL(url);
     }
@@ -289,14 +272,9 @@ class TipsReview extends React.Component {
         this.setState({saveToSourceStatus: 'saving'});
         try {
             const mergedTips = loadMergedTips();
-            const mergedBlockTemplates = {
-                ...blockTemplates,
-                ...getCustomBlockTemplates()
-            };
             await persistToSource({
                 tips: mergedTips,
-                quickPicks,
-                blockTemplates: mergedBlockTemplates
+                quickPicks
             });
             clearAllOverrides();
             const workingTips = loadMergedTips();
@@ -380,12 +358,6 @@ class TipsReview extends React.Component {
                         onClick={this.handleExportTips}
                     >
                         {'Export tips.json'}
-                    </button>
-                    <button
-                        className={styles.exportButton}
-                        onClick={this.handleExportBlocks}
-                    >
-                        {'Export block-templates.json'}
                     </button>
                     <button
                         className={styles.importButton}
