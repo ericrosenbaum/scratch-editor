@@ -566,7 +566,7 @@ class TipDisplay extends React.Component {
         this.props.onPointerClick(index);
     }
     render () {
-        const {tip, tips, onAddToProject, codeExpanded, onToggleCode} = this.props;
+        const {tip, tips, onAddToProject, codeExpanded, onToggleCode, vm} = this.props;
         const pointers = tip.pointers || [];
         const hasPointers = pointers.length > 0;
         const multiplePointers = pointers.length > 1;
@@ -659,6 +659,7 @@ class TipDisplay extends React.Component {
                             <div className={styles.codeSectionInner}>
                                 <BlockPreview
                                     templateName={tip.blockExample}
+                                    vm={vm}
                                 />
                                 <button
                                     className={styles.addToProjectButton}
@@ -712,7 +713,9 @@ TipDisplay.propTypes = {
         followUps: PropTypes.arrayOf(PropTypes.string)
     }).isRequired,
     // eslint-disable-next-line react/forbid-prop-types
-    tips: PropTypes.object.isRequired
+    tips: PropTypes.object.isRequired,
+    // eslint-disable-next-line react/forbid-prop-types
+    vm: PropTypes.object
 };
 
 /* ===== MAIN CARD ===== */
@@ -749,6 +752,7 @@ const UnstuckCard = ({
     quickPicks,
     searchResults,
     tips,
+    vm,
     voiceSupported,
     x,
     y
@@ -807,6 +811,7 @@ const UnstuckCard = ({
                                         codeExpanded={codeExpanded}
                                         tip={activeTip}
                                         tips={tips}
+                                        vm={vm}
                                         onAddToProject={onAddToProject}
                                         onFollowUp={onFollowUp}
                                         onPointerClick={onPointerClick}
@@ -903,6 +908,8 @@ UnstuckCard.propTypes = {
         score: PropTypes.number.isRequired
     })).isRequired,
     tips: PropTypes.object.isRequired,
+    // eslint-disable-next-line react/forbid-prop-types
+    vm: PropTypes.object,
     voiceSupported: PropTypes.bool,
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired

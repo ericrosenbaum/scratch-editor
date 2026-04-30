@@ -283,6 +283,7 @@ class UnstuckCard extends React.Component {
                 voiceSupported={isVoiceSupported()}
                 quickPicks={quickPicks}
                 tips={tips}
+                vm={this.props.vm}
                 x={this.props.x}
                 y={this.props.y}
                 onAddToProject={this.handleAddToProject}

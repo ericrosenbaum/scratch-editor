@@ -554,9 +554,13 @@ class TipEditor extends React.Component {
                         {customTemplates[draft.blockExample] ? (
                             <BlockPreview
                                 blockXml={blocksToXml(customTemplates[draft.blockExample])}
+                                vm={vm}
                             />
                         ) : (
-                            <BlockPreview templateName={draft.blockExample} />
+                            <BlockPreview
+                                templateName={draft.blockExample}
+                                vm={vm}
+                            />
                         )}
                     </div>
                 ) : null}

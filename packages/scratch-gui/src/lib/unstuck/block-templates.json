@@ -8835,5 +8835,121 @@
             "shadow": true,
             "topLevel": false
         }
+    ],
+    "captured_translate-extension_1777570785281": [
+        {
+            "id": "unstuck_s0_1",
+            "opcode": "event_whenflagclicked",
+            "next": "unstuck_s0_2",
+            "parent": null,
+            "inputs": {},
+            "fields": {},
+            "shadow": false,
+            "topLevel": true,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "unstuck_s0_2",
+            "opcode": "looks_sayforsecs",
+            "next": null,
+            "parent": "unstuck_s0_1",
+            "inputs": {
+                "MESSAGE": {
+                    "name": "MESSAGE",
+                    "block": "unstuck_s0_3",
+                    "shadow": "unstuck_s0_6"
+                },
+                "SECS": {
+                    "name": "SECS",
+                    "block": "unstuck_s0_7",
+                    "shadow": "unstuck_s0_7"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_3",
+            "opcode": "translate_getTranslate",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {
+                "WORDS": {
+                    "name": "WORDS",
+                    "block": "unstuck_s0_4",
+                    "shadow": "unstuck_s0_4"
+                },
+                "LANGUAGE": {
+                    "name": "LANGUAGE",
+                    "block": "unstuck_s0_5",
+                    "shadow": "unstuck_s0_5"
+                }
+            },
+            "fields": {},
+            "shadow": false,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_4",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "hello"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_5",
+            "opcode": "translate_menu_languages",
+            "next": null,
+            "parent": "unstuck_s0_3",
+            "inputs": {},
+            "fields": {
+                "languages": {
+                    "name": "languages",
+                    "value": "es"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_6",
+            "opcode": "text",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": "Hello!"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        },
+        {
+            "id": "unstuck_s0_7",
+            "opcode": "math_number",
+            "next": null,
+            "parent": "unstuck_s0_2",
+            "inputs": {},
+            "fields": {
+                "NUM": {
+                    "name": "NUM",
+                    "value": "2"
+                }
+            },
+            "shadow": true,
+            "topLevel": false
+        }
     ]
 }

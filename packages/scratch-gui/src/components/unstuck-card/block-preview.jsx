@@ -8,14 +8,67 @@ import {blocksToXml} from '../../lib/unstuck/workspace-capture.js';
 
 import styles from './block-preview.css';
 
+// Built-in extensions whose blocks are only registered with ScratchBlocks
+// after the extension is loaded. Mirrors `builtinExtensions` in
+// scratch-vm/src/extension-support/extension-manager.js — keep in sync.
+const KNOWN_EXTENSION_IDS = new Set([
+    'pen', 'wedo2', 'music', 'microbit', 'text2speech', 'translate',
+    'videoSensing', 'ev3', 'makeymakey', 'boost', 'gdxfor', 'faceSensing'
+]);
+
+const extensionIdFromOpcode = function (opcode) {
+    if (!opcode) return null;
+    const idx = opcode.indexOf('_');
+    if (idx <= 0) return null;
+    const prefix = opcode.slice(0, idx);
+    return KNOWN_EXTENSION_IDS.has(prefix) ? prefix : null;
+};
+
+const extensionsInTemplate = function (template) {
+    const ids = new Set();
+    if (!Array.isArray(template)) return ids;
+    for (const block of template) {
+        const extId = extensionIdFromOpcode(block && block.opcode);
+        if (extId) ids.add(extId);
+    }
+    return ids;
+};
+
+const extensionsInXml = function (xml) {
+    const ids = new Set();
+    if (!xml) return ids;
+    const regex = /type="([^"]+)"/g;
+    let match;
+    while ((match = regex.exec(xml)) !== null) {
+        const extId = extensionIdFromOpcode(match[1]);
+        if (extId) ids.add(extId);
+    }
+    return ids;
+};
+
 class BlockPreview extends React.Component {
     constructor (props) {
         super(props);
         this.workspace = null;
         this.setRef = this.setRef.bind(this);
+        this.handleExtensionAdded = this.handleExtensionAdded.bind(this);
+    }
+
+    componentDidMount () {
+        if (this.props.vm) {
+            this.props.vm.on('EXTENSION_ADDED', this.handleExtensionAdded);
+        }
     }
 
     componentDidUpdate (prevProps) {
+        if (prevProps.vm !== this.props.vm) {
+            if (prevProps.vm) {
+                prevProps.vm.removeListener('EXTENSION_ADDED', this.handleExtensionAdded);
+            }
+            if (this.props.vm) {
+                this.props.vm.on('EXTENSION_ADDED', this.handleExtensionAdded);
+            }
+        }
         if (prevProps.templateName !== this.props.templateName ||
             prevProps.blockXml !== this.props.blockXml) {
             this.buildBlocks();
@@ -23,9 +76,34 @@ class BlockPreview extends React.Component {
     }
 
     componentWillUnmount () {
+        if (this.props.vm) {
+            this.props.vm.removeListener('EXTENSION_ADDED', this.handleExtensionAdded);
+        }
         if (this.workspace) {
             this.workspace.dispose();
             this.workspace = null;
+        }
+    }
+
+    handleExtensionAdded () {
+        // An extension just registered its block definitions with
+        // ScratchBlocks — re-attempt rendering so previously-unknown
+        // opcodes can now resolve.
+        this.buildBlocks();
+    }
+
+    ensureExtensionsLoaded (template, xml) {
+        const {vm} = this.props;
+        if (!vm || !vm.extensionManager) return;
+        const ids = template ?
+            extensionsInTemplate(template) :
+            extensionsInXml(xml);
+        for (const extId of ids) {
+            if (!vm.extensionManager.isExtensionLoaded(extId)) {
+                // Fire-and-forget; EXTENSION_ADDED triggers a re-render.
+                Promise.resolve(vm.extensionManager.loadExtensionURL(extId))
+                    .catch(() => { /* extension load failed; preview stays empty */ });
+            }
         }
     }
 
@@ -86,6 +164,11 @@ class BlockPreview extends React.Component {
         const xml = this.props.blockXml ||
             (template ? blocksToXml(template) : null);
         if (!xml) return;
+
+        // Pre-load any extensions referenced by the template so their block
+        // definitions are registered with ScratchBlocks before we try to
+        // render. EXTENSION_ADDED triggers a re-render once loaded.
+        this.ensureExtensionsLoaded(template, this.props.blockXml ? xml : null);
 
         try {
             const dom = ScratchBlocks.utils.xml.textToDom(xml);
@@ -195,7 +278,9 @@ class BlockPreview extends React.Component {
 BlockPreview.propTypes = {
     blockXml: PropTypes.string,
     colorMode: PropTypes.string,
-    templateName: PropTypes.string
+    templateName: PropTypes.string,
+    // eslint-disable-next-line react/forbid-prop-types
+    vm: PropTypes.object
 };
 
 BlockPreview.defaultProps = {

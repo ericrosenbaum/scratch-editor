@@ -6497,6 +6497,2469 @@
                     "topLevel": false
                 }
             ]
+        },
+        "translate-extension": {
+            "id": "translate-extension",
+            "title": "Translate text",
+            "text": "Add the Translate extension to make your sprite say words in another language!",
+            "tags": [
+                "extensions",
+                "translate",
+                "language",
+                "needs-review"
+            ],
+            "followUps": [
+                "add-extension",
+                "say-think",
+                "text-to-speech-extension"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_translate-extension_1777570785281",
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_6"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_7",
+                            "shadow": "unstuck_s0_7"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "translate_getTranslate",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "WORDS": {
+                            "name": "WORDS",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        },
+                        "LANGUAGE": {
+                            "name": "LANGUAGE",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "hello"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "translate_menu_languages",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "languages": {
+                            "name": "languages",
+                            "value": "es"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Hello!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "video-sensing-extension": {
+            "id": "video-sensing-extension",
+            "title": "Video Sensing",
+            "text": "Add the Video Sensing extension to use your webcam — wave at the screen to trigger blocks!",
+            "tags": [
+                "extensions",
+                "video",
+                "sensing",
+                "needs-review"
+            ],
+            "followUps": [
+                "add-extension",
+                "tutorial-video-sensing",
+                "face-sensing-extension"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_video-sensing-extension_1777488000001",
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "videoSensing_videoToggle",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "VIDEO_STATE": {
+                            "name": "VIDEO_STATE",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "videoSensing_menu_VIDEO_STATE",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "VIDEO_STATE": {
+                            "name": "VIDEO_STATE",
+                            "value": "on"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_1",
+                    "opcode": "videoSensing_whenMotionGreaterThan",
+                    "next": "unstuck_s1_2",
+                    "parent": null,
+                    "inputs": {
+                        "REFERENCE": {
+                            "name": "REFERENCE",
+                            "block": "unstuck_s1_3",
+                            "shadow": "unstuck_s1_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 200
+                },
+                {
+                    "id": "unstuck_s1_2",
+                    "opcode": "looks_nextcostume",
+                    "next": null,
+                    "parent": "unstuck_s1_1",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_3",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s1_1",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "30"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "face-sensing-extension": {
+            "id": "face-sensing-extension",
+            "title": "Track your face",
+            "text": "Add the Face Sensing extension to make a sprite stick to your nose, mouth, or eyes!",
+            "tags": [
+                "extensions",
+                "face",
+                "sensing",
+                "needs-review"
+            ],
+            "followUps": [
+                "add-extension",
+                "tutorial-face-sensing",
+                "starter-face-filter"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_face-sensing-extension_1777488000002",
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "faceSensing_whenFaceDetected",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "faceSensing_goToPart",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "PART": {
+                            "name": "PART",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "faceSensing_menu_PART",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "PART": {
+                            "name": "PART",
+                            "value": "nose"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "makeymakey-extension": {
+            "id": "makeymakey-extension",
+            "title": "Makey Makey input",
+            "text": "Add the Makey Makey extension to use everyday objects (or arrow keys) as buttons!",
+            "tags": [
+                "extensions",
+                "makeymakey",
+                "input",
+                "hat",
+                "needs-review"
+            ],
+            "followUps": [
+                "add-extension",
+                "move-with-keys"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_makeymakey-extension_1777488000003",
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "makeymakey_whenMakeyKeyPressed",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {
+                        "KEY": {
+                            "name": "KEY",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_nextcostume",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "makeymakey_menu_KEY",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {},
+                    "fields": {
+                        "KEY": {
+                            "name": "KEY",
+                            "value": "SPACE"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "speech2text-extension": {
+            "id": "speech2text-extension",
+            "title": "Listen for speech",
+            "text": "Add the Speech to Text extension and your sprite can listen — it will repeat what you say!",
+            "tags": [
+                "extensions",
+                "speech",
+                "sensing",
+                "needs-review"
+            ],
+            "followUps": [
+                "add-extension",
+                "text-to-speech-extension",
+                "ask-and-answer"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_speech2text-extension_1777488000004",
+            "pointers": [
+                {
+                    "label": "Add extensions here",
+                    "target": "button[class*=\"extension-button\"]"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "speech2text_listenAndWait",
+                    "next": "unstuck_s0_3",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_5"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "speech2text_getSpeech",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": ""
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "point-direction": {
+            "id": "point-direction",
+            "title": "Point in direction",
+            "text": "Use \"point in direction\" to face a specific way: 90 = right, -90 = left, 0 = up, 180 = down.",
+            "tags": [
+                "motion",
+                "direction",
+                "needs-review"
+            ],
+            "followUps": [
+                "spinning",
+                "point-towards",
+                "rotation-style-vs-turn"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_point-direction_1777488000005",
+            "pointers": [
+                {
+                    "label": "Drag \"point in direction\" into your code",
+                    "blockOpcode": "motion_pointindirection",
+                    "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "motion_pointindirection",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "DIRECTION": {
+                            "name": "DIRECTION",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "math_angle",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "90"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "point-towards": {
+            "id": "point-towards",
+            "title": "Point at something",
+            "text": "Use \"point towards\" to face the mouse pointer or another sprite — great for chase or aim.",
+            "tags": [
+                "motion",
+                "direction",
+                "mouse",
+                "needs-review"
+            ],
+            "followUps": [
+                "point-direction",
+                "mouse-pointer",
+                "follow-another-sprite"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_point-towards_1777488000006",
+            "pointers": [
+                {
+                    "label": "Drag \"point towards\" into your code",
+                    "blockOpcode": "motion_pointtowards",
+                    "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "motion_pointtowards",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "TOWARDS": {
+                            "name": "TOWARDS",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "motion_pointtowards_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "TOWARDS": {
+                            "name": "TOWARDS",
+                            "value": "_mouse_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "if-on-edge-bounce": {
+            "id": "if-on-edge-bounce",
+            "title": "Bounce off edges",
+            "text": "Add \"if on edge, bounce\" inside a forever loop so your sprite turns around when it hits the edge of the stage.",
+            "tags": [
+                "motion",
+                "movement",
+                "needs-review"
+            ],
+            "followUps": [
+                "move-sprite",
+                "forever-loop",
+                "rotation-style-vs-turn"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_if-on-edge-bounce_1777488000007",
+            "pointers": [
+                {
+                    "label": "Drag \"if on edge, bounce\" into your code",
+                    "blockOpcode": "motion_ifonedgebounce",
+                    "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "motion_movesteps",
+                    "next": "unstuck_s0_5",
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "motion_ifonedgebounce",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                }
+            ]
+        },
+        "set-position": {
+            "id": "set-position",
+            "title": "Set x or y",
+            "text": "Use \"set x to\" or \"set y to\" to jump to an exact coordinate. \"Change y by\" is a step; \"set y to\" is a teleport.",
+            "tags": [
+                "motion",
+                "coordinates",
+                "position",
+                "needs-review"
+            ],
+            "followUps": [
+                "go-to-position",
+                "change-xy-position",
+                "change-y-position"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_set-position_1777488000008",
+            "pointers": [
+                {
+                    "label": "Drag \"set x to\" into your code",
+                    "blockOpcode": "motion_setx",
+                    "category": "motion"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "motion_setx",
+                    "next": "unstuck_s0_4",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "X": {
+                            "name": "X",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "motion_sety",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "Y": {
+                            "name": "Y",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "0"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "switch-costume-to": {
+            "id": "switch-costume-to",
+            "title": "Pick a costume",
+            "text": "Use \"switch costume to\" with the dropdown to pick a specific costume — vs. \"next costume\" which just steps through them.",
+            "tags": [
+                "looks",
+                "costume",
+                "animation",
+                "needs-review"
+            ],
+            "followUps": [
+                "change-costume",
+                "animate-costume",
+                "add-costume"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_switch-costume-to_1777488000009",
+            "pointers": [
+                {
+                    "label": "Drag \"switch costume to\" into your code",
+                    "blockOpcode": "looks_switchcostumeto",
+                    "category": "looks"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_switchcostumeto",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "COSTUME": {
+                            "name": "COSTUME",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "looks_costume",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "COSTUME": {
+                            "name": "COSTUME",
+                            "value": "costume1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "set-size-to": {
+            "id": "set-size-to",
+            "title": "Set exact size",
+            "text": "Use \"set size to 100\" for normal size. Try 50 for half size or 200 for double size — much more predictable than \"change size by\".",
+            "tags": [
+                "looks",
+                "effect",
+                "needs-review"
+            ],
+            "followUps": [
+                "change-size",
+                "growing-shrinking"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_set-size-to_1777488000010",
+            "pointers": [
+                {
+                    "label": "Drag \"set size to\" into your code",
+                    "blockOpcode": "looks_setsizeto",
+                    "category": "looks"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_setsizeto",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SIZE": {
+                            "name": "SIZE",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "50"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "hide-sprite": {
+            "id": "hide-sprite",
+            "title": "Hide a sprite",
+            "text": "Use \"hide\" to make a sprite invisible. Use \"show\" later to bring it back. Common pattern: hide at start, show on an event.",
+            "tags": [
+                "looks",
+                "needs-review"
+            ],
+            "followUps": [
+                "sprite-is-hidden",
+                "broadcast-message",
+                "clone-sprite"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_hide-sprite_1777488000011",
+            "pointers": [
+                {
+                    "label": "Drag \"hide\" into your code",
+                    "blockOpcode": "looks_hide",
+                    "category": "looks"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_hide",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_1",
+                    "opcode": "event_whenthisspriteclicked",
+                    "next": "unstuck_s1_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 200
+                },
+                {
+                    "id": "unstuck_s1_2",
+                    "opcode": "looks_show",
+                    "next": null,
+                    "parent": "unstuck_s1_1",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                }
+            ]
+        },
+        "clear-effects": {
+            "id": "clear-effects",
+            "title": "Reset effects",
+            "text": "Use \"clear graphic effects\" at the start of your project to reset color, ghost, or fisheye effects from a previous run.",
+            "tags": [
+                "looks",
+                "effect",
+                "debugging",
+                "needs-review"
+            ],
+            "followUps": [
+                "graphic-effects",
+                "sprite-ghost-effect",
+                "reset-at-start"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_clear-effects_1777488000012",
+            "pointers": [
+                {
+                    "label": "Drag \"clear graphic effects\" into your code",
+                    "blockOpcode": "looks_cleargraphiceffects",
+                    "category": "looks"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_cleargraphiceffects",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                }
+            ]
+        },
+        "switch-backdrop": {
+            "id": "switch-backdrop",
+            "title": "Change backdrop",
+            "text": "Use \"switch backdrop to\" to change the stage scene. Combine with \"when backdrop switches to\" to trigger different code per scene.",
+            "tags": [
+                "looks",
+                "needs-review"
+            ],
+            "followUps": [
+                "change-backdrop",
+                "backdrop-events"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_switch-backdrop_1777488000013",
+            "pointers": [
+                {
+                    "label": "Drag \"switch backdrop to\" into your code",
+                    "blockOpcode": "looks_switchbackdropto",
+                    "category": "looks"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_switchbackdropto",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "BACKDROP": {
+                            "name": "BACKDROP",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "looks_backdrops",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "BACKDROP": {
+                            "name": "BACKDROP",
+                            "value": "backdrop1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "stop-all-sounds": {
+            "id": "stop-all-sounds",
+            "title": "Stop sounds",
+            "text": "Use \"stop all sounds\" to silence everything that's playing — handy for game over or new scene.",
+            "tags": [
+                "sound",
+                "needs-review"
+            ],
+            "followUps": [
+                "add-sound",
+                "play-sound-until-done",
+                "sound-volume-zero"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_stop-all-sounds_1777488000014",
+            "pointers": [
+                {
+                    "label": "Drag \"stop all sounds\" into your code",
+                    "blockOpcode": "sound_stopallsounds",
+                    "category": "sound"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenkeypressed",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "space"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "sound_stopallsounds",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                }
+            ]
+        },
+        "sprite-clicked": {
+            "id": "sprite-clicked",
+            "title": "When sprite clicked",
+            "text": "Use \"when this sprite clicked\" to make sprites act like buttons or react when tapped.",
+            "tags": [
+                "events",
+                "hat",
+                "mouse",
+                "needs-review"
+            ],
+            "followUps": [
+                "nothing-happens",
+                "say-think",
+                "broadcast-message"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_sprite-clicked_1777488000015",
+            "pointers": [
+                {
+                    "label": "Drag \"when this sprite clicked\" into your code",
+                    "blockOpcode": "event_whenthisspriteclicked",
+                    "category": "events"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenthisspriteclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Ouch!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "broadcast-and-wait": {
+            "id": "broadcast-and-wait",
+            "title": "Broadcast and wait",
+            "text": "Use \"broadcast and wait\" to send a message and pause until every receiver finishes — great for synchronized cutscenes.",
+            "tags": [
+                "events",
+                "broadcast",
+                "needs-review"
+            ],
+            "followUps": [
+                "broadcast-message",
+                "blocks-run-in-order"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_broadcast-and-wait_1777488000016",
+            "pointers": [
+                {
+                    "label": "Drag \"broadcast and wait\" into your code",
+                    "blockOpcode": "event_broadcastandwait",
+                    "category": "events"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "event_broadcastandwait",
+                    "next": "unstuck_s0_4",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "BROADCAST_INPUT": {
+                            "name": "BROADCAST_INPUT",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "event_broadcast_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "BROADCAST_OPTION": {
+                            "name": "BROADCAST_OPTION",
+                            "value": "scene 1",
+                            "variableType": "broadcast_msg"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "looks_say",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Done!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "if-else-block": {
+            "id": "if-else-block",
+            "title": "If / else",
+            "text": "Use \"if / else\" to do one thing when a condition is true and a different thing otherwise.",
+            "tags": [
+                "control",
+                "needs-review"
+            ],
+            "followUps": [
+                "if-not-forever",
+                "detect-collision",
+                "continuous-key-hold"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_if-else-block_1777488000017",
+            "pointers": [
+                {
+                    "label": "Drag \"if / else\" into your code",
+                    "blockOpcode": "control_if_else",
+                    "category": "control"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "control_if_else",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "CONDITION": {
+                            "name": "CONDITION",
+                            "block": "unstuck_s0_4",
+                            "shadow": null
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_5",
+                            "shadow": null
+                        },
+                        "SUBSTACK2": {
+                            "name": "SUBSTACK2",
+                            "block": "unstuck_s0_6",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "sensing_keypressed",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "block": "unstuck_s0_7",
+                            "shadow": "unstuck_s0_7"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "motion_changexby",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "DX": {
+                            "name": "DX",
+                            "block": "unstuck_s0_8",
+                            "shadow": "unstuck_s0_8"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "motion_changexby",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "DX": {
+                            "name": "DX",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "sensing_keyoptions",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "right arrow"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_6",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "-10"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "wait-until-block": {
+            "id": "wait-until-block",
+            "title": "Wait until",
+            "text": "Use \"wait until\" to pause your code until something happens — like a sprite touching another, or a key being pressed.",
+            "tags": [
+                "control",
+                "sensing",
+                "needs-review"
+            ],
+            "followUps": [
+                "too-fast",
+                "wait-vs-no-wait",
+                "detect-collision"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_wait-until-block_1777488000018",
+            "pointers": [
+                {
+                    "label": "Drag \"wait until\" into your code",
+                    "blockOpcode": "control_wait_until",
+                    "category": "control"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_wait_until",
+                    "next": "unstuck_s0_4",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "CONDITION": {
+                            "name": "CONDITION",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "sensing_keypressed",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "looks_say",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "sensing_keyoptions",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "space"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Go!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "distance-to": {
+            "id": "distance-to",
+            "title": "Measure distance",
+            "text": "Use \"distance to\" to find how far away the mouse pointer or another sprite is — great for chasing or proximity triggers.",
+            "tags": [
+                "sensing",
+                "game",
+                "needs-review"
+            ],
+            "followUps": [
+                "detect-collision",
+                "follow-another-sprite",
+                "if-not-forever"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_distance-to_1777488000019",
+            "pointers": [
+                {
+                    "label": "Drag \"distance to\" into your code",
+                    "blockOpcode": "sensing_distanceto",
+                    "category": "sensing"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "control_if",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "CONDITION": {
+                            "name": "CONDITION",
+                            "block": "unstuck_s0_4",
+                            "shadow": null
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_8",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "operator_lt",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "OPERAND1": {
+                            "name": "OPERAND1",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_6"
+                        },
+                        "OPERAND2": {
+                            "name": "OPERAND2",
+                            "block": "unstuck_s0_7",
+                            "shadow": "unstuck_s0_7"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "sensing_distanceto",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {
+                        "DISTANCETOMENU": {
+                            "name": "DISTANCETOMENU",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": ""
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "50"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "looks_say",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_10",
+                            "shadow": "unstuck_s0_10"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "sensing_distancetomenu",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "DISTANCETOMENU": {
+                            "name": "DISTANCETOMENU",
+                            "value": "_mouse_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_10",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_8",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Close!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "loudness-block": {
+            "id": "loudness-block",
+            "title": "Sense loudness",
+            "text": "Use \"loudness\" to react to your microphone — try it driving size, color, or position for sound-reactive art.",
+            "tags": [
+                "sensing",
+                "sound",
+                "needs-review"
+            ],
+            "followUps": [
+                "set-size-to",
+                "graphic-effects",
+                "starter-soundflower"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_loudness-block_1777488000020",
+            "pointers": [
+                {
+                    "label": "Find \"loudness\" in Sensing",
+                    "blockOpcode": "sensing_loudness",
+                    "category": "sensing"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "looks_setsizeto",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "SIZE": {
+                            "name": "SIZE",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "sensing_loudness",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "100"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "mouse-down-block": {
+            "id": "mouse-down-block",
+            "title": "Click and hold",
+            "text": "Use \"mouse down?\" to detect when the mouse button is being held — perfect for drawing, painting, or holding to charge a jump.",
+            "tags": [
+                "sensing",
+                "mouse",
+                "needs-review"
+            ],
+            "followUps": [
+                "mouse-pointer",
+                "if-not-forever",
+                "pen-extension"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_mouse-down-block_1777488000021",
+            "pointers": [
+                {
+                    "label": "Find \"mouse down?\" in Sensing",
+                    "blockOpcode": "sensing_mousedown",
+                    "category": "sensing"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "control_forever",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_3",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "control_if",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "CONDITION": {
+                            "name": "CONDITION",
+                            "block": "unstuck_s0_4",
+                            "shadow": null
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_5",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "sensing_mousedown",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "looks_changesizeby",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "CHANGE": {
+                            "name": "CHANGE",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "5"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "equals-comparison": {
+            "id": "equals-comparison",
+            "title": "Compare with equals",
+            "text": "Use the \"=\" operator to check if two things match — like comparing the answer to a quiz question.",
+            "tags": [
+                "operators",
+                "needs-review"
+            ],
+            "followUps": [
+                "ask-and-answer",
+                "greater-less-than",
+                "if-else-block"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_equals-comparison_1777488000022",
+            "pointers": [
+                {
+                    "label": "Drag \"=\" into your code",
+                    "blockOpcode": "operator_equals",
+                    "category": "operators"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "sensing_askandwait",
+                    "next": "unstuck_s0_4",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "QUESTION": {
+                            "name": "QUESTION",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "What is 2 + 2?"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "control_if",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "CONDITION": {
+                            "name": "CONDITION",
+                            "block": "unstuck_s0_5",
+                            "shadow": null
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s0_9",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "operator_equals",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {
+                        "OPERAND1": {
+                            "name": "OPERAND1",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_7"
+                        },
+                        "OPERAND2": {
+                            "name": "OPERAND2",
+                            "block": "unstuck_s0_8",
+                            "shadow": "unstuck_s0_8"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "sensing_answer",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": ""
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "4"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "looks_say",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_10",
+                            "shadow": "unstuck_s0_10"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_10",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_9",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Correct!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "join-strings": {
+            "id": "join-strings",
+            "title": "Join words",
+            "text": "Use \"join\" to glue text together — combine a greeting with the user's name and say it back.",
+            "tags": [
+                "operators",
+                "needs-review"
+            ],
+            "followUps": [
+                "ask-and-answer",
+                "say-think"
+            ],
+            "reviewed": false,
+            "blockExample": "captured_join-strings_1777488000023",
+            "pointers": [
+                {
+                    "label": "Drag \"join\" into your code",
+                    "blockOpcode": "operator_join",
+                    "category": "operators"
+                }
+            ],
+            "_capturedBlocks": [
+                {
+                    "id": "unstuck_s0_1",
+                    "opcode": "event_whenflagclicked",
+                    "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "sensing_askandwait",
+                    "next": "unstuck_s0_4",
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "QUESTION": {
+                            "name": "QUESTION",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "What's your name?"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "looks_say",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_5",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "operator_join",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {
+                        "STRING1": {
+                            "name": "STRING1",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
+                        },
+                        "STRING2": {
+                            "name": "STRING2",
+                            "block": "unstuck_s0_7",
+                            "shadow": "unstuck_s0_8"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Hi, "
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "sensing_answer",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "world"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            ]
+        },
+        "make-a-block": {
+            "id": "make-a-block",
+            "title": "Make your own block",
+            "text": "Click \"Make a Block\" in the My Blocks category to define your own custom block. It groups a set of steps you can call from anywhere — great for reuse and organization.",
+            "tags": [
+                "variables",
+                "needs-review"
+            ],
+            "followUps": [
+                "use-variables",
+                "broadcast-message"
+            ],
+            "reviewed": false,
+            "pointers": [
+                {
+                    "label": "Open the My Blocks category",
+                    "target": ".blocklyToolboxCategory#myBlocks"
+                }
+            ]
         }
     },
     "quickPicks": [
