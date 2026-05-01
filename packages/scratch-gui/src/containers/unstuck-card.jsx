@@ -206,6 +206,23 @@ class UnstuckCard extends React.Component {
             }
         }
 
+        // Remap sound names: a sound_sounds_menu shadow may reference a sound
+        // (e.g. "Meow") that doesn't exist on the target. Blockly's dropdown
+        // falls back to displaying the first option, but the stored field
+        // value stays unchanged, so playSound's name lookup returns -1 and
+        // nothing plays. Rewrite the value to the first available sound name.
+        const targetSoundNames = (editingTarget.sprite && editingTarget.sprite.sounds || [])
+            .map(s => s.name);
+        if (targetSoundNames.length > 0) {
+            for (const block of prepared) {
+                if (block.opcode !== 'sound_sounds_menu') continue;
+                const field = block.fields && block.fields.SOUND_MENU;
+                if (field && !targetSoundNames.includes(field.value)) {
+                    field.value = targetSoundNames[0];
+                }
+            }
+        }
+
         vm.shareBlocksToTarget(prepared, editingTarget.id)
             .then(() => {
                 vm.refreshWorkspace();
