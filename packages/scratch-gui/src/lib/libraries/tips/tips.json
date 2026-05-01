@@ -10952,8 +10952,8 @@
     },
     "quickPicks": [
         {
-            "label": "Starting your project",
-            "query": "nothing happens when I click green flag",
+            "label": "Getting started",
+            "query": "getting started",
             "color": "#FFBF00"
         },
         {
@@ -10983,12 +10983,12 @@
         },
         {
             "label": "Fun effects",
-            "query": "rainbow spinning color effects",
+            "query": "fun effects",
             "color": "#FF6680"
         },
         {
             "label": "What went wrong?",
-            "query": "my code is not working something is broken",
+            "query": "my code is not working",
             "color": "#FF8C1A"
         }
     ]
