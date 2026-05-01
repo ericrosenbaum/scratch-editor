@@ -48,7 +48,7 @@
     "TRADEMARK"
   ],
   "scripts": {
-    "build": "npm run clean && npm run build:dev && npm run build:dist && npm run build:dist-standalone",
+    "build": "npm run clean && npm run generate-embeddings && npm run build:dev && npm run build:dist && npm run build:dist-standalone",
     "build:dev": "BUILD_TYPE=dev webpack",
     "build:dist": "cross-env NODE_ENV=production BUILD_TYPE=dist webpack",
     "build:dist-standalone": "cross-env NODE_ENV=production BUILD_TYPE=dist-standalone webpack",
@@ -59,7 +59,7 @@
     "generate-embeddings": "node scripts/generate-tip-embeddings.mjs",
     "prepare": "node scripts/prepare.mjs",
     "prune": "./prune-gh-pages.sh",
-    "start": "webpack serve",
+    "start": "npm run generate-embeddings && webpack serve",
     "test": "npm run test:lint && npm run test:unit && npm run test:integration",
     "test:integration": "cross-env JEST_JUNIT_OUTPUT_NAME=integration-tests-results.xml jest --maxWorkers=4 test[\\\\/]integration",
     "test:lint": "eslint",

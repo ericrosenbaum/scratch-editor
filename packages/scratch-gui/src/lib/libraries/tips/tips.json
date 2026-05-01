@@ -7225,8 +7225,8 @@
             ],
             "pointers": [
                 {
-                    "label": "Drag \"go to\" into your code",
-                    "blockOpcode": "motion_goto",
+                    "label": "Drag out \"point towards\" and select a sprite from the menu ",
+                    "blockOpcode": "motion_pointtowards",
                     "category": "motion"
                 }
             ],
