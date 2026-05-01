@@ -23,6 +23,7 @@ import BackdropLibrary from '../../containers/backdrop-library.jsx';
 import Watermark from '../../containers/watermark.jsx';
 
 import Backpack from '../../containers/backpack.jsx';
+import VibeChat from '../../containers/vibe-chat.jsx';
 import ExtensionsButton from '../extension-button/extension-button.jsx';
 import WebGlModal from '../../containers/webgl-modal.jsx';
 import TipsLibrary from '../../containers/tips-library.jsx';
@@ -561,6 +562,9 @@ const GUIComponent = props => {
                                 />
                             </Box>
                         </Box>
+                        {(props.vibeMode || (typeof window !== 'undefined' && window.__VIBE_MODE__)) ? (
+                            <VibeChat />
+                        ) : null}
                     </Box>
                     <DragLayer />
                 </Box>
@@ -658,6 +662,7 @@ GUIComponent.propTypes = {
     username: PropTypes.string,
     userOwnsProject: PropTypes.bool,
     hideTutorialProjects: PropTypes.bool,
+    vibeMode: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 

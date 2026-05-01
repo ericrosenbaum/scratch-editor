@@ -156,7 +156,17 @@ const buildConfig = baseConfig.clone()
             guistandalone: './src/playground/standalone.jsx',
             blocksonly: './src/playground/blocks-only.jsx',
             compatibilitytesting: './src/playground/compatibility-testing.jsx',
-            player: './src/playground/player.jsx'
+            player: './src/playground/player.jsx',
+            vibe: './src/playground/vibe.jsx'
+        },
+        devServer: {
+            proxy: [
+                {
+                    context: ['/api/vibe'],
+                    target: `http://127.0.0.1:${process.env.VIBE_PORT || 3001}`,
+                    changeOrigin: true
+                }
+            ]
         },
         output: {
             path: path.resolve(__dirname, 'build'),
@@ -201,6 +211,13 @@ const buildConfig = baseConfig.clone()
         filename: 'player.html',
         template: 'src/playground/index.ejs',
         title: 'Scratch 3.0 GUI: Player Example'
+    }))
+    .addPlugin(new HtmlWebpackPlugin({
+        ...commonHtmlWebpackPluginOptions,
+        chunks: ['vibe'],
+        filename: 'vibe.html',
+        template: 'src/playground/index.ejs',
+        title: 'Scratch 3.0 GUI: Vibe Mode'
     }))
     .addPlugin(new CopyWebpackPlugin({
         patterns: [

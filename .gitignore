@@ -84,6 +84,9 @@ web_modules/
 .env.production.local
 .env.local
 
+# vibe-server local state (snapshots, sessions)
+.vibe/
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

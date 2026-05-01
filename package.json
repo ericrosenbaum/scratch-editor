@@ -20,17 +20,19 @@
     "packages/scratch-render",
     "packages/scratch-vm",
     "packages/scratch-gui",
-    "packages/scratch-media-lib-scripts"
+    "packages/scratch-media-lib-scripts",
+    "tools/vibe-server"
   ],
   "scripts": {
-    "build": "cross-env NODE_ENV=production npm run --workspaces build",
+    "build": "cross-env NODE_ENV=production npm run --workspaces --if-present build",
     "build-monorepo": "cross-env-shell ./scripts/build-monorepo.sh",
-    "clean": "npm run --workspaces clean",
+    "clean": "npm run --workspaces --if-present clean",
     "prepare": "husky install",
     "refresh-gh-workflow": "ts-node scripts/build-gha-workflows.ts",
-    "test": "npm test --workspaces",
+    "test": "npm test --workspaces --if-present",
     "update-legal": "npm --workspaces exec -c 'rm -f ./{LICENSE,TRADEMARK} && cp -f ../../{LICENSE,TRADEMARK} .'",
-    "version": "cross-env-shell ./scripts/npm-version.sh"
+    "version": "cross-env-shell ./scripts/npm-version.sh",
+    "vibe": "concurrently -k -n srv,gui -c green,cyan \"npm -w @scratch/vibe-server start\" \"npm -w @scratch/scratch-gui start\""
   },
   "config": {
     "commitizen": {
@@ -40,6 +42,7 @@
   "devDependencies": {
     "@commitlint/cli": "17.8.1",
     "@commitlint/config-conventional": "17.8.1",
+    "concurrently": "9.1.0",
     "cross-env": "7.0.3",
     "globals": "16.5.0",
     "husky": "8.0.3",
