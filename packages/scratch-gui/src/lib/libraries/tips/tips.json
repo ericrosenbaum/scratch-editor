@@ -8107,7 +8107,7 @@
         "translate-extension": {
             "id": "translate-extension",
             "title": "Translate text",
-            "text": "Add the Translate extension to make your sprite say words in another language!",
+            "text": "Add the Translate extension to make your sprite say words in another language",
             "tags": [
                 "extensions",
                 "translate",
@@ -8241,12 +8241,13 @@
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_translate-extension_1777570785281"
         },
         "video-sensing-extension": {
             "id": "video-sensing-extension",
             "title": "Video Sensing",
-            "text": "Add the Video Sensing extension to use your webcam — wave at the screen to trigger blocks!",
+            "text": "Add the Video Sensing extension to use your webcam to sense movement.",
             "tags": [
                 "extensions",
                 "video",
@@ -8268,10 +8269,16 @@
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
-                    "opcode": "event_whenflagclicked",
+                    "opcode": "videoSensing_whenMotionGreaterThan",
                     "next": "unstuck_s0_2",
                     "parent": null,
-                    "inputs": {},
+                    "inputs": {
+                        "REFERENCE": {
+                            "name": "REFERENCE",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
+                        }
+                    },
                     "fields": {},
                     "shadow": false,
                     "topLevel": true,
@@ -8280,12 +8287,12 @@
                 },
                 {
                     "id": "unstuck_s0_2",
-                    "opcode": "videoSensing_videoToggle",
+                    "opcode": "motion_goto",
                     "next": null,
                     "parent": "unstuck_s0_1",
                     "inputs": {
-                        "VIDEO_STATE": {
-                            "name": "VIDEO_STATE",
+                        "TO": {
+                            "name": "TO",
                             "block": "unstuck_s0_3",
                             "shadow": "unstuck_s0_3"
                         }
@@ -8296,63 +8303,36 @@
                 },
                 {
                     "id": "unstuck_s0_3",
-                    "opcode": "videoSensing_menu_VIDEO_STATE",
+                    "opcode": "motion_goto_menu",
                     "next": null,
                     "parent": "unstuck_s0_2",
                     "inputs": {},
                     "fields": {
-                        "VIDEO_STATE": {
-                            "name": "VIDEO_STATE",
-                            "value": "on"
+                        "TO": {
+                            "name": "TO",
+                            "value": "_random_"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s1_1",
-                    "opcode": "videoSensing_whenMotionGreaterThan",
-                    "next": "unstuck_s1_2",
-                    "parent": null,
-                    "inputs": {
-                        "REFERENCE": {
-                            "name": "REFERENCE",
-                            "block": "unstuck_s1_3",
-                            "shadow": "unstuck_s1_3"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": true,
-                    "x": 0,
-                    "y": 200
-                },
-                {
-                    "id": "unstuck_s1_2",
-                    "opcode": "looks_nextcostume",
-                    "next": null,
-                    "parent": "unstuck_s1_1",
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s1_3",
+                    "id": "unstuck_s0_4",
                     "opcode": "math_number",
                     "next": null,
-                    "parent": "unstuck_s1_1",
+                    "parent": "unstuck_s0_1",
                     "inputs": {},
                     "fields": {
                         "NUM": {
                             "name": "NUM",
-                            "value": "30"
+                            "value": "10"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_video-sensing-extension_1777571678113"
         },
         "face-sensing-extension": {
             "id": "face-sensing-extension",
@@ -8379,7 +8359,7 @@
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
-                    "opcode": "faceSensing_whenFaceDetected",
+                    "opcode": "event_whenflagclicked",
                     "next": "unstuck_s0_2",
                     "parent": null,
                     "inputs": {},
@@ -8410,38 +8390,23 @@
                     "opcode": "faceSensing_goToPart",
                     "next": null,
                     "parent": "unstuck_s0_2",
-                    "inputs": {
-                        "PART": {
-                            "name": "PART",
-                            "block": "unstuck_s0_4",
-                            "shadow": "unstuck_s0_4"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_4",
-                    "opcode": "faceSensing_menu_PART",
-                    "next": null,
-                    "parent": "unstuck_s0_3",
                     "inputs": {},
                     "fields": {
                         "PART": {
                             "name": "PART",
-                            "value": "nose"
+                            "value": "2"
                         }
                     },
-                    "shadow": true,
+                    "shadow": false,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_face-sensing-extension_1777573610737"
         },
         "makeymakey-extension": {
             "id": "makeymakey-extension",
             "title": "Makey Makey input",
-            "text": "Add the Makey Makey extension to use everyday objects (or arrow keys) as buttons!",
+            "text": "Use the Makey Makey extension with a Makey Makey board. Or trying adding a secret code to your project.",
             "tags": [
                 "extensions",
                 "makeymakey",
@@ -8463,14 +8428,14 @@
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
-                    "opcode": "makeymakey_whenMakeyKeyPressed",
+                    "opcode": "makeymakey_whenCodePressed",
                     "next": "unstuck_s0_2",
                     "parent": null,
                     "inputs": {
-                        "KEY": {
-                            "name": "KEY",
-                            "block": "unstuck_s0_3",
-                            "shadow": "unstuck_s0_3"
+                        "SEQUENCE": {
+                            "name": "SEQUENCE",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
                         }
                     },
                     "fields": {},
@@ -8481,91 +8446,19 @@
                 },
                 {
                     "id": "unstuck_s0_2",
-                    "opcode": "looks_nextcostume",
-                    "next": null,
-                    "parent": "unstuck_s0_1",
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_3",
-                    "opcode": "makeymakey_menu_KEY",
-                    "next": null,
-                    "parent": "unstuck_s0_1",
-                    "inputs": {},
-                    "fields": {
-                        "KEY": {
-                            "name": "KEY",
-                            "value": "SPACE"
-                        }
-                    },
-                    "shadow": true,
-                    "topLevel": false
-                }
-            ]
-        },
-        "speech2text-extension": {
-            "id": "speech2text-extension",
-            "title": "Listen for speech",
-            "text": "Add the Speech to Text extension and your sprite can listen — it will repeat what you say!",
-            "tags": [
-                "extensions",
-                "speech",
-                "sensing",
-                "needs-review"
-            ],
-            "followUps": [
-                "add-extension",
-                "text-to-speech-extension",
-                "ask-and-answer"
-            ],
-            "reviewed": false,
-            "pointers": [
-                {
-                    "label": "Add extensions here",
-                    "target": "button[class*=\"extension-button\"]"
-                }
-            ],
-            "_capturedBlocks": [
-                {
-                    "id": "unstuck_s0_1",
-                    "opcode": "event_whenflagclicked",
-                    "next": "unstuck_s0_2",
-                    "parent": null,
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": true,
-                    "x": 0,
-                    "y": 0
-                },
-                {
-                    "id": "unstuck_s0_2",
-                    "opcode": "speech2text_listenAndWait",
-                    "next": "unstuck_s0_3",
-                    "parent": "unstuck_s0_1",
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_3",
                     "opcode": "looks_sayforsecs",
                     "next": null,
-                    "parent": "unstuck_s0_2",
+                    "parent": "unstuck_s0_1",
                     "inputs": {
                         "MESSAGE": {
                             "name": "MESSAGE",
-                            "block": "unstuck_s0_4",
-                            "shadow": "unstuck_s0_5"
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
                         },
                         "SECS": {
                             "name": "SECS",
-                            "block": "unstuck_s0_6",
-                            "shadow": "unstuck_s0_6"
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_4"
                         }
                     },
                     "fields": {},
@@ -8573,35 +8466,25 @@
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s0_4",
-                    "opcode": "speech2text_getSpeech",
-                    "next": null,
-                    "parent": "unstuck_s0_3",
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_5",
+                    "id": "unstuck_s0_3",
                     "opcode": "text",
                     "next": null,
-                    "parent": "unstuck_s0_3",
+                    "parent": "unstuck_s0_2",
                     "inputs": {},
                     "fields": {
                         "TEXT": {
                             "name": "TEXT",
-                            "value": ""
+                            "value": "You did it!"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s0_6",
+                    "id": "unstuck_s0_4",
                     "opcode": "math_number",
                     "next": null,
-                    "parent": "unstuck_s0_3",
+                    "parent": "unstuck_s0_2",
                     "inputs": {},
                     "fields": {
                         "NUM": {
@@ -8611,8 +8494,24 @@
                     },
                     "shadow": true,
                     "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "makeymakey_menu_SEQUENCE",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {},
+                    "fields": {
+                        "SEQUENCE": {
+                            "name": "SEQUENCE",
+                            "value": "LEFT UP RIGHT"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_makeymakey-extension_1777574465999"
         },
         "point-direction": {
             "id": "point-direction",
@@ -8652,13 +8551,13 @@
                 {
                     "id": "unstuck_s0_2",
                     "opcode": "motion_pointindirection",
-                    "next": null,
+                    "next": "unstuck_s0_3",
                     "parent": "unstuck_s0_1",
                     "inputs": {
                         "DIRECTION": {
                             "name": "DIRECTION",
-                            "block": "unstuck_s0_3",
-                            "shadow": "unstuck_s0_3"
+                            "block": "unstuck_s0_21",
+                            "shadow": "unstuck_s0_21"
                         }
                     },
                     "fields": {},
@@ -8667,6 +8566,303 @@
                 },
                 {
                     "id": "unstuck_s0_3",
+                    "opcode": "looks_sayforsecs",
+                    "next": "unstuck_s0_4",
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_19",
+                            "shadow": "unstuck_s0_19"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_20",
+                            "shadow": "unstuck_s0_20"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "motion_pointindirection",
+                    "next": "unstuck_s0_5",
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "DIRECTION": {
+                            "name": "DIRECTION",
+                            "block": "unstuck_s0_18",
+                            "shadow": "unstuck_s0_18"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "looks_sayforsecs",
+                    "next": "unstuck_s0_6",
+                    "parent": "unstuck_s0_4",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_16",
+                            "shadow": "unstuck_s0_16"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_17",
+                            "shadow": "unstuck_s0_17"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "motion_pointindirection",
+                    "next": "unstuck_s0_7",
+                    "parent": "unstuck_s0_5",
+                    "inputs": {
+                        "DIRECTION": {
+                            "name": "DIRECTION",
+                            "block": "unstuck_s0_15",
+                            "shadow": "unstuck_s0_15"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "looks_sayforsecs",
+                    "next": "unstuck_s0_8",
+                    "parent": "unstuck_s0_6",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_13",
+                            "shadow": "unstuck_s0_13"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_14",
+                            "shadow": "unstuck_s0_14"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "motion_pointindirection",
+                    "next": "unstuck_s0_9",
+                    "parent": "unstuck_s0_7",
+                    "inputs": {
+                        "DIRECTION": {
+                            "name": "DIRECTION",
+                            "block": "unstuck_s0_12",
+                            "shadow": "unstuck_s0_12"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "unstuck_s0_8",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_10",
+                            "shadow": "unstuck_s0_10"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_11",
+                            "shadow": "unstuck_s0_11"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_10",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_9",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Up"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_11",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_9",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_12",
+                    "opcode": "math_angle",
+                    "next": null,
+                    "parent": "unstuck_s0_8",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": 0
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_13",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_7",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Left"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_14",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_7",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_15",
+                    "opcode": "math_angle",
+                    "next": null,
+                    "parent": "unstuck_s0_6",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": -90
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_16",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Down"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_17",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_18",
+                    "opcode": "math_angle",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": 180
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_19",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Right"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_20",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "1"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_21",
                     "opcode": "math_angle",
                     "next": null,
                     "parent": "unstuck_s0_2",
@@ -8680,12 +8876,13 @@
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_point-direction_1777574733215"
         },
         "point-towards": {
             "id": "point-towards",
             "title": "Point at something",
-            "text": "Use \"point towards\" to face the mouse pointer or another sprite — great for chase or aim.",
+            "text": "Use \"point towards\" to face the mouse pointer or another sprite",
             "tags": [
                 "motion",
                 "direction",
@@ -8765,12 +8962,13 @@
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_point-towards_1777574821631"
         },
         "if-on-edge-bounce": {
             "id": "if-on-edge-bounce",
             "title": "Bounce off edges",
-            "text": "Add \"if on edge, bounce\" inside a forever loop so your sprite turns around when it hits the edge of the stage.",
+            "text": "Add \"if on edge, bounce\" inside a forever loop so your sprite turns when it hits the edge of the stage.",
             "tags": [
                 "motion",
                 "movement",
@@ -8804,14 +9002,14 @@
                 },
                 {
                     "id": "unstuck_s0_2",
-                    "opcode": "control_forever",
-                    "next": null,
+                    "opcode": "motion_pointindirection",
+                    "next": "unstuck_s0_3",
                     "parent": "unstuck_s0_1",
                     "inputs": {
-                        "SUBSTACK": {
-                            "name": "SUBSTACK",
-                            "block": "unstuck_s0_3",
-                            "shadow": null
+                        "DIRECTION": {
+                            "name": "DIRECTION",
+                            "block": "unstuck_s0_7",
+                            "shadow": "unstuck_s0_7"
                         }
                     },
                     "fields": {},
@@ -8820,14 +9018,14 @@
                 },
                 {
                     "id": "unstuck_s0_3",
-                    "opcode": "motion_movesteps",
-                    "next": "unstuck_s0_5",
+                    "opcode": "control_forever",
+                    "next": null,
                     "parent": "unstuck_s0_2",
                     "inputs": {
-                        "STEPS": {
-                            "name": "STEPS",
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
                             "block": "unstuck_s0_4",
-                            "shadow": "unstuck_s0_4"
+                            "shadow": null
                         }
                     },
                     "fields": {},
@@ -8836,9 +9034,35 @@
                 },
                 {
                     "id": "unstuck_s0_4",
+                    "opcode": "motion_movesteps",
+                    "next": "unstuck_s0_5",
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "motion_ifonedgebounce",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
                     "opcode": "math_number",
                     "next": null,
-                    "parent": "unstuck_s0_3",
+                    "parent": "unstuck_s0_4",
                     "inputs": {},
                     "fields": {
                         "NUM": {
@@ -8850,190 +9074,27 @@
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s0_5",
-                    "opcode": "motion_ifonedgebounce",
-                    "next": null,
-                    "parent": "unstuck_s0_3",
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                }
-            ]
-        },
-        "set-position": {
-            "id": "set-position",
-            "title": "Set x or y",
-            "text": "Use \"set x to\" or \"set y to\" to jump to an exact coordinate. \"Change y by\" is a step; \"set y to\" is a teleport.",
-            "tags": [
-                "motion",
-                "coordinates",
-                "position",
-                "needs-review"
-            ],
-            "followUps": [
-                "go-to-position",
-                "change-xy-position",
-                "change-y-position"
-            ],
-            "reviewed": false,
-            "pointers": [
-                {
-                    "label": "Drag \"set x to\" into your code",
-                    "blockOpcode": "motion_setx",
-                    "category": "motion"
-                }
-            ],
-            "_capturedBlocks": [
-                {
-                    "id": "unstuck_s0_1",
-                    "opcode": "event_whenflagclicked",
-                    "next": "unstuck_s0_2",
-                    "parent": null,
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": true,
-                    "x": 0,
-                    "y": 0
-                },
-                {
-                    "id": "unstuck_s0_2",
-                    "opcode": "motion_setx",
-                    "next": "unstuck_s0_4",
-                    "parent": "unstuck_s0_1",
-                    "inputs": {
-                        "X": {
-                            "name": "X",
-                            "block": "unstuck_s0_3",
-                            "shadow": "unstuck_s0_3"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_3",
-                    "opcode": "math_number",
+                    "id": "unstuck_s0_7",
+                    "opcode": "math_angle",
                     "next": null,
                     "parent": "unstuck_s0_2",
                     "inputs": {},
                     "fields": {
                         "NUM": {
                             "name": "NUM",
-                            "value": "0"
-                        }
-                    },
-                    "shadow": true,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_4",
-                    "opcode": "motion_sety",
-                    "next": null,
-                    "parent": "unstuck_s0_2",
-                    "inputs": {
-                        "Y": {
-                            "name": "Y",
-                            "block": "unstuck_s0_5",
-                            "shadow": "unstuck_s0_5"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_5",
-                    "opcode": "math_number",
-                    "next": null,
-                    "parent": "unstuck_s0_4",
-                    "inputs": {},
-                    "fields": {
-                        "NUM": {
-                            "name": "NUM",
-                            "value": "0"
+                            "value": 30
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
-        },
-        "switch-costume-to": {
-            "id": "switch-costume-to",
-            "title": "Pick a costume",
-            "text": "Use \"switch costume to\" with the dropdown to pick a specific costume — vs. \"next costume\" which just steps through them.",
-            "tags": [
-                "looks",
-                "costume",
-                "animation",
-                "needs-review"
             ],
-            "followUps": [
-                "change-costume",
-                "animate-costume",
-                "add-costume"
-            ],
-            "reviewed": false,
-            "pointers": [
-                {
-                    "label": "Drag \"switch costume to\" into your code",
-                    "blockOpcode": "looks_switchcostumeto",
-                    "category": "looks"
-                }
-            ],
-            "_capturedBlocks": [
-                {
-                    "id": "unstuck_s0_1",
-                    "opcode": "event_whenflagclicked",
-                    "next": "unstuck_s0_2",
-                    "parent": null,
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": true,
-                    "x": 0,
-                    "y": 0
-                },
-                {
-                    "id": "unstuck_s0_2",
-                    "opcode": "looks_switchcostumeto",
-                    "next": null,
-                    "parent": "unstuck_s0_1",
-                    "inputs": {
-                        "COSTUME": {
-                            "name": "COSTUME",
-                            "block": "unstuck_s0_3",
-                            "shadow": "unstuck_s0_3"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_3",
-                    "opcode": "looks_costume",
-                    "next": null,
-                    "parent": "unstuck_s0_2",
-                    "inputs": {},
-                    "fields": {
-                        "COSTUME": {
-                            "name": "COSTUME",
-                            "value": "costume1"
-                        }
-                    },
-                    "shadow": true,
-                    "topLevel": false
-                }
-            ]
+            "blockExample": "captured_if-on-edge-bounce_1777574877097"
         },
         "set-size-to": {
             "id": "set-size-to",
             "title": "Set exact size",
-            "text": "Use \"set size to 100\" for normal size. Try 50 for half size or 200 for double size — much more predictable than \"change size by\".",
+            "text": "Use \"set size to 100\" for normal size. Try 50 for half size, or 200 for double size. ",
             "tags": [
                 "looks",
                 "effect",
@@ -9066,14 +9127,14 @@
                 },
                 {
                     "id": "unstuck_s0_2",
-                    "opcode": "looks_setsizeto",
+                    "opcode": "control_forever",
                     "next": null,
                     "parent": "unstuck_s0_1",
                     "inputs": {
-                        "SIZE": {
-                            "name": "SIZE",
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
                             "block": "unstuck_s0_3",
-                            "shadow": "unstuck_s0_3"
+                            "shadow": null
                         }
                     },
                     "fields": {},
@@ -9082,25 +9143,52 @@
                 },
                 {
                     "id": "unstuck_s0_3",
-                    "opcode": "math_number",
+                    "opcode": "looks_setsizeto",
                     "next": null,
                     "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "SIZE": {
+                            "name": "SIZE",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "sensing_mousey",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
                     "inputs": {},
                     "fields": {
                         "NUM": {
                             "name": "NUM",
-                            "value": "50"
+                            "value": "100"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_set-size-to_1777575595666"
         },
         "hide-sprite": {
             "id": "hide-sprite",
             "title": "Hide a sprite",
-            "text": "Use \"hide\" to make a sprite invisible. Use \"show\" later to bring it back. Common pattern: hide at start, show on an event.",
+            "text": "Use \"hide\" to make a sprite invisible, and \"show\" to make it appear again.",
             "tags": [
                 "looks",
                 "needs-review"
@@ -9116,6 +9204,11 @@
                     "label": "Drag \"hide\" into your code",
                     "blockOpcode": "looks_hide",
                     "category": "looks"
+                },
+                {
+                    "label": "Drag \"show\" into your code",
+                    "blockOpcode": "looks_show",
+                    "category": "looks"
                 }
             ],
             "_capturedBlocks": [
@@ -9133,7 +9226,7 @@
                 },
                 {
                     "id": "unstuck_s0_2",
-                    "opcode": "looks_hide",
+                    "opcode": "looks_show",
                     "next": null,
                     "parent": "unstuck_s0_1",
                     "inputs": {},
@@ -9143,19 +9236,24 @@
                 },
                 {
                     "id": "unstuck_s1_1",
-                    "opcode": "event_whenthisspriteclicked",
+                    "opcode": "event_whenkeypressed",
                     "next": "unstuck_s1_2",
                     "parent": null,
                     "inputs": {},
-                    "fields": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "space"
+                        }
+                    },
                     "shadow": false,
                     "topLevel": true,
                     "x": 0,
-                    "y": 200
+                    "y": 0
                 },
                 {
                     "id": "unstuck_s1_2",
-                    "opcode": "looks_show",
+                    "opcode": "looks_hide",
                     "next": null,
                     "parent": "unstuck_s1_1",
                     "inputs": {},
@@ -9163,126 +9261,13 @@
                     "shadow": false,
                     "topLevel": false
                 }
-            ]
-        },
-        "clear-effects": {
-            "id": "clear-effects",
-            "title": "Reset effects",
-            "text": "Use \"clear graphic effects\" at the start of your project to reset color, ghost, or fisheye effects from a previous run.",
-            "tags": [
-                "looks",
-                "effect",
-                "debugging",
-                "needs-review"
             ],
-            "followUps": [
-                "graphic-effects",
-                "sprite-ghost-effect",
-                "reset-at-start"
-            ],
-            "reviewed": false,
-            "pointers": [
-                {
-                    "label": "Drag \"clear graphic effects\" into your code",
-                    "blockOpcode": "looks_cleargraphiceffects",
-                    "category": "looks"
-                }
-            ],
-            "_capturedBlocks": [
-                {
-                    "id": "unstuck_s0_1",
-                    "opcode": "event_whenflagclicked",
-                    "next": "unstuck_s0_2",
-                    "parent": null,
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": true,
-                    "x": 0,
-                    "y": 0
-                },
-                {
-                    "id": "unstuck_s0_2",
-                    "opcode": "looks_cleargraphiceffects",
-                    "next": null,
-                    "parent": "unstuck_s0_1",
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                }
-            ]
-        },
-        "switch-backdrop": {
-            "id": "switch-backdrop",
-            "title": "Change backdrop",
-            "text": "Use \"switch backdrop to\" to change the stage scene. Combine with \"when backdrop switches to\" to trigger different code per scene.",
-            "tags": [
-                "looks",
-                "needs-review"
-            ],
-            "followUps": [
-                "change-backdrop",
-                "backdrop-events"
-            ],
-            "reviewed": false,
-            "pointers": [
-                {
-                    "label": "Drag \"switch backdrop to\" into your code",
-                    "blockOpcode": "looks_switchbackdropto",
-                    "category": "looks"
-                }
-            ],
-            "_capturedBlocks": [
-                {
-                    "id": "unstuck_s0_1",
-                    "opcode": "event_whenflagclicked",
-                    "next": "unstuck_s0_2",
-                    "parent": null,
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": true,
-                    "x": 0,
-                    "y": 0
-                },
-                {
-                    "id": "unstuck_s0_2",
-                    "opcode": "looks_switchbackdropto",
-                    "next": null,
-                    "parent": "unstuck_s0_1",
-                    "inputs": {
-                        "BACKDROP": {
-                            "name": "BACKDROP",
-                            "block": "unstuck_s0_3",
-                            "shadow": "unstuck_s0_3"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_3",
-                    "opcode": "looks_backdrops",
-                    "next": null,
-                    "parent": "unstuck_s0_2",
-                    "inputs": {},
-                    "fields": {
-                        "BACKDROP": {
-                            "name": "BACKDROP",
-                            "value": "backdrop1"
-                        }
-                    },
-                    "shadow": true,
-                    "topLevel": false
-                }
-            ]
+            "blockExample": "captured_hide-sprite_1777575664341"
         },
         "stop-all-sounds": {
             "id": "stop-all-sounds",
             "title": "Stop sounds",
-            "text": "Use \"stop all sounds\" to silence everything that's playing — handy for game over or new scene.",
+            "text": "Use \"stop all sounds\" to silence everything that's playing",
             "tags": [
                 "sound",
                 "needs-review"
@@ -9303,8 +9288,51 @@
             "_capturedBlocks": [
                 {
                     "id": "unstuck_s0_1",
-                    "opcode": "event_whenkeypressed",
+                    "opcode": "event_whenflagclicked",
                     "next": "unstuck_s0_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s0_2",
+                    "opcode": "sound_playuntildone",
+                    "next": null,
+                    "parent": "unstuck_s0_1",
+                    "inputs": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "block": "unstuck_s0_3",
+                            "shadow": "unstuck_s0_3"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_3",
+                    "opcode": "sound_sounds_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "SOUND_MENU": {
+                            "name": "SOUND_MENU",
+                            "value": "Chill"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_1",
+                    "opcode": "event_whenkeypressed",
+                    "next": "unstuck_s1_2",
                     "parent": null,
                     "inputs": {},
                     "fields": {
@@ -9319,21 +9347,22 @@
                     "y": 0
                 },
                 {
-                    "id": "unstuck_s0_2",
+                    "id": "unstuck_s1_2",
                     "opcode": "sound_stopallsounds",
                     "next": null,
-                    "parent": "unstuck_s0_1",
+                    "parent": "unstuck_s1_1",
                     "inputs": {},
                     "fields": {},
                     "shadow": false,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_stop-all-sounds_1777576341326"
         },
         "sprite-clicked": {
             "id": "sprite-clicked",
             "title": "When sprite clicked",
-            "text": "Use \"when this sprite clicked\" to make sprites act like buttons or react when tapped.",
+            "text": "Use \"when this sprite clicked\" to make a sprite react to clicks.",
             "tags": [
                 "events",
                 "hat",
@@ -9396,7 +9425,7 @@
                     "fields": {
                         "TEXT": {
                             "name": "TEXT",
-                            "value": "Ouch!"
+                            "value": "You clicked me!"
                         }
                     },
                     "shadow": true,
@@ -9411,18 +9440,19 @@
                     "fields": {
                         "NUM": {
                             "name": "NUM",
-                            "value": "1"
+                            "value": "2"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_sprite-clicked_1777576378955"
         },
         "broadcast-and-wait": {
             "id": "broadcast-and-wait",
             "title": "Broadcast and wait",
-            "text": "Use \"broadcast and wait\" to send a message and pause until every receiver finishes — great for synchronized cutscenes.",
+            "text": "Use \"broadcast and wait\" to send a message and wait there until every receiver finishes running code that was triggered by it.",
             "tags": [
                 "events",
                 "broadcast",
@@ -9455,14 +9485,19 @@
                 },
                 {
                     "id": "unstuck_s0_2",
-                    "opcode": "event_broadcastandwait",
-                    "next": "unstuck_s0_4",
+                    "opcode": "looks_sayforsecs",
+                    "next": "unstuck_s0_3",
                     "parent": "unstuck_s0_1",
                     "inputs": {
-                        "BROADCAST_INPUT": {
-                            "name": "BROADCAST_INPUT",
-                            "block": "unstuck_s0_3",
-                            "shadow": "unstuck_s0_3"
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_8",
+                            "shadow": "unstuck_s0_8"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
                         }
                     },
                     "fields": {},
@@ -9471,30 +9506,35 @@
                 },
                 {
                     "id": "unstuck_s0_3",
-                    "opcode": "event_broadcast_menu",
-                    "next": null,
+                    "opcode": "event_broadcastandwait",
+                    "next": "unstuck_s0_4",
                     "parent": "unstuck_s0_2",
-                    "inputs": {},
-                    "fields": {
-                        "BROADCAST_OPTION": {
-                            "name": "BROADCAST_OPTION",
-                            "value": "scene 1",
-                            "variableType": "broadcast_msg"
+                    "inputs": {
+                        "BROADCAST_INPUT": {
+                            "name": "BROADCAST_INPUT",
+                            "block": "unstuck_s0_7",
+                            "shadow": "unstuck_s0_7"
                         }
                     },
-                    "shadow": true,
+                    "fields": {},
+                    "shadow": false,
                     "topLevel": false
                 },
                 {
                     "id": "unstuck_s0_4",
-                    "opcode": "looks_say",
+                    "opcode": "looks_sayforsecs",
                     "next": null,
-                    "parent": "unstuck_s0_2",
+                    "parent": "unstuck_s0_3",
                     "inputs": {
                         "MESSAGE": {
                             "name": "MESSAGE",
                             "block": "unstuck_s0_5",
                             "shadow": "unstuck_s0_5"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
                         }
                     },
                     "fields": {},
@@ -9510,13 +9550,162 @@
                     "fields": {
                         "TEXT": {
                             "name": "TEXT",
-                            "value": "Done!"
+                            "value": "All done."
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "event_broadcast_menu",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "BROADCAST_OPTION": {
+                            "name": "BROADCAST_OPTION",
+                            "value": "spin",
+                            "id": "_8M:/Nasta=*}}VBFyi!",
+                            "variableType": "broadcast_msg"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "I'm gonna spin!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_1",
+                    "opcode": "event_whenbroadcastreceived",
+                    "next": "unstuck_s1_2",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "BROADCAST_OPTION": {
+                            "name": "BROADCAST_OPTION",
+                            "value": "spin",
+                            "id": "_8M:/Nasta=*}}VBFyi!",
+                            "variableType": "broadcast_msg"
+                        }
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "id": "unstuck_s1_2",
+                    "opcode": "control_repeat",
+                    "next": null,
+                    "parent": "unstuck_s1_1",
+                    "inputs": {
+                        "TIMES": {
+                            "name": "TIMES",
+                            "block": "unstuck_s1_3",
+                            "shadow": "unstuck_s1_3"
+                        },
+                        "SUBSTACK": {
+                            "name": "SUBSTACK",
+                            "block": "unstuck_s1_4",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_3",
+                    "opcode": "math_whole_number",
+                    "next": null,
+                    "parent": "unstuck_s1_2",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "36"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_4",
+                    "opcode": "motion_turnright",
+                    "next": null,
+                    "parent": "unstuck_s1_2",
+                    "inputs": {
+                        "DEGREES": {
+                            "name": "DEGREES",
+                            "block": "unstuck_s1_5",
+                            "shadow": "unstuck_s1_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s1_5",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s1_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "10"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_broadcast-and-wait_1777576538333"
         },
         "if-else-block": {
             "id": "if-else-block",
@@ -9581,12 +9770,12 @@
                         },
                         "SUBSTACK": {
                             "name": "SUBSTACK",
-                            "block": "unstuck_s0_5",
+                            "block": "unstuck_s0_6",
                             "shadow": null
                         },
                         "SUBSTACK2": {
                             "name": "SUBSTACK2",
-                            "block": "unstuck_s0_6",
+                            "block": "unstuck_s0_8",
                             "shadow": null
                         }
                     },
@@ -9602,6 +9791,37 @@
                     "inputs": {
                         "KEY_OPTION": {
                             "name": "KEY_OPTION",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "sensing_keyoptions",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "space"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "motion_movesteps",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
                             "block": "unstuck_s0_7",
                             "shadow": "unstuck_s0_7"
                         }
@@ -9611,57 +9831,10 @@
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s0_5",
-                    "opcode": "motion_changexby",
-                    "next": null,
-                    "parent": "unstuck_s0_3",
-                    "inputs": {
-                        "DX": {
-                            "name": "DX",
-                            "block": "unstuck_s0_8",
-                            "shadow": "unstuck_s0_8"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_6",
-                    "opcode": "motion_changexby",
-                    "next": null,
-                    "parent": "unstuck_s0_3",
-                    "inputs": {
-                        "DX": {
-                            "name": "DX",
-                            "block": "unstuck_s0_9",
-                            "shadow": "unstuck_s0_9"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
                     "id": "unstuck_s0_7",
-                    "opcode": "sensing_keyoptions",
-                    "next": null,
-                    "parent": "unstuck_s0_4",
-                    "inputs": {},
-                    "fields": {
-                        "KEY_OPTION": {
-                            "name": "KEY_OPTION",
-                            "value": "right arrow"
-                        }
-                    },
-                    "shadow": true,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_8",
                     "opcode": "math_number",
                     "next": null,
-                    "parent": "unstuck_s0_5",
+                    "parent": "unstuck_s0_6",
                     "inputs": {},
                     "fields": {
                         "NUM": {
@@ -9673,10 +9846,26 @@
                     "topLevel": false
                 },
                 {
+                    "id": "unstuck_s0_8",
+                    "opcode": "motion_movesteps",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "STEPS": {
+                            "name": "STEPS",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
                     "id": "unstuck_s0_9",
                     "opcode": "math_number",
                     "next": null,
-                    "parent": "unstuck_s0_6",
+                    "parent": "unstuck_s0_8",
                     "inputs": {},
                     "fields": {
                         "NUM": {
@@ -9687,12 +9876,13 @@
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_if-else-block_1777576735893"
         },
         "wait-until-block": {
             "id": "wait-until-block",
             "title": "Wait until",
-            "text": "Use \"wait until\" to pause your code until something happens — like a sprite touching another, or a key being pressed.",
+            "text": "Use \"wait until\" to pause your code until something happens, like a sprite touching another, or a key being pressed.",
             "tags": [
                 "control",
                 "sensing",
@@ -9726,14 +9916,14 @@
                 },
                 {
                     "id": "unstuck_s0_2",
-                    "opcode": "control_wait_until",
-                    "next": "unstuck_s0_4",
+                    "opcode": "looks_say",
+                    "next": "unstuck_s0_3",
                     "parent": "unstuck_s0_1",
                     "inputs": {
-                        "CONDITION": {
-                            "name": "CONDITION",
-                            "block": "unstuck_s0_3",
-                            "shadow": null
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_13",
+                            "shadow": "unstuck_s0_13"
                         }
                     },
                     "fields": {},
@@ -9742,14 +9932,14 @@
                 },
                 {
                     "id": "unstuck_s0_3",
-                    "opcode": "sensing_keypressed",
-                    "next": null,
+                    "opcode": "control_wait_until",
+                    "next": "unstuck_s0_4",
                     "parent": "unstuck_s0_2",
                     "inputs": {
-                        "KEY_OPTION": {
-                            "name": "KEY_OPTION",
-                            "block": "unstuck_s0_5",
-                            "shadow": "unstuck_s0_5"
+                        "CONDITION": {
+                            "name": "CONDITION",
+                            "block": "unstuck_s0_11",
+                            "shadow": null
                         }
                     },
                     "fields": {},
@@ -9759,13 +9949,13 @@
                 {
                     "id": "unstuck_s0_4",
                     "opcode": "looks_say",
-                    "next": null,
-                    "parent": "unstuck_s0_2",
+                    "next": "unstuck_s0_5",
+                    "parent": "unstuck_s0_3",
                     "inputs": {
                         "MESSAGE": {
                             "name": "MESSAGE",
-                            "block": "unstuck_s0_6",
-                            "shadow": "unstuck_s0_6"
+                            "block": "unstuck_s0_10",
+                            "shadow": "unstuck_s0_10"
                         }
                     },
                     "fields": {},
@@ -9774,21 +9964,84 @@
                 },
                 {
                     "id": "unstuck_s0_5",
-                    "opcode": "sensing_keyoptions",
+                    "opcode": "control_wait_until",
+                    "next": "unstuck_s0_6",
+                    "parent": "unstuck_s0_4",
+                    "inputs": {
+                        "CONDITION": {
+                            "name": "CONDITION",
+                            "block": "unstuck_s0_8",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "looks_say",
                     "next": null,
-                    "parent": "unstuck_s0_3",
+                    "parent": "unstuck_s0_5",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_7",
+                            "shadow": "unstuck_s0_7"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_6",
                     "inputs": {},
                     "fields": {
-                        "KEY_OPTION": {
-                            "name": "KEY_OPTION",
-                            "value": "space"
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": ""
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s0_6",
+                    "id": "unstuck_s0_8",
+                    "opcode": "sensing_keypressed",
+                    "next": null,
+                    "parent": "unstuck_s0_5",
+                    "inputs": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "sensing_keyoptions",
+                    "next": null,
+                    "parent": "unstuck_s0_8",
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "b"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_10",
                     "opcode": "text",
                     "next": null,
                     "parent": "unstuck_s0_4",
@@ -9796,18 +10049,65 @@
                     "fields": {
                         "TEXT": {
                             "name": "TEXT",
-                            "value": "Go!"
+                            "value": "Now press b"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_11",
+                    "opcode": "sensing_keypressed",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "block": "unstuck_s0_12",
+                            "shadow": "unstuck_s0_12"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_12",
+                    "opcode": "sensing_keyoptions",
+                    "next": null,
+                    "parent": "unstuck_s0_11",
+                    "inputs": {},
+                    "fields": {
+                        "KEY_OPTION": {
+                            "name": "KEY_OPTION",
+                            "value": "a"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_13",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Press a"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_wait-until-block_1777576859130"
         },
         "distance-to": {
             "id": "distance-to",
             "title": "Measure distance",
-            "text": "Use \"distance to\" to find how far away the mouse pointer or another sprite is — great for chasing or proximity triggers.",
+            "text": "Use \"distance to\" to find how far away the mouse pointer or another sprite is.",
             "tags": [
                 "sensing",
                 "game",
@@ -9857,19 +10157,14 @@
                 },
                 {
                     "id": "unstuck_s0_3",
-                    "opcode": "control_if",
-                    "next": null,
+                    "opcode": "looks_say",
+                    "next": "unstuck_s0_4",
                     "parent": "unstuck_s0_2",
                     "inputs": {
-                        "CONDITION": {
-                            "name": "CONDITION",
-                            "block": "unstuck_s0_4",
-                            "shadow": null
-                        },
-                        "SUBSTACK": {
-                            "name": "SUBSTACK",
+                        "MESSAGE": {
+                            "name": "MESSAGE",
                             "block": "unstuck_s0_8",
-                            "shadow": null
+                            "shadow": "unstuck_s0_10"
                         }
                     },
                     "fields": {},
@@ -9878,18 +10173,13 @@
                 },
                 {
                     "id": "unstuck_s0_4",
-                    "opcode": "operator_lt",
+                    "opcode": "looks_setsizeto",
                     "next": null,
                     "parent": "unstuck_s0_3",
                     "inputs": {
-                        "OPERAND1": {
-                            "name": "OPERAND1",
+                        "SIZE": {
+                            "name": "SIZE",
                             "block": "unstuck_s0_5",
-                            "shadow": "unstuck_s0_6"
-                        },
-                        "OPERAND2": {
-                            "name": "OPERAND2",
-                            "block": "unstuck_s0_7",
                             "shadow": "unstuck_s0_7"
                         }
                     },
@@ -9905,8 +10195,8 @@
                     "inputs": {
                         "DISTANCETOMENU": {
                             "name": "DISTANCETOMENU",
-                            "block": "unstuck_s0_9",
-                            "shadow": "unstuck_s0_9"
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_6"
                         }
                     },
                     "fields": {},
@@ -9915,52 +10205,6 @@
                 },
                 {
                     "id": "unstuck_s0_6",
-                    "opcode": "text",
-                    "next": null,
-                    "parent": "unstuck_s0_4",
-                    "inputs": {},
-                    "fields": {
-                        "TEXT": {
-                            "name": "TEXT",
-                            "value": ""
-                        }
-                    },
-                    "shadow": true,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_7",
-                    "opcode": "text",
-                    "next": null,
-                    "parent": "unstuck_s0_4",
-                    "inputs": {},
-                    "fields": {
-                        "TEXT": {
-                            "name": "TEXT",
-                            "value": "50"
-                        }
-                    },
-                    "shadow": true,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_8",
-                    "opcode": "looks_say",
-                    "next": null,
-                    "parent": "unstuck_s0_3",
-                    "inputs": {
-                        "MESSAGE": {
-                            "name": "MESSAGE",
-                            "block": "unstuck_s0_10",
-                            "shadow": "unstuck_s0_10"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_9",
                     "opcode": "sensing_distancetomenu",
                     "next": null,
                     "parent": "unstuck_s0_5",
@@ -9975,26 +10219,73 @@
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s0_10",
-                    "opcode": "text",
+                    "id": "unstuck_s0_7",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "100"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "sensing_distanceto",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "DISTANCETOMENU": {
+                            "name": "DISTANCETOMENU",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "sensing_distancetomenu",
                     "next": null,
                     "parent": "unstuck_s0_8",
                     "inputs": {},
                     "fields": {
+                        "DISTANCETOMENU": {
+                            "name": "DISTANCETOMENU",
+                            "value": "_mouse_"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_10",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
                         "TEXT": {
                             "name": "TEXT",
-                            "value": "Close!"
+                            "value": "Hello!"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_distance-to_1777579143274"
         },
         "loudness-block": {
             "id": "loudness-block",
             "title": "Sense loudness",
-            "text": "Use \"loudness\" to react to your microphone — try it driving size, color, or position for sound-reactive art.",
+            "text": "Use \"loudness\" to react to your microphone.",
             "tags": [
                 "sensing",
                 "sound",
@@ -10044,12 +10335,12 @@
                 },
                 {
                     "id": "unstuck_s0_3",
-                    "opcode": "looks_setsizeto",
+                    "opcode": "motion_sety",
                     "next": null,
                     "parent": "unstuck_s0_2",
                     "inputs": {
-                        "SIZE": {
-                            "name": "SIZE",
+                        "Y": {
+                            "name": "Y",
                             "block": "unstuck_s0_4",
                             "shadow": "unstuck_s0_5"
                         }
@@ -10077,18 +10368,19 @@
                     "fields": {
                         "NUM": {
                             "name": "NUM",
-                            "value": "100"
+                            "value": "107"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_loudness-block_1777579244936"
         },
         "mouse-down-block": {
             "id": "mouse-down-block",
             "title": "Click and hold",
-            "text": "Use \"mouse down?\" to detect when the mouse button is being held — perfect for drawing, painting, or holding to charge a jump.",
+            "text": "Use \"mouse down?\" to check if the mouse button is being held down.",
             "tags": [
                 "sensing",
                 "mouse",
@@ -10169,12 +10461,12 @@
                 },
                 {
                     "id": "unstuck_s0_5",
-                    "opcode": "looks_changesizeby",
+                    "opcode": "motion_turnright",
                     "next": null,
                     "parent": "unstuck_s0_3",
                     "inputs": {
-                        "CHANGE": {
-                            "name": "CHANGE",
+                        "DEGREES": {
+                            "name": "DEGREES",
                             "block": "unstuck_s0_6",
                             "shadow": "unstuck_s0_6"
                         }
@@ -10192,18 +10484,19 @@
                     "fields": {
                         "NUM": {
                             "name": "NUM",
-                            "value": "5"
+                            "value": "15"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_mouse-down-block_1777579347419"
         },
         "equals-comparison": {
             "id": "equals-comparison",
             "title": "Compare with equals",
-            "text": "Use the \"=\" operator to check if two things match — like comparing the answer to a quiz question.",
+            "text": "Use the \"=\" operator to check if two things match, like comparing the answer to a quiz question.",
             "tags": [
                 "operators",
                 "needs-review"
@@ -10237,13 +10530,13 @@
                 {
                     "id": "unstuck_s0_2",
                     "opcode": "sensing_askandwait",
-                    "next": "unstuck_s0_4",
+                    "next": "unstuck_s0_3",
                     "parent": "unstuck_s0_1",
                     "inputs": {
                         "QUESTION": {
                             "name": "QUESTION",
-                            "block": "unstuck_s0_3",
-                            "shadow": "unstuck_s0_3"
+                            "block": "unstuck_s0_14",
+                            "shadow": "unstuck_s0_14"
                         }
                     },
                     "fields": {},
@@ -10252,34 +10545,45 @@
                 },
                 {
                     "id": "unstuck_s0_3",
-                    "opcode": "text",
-                    "next": null,
-                    "parent": "unstuck_s0_2",
-                    "inputs": {},
-                    "fields": {
-                        "TEXT": {
-                            "name": "TEXT",
-                            "value": "What is 2 + 2?"
-                        }
-                    },
-                    "shadow": true,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_4",
-                    "opcode": "control_if",
+                    "opcode": "control_if_else",
                     "next": null,
                     "parent": "unstuck_s0_2",
                     "inputs": {
                         "CONDITION": {
                             "name": "CONDITION",
-                            "block": "unstuck_s0_5",
+                            "block": "unstuck_s0_4",
                             "shadow": null
                         },
                         "SUBSTACK": {
                             "name": "SUBSTACK",
-                            "block": "unstuck_s0_9",
+                            "block": "unstuck_s0_8",
                             "shadow": null
+                        },
+                        "SUBSTACK2": {
+                            "name": "SUBSTACK2",
+                            "block": "unstuck_s0_11",
+                            "shadow": null
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "operator_equals",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "OPERAND1": {
+                            "name": "OPERAND1",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_6"
+                        },
+                        "OPERAND2": {
+                            "name": "OPERAND2",
+                            "block": "unstuck_s0_7",
+                            "shadow": "unstuck_s0_7"
                         }
                     },
                     "fields": {},
@@ -10288,40 +10592,19 @@
                 },
                 {
                     "id": "unstuck_s0_5",
-                    "opcode": "operator_equals",
-                    "next": null,
-                    "parent": "unstuck_s0_4",
-                    "inputs": {
-                        "OPERAND1": {
-                            "name": "OPERAND1",
-                            "block": "unstuck_s0_6",
-                            "shadow": "unstuck_s0_7"
-                        },
-                        "OPERAND2": {
-                            "name": "OPERAND2",
-                            "block": "unstuck_s0_8",
-                            "shadow": "unstuck_s0_8"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_6",
                     "opcode": "sensing_answer",
                     "next": null,
-                    "parent": "unstuck_s0_5",
+                    "parent": "unstuck_s0_4",
                     "inputs": {},
                     "fields": {},
                     "shadow": false,
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s0_7",
+                    "id": "unstuck_s0_6",
                     "opcode": "text",
                     "next": null,
-                    "parent": "unstuck_s0_5",
+                    "parent": "unstuck_s0_4",
                     "inputs": {},
                     "fields": {
                         "TEXT": {
@@ -10333,28 +10616,33 @@
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s0_8",
+                    "id": "unstuck_s0_7",
                     "opcode": "text",
                     "next": null,
-                    "parent": "unstuck_s0_5",
+                    "parent": "unstuck_s0_4",
                     "inputs": {},
                     "fields": {
                         "TEXT": {
                             "name": "TEXT",
-                            "value": "4"
+                            "value": "cat"
                         }
                     },
                     "shadow": true,
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s0_9",
-                    "opcode": "looks_say",
+                    "id": "unstuck_s0_8",
+                    "opcode": "looks_sayforsecs",
                     "next": null,
-                    "parent": "unstuck_s0_4",
+                    "parent": "unstuck_s0_3",
                     "inputs": {
                         "MESSAGE": {
                             "name": "MESSAGE",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
+                        },
+                        "SECS": {
+                            "name": "SECS",
                             "block": "unstuck_s0_10",
                             "shadow": "unstuck_s0_10"
                         }
@@ -10364,10 +10652,10 @@
                     "topLevel": false
                 },
                 {
-                    "id": "unstuck_s0_10",
+                    "id": "unstuck_s0_9",
                     "opcode": "text",
                     "next": null,
-                    "parent": "unstuck_s0_9",
+                    "parent": "unstuck_s0_8",
                     "inputs": {},
                     "fields": {
                         "TEXT": {
@@ -10377,13 +10665,95 @@
                     },
                     "shadow": true,
                     "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_10",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_8",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_11",
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_12",
+                            "shadow": "unstuck_s0_12"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_13",
+                            "shadow": "unstuck_s0_13"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_12",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_11",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Oops."
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_13",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_11",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_14",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Type the word cat"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_equals-comparison_1777580395101"
         },
         "join-strings": {
             "id": "join-strings",
             "title": "Join words",
-            "text": "Use \"join\" to glue text together — combine a greeting with the user's name and say it back.",
+            "text": "Use \"join\" to combine chunks of text.",
             "tags": [
                 "operators",
                 "needs-review"
@@ -10416,13 +10786,13 @@
                 {
                     "id": "unstuck_s0_2",
                     "opcode": "sensing_askandwait",
-                    "next": "unstuck_s0_4",
+                    "next": "unstuck_s0_3",
                     "parent": "unstuck_s0_1",
                     "inputs": {
                         "QUESTION": {
                             "name": "QUESTION",
-                            "block": "unstuck_s0_3",
-                            "shadow": "unstuck_s0_3"
+                            "block": "unstuck_s0_10",
+                            "shadow": "unstuck_s0_10"
                         }
                     },
                     "fields": {},
@@ -10431,6 +10801,118 @@
                 },
                 {
                     "id": "unstuck_s0_3",
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "unstuck_s0_2",
+                    "inputs": {
+                        "MESSAGE": {
+                            "name": "MESSAGE",
+                            "block": "unstuck_s0_4",
+                            "shadow": "unstuck_s0_8"
+                        },
+                        "SECS": {
+                            "name": "SECS",
+                            "block": "unstuck_s0_9",
+                            "shadow": "unstuck_s0_9"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_4",
+                    "opcode": "operator_join",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {
+                        "STRING1": {
+                            "name": "STRING1",
+                            "block": "unstuck_s0_5",
+                            "shadow": "unstuck_s0_5"
+                        },
+                        "STRING2": {
+                            "name": "STRING2",
+                            "block": "unstuck_s0_6",
+                            "shadow": "unstuck_s0_7"
+                        }
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_5",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Hello "
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_6",
+                    "opcode": "sensing_answer",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_7",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_4",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "banana"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_8",
+                    "opcode": "text",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "TEXT": {
+                            "name": "TEXT",
+                            "value": "Hello!"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_9",
+                    "opcode": "math_number",
+                    "next": null,
+                    "parent": "unstuck_s0_3",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": "2"
+                        }
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                {
+                    "id": "unstuck_s0_10",
                     "opcode": "text",
                     "next": null,
                     "parent": "unstuck_s0_2",
@@ -10443,90 +10925,14 @@
                     },
                     "shadow": true,
                     "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_4",
-                    "opcode": "looks_say",
-                    "next": null,
-                    "parent": "unstuck_s0_2",
-                    "inputs": {
-                        "MESSAGE": {
-                            "name": "MESSAGE",
-                            "block": "unstuck_s0_5",
-                            "shadow": null
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_5",
-                    "opcode": "operator_join",
-                    "next": null,
-                    "parent": "unstuck_s0_4",
-                    "inputs": {
-                        "STRING1": {
-                            "name": "STRING1",
-                            "block": "unstuck_s0_6",
-                            "shadow": "unstuck_s0_6"
-                        },
-                        "STRING2": {
-                            "name": "STRING2",
-                            "block": "unstuck_s0_7",
-                            "shadow": "unstuck_s0_8"
-                        }
-                    },
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_6",
-                    "opcode": "text",
-                    "next": null,
-                    "parent": "unstuck_s0_5",
-                    "inputs": {},
-                    "fields": {
-                        "TEXT": {
-                            "name": "TEXT",
-                            "value": "Hi, "
-                        }
-                    },
-                    "shadow": true,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_7",
-                    "opcode": "sensing_answer",
-                    "next": null,
-                    "parent": "unstuck_s0_5",
-                    "inputs": {},
-                    "fields": {},
-                    "shadow": false,
-                    "topLevel": false
-                },
-                {
-                    "id": "unstuck_s0_8",
-                    "opcode": "text",
-                    "next": null,
-                    "parent": "unstuck_s0_5",
-                    "inputs": {},
-                    "fields": {
-                        "TEXT": {
-                            "name": "TEXT",
-                            "value": "world"
-                        }
-                    },
-                    "shadow": true,
-                    "topLevel": false
                 }
-            ]
+            ],
+            "blockExample": "captured_join-strings_1777580516317"
         },
         "make-a-block": {
             "id": "make-a-block",
             "title": "Make your own block",
-            "text": "Click \"Make a Block\" in the My Blocks category to define your own custom block. It groups a set of steps you can call from anywhere — great for reuse and organization.",
+            "text": "Click \"Make a Block\" in the My Blocks category to define your own custom block",
             "tags": [
                 "variables",
                 "needs-review"
