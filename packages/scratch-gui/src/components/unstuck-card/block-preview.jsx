@@ -14,6 +14,13 @@ const KNOWN_EXTENSION_IDS = new Set([
     'videoSensing', 'ev3', 'makeymakey', 'boost', 'gdxfor', 'faceSensing'
 ]);
 
+// All extensions render in the same Scratch-extension green in the
+// preview, regardless of any custom category color the extension declares.
+// Matches `defaultExtensionColors` in scratch-vm/src/engine/runtime.js.
+const EXTENSION_PRIMARY = '#0FBD8C';
+const EXTENSION_SECONDARY = '#0DA57A';
+const EXTENSION_TERTIARY = '#0B8E69';
+
 const extensionIdFromOpcode = function (opcode) {
     if (!opcode) return null;
     const idx = opcode.indexOf('_');
@@ -125,6 +132,27 @@ class BlockPreview extends React.Component {
         // continue to operate on the editor workspace, not this preview
         if (previousMainWorkspace) {
             ScratchBlocks.common.setMainWorkspace(previousMainWorkspace);
+        }
+
+        // Seed the workspace's theme with a single "extension green" style
+        // for every known extension ID. Without this, extension blocks fall
+        // back to no-fill / black because the theme has no entry for their
+        // category. We mutate the theme before any blocks render, so no
+        // setTheme() refresh call is needed.
+        const wsTheme = this.workspace.getTheme();
+        for (const extId of KNOWN_EXTENSION_IDS) {
+            wsTheme.setBlockStyle(extId, {
+                colourPrimary: EXTENSION_PRIMARY,
+                colourSecondary: EXTENSION_SECONDARY,
+                colourTertiary: EXTENSION_TERTIARY,
+                colourQuaternary: EXTENSION_TERTIARY
+            });
+            wsTheme.setBlockStyle(`${extId}_selected`, {
+                colourPrimary: EXTENSION_TERTIARY,
+                colourSecondary: EXTENSION_TERTIARY,
+                colourTertiary: EXTENSION_TERTIARY,
+                colourQuaternary: EXTENSION_TERTIARY
+            });
         }
 
         this.buildBlocks();
