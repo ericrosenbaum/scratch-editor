@@ -729,6 +729,8 @@ const UnstuckCard = ({
     interimTranscript,
     listening,
     loading,
+    modelReady,
+    modelError,
     onAddToProject,
     onBackFromBrowseTip,
     onBackToResults,
@@ -802,9 +804,15 @@ const UnstuckCard = ({
                         />
                         {expanded ? (
                             <div className={classNames(styles.body, 'no-drag')}>
-                                {loading ? (
+                                {modelError ? (
                                     <div className={styles.loading}>
-                                        {'Finding tips'}
+                                        {'Couldn’t load tip search. Check your connection and refresh.'}
+                                    </div>
+                                ) : loading ? (
+                                    <div className={styles.loading}>
+                                        {modelReady ?
+                                            'Finding tips' :
+                                            'Setting up tip search (first time may take a moment)'}
                                         <span className={styles.loadingDots} />
                                     </div>
                                 ) : activeTip ? (
@@ -856,6 +864,12 @@ const UnstuckCard = ({
                                             onSubmit={onSubmit}
                                             onVoiceClick={onVoiceClick}
                                         />
+                                        {modelReady ? null : (
+                                            <div className={styles.setupNotice}>
+                                                {'Setting up tip search'}
+                                                <span className={styles.loadingDots} />
+                                            </div>
+                                        )}
                                         <button
                                             className={styles.browseAllLink}
                                             onClick={onBrowseAll}
@@ -882,6 +896,8 @@ UnstuckCard.propTypes = {
     interimTranscript: PropTypes.string,
     listening: PropTypes.bool,
     loading: PropTypes.bool.isRequired,
+    modelError: PropTypes.bool,
+    modelReady: PropTypes.bool,
     onAddToProject: PropTypes.func.isRequired,
     onAskAnother: PropTypes.func.isRequired,
     onBackFromBrowseTip: PropTypes.func.isRequired,

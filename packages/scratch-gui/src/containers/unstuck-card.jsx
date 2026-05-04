@@ -24,7 +24,6 @@ import {activateDeck} from '../reducers/cards.js';
 
 import UnstuckCardComponent from '../components/unstuck-card/unstuck-card.jsx';
 import tips, {quickPicks} from '../lib/libraries/tips/index.js';
-import KeywordTipProvider from '../lib/unstuck/tip-provider.js';
 import EmbeddingTipProvider from '../lib/unstuck/embedding-tip-provider.js';
 import extractProjectContext from '../lib/unstuck/context-extractor.js';
 import getProjectText from '../lib/unstuck/blocks-to-text.js';
@@ -32,18 +31,10 @@ import buildContextQuery from '../lib/unstuck/context-query-builder.js';
 import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
 
-const keywordProvider = new KeywordTipProvider(tips);
-let tipProvider;
-try {
-    tipProvider = new EmbeddingTipProvider(tips, keywordProvider);
-} catch (e) {
-    console.warn('[Unstuck] Embedding provider failed to initialize, using keyword fallback', e);
-    tipProvider = keywordProvider;
-}
+const tipProvider = new EmbeddingTipProvider(tips);
 
 const queryTips = function (context, query) {
-    const provider = tipProvider._ready ? 'embedding' : 'keyword';
-    console.log(`[Tips] query="${query}" provider=${provider}`);
+    console.log(`[Tips] query="${query}"`);
     return tipProvider.getTips(context, query)
         .then(results => {
             const summary = results.map(r =>
@@ -59,7 +50,9 @@ class UnstuckCard extends React.Component {
         super(props);
         this.state = {
             listening: false,
-            interimTranscript: ''
+            interimTranscript: '',
+            modelReady: tipProvider._ready,
+            modelError: false
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleQueryChange = this.handleQueryChange.bind(this);
@@ -75,7 +68,22 @@ class UnstuckCard extends React.Component {
         this.handleBackFromBrowseTip = this.handleBackFromBrowseTip.bind(this);
     }
 
+    componentDidMount () {
+        if (!this.state.modelReady) {
+            tipProvider.ready
+                .then(() => {
+                    if (this._unmounted) return;
+                    this.setState({modelReady: true});
+                })
+                .catch(() => {
+                    if (this._unmounted) return;
+                    this.setState({modelError: true});
+                });
+        }
+    }
+
     componentWillUnmount () {
+        this._unmounted = true;
         destroyHighlight();
     }
 
@@ -101,6 +109,9 @@ class UnstuckCard extends React.Component {
                 } else {
                     this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
                 }
+            })
+            .catch(() => {
+                this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
             });
     }
 
@@ -117,6 +128,9 @@ class UnstuckCard extends React.Component {
                     if (results.length > 0) {
                         this.props.onSetSearchResults(results);
                     }
+                })
+                .catch(() => {
+                    this.props.onSetLoading(false);
                 });
         }, 0);
     }
@@ -270,6 +284,9 @@ class UnstuckCard extends React.Component {
                         } else {
                             this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
                         }
+                    })
+                    .catch(() => {
+                        this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
                     });
             })
             .catch(() => {
@@ -290,6 +307,8 @@ class UnstuckCard extends React.Component {
                 listening={this.state.listening}
                 interimTranscript={this.state.interimTranscript}
                 loading={this.props.loading}
+                modelReady={this.state.modelReady}
+                modelError={this.state.modelError}
                 query={this.props.query}
                 searchResults={this.props.searchResults}
                 voiceSupported={isVoiceSupported()}
