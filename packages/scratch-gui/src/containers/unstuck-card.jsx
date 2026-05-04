@@ -52,7 +52,8 @@ class UnstuckCard extends React.Component {
             listening: false,
             interimTranscript: '',
             modelReady: tipProvider._ready,
-            modelError: false
+            modelError: false,
+            modelProgress: 0
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleQueryChange = this.handleQueryChange.bind(this);
@@ -70,6 +71,14 @@ class UnstuckCard extends React.Component {
 
     componentDidMount () {
         if (!this.state.modelReady) {
+            tipProvider.setProgressListener(({progress}) => {
+                if (this._unmounted) return;
+                // Round to avoid spamming setState with sub-percent diffs.
+                const next = Math.round(progress);
+                if (next !== this.state.modelProgress) {
+                    this.setState({modelProgress: next});
+                }
+            });
             tipProvider.ready
                 .then(() => {
                     if (this._unmounted) return;
@@ -84,6 +93,7 @@ class UnstuckCard extends React.Component {
 
     componentWillUnmount () {
         this._unmounted = true;
+        tipProvider.setProgressListener(null);
         destroyHighlight();
     }
 
@@ -309,6 +319,7 @@ class UnstuckCard extends React.Component {
                 loading={this.props.loading}
                 modelReady={this.state.modelReady}
                 modelError={this.state.modelError}
+                modelProgress={this.state.modelProgress}
                 query={this.props.query}
                 searchResults={this.props.searchResults}
                 voiceSupported={isVoiceSupported()}

@@ -731,6 +731,7 @@ const UnstuckCard = ({
     loading,
     modelReady,
     modelError,
+    modelProgress,
     onAddToProject,
     onBackFromBrowseTip,
     onBackToResults,
@@ -809,12 +810,25 @@ const UnstuckCard = ({
                                         {'Couldn’t load tip search. Check your connection and refresh.'}
                                     </div>
                                 ) : loading ? (
-                                    <div className={styles.loading}>
-                                        {modelReady ?
-                                            'Finding tips' :
-                                            'Setting up tip search (first time may take a moment)'}
-                                        <span className={styles.loadingDots} />
-                                    </div>
+                                    modelReady ? (
+                                        <div className={styles.loading}>
+                                            {'Finding tips'}
+                                            <span className={styles.loadingDots} />
+                                        </div>
+                                    ) : (
+                                        <div className={styles.loadingProgress}>
+                                            <div className={styles.setupNoticeRow}>
+                                                <span>{'Setting up tip search'}</span>
+                                                <span>{`${modelProgress || 0}%`}</span>
+                                            </div>
+                                            <div className={styles.progressTrack}>
+                                                <div
+                                                    className={styles.progressFill}
+                                                    style={{width: `${modelProgress || 0}%`}}
+                                                />
+                                            </div>
+                                        </div>
+                                    )
                                 ) : activeTip ? (
                                     <TipDisplay
                                         codeExpanded={codeExpanded}
@@ -866,8 +880,16 @@ const UnstuckCard = ({
                                         />
                                         {modelReady ? null : (
                                             <div className={styles.setupNotice}>
-                                                {'Setting up tip search'}
-                                                <span className={styles.loadingDots} />
+                                                <div className={styles.setupNoticeRow}>
+                                                    <span>{'Setting up tip search'}</span>
+                                                    <span>{`${modelProgress || 0}%`}</span>
+                                                </div>
+                                                <div className={styles.progressTrack}>
+                                                    <div
+                                                        className={styles.progressFill}
+                                                        style={{width: `${modelProgress || 0}%`}}
+                                                    />
+                                                </div>
                                             </div>
                                         )}
                                         <button
@@ -897,6 +919,7 @@ UnstuckCard.propTypes = {
     listening: PropTypes.bool,
     loading: PropTypes.bool.isRequired,
     modelError: PropTypes.bool,
+    modelProgress: PropTypes.number,
     modelReady: PropTypes.bool,
     onAddToProject: PropTypes.func.isRequired,
     onAskAnother: PropTypes.func.isRequired,

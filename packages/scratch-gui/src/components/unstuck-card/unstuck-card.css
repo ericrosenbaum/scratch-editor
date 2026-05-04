@@ -739,13 +739,40 @@ body .unstuck-container {
     animation: loading-breathe 1.5s ease-in-out infinite;
 }
 
+.loading-progress {
+    font-size: 0.85rem;
+    color: $text-primary;
+    padding: 1.5rem 0;
+    animation: loading-breathe 1.5s ease-in-out infinite;
+}
+
 .setup-notice {
     font-size: 0.75rem;
     color: $text-primary;
-    opacity: 0.6;
-    text-align: center;
+    opacity: 0.7;
     margin-top: 0.5rem;
-    animation: loading-breathe 1.5s ease-in-out infinite;
+}
+
+.setup-notice-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.25rem;
+}
+
+.progress-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: $motion-primary;
+    border-radius: 2px;
+    transition: width 0.2s ease-out;
 }
 
 @keyframes loading-breathe {

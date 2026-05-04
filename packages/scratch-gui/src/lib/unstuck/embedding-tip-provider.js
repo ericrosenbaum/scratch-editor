@@ -19,6 +19,7 @@ class EmbeddingTipProvider {
         this._ready = false;
         this._pendingQueries = new Map(); // id -> {resolve, reject}
         this._queryId = 0;
+        this._progressListener = null;
 
         this._readyPromise = new Promise((resolve, reject) => {
             this._readyResolve = resolve;
@@ -68,6 +69,15 @@ class EmbeddingTipProvider {
         return this._readyPromise;
     }
 
+    /**
+     * Subscribe to model-download progress updates. The listener receives
+     * {progress: number /* 0-100 *\/, file: string} events while files are
+     * being downloaded. Pass `null` to unsubscribe.
+     */
+    setProgressListener (listener) {
+        this._progressListener = listener;
+    }
+
     _initWorker () {
         try {
             // Load the standalone worker file (copied to build output, not bundled by webpack).
@@ -98,6 +108,13 @@ class EmbeddingTipProvider {
                     this._worker.postMessage({
                         type: 'embed-tips',
                         docs: this._tipDocs
+                    });
+                }
+            } else if (type === 'progress') {
+                if (this._progressListener) {
+                    this._progressListener({
+                        progress: event.data.progress,
+                        file: event.data.file
                     });
                 }
             } else if (type === 'tips-ready') {
