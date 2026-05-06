@@ -212,6 +212,12 @@ class UnstuckCard extends React.Component {
     }
 
     handleAddToProject () {
+        // Move focus off the button so subsequent key presses reach the VM:
+        // vmListenerHOC only forwards keys when focus is on document.body or an SVGElement.
+        if (document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
+        }
+
         const activeTip = this.props.activeTipId ? tips[this.props.activeTipId] : null;
         if (!activeTip || !activeTip._capturedBlocks || activeTip._capturedBlocks.length === 0) return;
 
