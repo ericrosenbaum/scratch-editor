@@ -557,9 +557,15 @@ class TipDisplay extends React.Component {
         super(props);
         this.handleFollowUp = this.handleFollowUp.bind(this);
         this.handleShowMe = this.handleShowMe.bind(this);
+        this.handleStarterLink = this.handleStarterLink.bind(this);
     }
     handleFollowUp (e) {
         this.props.onFollowUp(e.currentTarget.dataset.tipId);
+    }
+    handleStarterLink () {
+        if (this.props.onStarterLinkClick) {
+            this.props.onStarterLinkClick(this.props.tip.id, this.props.tip.projectUrl);
+        }
     }
     handleShowMe (e) {
         const index = Number(e.currentTarget.dataset.pointerIndex) || 0;
@@ -586,6 +592,7 @@ class TipDisplay extends React.Component {
                             href={tip.projectUrl}
                             rel="noopener noreferrer"
                             target="_blank"
+                            onClick={this.handleStarterLink}
                         >
                             <img
                                 className={styles.thumbnail}
@@ -598,6 +605,7 @@ class TipDisplay extends React.Component {
                             href={tip.projectUrl}
                             rel="noopener noreferrer"
                             target="_blank"
+                            onClick={this.handleStarterLink}
                         >
                             {'Open project'}
                             <span className={styles.openProjectArrow}>{'\u2197'}</span>
@@ -700,8 +708,10 @@ TipDisplay.propTypes = {
     onAddToProject: PropTypes.func.isRequired,
     onFollowUp: PropTypes.func.isRequired,
     onPointerClick: PropTypes.func.isRequired,
+    onStarterLinkClick: PropTypes.func,
     onToggleCode: PropTypes.func.isRequired,
     tip: PropTypes.shape({
+        id: PropTypes.string,
         text: PropTypes.string.isRequired,
         // eslint-disable-next-line react/forbid-prop-types
         _capturedBlocks: PropTypes.array,
@@ -749,6 +759,7 @@ const UnstuckCard = ({
     onSelectResult,
     onShrinkExpand,
     onStartDrag,
+    onStarterLinkClick,
     onSubmit,
     onToggleCode,
     onVoiceClick,
@@ -838,6 +849,7 @@ const UnstuckCard = ({
                                         onAddToProject={onAddToProject}
                                         onFollowUp={onFollowUp}
                                         onPointerClick={onPointerClick}
+                                        onStarterLinkClick={onStarterLinkClick}
                                         onToggleCode={onToggleCode}
                                     />
                                 ) : searchResults.length > 0 ? (
@@ -938,6 +950,7 @@ UnstuckCard.propTypes = {
     onSelectResult: PropTypes.func.isRequired,
     onShrinkExpand: PropTypes.func.isRequired,
     onStartDrag: PropTypes.func.isRequired,
+    onStarterLinkClick: PropTypes.func,
     onSubmit: PropTypes.func.isRequired,
     onToggleCode: PropTypes.func,
     onVoiceClick: PropTypes.func,

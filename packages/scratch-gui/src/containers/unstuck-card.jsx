@@ -30,17 +30,21 @@ import getProjectText from '../lib/unstuck/blocks-to-text.js';
 import buildContextQuery from '../lib/unstuck/context-query-builder.js';
 import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
+import * as tipEvents from '../lib/unstuck/tip-events.js';
+import * as postTipWatcher from '../lib/unstuck/post-tip-watcher.js';
 
 const tipProvider = new EmbeddingTipProvider(tips);
 
 const queryTips = function (context, query) {
     console.log(`[Tips] query="${query}"`);
+    const startedAt = Date.now();
     return tipProvider.getTips(context, query)
         .then(results => {
             const summary = results.map(r =>
                 `${r.tipId} (${r.score.toFixed(1)}): ${(tips[r.tipId] && tips[r.tipId].text || '').substring(0, 60)}`
             );
             console.log(`[Tips] results (${results.length}):\n  ${summary.join('\n  ')}`);
+            tipEvents.resultsReturned(query, results, Date.now() - startedAt);
             return results;
         });
 };
@@ -70,6 +74,7 @@ class UnstuckCard extends React.Component {
     }
 
     componentDidMount () {
+        tipEvents.cardOpened(this.props.vm, this.props.activeTabIndex, this.state.modelReady);
         if (!this.state.modelReady) {
             tipProvider.setProgressListener(({progress}) => {
                 if (this._unmounted) return;
@@ -95,6 +100,13 @@ class UnstuckCard extends React.Component {
         this._unmounted = true;
         tipProvider.setProgressListener(null);
         destroyHighlight();
+        tipEvents.cardClosed();
+        postTipWatcher.start({
+            tipId: this.props.activeTipId,
+            trigger: 'card_closed',
+            vm: this.props.vm,
+            activeTabIndex: this.props.activeTabIndex
+        });
     }
 
     handleQueryChange (e) {
@@ -106,6 +118,7 @@ class UnstuckCard extends React.Component {
         if (!query) return;
 
         this.props.onSetLoading(true);
+        tipEvents.querySubmitted(query, 'typed');
 
         const context = extractProjectContext(
             this.props.vm,
@@ -127,6 +140,7 @@ class UnstuckCard extends React.Component {
 
     handlePickClick (query) {
         this.props.onSetQuery(query);
+        tipEvents.querySubmitted(query, 'quickpick');
         setTimeout(() => {
             this.props.onSetLoading(true);
             const context = extractProjectContext(
@@ -147,7 +161,9 @@ class UnstuckCard extends React.Component {
 
     handleFollowUp (tipId) {
         const tip = tips[tipId];
+        tipEvents.resultClicked(tipId, null, 'followup');
         if (tip && tip.tutorialId) {
+            tipEvents.tutorialOpened(tipId, tip.tutorialId);
             this.props.onActivateDeck(tip.tutorialId);
             return;
         }
@@ -161,7 +177,10 @@ class UnstuckCard extends React.Component {
 
     handleSelectResult (tipId) {
         const tip = tips[tipId];
+        const position = this.props.searchResults.findIndex(r => r.tipId === tipId);
+        tipEvents.resultClicked(tipId, position, 'results');
         if (tip && tip.tutorialId) {
+            tipEvents.tutorialOpened(tipId, tip.tutorialId);
             this.props.onActivateDeck(tip.tutorialId);
             return;
         }
@@ -175,7 +194,9 @@ class UnstuckCard extends React.Component {
 
     handleSelectBrowseTip (tipId) {
         const tip = tips[tipId];
+        tipEvents.resultClicked(tipId, null, 'browse');
         if (tip && tip.tutorialId) {
+            tipEvents.tutorialOpened(tipId, tip.tutorialId);
             this.props.onActivateDeck(tip.tutorialId);
             return;
         }
@@ -247,8 +268,16 @@ class UnstuckCard extends React.Component {
             }
         }
 
+        const tipIdForEvent = this.props.activeTipId;
         vm.shareBlocksToTarget(prepared, editingTarget.id)
             .then(() => {
+                tipEvents.addToProject(tipIdForEvent, prepared);
+                postTipWatcher.start({
+                    tipId: tipIdForEvent,
+                    trigger: 'add_to_project',
+                    vm: this.props.vm,
+                    activeTabIndex: this.props.activeTabIndex
+                });
                 vm.refreshWorkspace();
                 // refreshWorkspace → emitWorkspaceUpdate → clearWorkspaceAndLoadFromXml
                 // loads the new <variables> into Blockly's variable map, but
@@ -269,20 +298,31 @@ class UnstuckCard extends React.Component {
     handlePointerClick (pointerIndex) {
         const activeTip = this.props.activeTipId ? tips[this.props.activeTipId] : null;
         if (!activeTip || !activeTip.pointers || !activeTip.pointers[pointerIndex]) return;
-        highlightElement(activeTip.pointers[pointerIndex], this.props.dispatch, this.props.vm);
+        const pointer = activeTip.pointers[pointerIndex];
+        tipEvents.showMeClicked(this.props.activeTipId, pointerIndex, pointer.label);
+        postTipWatcher.start({
+            tipId: this.props.activeTipId,
+            trigger: 'show_me',
+            vm: this.props.vm,
+            activeTabIndex: this.props.activeTabIndex
+        });
+        highlightElement(pointer, this.props.dispatch, this.props.vm);
     }
 
     handleVoiceClick () {
         if (this.state.listening) return;
         this.setState({listening: true, interimTranscript: ''});
+        tipEvents.voiceStarted();
         voiceListen({
             onInterim: text => this.setState({interimTranscript: text}),
             onEnd: () => this.setState({listening: false, interimTranscript: ''})
         })
             .then(transcript => {
                 this.setState({interimTranscript: ''});
+                tipEvents.voiceCompleted(transcript);
                 this.props.onSetQuery(transcript);
                 this.props.onSetLoading(true);
+                tipEvents.querySubmitted(transcript, 'voice');
                 const context = extractProjectContext(
                     this.props.vm,
                     this.props.activeTabIndex
@@ -299,7 +339,8 @@ class UnstuckCard extends React.Component {
                         this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
                     });
             })
-            .catch(() => {
+            .catch(err => {
+                tipEvents.voiceAborted(err && err.message ? err.message : 'aborted');
                 this.setState({listening: false, interimTranscript: ''});
             });
     }
@@ -345,6 +386,7 @@ class UnstuckCard extends React.Component {
                 onSelectResult={this.handleSelectResult}
                 onShrinkExpand={this.props.onShrinkExpand}
                 onStartDrag={this.props.onStartDrag}
+                onStarterLinkClick={this.props.onStarterLinkClick}
                 onToggleCode={this.props.onToggleCode}
                 onVoiceClick={this.handleVoiceClick}
                 onSubmit={this.handleSubmit}
@@ -375,6 +417,7 @@ UnstuckCard.propTypes = {
     onSetTip: PropTypes.func.isRequired,
     onShrinkExpand: PropTypes.func.isRequired,
     onStartDrag: PropTypes.func.isRequired,
+    onStarterLinkClick: PropTypes.func,
     onToggleCode: PropTypes.func.isRequired,
     query: PropTypes.string.isRequired,
     searchResults: PropTypes.arrayOf(PropTypes.shape({
@@ -416,13 +459,29 @@ const mapDispatchToProps = dispatch => ({
     onSetTip: tipId => dispatch(setTip(tipId)),
     onShrinkExpand: () => dispatch(shrinkExpandUnstuck()),
     onStartDrag: () => dispatch(startDrag()),
-    onToggleCode: () => dispatch(toggleCodeExpanded()),
-    onActivateDeck: deckId => dispatch(activateDeck(deckId)),
-    onBrowseAll: () => dispatch(setBrowseAll(true)),
-    onBrowseFilter: tag => dispatch(setBrowseFilter(tag))
+    onActivateDeck: deckId => dispatch(activateDeck(deckId))
+});
+
+const mergeProps = (stateProps, dispatchProps, ownProps) => Object.assign({}, ownProps, stateProps, dispatchProps, {
+    onToggleCode: () => {
+        if (!stateProps.codeExpanded) tipEvents.codeExpanded(stateProps.activeTipId);
+        dispatchProps.dispatch(toggleCodeExpanded());
+    },
+    onBrowseAll: () => {
+        tipEvents.browseOpened();
+        dispatchProps.dispatch(setBrowseAll(true));
+    },
+    onBrowseFilter: tag => {
+        tipEvents.browseFilter(tag);
+        dispatchProps.dispatch(setBrowseFilter(tag));
+    },
+    onStarterLinkClick: (tipId, projectUrl) => {
+        tipEvents.starterLinkClicked(tipId, projectUrl);
+    }
 });
 
 export default connect(
     mapStateToProps,
-    mapDispatchToProps
+    mapDispatchToProps,
+    mergeProps
 )(UnstuckCard);
