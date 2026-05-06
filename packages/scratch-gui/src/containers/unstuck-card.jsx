@@ -21,6 +21,7 @@ import {
 } from '../reducers/unstuck';
 
 import {activateDeck} from '../reducers/cards.js';
+import {updateMetrics as updateWorkspaceMetrics} from '../reducers/workspace-metrics';
 
 import UnstuckCardComponent from '../components/unstuck-card/unstuck-card.jsx';
 import tips, {quickPicks} from '../lib/libraries/tips/index.js';
@@ -32,6 +33,8 @@ import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
 import * as tipEvents from '../lib/unstuck/tip-events.js';
 import * as postTipWatcher from '../lib/unstuck/post-tip-watcher.js';
+import layoutInsertedBlocks, {VIEWPORT_MARGIN} from '../lib/unstuck/layout-inserted-blocks.js';
+import {BLOCKS_DEFAULT_SCALE} from '../lib/layout-constants';
 
 const tipProvider = new EmbeddingTipProvider(tips);
 
@@ -268,6 +271,37 @@ class UnstuckCard extends React.Component {
             }
         }
 
+        // Position the inserted top-level stacks based on current viewport
+        // scroll and existing scripts so we don't hide other code, and so
+        // multiple stacks within a single tip don't stack on top of each other.
+        const mainWorkspace = ScratchBlocks.getMainWorkspace();
+        const targetMetrics = this.props.workspaceMetrics.targets[editingTarget.id] || {
+            scrollX: 0,
+            scrollY: 0,
+            scale: BLOCKS_DEFAULT_SCALE
+        };
+        const insertion = layoutInsertedBlocks(
+            prepared, mainWorkspace, targetMetrics, this.props.isRtl
+        );
+
+        // If we shifted the insertion below existing content, the new blocks
+        // may lie outside the viewport. Update workspace metrics so that
+        // refreshWorkspace's scroll-restore lands the new blocks near the
+        // top-left of the viewport with the standard margin.
+        if (insertion.shiftedBelow) {
+            const scale = targetMetrics.scale || BLOCKS_DEFAULT_SCALE;
+            const newScrollY = VIEWPORT_MARGIN - (insertion.baseY * scale);
+            const newScrollX = this.props.isRtl ?
+                (insertion.baseX * scale) - VIEWPORT_MARGIN :
+                VIEWPORT_MARGIN - (insertion.baseX * scale);
+            this.props.dispatch(updateWorkspaceMetrics({
+                targetID: editingTarget.id,
+                scrollX: newScrollX,
+                scrollY: newScrollY,
+                scale: scale
+            }));
+        }
+
         const tipIdForEvent = this.props.activeTipId;
         vm.shareBlocksToTarget(prepared, editingTarget.id)
             .then(() => {
@@ -406,6 +440,7 @@ UnstuckCard.propTypes = {
     codeExpanded: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired,
     expanded: PropTypes.bool.isRequired,
+    isRtl: PropTypes.bool,
     loading: PropTypes.bool.isRequired,
     onClearResults: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
@@ -425,6 +460,9 @@ UnstuckCard.propTypes = {
         score: PropTypes.number.isRequired
     })).isRequired,
     vm: PropTypes.object.isRequired,
+    workspaceMetrics: PropTypes.shape({
+        targets: PropTypes.object
+    }),
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired
 };
@@ -436,9 +474,11 @@ const mapStateToProps = state => ({
     browseFilter: state.scratchGui.unstuck.browseFilter,
     codeExpanded: state.scratchGui.unstuck.codeExpanded,
     expanded: state.scratchGui.unstuck.expanded,
+    isRtl: state.locales.isRtl,
     loading: state.scratchGui.unstuck.loading,
     query: state.scratchGui.unstuck.query,
     searchResults: state.scratchGui.unstuck.searchResults,
+    workspaceMetrics: state.scratchGui.workspaceMetrics,
     x: state.scratchGui.unstuck.x,
     y: state.scratchGui.unstuck.y
 });
