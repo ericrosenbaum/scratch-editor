@@ -6230,8 +6230,9 @@
         },
         "tutorial-getting-started": {
             "id": "tutorial-getting-started",
+            "title": "Getting Started tutorial",
             "tutorialId": "intro-move-sayhello",
-            "text": "Try the \"Getting Started\" tutorial to learn how to make a sprite move and say hello!",
+            "text": "Learn how to make a sprite move and say hello!",
             "tags": [
                 "beginner",
                 "tutorial"
@@ -6240,8 +6241,9 @@
         },
         "tutorial-getting-started-asl": {
             "id": "tutorial-getting-started-asl",
+            "title": "Getting Started - ASL tutorial",
             "tutorialId": "intro-getting-started-ASL",
-            "text": "Try the \"Getting Started - ASL\" tutorial to learn Scratch with American Sign Language!",
+            "text": "Learn Scratch with American Sign Language!",
             "tags": [
                 "beginner",
                 "tutorial"
@@ -6250,8 +6252,9 @@
         },
         "tutorial-animate-a-name": {
             "id": "tutorial-animate-a-name",
+            "title": "Animate a Name tutorial",
             "tutorialId": "animate-a-name",
-            "text": "Try the \"Animate a Name\" tutorial to make letters spin, grow, and change color!",
+            "text": "Make letters spin, grow, and change color!",
             "tags": [
                 "animation",
                 "art",
@@ -6261,8 +6264,9 @@
         },
         "tutorial-animate-a-character": {
             "id": "tutorial-animate-a-character",
+            "title": "Animate a Character tutorial",
             "tutorialId": "Animate-A-Character",
-            "text": "Try the \"Animate a Character\" tutorial to make a character talk, move with arrow keys, and jump!",
+            "text": "Make a character talk, move with arrow keys, and jump!",
             "tags": [
                 "animation",
                 "tutorial"
@@ -6271,8 +6275,9 @@
         },
         "tutorial-tell-a-story": {
             "id": "tutorial-tell-a-story",
+            "title": "Create a Story tutorial",
             "tutorialId": "Tell-A-Story",
-            "text": "Try the \"Create a Story\" tutorial to make characters have conversations and switch scenes!",
+            "text": "Make characters have conversations and switch scenes!",
             "tags": [
                 "stories",
                 "tutorial"
@@ -6281,8 +6286,9 @@
         },
         "tutorial-say-it-out-loud": {
             "id": "tutorial-say-it-out-loud",
+            "title": "Create Animations That Talk tutorial",
             "tutorialId": "say-it-out-loud",
-            "text": "Try the \"Create Animations That Talk\" tutorial to use the text-to-speech extension and make sprites speak out loud!",
+            "text": "Use the text-to-speech extension and make sprites speak out loud!",
             "tags": [
                 "sound",
                 "tutorial"
@@ -6291,8 +6297,9 @@
         },
         "tutorial-imagine": {
             "id": "tutorial-imagine",
+            "title": "Imagine a World tutorial",
             "tutorialId": "imagine",
-            "text": "Try the \"Imagine a World\" tutorial to create an interactive world with flying, gliding, and costume changes!",
+            "text": "Create an interactive world with flying, gliding, and costume changes!",
             "tags": [
                 "animation",
                 "stories",
@@ -6302,8 +6309,9 @@
         },
         "tutorial-add-effects": {
             "id": "tutorial-add-effects",
+            "title": "Add Effects tutorial",
             "tutorialId": "add-effects",
-            "text": "Try the \"Add Effects\" tutorial to learn about color, fisheye, whirl, pixelate, and other cool effects!",
+            "text": "Learn about color, fisheye, whirl, pixelate, and other cool effects!",
             "tags": [
                 "looks",
                 "tutorial"
@@ -6312,8 +6320,9 @@
         },
         "tutorial-make-it-fly": {
             "id": "tutorial-make-it-fly",
+            "title": "Make it Fly tutorial",
             "tutorialId": "make-it-fly",
-            "text": "Try the \"Make it Fly\" tutorial to create a flying game with arrow keys, collectibles, and a score!",
+            "text": "Create a flying game with arrow keys, collectibles, and a score!",
             "tags": [
                 "games",
                 "tutorial"
@@ -6322,8 +6331,9 @@
         },
         "tutorial-make-music": {
             "id": "tutorial-make-music",
+            "title": "Make Music tutorial",
             "tutorialId": "Make-Music",
-            "text": "Try the \"Make Music\" tutorial to pick instruments, create songs, and make a beatbox!",
+            "text": "Pick instruments, create songs, and make a beatbox!",
             "tags": [
                 "music",
                 "sound",
@@ -6333,8 +6343,9 @@
         },
         "tutorial-pong": {
             "id": "tutorial-pong",
+            "title": "Pong Game tutorial",
             "tutorialId": "pong",
-            "text": "Try the \"Pong Game\" tutorial to make a ball bounce off a paddle and keep score!",
+            "text": "Make a ball bounce off a paddle and keep score!",
             "tags": [
                 "games",
                 "tutorial"
@@ -6343,8 +6354,9 @@
         },
         "tutorial-clicker-game": {
             "id": "tutorial-clicker-game",
+            "title": "Make a Clicker Game tutorial",
             "tutorialId": "Make-A-Game",
-            "text": "Try the \"Make a Clicker Game\" tutorial to make things pop up, click on them, and keep score!",
+            "text": "Make things pop up, click on them, and keep score!",
             "tags": [
                 "games",
                 "tutorial"
@@ -6353,8 +6365,9 @@
         },
         "tutorial-chase-game": {
             "id": "tutorial-chase-game",
+            "title": "Chase Game tutorial",
             "tutorialId": "Chase-Game",
-            "text": "Try the \"Chase Game\" tutorial to make a game where you chase things around the screen with arrow keys!",
+            "text": "Make a game where you chase things around the screen with arrow keys!",
             "tags": [
                 "games",
                 "tutorial"
@@ -6363,8 +6376,9 @@
         },
         "tutorial-video-sensing": {
             "id": "tutorial-video-sensing",
+            "title": "Video Sensing tutorial",
             "tutorialId": "Video-Sensing",
-            "text": "Try the \"Video Sensing\" tutorial to use your camera to pet the cat, animate sprites, and pop balloons!",
+            "text": "Use your camera to pet the cat, animate sprites, and pop balloons!",
             "tags": [
                 "sensing",
                 "tutorial"
@@ -6373,8 +6387,9 @@
         },
         "tutorial-face-sensing": {
             "id": "tutorial-face-sensing",
+            "title": "Face Sensing tutorial",
             "tutorialId": "Face-Sensing",
-            "text": "Try the \"Face Sensing\" tutorial to put accessories on your face and make games that use face tracking!",
+            "text": "Put accessories on your face and make games that use face tracking!",
             "tags": [
                 "sensing",
                 "tutorial"
@@ -6383,8 +6398,9 @@
         },
         "tutorial-talking-tales": {
             "id": "tutorial-talking-tales",
+            "title": "Talking Tales tutorial",
             "tutorialId": "talking",
-            "text": "Try the \"Talking Tales\" tutorial to make characters speak, switch scenes, dance, and ask questions!",
+            "text": "Make characters speak, switch scenes, dance, and ask questions!",
             "tags": [
                 "stories",
                 "sound",
@@ -6394,8 +6410,9 @@
         },
         "tutorial-add-sprite": {
             "id": "tutorial-add-sprite",
+            "title": "Add a Sprite tutorial",
             "tutorialId": "add-sprite",
-            "text": "Try the \"Add a Sprite\" tutorial to learn how to add new characters to your project!",
+            "text": "Learn how to add new characters to your project!",
             "tags": [
                 "beginner",
                 "tutorial"
@@ -6404,8 +6421,9 @@
         },
         "tutorial-add-backdrop": {
             "id": "tutorial-add-backdrop",
+            "title": "Add a Backdrop tutorial",
             "tutorialId": "add-a-backdrop",
-            "text": "Try the \"Add a Backdrop\" tutorial to learn how to change the background of your project!",
+            "text": "Learn how to change the background of your project!",
             "tags": [
                 "beginner",
                 "tutorial"
@@ -6414,8 +6432,9 @@
         },
         "tutorial-arrow-keys": {
             "id": "tutorial-arrow-keys",
+            "title": "Use Arrow Keys tutorial",
             "tutorialId": "move-around-with-arrow-keys",
-            "text": "Try the \"Use Arrow Keys\" tutorial to learn how to move a sprite around with the keyboard!",
+            "text": "Learn how to move a sprite around with the keyboard!",
             "tags": [
                 "events",
                 "motion",
@@ -6425,8 +6444,9 @@
         },
         "tutorial-change-size": {
             "id": "tutorial-change-size",
+            "title": "Change Size tutorial",
             "tutorialId": "change-size",
-            "text": "Try the \"Change Size\" tutorial to learn how to make sprites grow and shrink!",
+            "text": "Learn how to make sprites grow and shrink!",
             "tags": [
                 "looks",
                 "tutorial"
@@ -6435,8 +6455,9 @@
         },
         "tutorial-glide-around": {
             "id": "tutorial-glide-around",
+            "title": "Glide Around tutorial",
             "tutorialId": "glide-around",
-            "text": "Try the \"Glide Around\" tutorial to make your sprite glide smoothly back and forth or to a point!",
+            "text": "Make your sprite glide smoothly back and forth or to a point!",
             "tags": [
                 "motion",
                 "tutorial"
@@ -6445,8 +6466,9 @@
         },
         "tutorial-make-it-spin": {
             "id": "tutorial-make-it-spin",
+            "title": "Make It Spin tutorial",
             "tutorialId": "spin-video",
-            "text": "Try the \"Make It Spin\" tutorial to learn how to make a sprite turn and set its direction!",
+            "text": "Learn how to make a sprite turn and set its direction!",
             "tags": [
                 "motion",
                 "tutorial"
@@ -6455,8 +6477,9 @@
         },
         "tutorial-record-a-sound": {
             "id": "tutorial-record-a-sound",
+            "title": "Record a Sound tutorial",
             "tutorialId": "record-a-sound",
-            "text": "Try the \"Record a Sound\" tutorial to record your own sounds and use them in your project!",
+            "text": "Record your own sounds and use them in your project!",
             "tags": [
                 "sound",
                 "tutorial"
@@ -6465,8 +6488,9 @@
         },
         "tutorial-hide-and-show": {
             "id": "tutorial-hide-and-show",
+            "title": "Hide and Show tutorial",
             "tutorialId": "hide-and-show",
-            "text": "Try the \"Hide and Show\" tutorial to make sprites appear and disappear!",
+            "text": "Make sprites appear and disappear!",
             "tags": [
                 "looks",
                 "tutorial"
@@ -6475,8 +6499,9 @@
         },
         "tutorial-animate-a-sprite": {
             "id": "tutorial-animate-a-sprite",
+            "title": "Animate a Sprite tutorial",
             "tutorialId": "switch-costume",
-            "text": "Try the \"Animate a Sprite\" tutorial to learn how to switch costumes and create animations!",
+            "text": "Learn how to switch costumes and create animations!",
             "tags": [
                 "looks",
                 "animation",
@@ -6487,7 +6512,7 @@
         "starter-dance-party": {
             "id": "starter-dance-party",
             "title": "Dance Party",
-            "text": "The Dance Party project shows how to make characters dance by switching costumes in a forever loop while the stage plays music",
+            "text": "Shows how to make characters dance by switching costumes in a forever loop while the stage plays music",
             "tags": [
                 "animation",
                 "looks",
@@ -6505,7 +6530,7 @@
         "starter-animate-crab": {
             "id": "starter-animate-crab",
             "title": "Animate the Crab",
-            "text": "The Animate the Crab project shows how to bring a character to life with costume expressions, \"if on edge bounce,\" and random positioning!",
+            "text": "Shows how to bring a character to life with costume expressions, \"if on edge bounce,\" and random positioning!",
             "tags": [
                 "animation",
                 "motion",
@@ -6523,7 +6548,7 @@
         "starter-walk-cycle": {
             "id": "starter-walk-cycle",
             "title": "Walk Cycle",
-            "text": "The Walk Cycle project shows how to create a realistic walking animation by combining \"move steps\" with \"next costume\" in a repeat loop!",
+            "text": "Shows how to create a realistic walking animation by combining \"move steps\" with \"next costume\" in a repeat loop!",
             "tags": [
                 "animation",
                 "motion",
@@ -6541,7 +6566,7 @@
         "starter-mouse-trail": {
             "id": "starter-mouse-trail",
             "title": "Mouse Trail",
-            "text": "The Mouse Trail project shows how to use cloning to create a trail of stars that follows your mouse, with each clone shrinking and disappearing!",
+            "text": "Shows how to use cloning to create a trail of stars that follows your mouse, with each clone shrinking and disappearing!",
             "tags": [
                 "animation",
                 "clones",
@@ -6559,7 +6584,7 @@
         "starter-food-truck": {
             "id": "starter-food-truck",
             "title": "Food Truck Animation",
-            "text": "The Food Truck Animation project shows how to make a scrolling background, spinning tires, and flashing graphic effects with multiple sprites!",
+            "text": "Shows how to make a scrolling background, spinning tires, and flashing graphic effects with multiple sprites!",
             "tags": [
                 "animation",
                 "motion",
@@ -6577,7 +6602,7 @@
         "starter-make-it-fly": {
             "id": "starter-make-it-fly",
             "title": "Make It Fly",
-            "text": "The Make It Fly project shows how to use keyboard controls to make a flying cat dodge scrolling buildings",
+            "text": "Shows how to use keyboard controls to make a flying cat dodge scrolling buildings",
             "tags": [
                 "game",
                 "control",
@@ -6595,7 +6620,7 @@
         "starter-maze": {
             "id": "starter-maze",
             "title": "Maze Starter",
-            "text": "The Maze Starter project shows how to navigate a ball through a maze using arrow keys, with color touching detection for wall collisions",
+            "text": "Shows how to navigate a ball through a maze using arrow keys, with color touching detection for wall collisions",
             "tags": [
                 "game",
                 "sensing",
@@ -6613,7 +6638,7 @@
         "starter-dress-up": {
             "id": "starter-dress-up",
             "title": "Dress Up Tera",
-            "text": "The Dress Up Tera project shows how to make sprites draggable and detect if a sprite is touching another sprite to create an interactive dress-up game",
+            "text": "Shows how to make sprites draggable and detect if a sprite is touching another sprite to create an interactive dress-up game",
             "tags": [
                 "game",
                 "sensing",
@@ -6631,7 +6656,7 @@
         "starter-pong": {
             "id": "starter-pong",
             "title": "Pong Starter",
-            "text": "The Pong Starter project shows how to make a simple game including mouse movement, ball bouncing, collisions, and sound effects",
+            "text": "Shows how to make a simple game including mouse movement, ball bouncing, collisions, and sound effects",
             "tags": [
                 "game",
                 "motion",
@@ -6650,7 +6675,7 @@
         "starter-hide-seek": {
             "id": "starter-hide-seek",
             "title": "Hide and Seek",
-            "text": "The Hide and Seek project shows how to make a clicker game with a score variable, random positioning, and show and hide",
+            "text": "Shows how to make a clicker game with a score variable, random positioning, and show and hide",
             "tags": [
                 "game",
                 "variables",
@@ -6668,7 +6693,7 @@
         "starter-stamp-studio": {
             "id": "starter-stamp-studio",
             "title": "Stamp Studio",
-            "text": "The Stamp Studio project shows how to use the pen stamp block with if-then conditions to draw colorful patterns that follow your mouse",
+            "text": "Shows how to use the pen stamp block with if-then conditions to draw colorful patterns that follow your mouse",
             "tags": [
                 "art",
                 "pen",
@@ -6686,7 +6711,7 @@
         "starter-parallax": {
             "id": "starter-parallax",
             "title": "Interactive Parallax",
-            "text": "The Interactive Parallax project shows how to use math operators and mouse sensing to move layers at different speeds for a depth effect!",
+            "text": "Shows how to use math operators and mouse sensing to move layers at different speeds for a depth effect!",
             "tags": [
                 "art",
                 "operators",
@@ -6704,7 +6729,7 @@
         "starter-soundflower": {
             "id": "starter-soundflower",
             "title": "Soundflower",
-            "text": "The Soundflower project shows how to use the loudness and multiply blocks to make a flower that responds to your microphone",
+            "text": "Shows how to use the loudness and multiply blocks to make a flower that responds to your microphone",
             "tags": [
                 "art",
                 "sensing",
@@ -6722,7 +6747,7 @@
         "starter-art-alive": {
             "id": "starter-art-alive",
             "title": "Make Art Come Alive",
-            "text": "The Make Art Come Alive project shows how to use click events, broadcasts, and glide blocks to animate parts of a painting",
+            "text": "Shows how to use click events, broadcasts, and glide blocks to animate parts of a painting",
             "tags": [
                 "art",
                 "events",
@@ -6740,7 +6765,7 @@
         "starter-spin-art": {
             "id": "starter-spin-art",
             "title": "Spin Art",
-            "text": "The Spin Art project shows how to use variable sliders, the stamp block, and movement to create mesmerizing spiral patterns!",
+            "text": "Shows how to use variable sliders, the stamp block, and movement to create mesmerizing spiral patterns!",
             "tags": [
                 "art",
                 "pen",
@@ -6758,7 +6783,7 @@
         "starter-dj": {
             "id": "starter-dj",
             "title": "DJ Scratch Cat",
-            "text": "The DJ Scratch Cat project shows how to use key press events and sound blocks to make a DJ mixing board with a looping beat!",
+            "text": "Shows how to use key press events and sound blocks to make a DJ mixing board with a looping beat!",
             "tags": [
                 "music",
                 "sound",
@@ -6776,7 +6801,7 @@
         "starter-piano": {
             "id": "starter-piano",
             "title": "Piano",
-            "text": "The Piano project shows how to build a playable instrument with clickable key sprites using the Music extension's play note block!",
+            "text": "Shows how to build a playable instrument with clickable key sprites using the Music extension's play note block!",
             "tags": [
                 "music",
                 "extensions",
@@ -6794,7 +6819,7 @@
         "starter-fish-pitch": {
             "id": "starter-fish-pitch",
             "title": "Catch the Fish",
-            "text": "The Catch the Fish project shows how to use cloning, a score variable, and the pitch effect to make music play higher as you score!",
+            "text": "Shows how to use cloning, a score variable, and the pitch effect to make music play higher as you score!",
             "tags": [
                 "music",
                 "clones",
@@ -6813,7 +6838,7 @@
         "starter-fur-elise": {
             "id": "starter-fur-elise",
             "title": "Fur Elise",
-            "text": "The Fur Elise project shows how to use custom My Blocks to organize a song into reusable sections with the Music extension!",
+            "text": "Shows how to use custom My Blocks to organize a song into reusable sections with the Music extension!",
             "tags": [
                 "music",
                 "extensions",
@@ -6831,7 +6856,7 @@
         "starter-drum-sequencer": {
             "id": "starter-drum-sequencer",
             "title": "Drum Sequencer",
-            "text": "The Drum Sequencer project shows how to use clones to make a row of buttons, and color sensing to trigger sounds",
+            "text": "Shows how to use clones to make a row of buttons, and color sensing to trigger sounds",
             "tags": [
                 "music",
                 "clones",
@@ -6849,7 +6874,7 @@
         "starter-story": {
             "id": "starter-story",
             "title": "Story Starter",
-            "text": "The Story Starter project shows how to make characters take turns talking with the broadcast and when I receive blocks",
+            "text": "Shows how to make characters take turns talking with the broadcast and when I receive blocks",
             "tags": [
                 "story",
                 "events",
@@ -6867,7 +6892,7 @@
         "starter-random-facts": {
             "id": "starter-random-facts",
             "title": "Random Facts",
-            "text": "The 5 Random Facts About Me project shows how to create a slideshow presentation using backdrops and key press events!",
+            "text": "Shows how to create a slideshow presentation using backdrops and key press events!",
             "tags": [
                 "story",
                 "events",
@@ -6885,7 +6910,7 @@
         "starter-fill-blanks": {
             "id": "starter-fill-blanks",
             "title": "Fill in the Blanks",
-            "text": "The Fill in the Blanks project shows how to make a mad-libs story using the ask block, variables, and the join block",
+            "text": "Shows how to make a mad-libs story using the ask block, variables, and the join block",
             "tags": [
                 "story",
                 "sensing",
@@ -6904,7 +6929,7 @@
         "starter-stop-motion": {
             "id": "starter-stop-motion",
             "title": "Stop Motion",
-            "text": "The Stop Motion Animation project shows how to create a flipbook-style animation by switching costumes in a forever loop!",
+            "text": "Shows how to create a flipbook-style animation by switching costumes in a forever loop!",
             "tags": [
                 "story",
                 "animation",
@@ -6922,7 +6947,7 @@
         "starter-adventure": {
             "id": "starter-adventure",
             "title": "Adventure Game",
-            "text": "The Adventure with Scratch Cat project shows how to build an interactive adventure with collision detection and broadcast-driven scene changes!",
+            "text": "Shows how to build an interactive adventure with collision detection and broadcast-driven scene changes!",
             "tags": [
                 "story",
                 "game",
@@ -6941,7 +6966,7 @@
         "starter-gravity": {
             "id": "starter-gravity",
             "title": "Gravity Example",
-            "text": "The Gravity Example project shows how to simulate gravity with velocity variables and conditionals for ground collision!",
+            "text": "Shows how to simulate gravity with velocity variables and conditionals for ground collision!",
             "tags": [
                 "math",
                 "variables",
@@ -6959,7 +6984,7 @@
         "starter-sound-graph": {
             "id": "starter-sound-graph",
             "title": "Sound Graph",
-            "text": "The Sound Graph project shows how to visualize microphone input as a graph using pen blocks, loudness sensing, and math operators",
+            "text": "Shows how to visualize microphone input as a graph using pen blocks, loudness sensing, and math operators",
             "tags": [
                 "math",
                 "pen",
@@ -6977,7 +7002,7 @@
         "starter-math-game": {
             "id": "starter-math-game",
             "title": "Math Game",
-            "text": "The Math Game project shows how to make a quiz with random number variables, ask blocks for input, and if-else to check answers!",
+            "text": "Shows how to make a quiz with random number variables, ask blocks for input, and if-else to check answers!",
             "tags": [
                 "math",
                 "variables",
@@ -6996,7 +7021,7 @@
         "starter-circuit": {
             "id": "starter-circuit",
             "title": "Circuit Simulation",
-            "text": "The Simple Circuit Simulation project shows how to use draggable sprites, color-touching detection, and boolean logic to simulate a circuit!",
+            "text": "Shows how to use draggable sprites, color-touching detection, and boolean logic to simulate a circuit!",
             "tags": [
                 "math",
                 "sensing",
@@ -7015,7 +7040,7 @@
         "starter-coordinates": {
             "id": "starter-coordinates",
             "title": "X and Y Coordinates",
-            "text": "The X and Y Coordinates project shows how the Scratch coordinate system works by letting you drag a sprite and see its position update!",
+            "text": "Shows how the Scratch coordinate system works by letting you drag a sprite and see its position update!",
             "tags": [
                 "math",
                 "motion",
@@ -7033,7 +7058,7 @@
         "starter-text-speech": {
             "id": "starter-text-speech",
             "title": "Text to Speech",
-            "text": "The Text to Speech project shows how to make your characters speak out loud",
+            "text": "Shows how to make your characters speak out loud",
             "tags": [
                 "extensions",
                 "sound",
@@ -7051,7 +7076,7 @@
         "starter-pen-flower": {
             "id": "starter-pen-flower",
             "title": "Pen Flower",
-            "text": "The Pen Flower project shows how to use nested repeat loops and pen blocks to draw a colorful pattern of rotating squares!",
+            "text": "Shows how to use nested repeat loops and pen blocks to draw a colorful pattern of rotating squares!",
             "tags": [
                 "extensions",
                 "pen",
@@ -7069,7 +7094,7 @@
         "starter-musical-droplets": {
             "id": "starter-musical-droplets",
             "title": "Musical Droplets",
-            "text": "The Musical Droplets project shows how to use clones, the Music extension, and math to turn mouse position into musical notes!",
+            "text": "Shows how to use clones, the Music extension, and math to turn mouse position into musical notes!",
             "tags": [
                 "extensions",
                 "music",
@@ -7088,7 +7113,7 @@
         "starter-translate": {
             "id": "starter-translate",
             "title": "Translate This!",
-            "text": "The Translate This! project shows how to use the Translate extension to make characters speak in different languages!",
+            "text": "Shows how to use the Translate extension to make characters speak in different languages!",
             "tags": [
                 "extensions",
                 "looks",
@@ -7105,7 +7130,7 @@
         "starter-face-filter": {
             "id": "starter-face-filter",
             "title": "Face Filter",
-            "text": "The Face Filter project shows how to use the Face Sensing extension to make hats and glasses follow your face in real time!",
+            "text": "Shows how to use the Face Sensing extension to make hats and glasses follow your face in real time!",
             "tags": [
                 "extensions",
                 "sensing",
@@ -7122,7 +7147,7 @@
         "starter-greeting-card": {
             "id": "starter-greeting-card",
             "title": "Greeting Card",
-            "text": "The Greeting Card project shows how to make an interactive card with backdrop switches, glide animations, and sound effects!",
+            "text": "Shows how to make an interactive card with backdrop switches, glide animations, and sound effects!",
             "tags": [
                 "kindness",
                 "events",
@@ -7141,7 +7166,7 @@
         "starter-quiz": {
             "id": "starter-quiz",
             "title": "Community Quiz",
-            "text": "The Community Quiz project shows how to build a quiz with custom blocks, ask-and-wait input, if-else logic, and Text-to-Speech!",
+            "text": "Shows how to build a quiz with custom blocks, ask-and-wait input, if-else logic, and Text-to-Speech!",
             "tags": [
                 "kindness",
                 "myblocks",
@@ -7159,7 +7184,7 @@
         "starter-trophy": {
             "id": "starter-trophy",
             "title": "Small Wins Trophy",
-            "text": "The Small Wins Trophy project shows how to click on sprite parts to cycle through costumes and design a custom award!",
+            "text": "Shows how to click on sprite parts to cycle through costumes and design a custom award!",
             "tags": [
                 "kindness",
                 "looks",
@@ -7177,7 +7202,7 @@
         "starter-kindness": {
             "id": "starter-kindness",
             "title": "Acts of Kindness",
-            "text": "The Random Acts of Kindness project shows how to pick a random item from a list using  the pick random block",
+            "text": "Shows how to pick a random item from a list using  the pick random block",
             "tags": [
                 "kindness",
                 "data",
@@ -7195,7 +7220,7 @@
         "starter-paper-plane": {
             "id": "starter-paper-plane",
             "title": "Paper Plane Tutorial",
-            "text": "The Paper Plane Tutorial project shows how to make a step-by-step guide with broadcasts, repeat-until loops, and costume switching!",
+            "text": "Shows how to make a step-by-step guide with broadcasts, repeat-until loops, and costume switching!",
             "tags": [
                 "kindness",
                 "control",

@@ -13,6 +13,8 @@ import expandIcon from '../cards/icon--expand.svg';
 import micIcon from './icon--mic.svg';
 import tipsIcon from '../../lib/assets/icon--tips.svg';
 
+import decks from '../../lib/libraries/decks/index.jsx';
+
 /* ===== HEADER ===== */
 const UnstuckCardHeader = ({
     activeTip, browseAll, hasResults, onClose, onShrinkExpand,
@@ -364,6 +366,9 @@ class SearchResults extends React.Component {
                 {results.map((result, index) => {
                     const tip = tips[result.tipId];
                     if (!tip) return null;
+                    const tutorialThumb = tip.tutorialId && decks[tip.tutorialId] ?
+                        decks[tip.tutorialId].img : null;
+                    const thumbSrc = tip.thumbnail || tutorialThumb;
                     return (
                         <button
                             className={styles.resultCard}
@@ -372,20 +377,34 @@ class SearchResults extends React.Component {
                             style={{animationDelay: `${index * 60}ms`}}
                             onClick={this.handleResultClick}
                         >
-                            {tip.thumbnail ? (
+                            {thumbSrc ? (
                                 <div className={styles.resultCardRow}>
                                     <img
                                         className={styles.resultThumb}
                                         draggable={false}
-                                        src={tip.thumbnail}
+                                        src={thumbSrc}
                                     />
-                                    <div className={styles.resultCardText}>
-                                        {tip.text}
+                                    <div className={styles.resultCardBody}>
+                                        {tip.title ? (
+                                            <div className={styles.resultCardTitle}>
+                                                {tip.title}
+                                            </div>
+                                        ) : null}
+                                        <div className={styles.resultCardText}>
+                                            {tip.text}
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className={styles.resultCardText}>
-                                    {tip.text}
+                                <div className={styles.resultCardBody}>
+                                    {tip.title ? (
+                                        <div className={styles.resultCardTitle}>
+                                            {tip.title}
+                                        </div>
+                                    ) : null}
+                                    <div className={styles.resultCardText}>
+                                        {tip.text}
+                                    </div>
                                 </div>
                             )}
                             <div className={styles.resultTags}>
@@ -581,6 +600,11 @@ class TipDisplay extends React.Component {
 
         return (
             <div>
+                {tip.title ? (
+                    <div className={styles.tipTitle}>
+                        {tip.title}
+                    </div>
+                ) : null}
                 <div className={styles.tipText}>
                     {tip.text}
                 </div>

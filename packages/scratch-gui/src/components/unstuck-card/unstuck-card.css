@@ -357,6 +357,14 @@ body .unstuck-container {
 }
 
 /* ===== TIP DISPLAY ===== */
+.tip-title {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: hsla(225, 20%, 20%, 1);
+    margin-bottom: 0.35rem;
+}
+
 .tip-text {
     font-size: 0.9rem;
     line-height: 1.6;
@@ -423,7 +431,8 @@ body .unstuck-container {
 }
 
 .thumbnail-link {
-    display: block;
+    display: inline-block;
+    max-width: 70%;
     border-radius: 0.5rem;
     overflow: hidden;
     border: 1px solid $ui-tertiary;
@@ -431,10 +440,9 @@ body .unstuck-container {
 }
 
 .thumbnail {
-    width: 70%;
-    height: auto;
     display: block;
-    margin: 0 auto;
+    width: 100%;
+    height: auto;
 }
 
 .open-project-button {
@@ -643,13 +651,41 @@ body .unstuck-container {
     to { opacity: 1; transform: translateX(0); }
 }
 
-.result-card-text {
+.result-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.result-card-title {
     font-size: 0.8rem;
-    line-height: 1.45;
-    color: hsla(225, 20%, 30%, 1);
+    font-weight: 700;
+    line-height: 1.35;
+    color: hsla(225, 20%, 20%, 1);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.result-card-text {
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: hsla(225, 8%, 38%, 1); /* ≈ #5a606b, ~6.6:1 contrast on white */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Cards with a thumbnail (tutorials / starter projects) have extra vertical
+   room beside the image — let the description wrap to a second line. */
+.result-card-row .result-card-text {
+    white-space: normal;
+    text-overflow: clip;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .result-tags {
