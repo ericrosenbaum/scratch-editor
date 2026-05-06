@@ -10982,7 +10982,7 @@
             "color": "#FFBF00"
         },
         {
-            "label": "Moving a sprite",
+            "label": "Motion",
             "query": "how do I make my sprite move",
             "color": "#4C97FF"
         },
@@ -10992,29 +10992,19 @@
             "color": "#9966FF"
         },
         {
-            "label": "Adding sounds",
+            "label": "Sounds",
             "query": "how do I add a sound",
             "color": "#CF63CF"
         },
         {
-            "label": "Making a game",
+            "label": "Games",
             "query": "how do I make a game",
             "color": "#FFAB19"
         },
         {
-            "label": "Making art",
+            "label": "Art",
             "query": "how do I draw and make art",
             "color": "#0FBD8C"
-        },
-        {
-            "label": "Fun effects",
-            "query": "fun effects",
-            "color": "#FF6680"
-        },
-        {
-            "label": "What went wrong?",
-            "query": "my code is not working",
-            "color": "#FF8C1A"
         }
     ]
 }
