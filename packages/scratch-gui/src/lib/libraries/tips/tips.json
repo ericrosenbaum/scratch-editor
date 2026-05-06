@@ -5237,7 +5237,7 @@
         "mouse-pointer": {
             "id": "mouse-pointer",
             "title": "Follow mouse",
-            "text": "Use \"go to mouse-pointer\" to make sprites follow your mouse!",
+            "text": "Use \"go to mouse-pointer\" to make a sprite stick to your mouse!",
             "tags": [
                 "motion",
                 "sensing",
@@ -7315,7 +7315,7 @@
                     "fields": {
                         "TOWARDS": {
                             "name": "TOWARDS",
-                            "value": "Sprite1"
+                            "value": "_mouse_"
                         }
                     },
                     "shadow": true,
