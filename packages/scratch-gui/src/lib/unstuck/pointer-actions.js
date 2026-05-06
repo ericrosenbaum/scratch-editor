@@ -75,101 +75,99 @@ const findFlyoutBlockElement = function (opcode) {
 };
 
 /**
- * If a flyout block is outside the visible flyout area, scroll the flyout
- * so the block is visible.
- * @param {Element} blockElement - The block SVG element in the flyout
+ * Resolves once the flyout's scroll position has been stable for a few frames,
+ * indicating ContinuousFlyout's animated scroll has converged.
+ * @param {object} flyoutWorkspace - The flyout's Blockly workspace
+ * @returns {Promise<void>}
  */
-const ensureBlockVisible = function (blockElement) {
-    const flyoutEl = document.querySelector('.blocklyFlyout');
-    if (!flyoutEl) return;
-
-    const flyoutRect = flyoutEl.getBoundingClientRect();
-    const blockRect = blockElement.getBoundingClientRect();
-
-    // Already fully visible — nothing to do
-    if (blockRect.top >= flyoutRect.top && blockRect.bottom <= flyoutRect.bottom) {
-        return;
-    }
-
-    const workspace = ScratchBlocks.getMainWorkspace();
-    if (!workspace) return;
-
-    const flyout = workspace.getFlyout();
-    if (!flyout) return;
-
-    const flyoutWorkspace = flyout.getWorkspace();
-    const metrics = flyoutWorkspace.getMetrics();
-
-    // Scroll so the block appears 1/3 from the top of the flyout.
-    // viewTop and setY both work in the same coordinate system.
-    const blockOffsetFromViewTop = blockRect.top - flyoutRect.top;
-    const targetOffset = flyoutRect.height / 3;
-    const scrollDelta = blockOffsetFromViewTop - targetOffset;
-
-    flyoutWorkspace.scrollbar.setY(Math.max(0, metrics.viewTop + scrollDelta));
+const waitForScrollSettled = function (flyoutWorkspace) {
+    return new Promise(resolve => {
+        let lastY = flyoutWorkspace.scrollY;
+        let stableFrames = 0;
+        const tick = () => {
+            const y = flyoutWorkspace.scrollY;
+            if (y === lastY) {
+                stableFrames++;
+                if (stableFrames >= 3) {
+                    resolve();
+                    return;
+                }
+            } else {
+                stableFrames = 0;
+                lastY = y;
+            }
+            requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+    });
 };
 
 /**
- * Simulate a full user click on an element.
- * Blockly toolbox categories require a pointerdown event sequence
- * (not just .click()) to trigger category selection and flyout scrolling.
- * @param {Element} element - The DOM element to click
- */
-const simulateClick = function (element) {
-    const rect = element.getBoundingClientRect();
-    const cx = rect.left + (rect.width / 2);
-    const cy = rect.top + (rect.height / 2);
-    const eventOpts = {
-        bubbles: true,
-        cancelable: true,
-        clientX: cx,
-        clientY: cy,
-        button: 0,
-        pointerId: 1,
-        pointerType: 'mouse'
-    };
-    element.dispatchEvent(new PointerEvent('pointerdown', eventOpts));
-    element.dispatchEvent(new PointerEvent('pointerup', eventOpts));
-    element.dispatchEvent(new MouseEvent('mousedown', eventOpts));
-    element.dispatchEvent(new MouseEvent('mouseup', eventOpts));
-    element.dispatchEvent(new MouseEvent('click', eventOpts));
-};
-
-/**
- * Click a toolbox category and scroll the flyout to show a specific block.
+ * Select a toolbox category and scroll the flyout to show a specific block.
+ *
+ * Uses Blockly's APIs directly rather than simulating a click. Clicking would
+ * trigger ContinuousToolbox.scrollToCategory, whose RAF-driven animation races
+ * with our own scroll adjustment (visible on Safari as a "scroll twice, end up
+ * at category top" glitch). selectCategoryByName sets the visual highlight
+ * without auto-scrolling, leaving us free to scroll directly to the block.
+ *
  * @param {string} category - Toolbox category ID (e.g. 'motion', 'events')
  * @param {string} opcode - Block opcode to find and scroll to
  * @param {function} dispatch - Redux dispatch function
  * @returns {Promise<Element|null>} The block DOM element, or null
  */
 const openCategoryAndScrollToBlock = function (category, opcode, dispatch) {
-    // Switch to code tab
     dispatch(activateTab(BLOCKS_TAB_INDEX));
 
     return new Promise(resolve => {
-        // Wait for tab switch to render
+        // Wait for tab switch to render before touching the toolbox.
         setTimeout(() => {
-            // Click the category in the toolbox using a full event sequence
-            // so Blockly handles the selection and scrolls the flyout
-            const categoryElement = document.querySelector(
-                `.blocklyToolboxCategory#${category}`
-            );
-            if (categoryElement) {
-                simulateClick(categoryElement);
+            const workspace = ScratchBlocks.getMainWorkspace();
+            const toolbox = workspace && workspace.getToolbox();
+            const flyout = workspace && workspace.getFlyout();
+            if (!workspace || !toolbox || !flyout) {
+                resolve(null);
+                return;
             }
 
-            // Wait for flyout to scroll to category, then ensure block is visible.
-            // After scrolling, wait again so driver.js measures the correct position.
-            setTimeout(() => {
-                const blockElement = findFlyoutBlockElement(opcode);
-                if (blockElement) {
-                    ensureBlockVisible(blockElement);
-                    // Wait for scroll to settle before resolving
-                    setTimeout(() => resolve(blockElement), 200);
-                } else {
-                    resolve(null);
-                }
-            }, 200);
+            const categoryItem = toolbox.getToolboxItems().find(
+                item => typeof item.getId === 'function' && item.getId() === category
+            );
+            if (categoryItem) {
+                toolbox.selectCategoryByName(categoryItem.getName());
+            }
+
+            const blockElement = findFlyoutBlockElement(opcode);
+            if (!blockElement) {
+                resolve(null);
+                return;
+            }
+
+            const flyoutEl = document.querySelector('.blocklyFlyout');
+            const flyoutRect = flyoutEl.getBoundingClientRect();
+            const blockRect = blockElement.getBoundingClientRect();
+            const alreadyVisible =
+                blockRect.top >= flyoutRect.top &&
+                blockRect.bottom <= flyoutRect.bottom;
+            if (alreadyVisible) {
+                resolve(blockElement);
+                return;
+            }
+
+            // Position the block ~1/3 from the top of the flyout.
+            // flyout.scrollTo expects workspace units (it multiplies by scale
+            // internally); flyoutWorkspace.scrollY is in pixels.
+            const flyoutWorkspace = flyout.getWorkspace();
+            const currentScrollPx = -flyoutWorkspace.scrollY;
+            const blockOffsetFromViewTop = blockRect.top - flyoutRect.top;
+            const targetOffsetPx = flyoutRect.height / 3;
+            const newScrollPx = Math.max(
+                0,
+                currentScrollPx + (blockOffsetFromViewTop - targetOffsetPx)
+            );
+            flyout.scrollTo(newScrollPx / flyoutWorkspace.scale);
+
+            waitForScrollSettled(flyoutWorkspace).then(() => resolve(blockElement));
         }, 300);
     });
 };
