@@ -923,3 +923,39 @@ body .unstuck-container {
     opacity: 1;
     text-decoration: underline;
 }
+
+.random-tip-button {
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    color: $unstuck-purple;
+    border: 1px solid $unstuck-purple;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.random-tip-button:hover {
+    background: hsla(260, 60%, 60%, 0.08);
+    transform: translateY(-1px);
+}
+
+.random-tip-button:active {
+    transform: scale(0.97);
+    transition-duration: 0.05s;
+}
+
+.random-tip-icon {
+    display: inline-block;
+    transition: transform 0.4s ease;
+}
+
+.random-tip-button:hover .random-tip-icon {
+    transform: rotate(20deg) scale(1.1);
+}

@@ -754,6 +754,7 @@ const UnstuckCard = ({
     onAskAnother,
     onPickClick,
     onPointerClick,
+    onRandomTip,
     onQueryChange,
     onSelectBrowseTip,
     onSelectResult,
@@ -877,6 +878,13 @@ const UnstuckCard = ({
                                         <div className={styles.promptText}>
                                             {'What do you need help with?'}
                                         </div>
+                                        <button
+                                            className={styles.randomTipButton}
+                                            onClick={onRandomTip}
+                                        >
+                                            <span className={styles.randomTipIcon}>{'🎲'}</span>
+                                            {'Surprise me!'}
+                                        </button>
                                         <QuickPicks
                                             picks={quickPicks}
                                             onPickClick={onPickClick}
@@ -945,6 +953,7 @@ UnstuckCard.propTypes = {
     onFollowUp: PropTypes.func.isRequired,
     onPickClick: PropTypes.func.isRequired,
     onPointerClick: PropTypes.func.isRequired,
+    onRandomTip: PropTypes.func.isRequired,
     onQueryChange: PropTypes.func.isRequired,
     onSelectBrowseTip: PropTypes.func.isRequired,
     onSelectResult: PropTypes.func.isRequired,

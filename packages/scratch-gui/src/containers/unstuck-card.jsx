@@ -74,6 +74,7 @@ class UnstuckCard extends React.Component {
         this.handleBackToResults = this.handleBackToResults.bind(this);
         this.handleSelectBrowseTip = this.handleSelectBrowseTip.bind(this);
         this.handleBackFromBrowseTip = this.handleBackFromBrowseTip.bind(this);
+        this.handleRandomTip = this.handleRandomTip.bind(this);
     }
 
     componentDidMount () {
@@ -209,6 +210,17 @@ class UnstuckCard extends React.Component {
     handleBackFromBrowseTip () {
         destroyHighlight();
         this.props.onSetTip(null);
+    }
+
+    handleRandomTip () {
+        const pool = Object.values(tips).filter(t => !t.tutorialId);
+        if (pool.length === 0) return;
+        let pick = pool[Math.floor(Math.random() * pool.length)];
+        if (pool.length > 1 && pick.id === this.props.activeTipId) {
+            pick = pool[Math.floor(Math.random() * pool.length)];
+        }
+        tipEvents.resultClicked(pick.id, null, 'random');
+        this.props.onSetTip(pick.id);
     }
 
     handleAddToProject () {
@@ -420,6 +432,7 @@ class UnstuckCard extends React.Component {
                 onEndDrag={this.props.onEndDrag}
                 onFollowUp={this.handleFollowUp}
                 onPickClick={this.handlePickClick}
+                onRandomTip={this.handleRandomTip}
                 onPointerClick={this.handlePointerClick}
                 onQueryChange={this.handleQueryChange}
                 onSelectBrowseTip={this.handleSelectBrowseTip}
