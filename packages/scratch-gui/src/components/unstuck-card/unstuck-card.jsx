@@ -447,7 +447,8 @@ const tipMatchesFilter = (tip, filterTag) => {
     return tip.tags && tip.tags.includes(filterTag);
 };
 
-const sortByText = (a, b) => a.text.localeCompare(b.text);
+const tipDisplayLabel = tip => tip.title || tip.text;
+const sortByLabel = (a, b) => tipDisplayLabel(a).localeCompare(tipDisplayLabel(b));
 
 const getTipDotColor = tip => {
     if (tip.tutorialId) return '#855CD6';
@@ -480,17 +481,17 @@ class BrowseAllTips extends React.Component {
         if (activeFilter) {
             const filtered = allTips
                 .filter(tip => tipMatchesFilter(tip, activeFilter))
-                .sort(sortByText);
+                .sort(sortByLabel);
             const filterDef = BROWSE_FILTERS.find(f => f.tag === activeFilter);
             sections = [{label: filterDef ? filterDef.label : activeFilter, tips: filtered}];
         } else {
-            const tutorials = allTips.filter(t => t.tutorialId).sort(sortByText);
+            const tutorials = allTips.filter(t => t.tutorialId).sort(sortByLabel);
             const starters = allTips
                 .filter(t => !t.tutorialId && t.tags && t.tags.includes('starter-project'))
-                .sort(sortByText);
+                .sort(sortByLabel);
             const regular = allTips
                 .filter(t => !t.tutorialId && !(t.tags && t.tags.includes('starter-project')))
-                .sort(sortByText);
+                .sort(sortByLabel);
             sections = [
                 {label: 'Tutorials', tips: tutorials},
                 {label: 'Starter Projects', tips: starters},
@@ -537,7 +538,7 @@ class BrowseAllTips extends React.Component {
                                         style={{backgroundColor: getTipDotColor(tip)}}
                                     />
                                     <span className={styles.compactTipText}>
-                                        {tip.text}
+                                        {tipDisplayLabel(tip)}
                                     </span>
                                 </button>
                             ))}
