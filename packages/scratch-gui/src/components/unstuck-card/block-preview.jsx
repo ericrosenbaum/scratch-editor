@@ -71,6 +71,13 @@ class BlockPreview extends React.Component {
             this.setRef(this.container);
             return;
         }
+        if (prevProps.locale !== this.props.locale && this.workspace) {
+            // ScratchMsgs.setLocale() is global; the main editor already calls
+            // it on locale change, but our preview's already-rendered XML keeps
+            // the old labels. Re-apply and rebuild to pick up the new strings.
+            ScratchBlocks.ScratchMsgs.setLocale(this.props.locale);
+            this.buildBlocks();
+        }
         if (prevProps.blocks !== this.props.blocks) {
             this.buildBlocks();
         }
@@ -110,6 +117,12 @@ class BlockPreview extends React.Component {
         if (!el) return;
         if (this.workspace) return;
         this.container = el;
+
+        // Make sure ScratchMsgs reflects the editor's current locale before
+        // injecting — block labels are pulled from this global registry.
+        if (this.props.locale) {
+            ScratchBlocks.ScratchMsgs.setLocale(this.props.locale);
+        }
 
         const theme = new ScratchBlocks.Theme(
             this.props.colorMode,
@@ -290,6 +303,7 @@ BlockPreview.propTypes = {
     // eslint-disable-next-line react/forbid-prop-types
     blocks: PropTypes.array,
     colorMode: PropTypes.string,
+    locale: PropTypes.string,
     // eslint-disable-next-line react/forbid-prop-types
     vm: PropTypes.object
 };

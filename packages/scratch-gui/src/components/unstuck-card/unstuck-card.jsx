@@ -664,7 +664,7 @@ class TipDisplay extends React.Component {
         this.props.onPointerClick(index);
     }
     render () {
-        const {tip, tips, onAddToProject, codeExpanded, colorMode, onToggleCode, vm} = this.props;
+        const {tip, tips, onAddToProject, codeExpanded, colorMode, locale, onToggleCode, vm} = this.props;
         const pointers = tip.pointers || [];
         const hasPointers = pointers.length > 0;
         const multiplePointers = pointers.length > 1;
@@ -818,6 +818,7 @@ class TipDisplay extends React.Component {
                                 <BlockPreview
                                     blocks={tip._capturedBlocks}
                                     colorMode={colorMode}
+                                    locale={locale}
                                     vm={vm}
                                 />
                                 <button
@@ -857,6 +858,7 @@ class TipDisplay extends React.Component {
 TipDisplay.propTypes = {
     codeExpanded: PropTypes.bool.isRequired,
     colorMode: PropTypes.string,
+    locale: PropTypes.string,
     onAddToProject: PropTypes.func.isRequired,
     onFollowUp: PropTypes.func.isRequired,
     onPointerClick: PropTypes.func.isRequired,
@@ -892,6 +894,7 @@ const UnstuckCard = ({
     interimTranscript,
     listening,
     loading,
+    locale,
     modelReady,
     modelError,
     modelProgress,
@@ -998,6 +1001,7 @@ const UnstuckCard = ({
                                     <TipDisplay
                                         codeExpanded={codeExpanded}
                                         colorMode={colorMode}
+                                        locale={locale}
                                         tip={activeTip}
                                         tips={tips}
                                         vm={vm}
@@ -1093,6 +1097,7 @@ UnstuckCard.propTypes = {
     interimTranscript: PropTypes.string,
     listening: PropTypes.bool,
     loading: PropTypes.bool.isRequired,
+    locale: PropTypes.string,
     modelError: PropTypes.bool,
     modelProgress: PropTypes.number,
     modelReady: PropTypes.bool,

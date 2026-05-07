@@ -408,6 +408,7 @@ class UnstuckCard extends React.Component {
                 codeExpanded={this.props.codeExpanded}
                 colorMode={this.props.colorMode}
                 expanded={this.props.expanded}
+                locale={this.props.locale}
                 listening={this.state.listening}
                 interimTranscript={this.state.interimTranscript}
                 loading={this.props.loading}
@@ -463,6 +464,7 @@ UnstuckCard.propTypes = {
     expanded: PropTypes.bool.isRequired,
     isRtl: PropTypes.bool,
     loading: PropTypes.bool.isRequired,
+    locale: PropTypes.string,
     onClearResults: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
     onDrag: PropTypes.func.isRequired,
@@ -498,6 +500,7 @@ const mapStateToProps = state => ({
     expanded: state.scratchGui.unstuck.expanded,
     isRtl: state.locales.isRtl,
     loading: state.scratchGui.unstuck.loading,
+    locale: state.locales.locale,
     query: state.scratchGui.unstuck.query,
     searchResults: state.scratchGui.unstuck.searchResults,
     workspaceMetrics: state.scratchGui.workspaceMetrics,
