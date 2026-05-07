@@ -10973,6 +10973,558 @@
                     "target": ".blocklyToolboxCategory#myBlocks"
                 }
             ]
+        },
+        "tip-exploring-ai-face-sensing": {
+            "id": "tip-exploring-ai-face-sensing",
+            "title": "Exploring AI with Scratch Face Sensing Blocks",
+            "tutorialId": "tip-exploring-ai-face-sensing",
+            "text": "Explore AI by using Scratch's face sensing blocks to make interactive projects.",
+            "tags": [
+                "sensing",
+                "ai",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-conditionals-part-1": {
+            "id": "tip-conditionals-part-1",
+            "title": "Conditional Statements: Make Interactive Projects (Part 1)",
+            "tutorialId": "tip-conditionals-part-1",
+            "text": "Use if-then blocks to make your projects respond to what's happening.",
+            "tags": [
+                "control",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-virtual-pet": {
+            "id": "tip-virtual-pet",
+            "title": "How to Make a Virtual Pet in Scratch",
+            "tutorialId": "tip-virtual-pet",
+            "text": "Build a virtual pet you can feed, play with, and care for.",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-catch-game": {
+            "id": "tip-catch-game",
+            "title": "How to Make a Catch Game in Scratch",
+            "tutorialId": "tip-catch-game",
+            "text": "Make a game where a sprite catches falling objects.",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-create-sprite-paint-editor": {
+            "id": "tip-create-sprite-paint-editor",
+            "title": "Create a Sprite with the Scratch Paint Editor",
+            "tutorialId": "tip-create-sprite-paint-editor",
+            "text": "Draw your own sprite from scratch using the paint editor.",
+            "tags": [
+                "art",
+                "sprite",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-variables-lists-part-1": {
+            "id": "tip-variables-lists-part-1",
+            "title": "What Are Variables and Lists in Scratch? (Part 1)",
+            "tutorialId": "tip-variables-lists-part-1",
+            "text": "Learn what variables and lists are and why projects use them.",
+            "tags": [
+                "variables",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-conditionals-part-2": {
+            "id": "tip-conditionals-part-2",
+            "title": "Conditional Statements: Nesting, Debugging, and Beyond (Part 2)",
+            "tutorialId": "tip-conditionals-part-2",
+            "text": "Go deeper with conditionals: nesting, debugging, and combining them.",
+            "tags": [
+                "control",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-pong-game": {
+            "id": "tip-pong-game",
+            "title": "How to Make a Pong Game in Scratch",
+            "tutorialId": "tip-pong-game",
+            "text": "Build the classic Pong game with paddles and a bouncing ball.",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-remix-sprites": {
+            "id": "tip-remix-sprites",
+            "title": "Remix and Re-imagine Scratch Sprites",
+            "tutorialId": "tip-remix-sprites",
+            "text": "Remix existing sprites to make them your own.",
+            "tags": [
+                "art",
+                "sprite",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-surface-costume-center": {
+            "id": "tip-surface-costume-center",
+            "title": "Scratching the Surface: Costume Center",
+            "tutorialId": "tip-surface-costume-center",
+            "text": "Quick tip: how to set the center point of a costume.",
+            "tags": [
+                "looks",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-scrolling-background": {
+            "id": "tip-scrolling-background",
+            "title": "How to Make a Scrolling Background in Scratch",
+            "tutorialId": "tip-scrolling-background",
+            "text": "Make a background that scrolls behind your sprite.",
+            "tags": [
+                "backdrop",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-variables-lists-part-2": {
+            "id": "tip-variables-lists-part-2",
+            "title": "Using Variables and Lists in Scratch (Part 2)",
+            "tutorialId": "tip-variables-lists-part-2",
+            "text": "Use variables and lists to track scores, items, and more.",
+            "tags": [
+                "variables",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-surface-language-contrast": {
+            "id": "tip-surface-language-contrast",
+            "title": "Scratching the Surface: Adjust Block Language and Contrast",
+            "tutorialId": "tip-surface-language-contrast",
+            "text": "Quick tip: change the block language and contrast settings.",
+            "tags": [
+                "accessibility",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-sounds-tts": {
+            "id": "tip-sounds-tts",
+            "title": "Sounds in Scratch: Add, Record, and Use Text to Speech Blocks",
+            "tutorialId": "tip-sounds-tts",
+            "text": "Add sounds, record your own, and use text to speech.",
+            "tags": [
+                "sound",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-virtual-town-rpg": {
+            "id": "tip-virtual-town-rpg",
+            "title": "How to Make a Virtual Town in Scratch | RPG",
+            "tutorialId": "tip-virtual-town-rpg",
+            "text": "Build a virtual town you can explore RPG-style.",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-bring-drawings-in": {
+            "id": "tip-bring-drawings-in",
+            "title": "Bring Your Drawings Into Scratch",
+            "tutorialId": "tip-bring-drawings-in",
+            "text": "Bring your paper drawings into Scratch as sprites.",
+            "tags": [
+                "art",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-clicker-game": {
+            "id": "tip-clicker-game",
+            "title": "How to Make a Clicker Game in Scratch",
+            "tutorialId": "tip-clicker-game",
+            "text": "Make an incremental clicker game with a counter.",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-my-blocks-part-1": {
+            "id": "tip-my-blocks-part-1",
+            "title": "Scratch My Blocks, Part 1: Create Custom Blocks",
+            "tutorialId": "tip-my-blocks-part-1",
+            "text": "Create your own custom blocks with the My Blocks category.",
+            "tags": [
+                "my-blocks",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-surface-direction-costume": {
+            "id": "tip-surface-direction-costume",
+            "title": "Scratching the Surface: Direction and Costume Drawing",
+            "tutorialId": "tip-surface-direction-costume",
+            "text": "Quick tip: how direction works with costume drawing.",
+            "tags": [
+                "motion",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-surface-keyboard-shortcuts": {
+            "id": "tip-surface-keyboard-shortcuts",
+            "title": "Scratching the Surface: Scratch Keyboard Shortcuts",
+            "tutorialId": "tip-surface-keyboard-shortcuts",
+            "text": "Quick tip: keyboard shortcuts for working faster in Scratch.",
+            "tags": [
+                "events",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-draw-backdrops": {
+            "id": "tip-draw-backdrops",
+            "title": "How to Draw Backdrops in Scratch",
+            "tutorialId": "tip-draw-backdrops",
+            "text": "Draw your own backdrops in the paint editor.",
+            "tags": [
+                "backdrop",
+                "art",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-advanced-clones": {
+            "id": "tip-advanced-clones",
+            "title": "Advanced Topics: Clones",
+            "tutorialId": "tip-advanced-clones",
+            "text": "Use clones to spawn many copies of a sprite.",
+            "tags": [
+                "control",
+                "advanced",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-advanced-text-rendering": {
+            "id": "tip-advanced-text-rendering",
+            "title": "Advanced Topics: Text Rendering/Text Generator",
+            "tutorialId": "tip-advanced-text-rendering",
+            "text": "Render text on the stage with a text generator.",
+            "tags": [
+                "advanced",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-asset-pack-part-2": {
+            "id": "tip-asset-pack-part-2",
+            "title": "Create Your Own Asset Pack, Part 2: Tips and Tricks",
+            "tutorialId": "tip-asset-pack-part-2",
+            "text": "Tips and tricks for creating assets for your asset pack.",
+            "tags": [
+                "art",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-asset-pack-part-3": {
+            "id": "tip-asset-pack-part-3",
+            "title": "Create Your Own Asset Pack, Part 3: Remixing and Using Assets",
+            "tutorialId": "tip-asset-pack-part-3",
+            "text": "Remix and use assets from an asset pack.",
+            "tags": [
+                "art",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-advanced-gravity": {
+            "id": "tip-advanced-gravity",
+            "title": "Advanced Topics: Gravity in Scratch",
+            "tutorialId": "tip-advanced-gravity",
+            "text": "Add gravity to your sprites for physics-based projects.",
+            "tags": [
+                "games",
+                "advanced",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-surface-x-y": {
+            "id": "tip-surface-x-y",
+            "title": "Scratching the Surface: X & Y",
+            "tutorialId": "tip-surface-x-y",
+            "text": "Quick tip: understanding x and y coordinates on the stage.",
+            "tags": [
+                "motion",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-character-designer": {
+            "id": "tip-character-designer",
+            "title": "How to Make a Character Designer in Scratch",
+            "tutorialId": "tip-character-designer",
+            "text": "Build a character designer where players customize a sprite.",
+            "tags": [
+                "art",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-turtle-graphics-pen": {
+            "id": "tip-turtle-graphics-pen",
+            "title": "Turtle Graphics: Using Pen Blocks in Scratch",
+            "tutorialId": "tip-turtle-graphics-pen",
+            "text": "Use the pen blocks to make turtle graphics drawings.",
+            "tags": [
+                "pen",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-stop-motion": {
+            "id": "tip-stop-motion",
+            "title": "Making Faces and Stop Motion in Scratch",
+            "tutorialId": "tip-stop-motion",
+            "text": "Make stop motion animations with faces and costumes.",
+            "tags": [
+                "animation",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-jumping-game": {
+            "id": "tip-jumping-game",
+            "title": "How to Make a Jumping Game in Scratch",
+            "tutorialId": "tip-jumping-game",
+            "text": "Build a jumping game with a sprite that jumps over obstacles.",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-my-blocks-part-3": {
+            "id": "tip-my-blocks-part-3",
+            "title": "Scratch My Blocks, Part 3: Custom Blocks with Parameters",
+            "tutorialId": "tip-my-blocks-part-3",
+            "text": "Make custom blocks with parameters that take inputs.",
+            "tags": [
+                "my-blocks",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-pixel-art": {
+            "id": "tip-pixel-art",
+            "title": "Pixel Art in Scratch 3 Ways",
+            "tutorialId": "tip-pixel-art",
+            "text": "Three different ways to make pixel art in Scratch.",
+            "tags": [
+                "art",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-my-blocks-part-2": {
+            "id": "tip-my-blocks-part-2",
+            "title": "Scratch My Blocks, Part 2: Tips and Tricks",
+            "tutorialId": "tip-my-blocks-part-2",
+            "text": "Tips and tricks for using My Blocks effectively.",
+            "tags": [
+                "my-blocks",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-story": {
+            "id": "tip-story",
+            "title": "How to Make a Story in Scratch",
+            "tutorialId": "tip-story",
+            "text": "Build an interactive story with characters and scenes.",
+            "tags": [
+                "stories",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-mouse-trail": {
+            "id": "tip-mouse-trail",
+            "title": "How to Make a Mouse Trail in Scratch",
+            "tutorialId": "tip-mouse-trail",
+            "text": "Create a sparkly trail that follows your mouse pointer.",
+            "tags": [
+                "pen",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-about-me": {
+            "id": "tip-about-me",
+            "title": "How to Make an \"About Me\" Project in Scratch",
+            "tutorialId": "tip-about-me",
+            "text": "Make an interactive 'About Me' project to share with others.",
+            "tags": [
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-unlock-next-costume": {
+            "id": "tip-unlock-next-costume",
+            "title": "Unlock the Scratch Block: Next Costume Block",
+            "tutorialId": "tip-unlock-next-costume",
+            "text": "Quick tip: how the next costume block works for animation.",
+            "tags": [
+                "looks",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-make-it-fly": {
+            "id": "tip-make-it-fly",
+            "title": "Make It Fly",
+            "tutorialId": "tip-make-it-fly",
+            "text": "Make a sprite fly across the stage.",
+            "tags": [
+                "animation",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-backpack": {
+            "id": "tip-backpack",
+            "title": "How to Use the Backpack in Scratch",
+            "tutorialId": "tip-backpack",
+            "text": "Use the backpack to save and reuse code and sprites between projects.",
+            "tags": [
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-asset-pack-part-1": {
+            "id": "tip-asset-pack-part-1",
+            "title": "Create Your Own Asset Pack, Part 1: What Is a Scratch Asset Pack?",
+            "tutorialId": "tip-asset-pack-part-1",
+            "text": "What is a Scratch asset pack and why would you make one?",
+            "tags": [
+                "art",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-activity-swap-examples": {
+            "id": "tip-activity-swap-examples",
+            "title": "Activity Swap Tutorial Project Examples",
+            "tutorialId": "tip-activity-swap-examples",
+            "text": "See examples of activity swap tutorial projects.",
+            "tags": [
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-unlock-clone": {
+            "id": "tip-unlock-clone",
+            "title": "Unlock the Scratch Block: Clone Block",
+            "tutorialId": "tip-unlock-clone",
+            "text": "Quick tip: how the create clone block works.",
+            "tags": [
+                "control",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-video-sensing": {
+            "id": "tip-video-sensing",
+            "title": "Video Sensing in Scratch",
+            "tutorialId": "tip-video-sensing",
+            "text": "Use the camera to detect motion in your projects.",
+            "tags": [
+                "sensing",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-unlock-stamp": {
+            "id": "tip-unlock-stamp",
+            "title": "Unlock the Scratch Block: Stamp Block",
+            "tutorialId": "tip-unlock-stamp",
+            "text": "Quick tip: how the stamp block leaves an image on the stage.",
+            "tags": [
+                "pen",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-unlock-loudness": {
+            "id": "tip-unlock-loudness",
+            "title": "Unlock the Scratch Block: Loudness Block",
+            "tutorialId": "tip-unlock-loudness",
+            "text": "Quick tip: how the loudness block reads from the microphone.",
+            "tags": [
+                "sound",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-hide-and-seek-game": {
+            "id": "tip-hide-and-seek-game",
+            "title": "Hide and Seek Game",
+            "tutorialId": "tip-hide-and-seek-game",
+            "text": "Make a hide and seek game with sprites that hide and reappear.",
+            "tags": [
+                "games",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-advanced-user-scrolling-background": {
+            "id": "tip-advanced-user-scrolling-background",
+            "title": "Advanced Topics: User-Controlled Scrolling Background",
+            "tutorialId": "tip-advanced-user-scrolling-background",
+            "text": "Make a background that scrolls based on user input.",
+            "tags": [
+                "backdrop",
+                "advanced",
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-hoc-2024-inventing": {
+            "id": "tip-hoc-2024-inventing",
+            "title": "Hour of Code 2024: Inventing with Gitanjali Rao",
+            "tutorialId": "tip-hoc-2024-inventing",
+            "text": "Hour of Code 2024: invent something new with Gitanjali Rao.",
+            "tags": [
+                "tutorial"
+            ],
+            "followUps": []
+        },
+        "tip-hoc-2024-kindness": {
+            "id": "tip-hoc-2024-kindness",
+            "title": "Hour of Code 2024: Spreading Kindness with Gitanjali Rao",
+            "tutorialId": "tip-hoc-2024-kindness",
+            "text": "Hour of Code 2024: spread kindness with Gitanjali Rao.",
+            "tags": [
+                "tutorial"
+            ],
+            "followUps": []
         }
     },
     "quickPicks": [
