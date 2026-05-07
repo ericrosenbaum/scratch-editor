@@ -1,23 +1,25 @@
-// HTTP client for Google Lyria 3 music generation. No Redux or VM imports —
-// keep this layer pure so it's easy to mock in tests.
+// HTTP client for the Gemini API's lyria-3-clip-preview music generation
+// model. No Redux or VM imports — keep this layer pure so it's easy to mock
+// in tests.
 //
-// Auth note: Lyria-003 on Vertex AI is officially OAuth-only. Sending
-// `x-goog-api-key` here works only if the user's GCP project has API Keys
-// configured to allow Lyria, or if LYRIA_ENDPOINT is overridden to point at
-// a same-origin proxy that injects a real bearer token. Shipping a Google
-// API key in client-side JS is a security risk; for production deployments
-// prefer the proxy route.
+// Docs: https://ai.google.dev/gemini-api/docs/music-generation
+//
+// Auth note: The Gemini API supports the `x-goog-api-key` header directly.
+// Shipping a key in client-side JS is still a security risk for production
+// deployments — set LYRIA_ENDPOINT to a same-origin proxy that injects the
+// key server-side instead.
 
 const DEFAULT_LYRIA_ENDPOINT =
-    'https://us-central1-aiplatform.googleapis.com/v1/projects/{projectId}/locations/us-central1/publishers/google/models/lyria-003:predict';
+    'https://generativelanguage.googleapis.com/v1beta/models/lyria-3-clip-preview:generateContent';
 
 const getEndpoint = () => process.env.LYRIA_ENDPOINT || DEFAULT_LYRIA_ENDPOINT;
 
 class LyriaError extends Error {
-    constructor (code, message) {
+    constructor (code, message, details) {
         super(message);
         this.code = code;
         this.name = 'LyriaError';
+        this.details = details || null;
     }
 }
 
@@ -28,12 +30,57 @@ const base64ToUint8Array = b64 => {
     return out;
 };
 
+const getCandidate = json => json &&
+    json.candidates &&
+    json.candidates[0];
+
+const getParts = json => {
+    const c = getCandidate(json);
+    return (c && c.content && Array.isArray(c.content.parts)) ?
+        c.content.parts : [];
+};
+
+const findAudioPart = json => {
+    for (const part of getParts(json)) {
+        const inline = part && part.inlineData;
+        if (inline && inline.data && inline.mimeType &&
+            inline.mimeType.startsWith('audio/')) {
+            return inline;
+        }
+    }
+    return null;
+};
+
+const formatBlockedRatings = ratings => {
+    if (!Array.isArray(ratings)) return '';
+    const blocked = ratings
+        .filter(r => r && (r.blocked || r.probability === 'HIGH'))
+        .map(r => `${r.category || 'unknown'} (${r.probability || 'n/a'})`);
+    return blocked.length ? ` Safety: ${blocked.join(', ')}.` : '';
+};
+
+const buildBlockedMessage = json => {
+    const pf = json && json.promptFeedback;
+    if (pf && pf.blockReason) {
+        return `Prompt was blocked: ${pf.blockReason}.${
+            pf.blockReasonMessage ? ` ${pf.blockReasonMessage}` : ''
+        }${formatBlockedRatings(pf.safetyRatings)}`;
+    }
+    const c = getCandidate(json);
+    if (c && c.finishReason && c.finishReason !== 'STOP') {
+        return `Generation stopped: ${c.finishReason}.${
+            formatBlockedRatings(c.safetyRatings)
+        }`;
+    }
+    return null;
+};
+
 /**
  * Generate ~30s of instrumental music from a text prompt.
  * @param {string} prompt
  * @param {string} apiKey  Google API key (process.env.GOOGLE_API_KEY)
  * @param {AbortSignal} [signal]
- * @returns {Promise<{wavBytes: Uint8Array}>}
+ * @returns {Promise<{audioBytes: Uint8Array, mimeType: string}>}
  */
 const generateMusic = async (prompt, apiKey, signal) => {
     if (!apiKey) {
@@ -46,9 +93,13 @@ const generateMusic = async (prompt, apiKey, signal) => {
         throw new LyriaError('empty-prompt', 'Prompt is empty.');
     }
 
+    // Force instrumental output. The model otherwise sometimes adds vocals.
+    const fullPrompt = `${prompt.trim()} Instrumental only, no vocals.`;
+
     const body = {
-        instances: [{prompt: prompt.trim()}],
-        parameters: {sample_count: 1}
+        contents: [{
+            parts: [{text: fullPrompt}]
+        }]
     };
 
     let res;
@@ -68,26 +119,43 @@ const generateMusic = async (prompt, apiKey, signal) => {
 
     if (!res.ok) {
         let detail = '';
+        let errJson = null;
         try {
-            const errJson = await res.json();
+            errJson = await res.json();
             detail = (errJson && errJson.error && errJson.error.message) ||
                 JSON.stringify(errJson);
         } catch (e) {
-            // ignore — surface status only
+            try {
+                detail = await res.text();
+            } catch (e2) {
+                // surface status only
+            }
         }
-        throw new LyriaError('http', `Lyria API error ${res.status}: ${detail}`);
+        throw new LyriaError(
+            'http',
+            `Lyria API error ${res.status} ${res.statusText || ''}: ${detail}`.trim(),
+            errJson
+        );
     }
 
     const json = await res.json();
-    const b64 = json && json.predictions && json.predictions[0] &&
-        json.predictions[0].bytesBase64Encoded;
-    if (!b64) {
+    const audioPart = findAudioPart(json);
+    if (!audioPart) {
+        const blockedMsg = buildBlockedMessage(json);
+        if (blockedMsg) {
+            throw new LyriaError('blocked', blockedMsg, json);
+        }
         throw new LyriaError(
             'shape',
-            'Unexpected response from Lyria (no predictions[0].bytesBase64Encoded).'
+            `Unexpected response from Lyria (no audio inlineData part). ` +
+                `Raw: ${JSON.stringify(json).slice(0, 600)}`,
+            json
         );
     }
-    return {wavBytes: base64ToUint8Array(b64)};
+    return {
+        audioBytes: base64ToUint8Array(audioPart.data),
+        mimeType: audioPart.mimeType
+    };
 };
 
 export {

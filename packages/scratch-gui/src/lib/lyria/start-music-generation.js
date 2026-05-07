@@ -1,5 +1,6 @@
 import {generateMusic, LyriaError} from './lyria-api.js';
 import {addGeneratedSoundToTarget} from './add-generated-sound.js';
+import {decodeToWav} from './decode-to-wav.js';
 import {
     startMusicGeneration,
     musicGenerationSuccess,
@@ -48,7 +49,8 @@ const startMusicGenerationFlow = async ({prompt, vm, dispatch, isGenerating}) =>
 
     try {
         const apiKey = process.env.GOOGLE_API_KEY;
-        const {wavBytes} = await generateMusic(prompt, apiKey);
+        const {audioBytes} = await generateMusic(prompt, apiKey);
+        const wavBytes = await decodeToWav(audioBytes);
 
         // Re-look-up the target so we can use the live name and detect deletion.
         const liveTarget = vm.runtime.getTargetById(capturedTargetId);
@@ -59,10 +61,17 @@ const startMusicGenerationFlow = async ({prompt, vm, dispatch, isGenerating}) =>
             getTargetName(liveTarget) :
             (capturedTargetName || (vm.editingTarget && getTargetName(vm.editingTarget)));
 
-        const soundName = `Music: ${prompt.trim().slice(0, 24)}`;
-        await addGeneratedSoundToTarget(vm, wavBytes, soundName, effectiveTargetId);
+        const requestedName = `Music: ${prompt.trim().slice(0, 24)}`;
+        // The VM dedupes via StringUtil.unusedName; capture the actual final
+        // name so the "Open" action can find this exact sound by name.
+        const {soundName} = await addGeneratedSoundToTarget(
+            vm, wavBytes, requestedName, effectiveTargetId
+        );
 
-        dispatch(musicGenerationSuccess());
+        dispatch(musicGenerationSuccess({
+            targetId: effectiveTargetId,
+            soundName
+        }));
         dispatch(closeAlertWithId('aiMusicGenerating'));
         dispatch(showAlertWithData('aiMusicComplete', {
             targetId: effectiveTargetId,
@@ -79,7 +88,8 @@ const startMusicGenerationFlow = async ({prompt, vm, dispatch, isGenerating}) =>
             err.message : (err && err.message) || String(err);
         dispatch(musicGenerationError({
             code: (err && err.code) || 'unknown',
-            message
+            message,
+            details: (err && err.details) || null
         }));
         dispatch(closeAlertWithId('aiMusicGenerating'));
         dispatch(showAlertWithData('aiMusicError', {message}));

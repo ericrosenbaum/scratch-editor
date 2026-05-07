@@ -242,7 +242,7 @@ const alerts = [
             />
         ),
         iconSpinner: true,
-        level: AlertLevels.INFO
+        level: AlertLevels.SUCCESS
     },
     {
         alertId: 'aiMusicComplete',

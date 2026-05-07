@@ -82,7 +82,11 @@ class SoundEditor extends React.Component {
         document.removeEventListener('keydown', this.handleKeyPress);
     }
     handleKeyPress (event) {
-        if (event.target instanceof HTMLInputElement) {
+        if (
+            event.target instanceof HTMLInputElement ||
+            event.target instanceof HTMLTextAreaElement ||
+            (event.target instanceof HTMLElement && event.target.isContentEditable)
+        ) {
             // Ignore keyboard shortcuts if a text input field is focused
             return;
         }

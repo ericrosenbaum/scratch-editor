@@ -15,24 +15,14 @@ const closeButtonColors = {
     [AlertLevels.WARN]: CloseButton.COLOR_ORANGE
 };
 
-const renderSpecialContent = ({alertId, message, spriteName, onJumpToSound}) => {
+const renderSpecialContent = ({alertId, message, spriteName}) => {
     if (alertId === 'aiMusicComplete') {
         return (
             <FormattedMessage
-                defaultMessage="Music ready on {spriteName}. <a>Open</a>"
+                defaultMessage="Music ready on {spriteName}."
                 description="Toast shown when AI music generation completes"
                 id="gui.alerts.aiMusicComplete"
-                values={{
-                    spriteName: spriteName || '',
-                    a: chunks => (
-                        <button
-                            className={styles.alertConnectionButton}
-                            onClick={onJumpToSound}
-                        >
-                            {chunks}
-                        </button>
-                    )
-                }}
+                values={{spriteName: spriteName || ''}}
             />
         );
     }
@@ -100,9 +90,21 @@ const AlertComponent = ({
                         )
                     }}
                 />
-            ) : (renderSpecialContent({alertId, message, spriteName, onJumpToSound}) || content)}
+            ) : (renderSpecialContent({alertId, message, spriteName}) || content)}
         </div>
         <div className={styles.alertButtons}>
+            {alertId === 'aiMusicComplete' && (
+                <button
+                    className={styles.alertConnectionButton}
+                    onClick={onJumpToSound}
+                >
+                    <FormattedMessage
+                        defaultMessage="Open"
+                        description="Button to jump to the newly generated AI music sound"
+                        id="gui.alerts.aiMusicCompleteOpen"
+                    />
+                </button>
+            )}
             {showSaveNow && (
                 <button
                     className={styles.alertConnectionButton}

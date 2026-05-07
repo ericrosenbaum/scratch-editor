@@ -42,6 +42,7 @@ import {
 
 import {setRestore} from '../reducers/restore-deletion';
 import {showStandardAlert, closeAlertWithId} from '../reducers/alerts';
+import {clearSoundSelection} from '../reducers/music-generation';
 import {ModalFocusContext} from '../contexts/modal-focus-context.jsx';
 
 import {soundShape} from '../lib/assets-prop-types.js';
@@ -69,6 +70,13 @@ class SoundTab extends React.Component {
         this.processedSounds = {};
     }
 
+    componentDidMount () {
+        // Tab is freshly mounted (e.g. user clicked "Open" on the music-ready
+        // toast from a different tab). componentWillReceiveProps doesn't fire
+        // on mount, so apply any pending selection here.
+        this.applyPendingSoundSelection(this.props);
+    }
+
     componentWillReceiveProps (nextProps) {
         const {
             editingTarget,
@@ -81,12 +89,34 @@ class SoundTab extends React.Component {
             return;
         }
 
+        // Honoring a pending selection takes precedence over the
+        // editingTarget-changed reset below.
+        if (this.applyPendingSoundSelection(nextProps)) {
+            return;
+        }
+
         // If switching editing targets, reset the sound index
         if (this.props.editingTarget !== editingTarget) {
             this.setState({selectedSoundIndex: 0});
         } else if (this.state.selectedSoundIndex > target.sounds.length - 1) {
             this.setState({selectedSoundIndex: Math.max(target.sounds.length - 1, 0)});
         }
+    }
+
+    applyPendingSoundSelection (props) {
+        const {editingTarget, sprites, stage, pendingSoundSelection} = props;
+        if (!pendingSoundSelection) return false;
+        const target = editingTarget && sprites[editingTarget] ?
+            sprites[editingTarget] : stage;
+        if (!target || !target.sounds) return false;
+        if (pendingSoundSelection.targetId !== editingTarget) return false;
+        const pendingIndex = target.sounds.findIndex(
+            s => s.name === pendingSoundSelection.soundName
+        );
+        if (pendingIndex < 0) return false;
+        this.setState({selectedSoundIndex: pendingIndex});
+        this.props.onClearSoundSelection();
+        return true;
     }
 
     static contextType = ModalFocusContext;
@@ -338,12 +368,17 @@ SoundTab.propTypes = {
     isRtl: PropTypes.bool,
     musicGenerationVisible: PropTypes.bool,
     onActivateCostumesTab: PropTypes.func.isRequired,
+    onClearSoundSelection: PropTypes.func.isRequired,
     onCloseImporting: PropTypes.func.isRequired,
     onNewSoundFromAIClick: PropTypes.func.isRequired,
     onNewSoundFromLibraryClick: PropTypes.func.isRequired,
     onNewSoundFromRecordingClick: PropTypes.func.isRequired,
     onRequestCloseSoundLibrary: PropTypes.func.isRequired,
     onShowImporting: PropTypes.func.isRequired,
+    pendingSoundSelection: PropTypes.shape({
+        targetId: PropTypes.string,
+        soundName: PropTypes.string
+    }),
     soundLibraryVisible: PropTypes.bool,
     soundRecorderVisible: PropTypes.bool,
     sprites: PropTypes.shape({
@@ -370,7 +405,8 @@ const mapStateToProps = state => ({
     soundLibraryVisible: state.scratchGui.modals.soundLibrary,
     soundRecorderVisible: state.scratchGui.modals.soundRecorder,
     musicGenerationVisible: state.scratchGui.modals.musicGeneration,
-    dynamicSounds: state.scratchGui.dynamicAssets.sounds
+    dynamicSounds: state.scratchGui.dynamicAssets.sounds,
+    pendingSoundSelection: state.scratchGui.musicGeneration.pendingSoundSelection
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -392,7 +428,8 @@ const mapDispatchToProps = dispatch => ({
         dispatch(setRestore(restoreState));
     },
     onCloseImporting: () => dispatch(closeAlertWithId('importingAsset')),
-    onShowImporting: () => dispatch(showStandardAlert('importingAsset'))
+    onShowImporting: () => dispatch(showStandardAlert('importingAsset')),
+    onClearSoundSelection: () => dispatch(clearSoundSelection())
 });
 
 export default errorBoundaryHOC('Sound Tab')(

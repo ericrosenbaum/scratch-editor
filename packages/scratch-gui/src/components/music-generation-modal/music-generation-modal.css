@@ -19,12 +19,17 @@
     font-size: 0.875rem;
 }
 
+.prompt-wrapper {
+    position: relative;
+    width: 100%;
+}
+
 .prompt-input {
     width: 100%;
     box-sizing: border-box;
     resize: vertical;
     min-height: 5rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 2.5rem 0.5rem 0.75rem;
     border: 1px solid $ui-black-transparent;
     border-radius: 0.25rem;
     font-family: inherit;
@@ -41,6 +46,56 @@
 .prompt-input:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+.mic-button {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.85;
+}
+
+.mic-button:hover {
+    background: hsla(260, 60%, 60%, 0.1);
+    opacity: 1;
+}
+
+.mic-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.mic-icon {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.mic-button-active {
+    background: hsla(0, 80%, 60%, 0.15);
+    opacity: 1;
+    animation: micPulse 1s infinite;
+}
+
+.mic-button-active .mic-icon {
+    /* Recolor the purple icon to Scratch pink while listening */
+    filter: brightness(0) saturate(100%) invert(52%) sepia(67%) saturate(2476%) hue-rotate(314deg) brightness(101%) contrast(101%);
+}
+
+@keyframes micPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+    100% { transform: scale(1); }
 }
 
 .error {
@@ -78,6 +133,23 @@
 .generate-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.open-button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    background: white;
+    border: 1px solid $looks-secondary;
+    color: $looks-secondary;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+}
+
+.open-button:hover {
+    background: $ui-primary;
 }
 
 .spinner {

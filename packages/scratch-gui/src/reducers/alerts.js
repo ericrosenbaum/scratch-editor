@@ -233,6 +233,7 @@ export {
     initialState as alertsInitialState,
     closeAlert,
     closeAlertWithId,
+    closeAlertsWithId,
     filterInlineAlerts,
     filterPopupAlerts,
     showAlertWithData,

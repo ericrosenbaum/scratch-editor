@@ -10,6 +10,7 @@ import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {manualUpdateProject} from '../reducers/project-state';
 import {activateTab, SOUNDS_TAB_INDEX} from '../reducers/editor-tab';
 import {closeAlertWithId} from '../reducers/alerts';
+import {requestSoundSelection} from '../reducers/music-generation';
 
 class Alert extends React.Component {
     constructor (props) {
@@ -28,8 +29,12 @@ class Alert extends React.Component {
         this.handleOnCloseAlert();
     }
     handleJumpToSound () {
-        if (this.props.targetId && this.props.vm.runtime.getTargetById(this.props.targetId)) {
-            this.props.vm.setEditingTarget(this.props.targetId);
+        const {targetId, soundName, vm} = this.props;
+        if (targetId && vm.runtime.getTargetById(targetId)) {
+            vm.setEditingTarget(targetId);
+        }
+        if (targetId && soundName) {
+            this.props.onRequestSoundSelection({targetId, soundName});
         }
         this.props.onJumpToSoundsTab();
     }
@@ -92,6 +97,9 @@ const mapDispatchToProps = dispatch => ({
     onJumpToSoundsTab: () => {
         dispatch(activateTab(SOUNDS_TAB_INDEX));
         dispatch(closeAlertWithId('aiMusicComplete'));
+    },
+    onRequestSoundSelection: ({targetId, soundName}) => {
+        dispatch(requestSoundSelection({targetId, soundName}));
     }
 });
 
@@ -109,6 +117,7 @@ Alert.propTypes = {
     onCloseAlert: PropTypes.func.isRequired,
     onJumpToSoundsTab: PropTypes.func,
     onOpenConnectionModal: PropTypes.func,
+    onRequestSoundSelection: PropTypes.func,
     onSaveNow: PropTypes.func,
     showDownload: PropTypes.bool,
     showReconnect: PropTypes.bool,
