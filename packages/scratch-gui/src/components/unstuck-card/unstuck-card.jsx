@@ -14,6 +14,9 @@ import micIcon from './icon--mic.svg';
 import tipsIcon from '../../lib/assets/icon--tips.svg';
 
 import decks from '../../lib/libraries/decks/index.jsx';
+import blockThumbnailsCache from '../../lib/libraries/tips/block-thumbnails-cache.json';
+
+const blockThumbnails = blockThumbnailsCache.thumbnails || {};
 
 /* ===== HEADER ===== */
 const UnstuckCardHeader = ({
@@ -368,7 +371,8 @@ class SearchResults extends React.Component {
                     if (!tip) return null;
                     const tutorialThumb = tip.tutorialId && decks[tip.tutorialId] ?
                         decks[tip.tutorialId].img : null;
-                    const thumbSrc = tip.thumbnail || tutorialThumb;
+                    const blockThumb = blockThumbnails[result.tipId] || null;
+                    const thumbSrc = tip.thumbnail || tutorialThumb || blockThumb;
                     return (
                         <button
                             className={styles.resultCard}

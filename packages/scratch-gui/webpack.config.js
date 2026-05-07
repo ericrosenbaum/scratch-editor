@@ -170,6 +170,7 @@ const buildConfig = baseConfig.clone()
             gui: './src/playground/index.jsx',
             guistandalone: './src/playground/standalone.jsx',
             blocksonly: './src/playground/blocks-only.jsx',
+            blockthumbnailharness: './src/playground/block-thumbnail-harness.jsx',
             compatibilitytesting: './src/playground/compatibility-testing.jsx',
             player: './src/playground/player.jsx'
         },
@@ -202,6 +203,13 @@ const buildConfig = baseConfig.clone()
         filename: 'blocks-only.html',
         template: 'src/playground/index.ejs',
         title: 'Scratch 3.0 GUI: Blocks Only Example'
+    }))
+    .addPlugin(new HtmlWebpackPlugin({
+        ...commonHtmlWebpackPluginOptions,
+        chunks: ['blockthumbnailharness'],
+        filename: 'block-thumbnail-harness.html',
+        template: 'src/playground/index.ejs',
+        title: 'Scratch 3.0 GUI: Block Thumbnail Harness'
     }))
     .addPlugin(new HtmlWebpackPlugin({
         ...commonHtmlWebpackPluginOptions,
