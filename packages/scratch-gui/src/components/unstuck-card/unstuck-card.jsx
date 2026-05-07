@@ -397,6 +397,28 @@ class SearchResults extends React.Component {
                                         <div className={styles.resultCardText}>
                                             {tip.text}
                                         </div>
+                                        <div className={styles.resultTags}>
+                                            {tip.thumbnail ? (
+                                                <span className={styles.starterBadge}>
+                                                    {'Starter project'}
+                                                </span>
+                                            ) : null}
+                                            {tip.tutorialId ? (
+                                                <span className={styles.tutorialBadge}>
+                                                    {'\u25B6 Tutorial'}
+                                                </span>
+                                            ) : null}
+                                            {tip.pointers && tip.pointers.length > 0 ? (
+                                                <span className={styles.showMeBadge}>
+                                                    {'Show me'}
+                                                </span>
+                                            ) : null}
+                                            {tip._capturedBlocks && tip._capturedBlocks.length > 0 ? (
+                                                <span className={styles.tryCodeBadge}>
+                                                    {'Try this code'}
+                                                </span>
+                                            ) : null}
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
@@ -409,30 +431,30 @@ class SearchResults extends React.Component {
                                     <div className={styles.resultCardText}>
                                         {tip.text}
                                     </div>
+                                    <div className={styles.resultTags}>
+                                        {tip.thumbnail ? (
+                                            <span className={styles.starterBadge}>
+                                                {'Starter project'}
+                                            </span>
+                                        ) : null}
+                                        {tip.tutorialId ? (
+                                            <span className={styles.tutorialBadge}>
+                                                {'\u25B6 Tutorial'}
+                                            </span>
+                                        ) : null}
+                                        {tip.pointers && tip.pointers.length > 0 ? (
+                                            <span className={styles.showMeBadge}>
+                                                {'Show me'}
+                                            </span>
+                                        ) : null}
+                                        {tip._capturedBlocks && tip._capturedBlocks.length > 0 ? (
+                                            <span className={styles.tryCodeBadge}>
+                                                {'Try this code'}
+                                            </span>
+                                        ) : null}
+                                    </div>
                                 </div>
                             )}
-                            <div className={styles.resultTags}>
-                                {tip.thumbnail ? (
-                                    <span className={styles.starterBadge}>
-                                        {'Starter project'}
-                                    </span>
-                                ) : null}
-                                {tip.tutorialId ? (
-                                    <span className={styles.tutorialBadge}>
-                                        {'\u25B6 Tutorial'}
-                                    </span>
-                                ) : null}
-                                {tip.pointers && tip.pointers.length > 0 ? (
-                                    <span className={styles.showMeBadge}>
-                                        {'Show me'}
-                                    </span>
-                                ) : null}
-                                {tip._capturedBlocks && tip._capturedBlocks.length > 0 ? (
-                                    <span className={styles.tryCodeBadge}>
-                                        {'Try this code'}
-                                    </span>
-                                ) : null}
-                            </div>
                         </button>
                     );
                 })}
