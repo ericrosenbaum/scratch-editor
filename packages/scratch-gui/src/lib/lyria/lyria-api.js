@@ -1,7 +1,7 @@
 // HTTP client for Google Lyria 3 music generation. No Redux or VM imports —
 // keep this layer pure so it's easy to mock in tests.
 //
-// Auth note: Lyria-002 on Vertex AI is officially OAuth-only. Sending
+// Auth note: Lyria-003 on Vertex AI is officially OAuth-only. Sending
 // `x-goog-api-key` here works only if the user's GCP project has API Keys
 // configured to allow Lyria, or if LYRIA_ENDPOINT is overridden to point at
 // a same-origin proxy that injects a real bearer token. Shipping a Google
@@ -9,7 +9,7 @@
 // prefer the proxy route.
 
 const DEFAULT_LYRIA_ENDPOINT =
-    'https://us-central1-aiplatform.googleapis.com/v1/projects/{projectId}/locations/us-central1/publishers/google/models/lyria-002:predict';
+    'https://us-central1-aiplatform.googleapis.com/v1/projects/{projectId}/locations/us-central1/publishers/google/models/lyria-003:predict';
 
 const getEndpoint = () => process.env.LYRIA_ENDPOINT || DEFAULT_LYRIA_ENDPOINT;
 
