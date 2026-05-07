@@ -371,6 +371,64 @@ body .unstuck-container {
     color: hsla(225, 20%, 30%, 1);
 }
 
+.tip-text-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.tip-text-row .tip-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.speak-button {
+    position: relative;
+    z-index: 2;
+    flex: 0 0 auto;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: hsla(260, 60%, 60%, 0.12);
+    color: $unstuck-purple;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+
+.speak-button:hover {
+    background: hsla(260, 60%, 60%, 0.22);
+}
+
+.speak-button:focus {
+    outline: none;
+}
+
+.speak-button:focus-visible {
+    outline: 2px solid $unstuck-purple;
+    outline-offset: 2px;
+}
+
+.speak-button-active {
+    background: $unstuck-purple;
+    color: $ui-white;
+    animation: speak-pulse 1.4s ease-out infinite;
+}
+
+.speak-button-active:hover {
+    background: $unstuck-purple-dark;
+}
+
+@keyframes speak-pulse {
+    0%   { box-shadow: 0 0 0 0 hsla(260, 60%, 60%, 0.65); }
+    50%  { box-shadow: 0 0 0 6px hsla(260, 60%, 60%, 0.3); }
+    100% { box-shadow: 0 0 0 12px hsla(260, 60%, 60%, 0); }
+}
+
 /* Show me button */
 .show-me-button-group {
     display: flex;

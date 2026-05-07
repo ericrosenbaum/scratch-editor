@@ -576,12 +576,58 @@ SearchResults.propTypes = {
 };
 
 /* ===== TIP DISPLAY ===== */
+const speechSynthesisSupported = typeof window !== 'undefined' &&
+    typeof window.speechSynthesis !== 'undefined' &&
+    typeof window.SpeechSynthesisUtterance !== 'undefined';
+
+// Used as onMouseDown on buttons that should be clickable but must not
+// pull focus away from the editor (Blockly and the runtime listen for
+// keyboard input on the workspace).
+const preventFocus = e => e.preventDefault();
+
 class TipDisplay extends React.Component {
     constructor (props) {
         super(props);
+        this.state = {isSpeaking: false};
         this.handleFollowUp = this.handleFollowUp.bind(this);
         this.handleShowMe = this.handleShowMe.bind(this);
         this.handleStarterLink = this.handleStarterLink.bind(this);
+        this.handleToggleSpeak = this.handleToggleSpeak.bind(this);
+    }
+    componentDidUpdate (prevProps) {
+        // Cancel speech when switching tips so the previous tip's voice
+        // doesn't continue over the new tip's view.
+        if (prevProps.tip && this.props.tip && prevProps.tip.id !== this.props.tip.id) {
+            this.stopSpeaking();
+        }
+    }
+    componentWillUnmount () {
+        this.stopSpeaking();
+    }
+    stopSpeaking () {
+        if (!speechSynthesisSupported) return;
+        window.speechSynthesis.cancel();
+        if (this.state.isSpeaking) this.setState({isSpeaking: false});
+    }
+    handleToggleSpeak (e) {
+        // Belt-and-suspenders: even with onMouseDown preventDefault, a keyboard
+        // activation will focus the button. Drop focus so subsequent key events
+        // go to the editor.
+        if (e && e.currentTarget && e.currentTarget.blur) e.currentTarget.blur();
+        if (!speechSynthesisSupported) return;
+        if (this.state.isSpeaking) {
+            this.stopSpeaking();
+            return;
+        }
+        const text = this.props.tip && this.props.tip.text;
+        if (!text) return;
+        // cancel anything still in the queue from a previous tip
+        window.speechSynthesis.cancel();
+        const utter = new window.SpeechSynthesisUtterance(text);
+        utter.onend = () => this.setState({isSpeaking: false});
+        utter.onerror = () => this.setState({isSpeaking: false});
+        window.speechSynthesis.speak(utter);
+        this.setState({isSpeaking: true});
     }
     handleFollowUp (e) {
         this.props.onFollowUp(e.currentTarget.dataset.tipId);
@@ -610,8 +656,61 @@ class TipDisplay extends React.Component {
                         {tip.title}
                     </div>
                 ) : null}
-                <div className={styles.tipText}>
-                    {tip.text}
+                <div className={styles.tipTextRow}>
+                    <div className={styles.tipText}>
+                        {tip.text}
+                    </div>
+                    {speechSynthesisSupported && tip.text ? (
+                        <button
+                            aria-label={this.state.isSpeaking ? 'Stop reading' : 'Read aloud'}
+                            className={classNames(
+                                styles.speakButton,
+                                {[styles.speakButtonActive]: this.state.isSpeaking}
+                            )}
+                            title={this.state.isSpeaking ? 'Stop' : 'Read aloud'}
+                            // Don't take focus on click — keyboard inputs need
+                            // to keep going to the editor / Blockly workspace.
+                            onMouseDown={preventFocus}
+                            onClick={this.handleToggleSpeak}
+                        >
+                            {this.state.isSpeaking ? (
+                                <svg
+                                    height="20"
+                                    viewBox="0 0 14 14"
+                                    width="20"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect
+                                        fill="currentColor"
+                                        height="8"
+                                        rx="1"
+                                        width="8"
+                                        x="3"
+                                        y="3"
+                                    />
+                                </svg>
+                            ) : (
+                                <svg
+                                    height="20"
+                                    viewBox="0 0 14 14"
+                                    width="20"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        d="M3 5.5h2L7.5 3v8L5 8.5H3z"
+                                        fill="currentColor"
+                                    />
+                                    <path
+                                        d="M9 5.2c0.6 0.5 0.9 1.1 0.9 1.8s-0.3 1.3-0.9 1.8M10.5 3.7c1.1 0.8 1.7 2 1.7 3.3s-0.6 2.5-1.7 3.3"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeLinecap="round"
+                                        strokeWidth="1.2"
+                                    />
+                                </svg>
+                            )}
+                        </button>
+                    ) : null}
                 </div>
 
                 {tip.thumbnail ? (
