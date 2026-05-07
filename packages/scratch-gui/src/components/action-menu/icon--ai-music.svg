@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>ai-music</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="ai-music" fill="#FFFFFF">
+            <path d="M7.4,2.6 C7.55,3.55 8.05,4.05 9,4.2 C8.05,4.35 7.55,4.85 7.4,5.8 C7.25,4.85 6.75,4.35 5.8,4.2 C6.75,4.05 7.25,3.55 7.4,2.6 Z" id="sparkle-small-tl"/>
+            <path d="M11.5,6 C11.8,8 12.8,9 14.8,9.3 C12.8,9.6 11.8,10.6 11.5,12.6 C11.2,10.6 10.2,9.6 8.2,9.3 C10.2,9 11.2,8 11.5,6 Z" id="sparkle-large"/>
+            <path d="M5.6,12.6 C5.8,13.85 6.45,14.5 7.7,14.7 C6.45,14.9 5.8,15.55 5.6,16.8 C5.4,15.55 4.75,14.9 3.5,14.7 C4.75,14.5 5.4,13.85 5.6,12.6 Z" id="sparkle-medium-bl"/>
+        </g>
+    </g>
+</svg>

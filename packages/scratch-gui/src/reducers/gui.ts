@@ -14,6 +14,7 @@ import micIndicatorReducer, {micIndicatorInitialState} from './mic-indicator';
 import modalReducer, {modalsInitialState} from './modals';
 import modeReducer, {modeInitialState} from './mode';
 import monitorReducer, {monitorsInitialState} from './monitors';
+import musicGenerationReducer, {musicGenerationInitialState} from './music-generation';
 import monitorLayoutReducer, {monitorLayoutInitialState} from './monitor-layout';
 import platformReducer, {platformInitialState} from './platform';
 import projectChangedReducer, {projectChangedInitialState} from './project-changed';
@@ -55,6 +56,7 @@ const buildInitialState = (config: GUIConfig) => ({
     micIndicator: micIndicatorInitialState,
     modals: modalsInitialState,
     monitors: monitorsInitialState,
+    musicGeneration: musicGenerationInitialState,
     monitorLayout: monitorLayoutInitialState,
     platform: platformInitialState,
     projectChanged: projectChangedInitialState,
@@ -165,6 +167,7 @@ const guiReducer = combineReducers({
     micIndicator: micIndicatorReducer,
     modals: modalReducer,
     monitors: monitorReducer,
+    musicGeneration: musicGenerationReducer,
     monitorLayout: monitorLayoutReducer,
     platform: platformReducer,
     projectChanged: projectChangedReducer,

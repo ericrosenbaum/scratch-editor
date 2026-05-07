@@ -15,17 +15,55 @@ const closeButtonColors = {
     [AlertLevels.WARN]: CloseButton.COLOR_ORANGE
 };
 
+const renderSpecialContent = ({alertId, message, spriteName, onJumpToSound}) => {
+    if (alertId === 'aiMusicComplete') {
+        return (
+            <FormattedMessage
+                defaultMessage="Music ready on {spriteName}. <a>Open</a>"
+                description="Toast shown when AI music generation completes"
+                id="gui.alerts.aiMusicComplete"
+                values={{
+                    spriteName: spriteName || '',
+                    a: chunks => (
+                        <button
+                            className={styles.alertConnectionButton}
+                            onClick={onJumpToSound}
+                        >
+                            {chunks}
+                        </button>
+                    )
+                }}
+            />
+        );
+    }
+    if (alertId === 'aiMusicError') {
+        return (
+            <FormattedMessage
+                defaultMessage="Music generation failed: {message}"
+                description="Toast shown when AI music generation errors"
+                id="gui.alerts.aiMusicError"
+                values={{message: message || ''}}
+            />
+        );
+    }
+    return null;
+};
+
 const AlertComponent = ({
+    alertId,
     content,
     closeButton,
     extensionName,
     iconSpinner,
     iconURL,
     level,
+    message,
     showDownload,
     showSaveNow,
+    spriteName,
     onCloseAlert,
     onDownload,
+    onJumpToSound,
     onSaveNow,
     onReconnect,
     showReconnect
@@ -62,7 +100,7 @@ const AlertComponent = ({
                         )
                     }}
                 />
-            ) : content}
+            ) : (renderSpecialContent({alertId, message, spriteName, onJumpToSound}) || content)}
         </div>
         <div className={styles.alertButtons}>
             {showSaveNow && (
@@ -118,19 +156,23 @@ const AlertComponent = ({
 );
 
 AlertComponent.propTypes = {
+    alertId: PropTypes.string,
     closeButton: PropTypes.bool,
     content: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
     extensionName: PropTypes.string,
     iconSpinner: PropTypes.bool,
     iconURL: PropTypes.string,
     level: PropTypes.string,
+    message: PropTypes.string,
     onCloseAlert: PropTypes.func.isRequired,
     onDownload: PropTypes.func,
+    onJumpToSound: PropTypes.func,
     onReconnect: PropTypes.func,
     onSaveNow: PropTypes.func,
     showDownload: PropTypes.func,
     showReconnect: PropTypes.bool,
-    showSaveNow: PropTypes.bool
+    showSaveNow: PropTypes.bool,
+    spriteName: PropTypes.string
 };
 
 AlertComponent.defaultProps = {

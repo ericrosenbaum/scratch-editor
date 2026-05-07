@@ -18,6 +18,7 @@ const AlertsComponent = ({
         <Box className={styles.alertsInnerContainer} >
             {alertsList.map((a, index) => (
                 <Alert
+                    alertId={a.alertId}
                     closeButton={a.closeButton}
                     content={a.content}
                     extensionId={a.extensionId}
@@ -31,6 +32,9 @@ const AlertsComponent = ({
                     showDownload={a.showDownload}
                     showReconnect={a.showReconnect}
                     showSaveNow={a.showSaveNow}
+                    soundName={a.soundName}
+                    spriteName={a.spriteName}
+                    targetId={a.targetId}
                     onCloseAlert={onCloseAlert}
                 />
             ))}

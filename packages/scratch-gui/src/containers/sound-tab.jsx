@@ -13,8 +13,10 @@ import addSoundFromRecordingIcon from '../components/asset-panel/icon--add-sound
 import fileUploadIcon from '../components/action-menu/icon--file-upload.svg';
 import surpriseIcon from '../components/action-menu/icon--surprise.svg';
 import searchIcon from '../components/action-menu/icon--search.svg';
+import aiMusicIcon from '../components/action-menu/icon--ai-music.svg';
 
 import RecordModal from './record-modal.jsx';
+import MusicGenerationModal from './music-generation-modal.jsx';
 import SoundEditor from './sound-editor.jsx';
 import SoundLibrary from './sound-library.jsx';
 
@@ -29,7 +31,8 @@ import {connect} from 'react-redux';
 import {
     closeSoundLibrary,
     openSoundLibrary,
-    openSoundRecorder
+    openSoundRecorder,
+    openMusicGeneration
 } from '../reducers/modals';
 
 import {
@@ -57,6 +60,7 @@ class SoundTab extends React.Component {
             'handleFileUploadClick',
             'handleSoundUpload',
             'handleNewSoundFromLibraryClick',
+            'handleNewSoundFromAIClick',
             'handleDrop',
             'setFileInput',
             'mergeDynamicAssets'
@@ -156,6 +160,11 @@ class SoundTab extends React.Component {
         this.props.onNewSoundFromLibraryClick(e);
     }
 
+    handleNewSoundFromAIClick () {
+        this.context.captureFocus();
+        this.props.onNewSoundFromAIClick();
+    }
+
     handleSoundUpload (e) {
         const storage = this.props.vm.runtime.storage;
         const targetId = this.props.vm.editingTarget.id;
@@ -246,6 +255,11 @@ class SoundTab extends React.Component {
                 defaultMessage: 'Choose a Sound',
                 description: 'Button to add a sound in the editor tab',
                 id: 'gui.soundTab.addSoundFromLibrary'
+            },
+            generateMusic: {
+                defaultMessage: 'Generate',
+                description: 'Button to generate AI music in the editor tab',
+                id: 'gui.soundTab.generateMusic'
             }
         });
 
@@ -265,6 +279,10 @@ class SoundTab extends React.Component {
                     fileChange: this.handleSoundUpload,
                     fileInput: this.setFileInput,
                     fileMultiple: true
+                }, {
+                    title: intl.formatMessage(messages.generateMusic),
+                    img: aiMusicIcon,
+                    onClick: this.handleNewSoundFromAIClick
                 }, {
                     title: intl.formatMessage(messages.surpriseSound),
                     img: surpriseIcon,
@@ -296,6 +314,9 @@ class SoundTab extends React.Component {
                         onNewSound={this.handleNewSound}
                     />
                 ) : null}
+                {this.props.musicGenerationVisible ? (
+                    <MusicGenerationModal />
+                ) : null}
                 {this.props.soundLibraryVisible ? (
                     <SoundLibrary
                         vm={this.props.vm}
@@ -315,8 +336,10 @@ SoundTab.propTypes = {
     editingTarget: PropTypes.string,
     intl: intlShape,
     isRtl: PropTypes.bool,
+    musicGenerationVisible: PropTypes.bool,
     onActivateCostumesTab: PropTypes.func.isRequired,
     onCloseImporting: PropTypes.func.isRequired,
+    onNewSoundFromAIClick: PropTypes.func.isRequired,
     onNewSoundFromLibraryClick: PropTypes.func.isRequired,
     onNewSoundFromRecordingClick: PropTypes.func.isRequired,
     onRequestCloseSoundLibrary: PropTypes.func.isRequired,
@@ -346,6 +369,7 @@ const mapStateToProps = state => ({
     stage: state.scratchGui.targets.stage,
     soundLibraryVisible: state.scratchGui.modals.soundLibrary,
     soundRecorderVisible: state.scratchGui.modals.soundRecorder,
+    musicGenerationVisible: state.scratchGui.modals.musicGeneration,
     dynamicSounds: state.scratchGui.dynamicAssets.sounds
 });
 
@@ -357,6 +381,9 @@ const mapDispatchToProps = dispatch => ({
     },
     onNewSoundFromRecordingClick: () => {
         dispatch(openSoundRecorder());
+    },
+    onNewSoundFromAIClick: () => {
+        dispatch(openMusicGeneration());
     },
     onRequestCloseSoundLibrary: () => {
         dispatch(closeSoundLibrary());

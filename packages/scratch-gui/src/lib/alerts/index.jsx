@@ -229,6 +229,41 @@ const alerts = [
         ),
         iconSpinner: true,
         level: AlertLevels.SUCCESS
+    },
+    {
+        alertId: 'aiMusicGenerating',
+        alertType: AlertTypes.STANDARD,
+        clearList: ['aiMusicGenerating', 'aiMusicComplete', 'aiMusicError'],
+        content: (
+            <FormattedMessage
+                defaultMessage="Generating music…"
+                description="Toast shown while AI music is being generated in the background"
+                id="gui.alerts.aiMusicGenerating"
+            />
+        ),
+        iconSpinner: true,
+        level: AlertLevels.INFO
+    },
+    {
+        alertId: 'aiMusicComplete',
+        alertType: AlertTypes.STANDARD,
+        clearList: ['aiMusicGenerating'],
+        closeButton: true,
+        // Content is rendered specially in alert.jsx using spriteName + targetId
+        // injected via showAlertWithData.
+        content: null,
+        iconURL: successImage,
+        level: AlertLevels.SUCCESS,
+        maxDisplaySecs: 12
+    },
+    {
+        alertId: 'aiMusicError',
+        alertType: AlertTypes.STANDARD,
+        clearList: ['aiMusicGenerating'],
+        closeButton: true,
+        // Content is rendered specially in alert.jsx using the dynamic message.
+        content: null,
+        level: AlertLevels.WARN
     }
 ];
 

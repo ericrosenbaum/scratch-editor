@@ -57,6 +57,15 @@ const reducer = function (state, action) {
                 if (action.data && action.data.message) {
                     newAlert.message = action.data.message;
                 }
+                if (action.data && action.data.targetId) {
+                    newAlert.targetId = action.data.targetId;
+                }
+                if (action.data && action.data.spriteName) {
+                    newAlert.spriteName = action.data.spriteName;
+                }
+                if (action.data && action.data.soundName) {
+                    newAlert.soundName = action.data.soundName;
+                }
 
                 newAlert.alertType = alertData.alertType || AlertTypes.STANDARD;
                 newAlert.closeButton = alertData.closeButton;
@@ -172,6 +181,22 @@ const showStandardAlert = function (alertId) {
 };
 
 /**
+ * Action creator to show an alert with extra data injected at render time
+ * (e.g. sprite name and target id for the AI music completion toast).
+ * @param {string} alertId
+ * @param {object} data - extra fields copied onto the alert (message, targetId,
+ *   spriteName, soundName)
+ * @returns {object} action
+ */
+const showAlertWithData = function (alertId, data) {
+    return {
+        type: SHOW_ALERT,
+        alertId,
+        data
+    };
+};
+
+/**
  * Action creator to show an alert with the given input data.
  * @param {object} data - data for the alert
  * @param {string} data.message - message for the alert
@@ -210,6 +235,7 @@ export {
     closeAlertWithId,
     filterInlineAlerts,
     filterPopupAlerts,
+    showAlertWithData,
     showAlertWithTimeout,
     showExtensionAlert,
     showStandardAlert
