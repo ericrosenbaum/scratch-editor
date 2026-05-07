@@ -62,6 +62,15 @@ class BlockPreview extends React.Component {
                 this.props.vm.on('EXTENSION_ADDED', this.handleExtensionAdded);
             }
         }
+        if (prevProps.colorMode !== this.props.colorMode && this.workspace) {
+            // ScratchBlocks' theme media (icons) is bound at inject() time, so
+            // swapping themes alone leaves the old icon set in place. Tear the
+            // workspace down and let setRef rebuild it on the next render.
+            this.workspace.dispose();
+            this.workspace = null;
+            this.setRef(this.container);
+            return;
+        }
         if (prevProps.blocks !== this.props.blocks) {
             this.buildBlocks();
         }

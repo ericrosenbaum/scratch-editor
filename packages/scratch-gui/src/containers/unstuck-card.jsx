@@ -406,6 +406,7 @@ class UnstuckCard extends React.Component {
                 browseAll={this.props.browseAll}
                 browseFilter={this.props.browseFilter}
                 codeExpanded={this.props.codeExpanded}
+                colorMode={this.props.colorMode}
                 expanded={this.props.expanded}
                 listening={this.state.listening}
                 interimTranscript={this.state.interimTranscript}
@@ -457,6 +458,7 @@ UnstuckCard.propTypes = {
     onBrowseAll: PropTypes.func.isRequired,
     onBrowseFilter: PropTypes.func.isRequired,
     codeExpanded: PropTypes.bool.isRequired,
+    colorMode: PropTypes.string,
     dispatch: PropTypes.func.isRequired,
     expanded: PropTypes.bool.isRequired,
     isRtl: PropTypes.bool,
@@ -492,6 +494,7 @@ const mapStateToProps = state => ({
     browseAll: state.scratchGui.unstuck.browseAll,
     browseFilter: state.scratchGui.unstuck.browseFilter,
     codeExpanded: state.scratchGui.unstuck.codeExpanded,
+    colorMode: state.scratchGui.settings.colorMode,
     expanded: state.scratchGui.unstuck.expanded,
     isRtl: state.locales.isRtl,
     loading: state.scratchGui.unstuck.loading,

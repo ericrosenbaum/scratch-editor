@@ -664,7 +664,7 @@ class TipDisplay extends React.Component {
         this.props.onPointerClick(index);
     }
     render () {
-        const {tip, tips, onAddToProject, codeExpanded, onToggleCode, vm} = this.props;
+        const {tip, tips, onAddToProject, codeExpanded, colorMode, onToggleCode, vm} = this.props;
         const pointers = tip.pointers || [];
         const hasPointers = pointers.length > 0;
         const multiplePointers = pointers.length > 1;
@@ -817,6 +817,7 @@ class TipDisplay extends React.Component {
                             <div className={styles.codeSectionInner}>
                                 <BlockPreview
                                     blocks={tip._capturedBlocks}
+                                    colorMode={colorMode}
                                     vm={vm}
                                 />
                                 <button
@@ -855,6 +856,7 @@ class TipDisplay extends React.Component {
 
 TipDisplay.propTypes = {
     codeExpanded: PropTypes.bool.isRequired,
+    colorMode: PropTypes.string,
     onAddToProject: PropTypes.func.isRequired,
     onFollowUp: PropTypes.func.isRequired,
     onPointerClick: PropTypes.func.isRequired,
@@ -885,6 +887,7 @@ const UnstuckCard = ({
     browseAll,
     browseFilter,
     codeExpanded,
+    colorMode,
     expanded,
     interimTranscript,
     listening,
@@ -994,6 +997,7 @@ const UnstuckCard = ({
                                 ) : activeTip ? (
                                     <TipDisplay
                                         codeExpanded={codeExpanded}
+                                        colorMode={colorMode}
                                         tip={activeTip}
                                         tips={tips}
                                         vm={vm}
@@ -1084,6 +1088,7 @@ UnstuckCard.propTypes = {
     browseAll: PropTypes.bool,
     browseFilter: PropTypes.string,
     codeExpanded: PropTypes.bool,
+    colorMode: PropTypes.string,
     expanded: PropTypes.bool.isRequired,
     interimTranscript: PropTypes.string,
     listening: PropTypes.bool,
