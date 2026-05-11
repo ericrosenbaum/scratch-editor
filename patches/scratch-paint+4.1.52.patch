@@ -1,0 +1,513 @@
+diff --git a/node_modules/scratch-paint/src/components/background-removal-overlay/background-removal-overlay.css b/node_modules/scratch-paint/src/components/background-removal-overlay/background-removal-overlay.css
+new file mode 100644
+index 0000000..8a2c6c0
+--- /dev/null
++++ b/node_modules/scratch-paint/src/components/background-removal-overlay/background-removal-overlay.css
+@@ -0,0 +1,81 @@
++@import "../../css/colors.css";
++@import "../../css/units.css";
++
++.overlay {
++    position: absolute;
++    inset: 0;
++    top: 0;
++    left: 0;
++    right: 0;
++    bottom: 0;
++    z-index: 1000;
++    background: hsla(215, 20%, 20%, 0.45);
++    display: flex;
++    align-items: center;
++    justify-content: center;
++    pointer-events: auto;
++    cursor: progress;
++}
++
++.card {
++    background: white;
++    border-radius: 0.5rem;
++    padding: 1.25rem 1.5rem;
++    min-width: 18rem;
++    max-width: 22rem;
++    box-shadow: 0 0.25rem 0.75rem hsla(0, 0%, 0%, 0.25);
++    display: flex;
++    flex-direction: column;
++    align-items: center;
++    gap: 0.75rem;
++}
++
++.spinner {
++    width: 2rem;
++    height: 2rem;
++    border: 3px solid hsla(215, 20%, 50%, 0.25);
++    border-top-color: $looks-secondary;
++    border-radius: 50%;
++    animation: bg-removal-spin 0.9s linear infinite;
++}
++
++@keyframes bg-removal-spin {
++    to { transform: rotate(360deg); }
++}
++
++.label {
++    font-size: 0.875rem;
++    color: $text-primary;
++    font-weight: bold;
++    text-align: center;
++}
++
++.progress {
++    width: 100%;
++    height: 0.5rem;
++    appearance: none;
++    border: none;
++    border-radius: 0.25rem;
++    overflow: hidden;
++    background: hsla(215, 20%, 50%, 0.15);
++}
++
++.progress::-webkit-progress-bar {
++    background: hsla(215, 20%, 50%, 0.15);
++    border-radius: 0.25rem;
++}
++
++.progress::-webkit-progress-value {
++    background: $looks-secondary;
++    border-radius: 0.25rem;
++    transition: width 0.15s ease-out;
++}
++
++.progress::-moz-progress-bar {
++    background: $looks-secondary;
++    border-radius: 0.25rem;
++}
++
++.progressIndeterminate::-webkit-progress-value {
++    background: $looks-secondary;
++}
+diff --git a/node_modules/scratch-paint/src/components/background-removal-overlay/background-removal-overlay.jsx b/node_modules/scratch-paint/src/components/background-removal-overlay/background-removal-overlay.jsx
+new file mode 100644
+index 0000000..e5878a6
+--- /dev/null
++++ b/node_modules/scratch-paint/src/components/background-removal-overlay/background-removal-overlay.jsx
+@@ -0,0 +1,62 @@
++import classNames from 'classnames';
++import PropTypes from 'prop-types';
++import React from 'react';
++import {defineMessages, useIntl} from 'react-intl';
++
++import styles from './background-removal-overlay.css';
++
++const messages = defineMessages({
++    fetch: {
++        defaultMessage: 'Downloading model…',
++        description: 'Progress label shown while the background-removal model is downloading',
++        id: 'paint.modeTools.removingBackgroundFetch'
++    },
++    compute: {
++        defaultMessage: 'Removing background…',
++        description: 'Progress label shown while the background-removal model is running',
++        id: 'paint.modeTools.removingBackgroundCompute'
++    },
++    starting: {
++        defaultMessage: 'Preparing…',
++        description: 'Progress label shown before the first phase of background removal reports progress',
++        id: 'paint.modeTools.removingBackgroundStarting'
++    }
++});
++
++const BackgroundRemovalOverlayComponent = props => {
++    const intl = useIntl();
++    if (!props.active) return null;
++    const label = props.phase === 'fetch'
++        ? intl.formatMessage(messages.fetch)
++        : props.phase === 'compute'
++            ? intl.formatMessage(messages.compute)
++            : intl.formatMessage(messages.starting);
++    const fraction = Math.max(0, Math.min(1, props.progress || 0));
++    return (
++        <div
++            className={styles.overlay}
++            onMouseDown={e => e.stopPropagation()}
++            onClick={e => e.stopPropagation()}
++        >
++            <div className={styles.card}>
++                <div className={styles.spinner} />
++                <div className={styles.label}>{label}</div>
++                <progress
++                    className={classNames(styles.progress, {
++                        [styles.progressIndeterminate]: !props.phase
++                    })}
++                    max={1}
++                    value={props.phase ? fraction : undefined}
++                />
++            </div>
++        </div>
++    );
++};
++
++BackgroundRemovalOverlayComponent.propTypes = {
++    active: PropTypes.bool,
++    phase: PropTypes.oneOf(['fetch', 'compute']),
++    progress: PropTypes.number
++};
++
++export default BackgroundRemovalOverlayComponent;
+diff --git a/node_modules/scratch-paint/src/components/mode-tools/icons/remove-background.svg b/node_modules/scratch-paint/src/components/mode-tools/icons/remove-background.svg
+new file mode 100644
+index 0000000..535050e
+--- /dev/null
++++ b/node_modules/scratch-paint/src/components/mode-tools/icons/remove-background.svg
+@@ -0,0 +1,14 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
++  <defs>
++    <pattern id="checker" width="6" height="6" patternUnits="userSpaceOnUse">
++      <rect width="3" height="3" x="0" y="0" fill="#cfd4da"/>
++      <rect width="3" height="3" x="3" y="3" fill="#cfd4da"/>
++      <rect width="3" height="3" x="3" y="0" fill="#ffffff"/>
++      <rect width="3" height="3" x="0" y="3" fill="#ffffff"/>
++    </pattern>
++  </defs>
++  <rect x="2" y="2" width="20" height="20" rx="2" fill="url(#checker)" stroke="#575e75" stroke-width="1.2"/>
++  <path d="M9 17c0-3.5 2-6 3.5-8 0.7-0.9 1.6-1.5 2.5-1.5 1.4 0 2 1.4 1.2 2.5L12 17H9z"
++        fill="#4c97ff" stroke="#3373cc" stroke-width="1" stroke-linejoin="round"/>
++  <circle cx="16.5" cy="7.5" r="1.4" fill="#ffd766" stroke="#cf8b17" stroke-width="0.8"/>
++</svg>
+diff --git a/node_modules/scratch-paint/src/components/mode-tools/mode-tools.jsx b/node_modules/scratch-paint/src/components/mode-tools/mode-tools.jsx
+index a86f4ea..b654667 100644
+--- a/node_modules/scratch-paint/src/components/mode-tools/mode-tools.jsx
++++ b/node_modules/scratch-paint/src/components/mode-tools/mode-tools.jsx
+@@ -33,6 +33,7 @@ import curvedPointIcon from './icons/curved-point.svg';
+ import eraserIcon from '../eraser-mode/eraser.svg';
+ import flipHorizontalIcon from './icons/flip-horizontal.svg';
+ import flipVerticalIcon from './icons/flip-vertical.svg';
++import removeBackgroundIcon from './icons/remove-background.svg';
+ import straightPointIcon from './icons/straight-point.svg';
+ import bitOvalIcon from '../bit-oval-mode/oval.svg';
+ import bitRectIcon from '../bit-rect-mode/rectangle.svg';
+@@ -104,6 +105,11 @@ const ModeToolsComponent = props => {
+             defaultMessage: 'Outlined',
+             description: 'Label for the button that sets the bitmap rectangle/oval mode to draw filled-in shapes',
+             id: 'paint.modeTools.outlined'
++        },
++        removeBackground: {
++            defaultMessage: 'Remove Background',
++            description: 'Label for the button that removes the background of a bitmap costume',
++            id: 'paint.modeTools.removeBackground'
+         }
+     });
+ 
+@@ -241,6 +247,17 @@ const ModeToolsComponent = props => {
+                         onClick={props.onFlipVertical}
+                     />
+                 </InputGroup>
++                {isBitmap(props.format) && (
++                    <InputGroup className={classNames(styles.modLabeledIconHeight)}>
++                        <LabeledIconButton
++                            hideLabel={intl.locale !== 'en'}
++                            disabled={props.backgroundRemovalActive}
++                            imgSrc={removeBackgroundIcon}
++                            title={intl.formatMessage(messages.removeBackground)}
++                            onClick={props.onRemoveBackground}
++                        />
++                    </InputGroup>
++                )}
+             </div>
+         );
+     case Modes.BIT_TEXT:
+@@ -306,6 +323,7 @@ const ModeToolsComponent = props => {
+ };
+ 
+ ModeToolsComponent.propTypes = {
++    backgroundRemovalActive: PropTypes.bool,
+     bitBrushSize: PropTypes.number,
+     bitEraserSize: PropTypes.number,
+     brushValue: PropTypes.number,
+@@ -330,6 +348,7 @@ ModeToolsComponent.propTypes = {
+     onOutlineShapes: PropTypes.func.isRequired,
+     onPasteFromClipboard: PropTypes.func.isRequired,
+     onPointPoints: PropTypes.func.isRequired,
++    onRemoveBackground: PropTypes.func,
+     onUpdateImage: PropTypes.func.isRequired
+ };
+ 
+diff --git a/node_modules/scratch-paint/src/components/paint-editor/paint-editor.css b/node_modules/scratch-paint/src/components/paint-editor/paint-editor.css
+index 35672d5..ca5ef46 100644
+--- a/node_modules/scratch-paint/src/components/paint-editor/paint-editor.css
++++ b/node_modules/scratch-paint/src/components/paint-editor/paint-editor.css
+@@ -7,6 +7,7 @@
+     display: flex;
+     flex-direction: column;
+     padding: calc(3 * $grid-unit);
++    position: relative;
+ }
+ 
+ .row {
+diff --git a/node_modules/scratch-paint/src/components/paint-editor/paint-editor.jsx b/node_modules/scratch-paint/src/components/paint-editor/paint-editor.jsx
+index 925ab48..10b87d6 100644
+--- a/node_modules/scratch-paint/src/components/paint-editor/paint-editor.jsx
++++ b/node_modules/scratch-paint/src/components/paint-editor/paint-editor.jsx
+@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
+ import PaperCanvas from '../../containers/paper-canvas.jsx';
+ import ScrollableCanvas from '../../containers/scrollable-canvas.jsx';
+ 
++import BackgroundRemovalOverlay from '../../containers/background-removal-overlay.jsx';
+ import BitBrushMode from '../../containers/bit-brush-mode.jsx';
+ import BitLineMode from '../../containers/bit-line-mode.jsx';
+ import BitOvalMode from '../../containers/bit-oval-mode.jsx';
+@@ -62,6 +63,7 @@ const PaintEditorComponent = props => {
+             className={styles.editorContainer}
+             dir={props.rtl ? 'rtl' : 'ltr'}
+         >
++            <BackgroundRemovalOverlay />
+             {props.canvas !== null ? ( // eslint-disable-line no-negated-condition
+                 <div className={styles.editorContainerTop}>
+                     {/* First row */}
+diff --git a/node_modules/scratch-paint/src/containers/background-removal-overlay.jsx b/node_modules/scratch-paint/src/containers/background-removal-overlay.jsx
+new file mode 100644
+index 0000000..3a4cc22
+--- /dev/null
++++ b/node_modules/scratch-paint/src/containers/background-removal-overlay.jsx
+@@ -0,0 +1,11 @@
++import {connect} from 'react-redux';
++import BackgroundRemovalOverlayComponent from
++    '../components/background-removal-overlay/background-removal-overlay.jsx';
++
++const mapStateToProps = state => ({
++    active: state.scratchPaint.backgroundRemoval.active,
++    phase: state.scratchPaint.backgroundRemoval.phase,
++    progress: state.scratchPaint.backgroundRemoval.progress
++});
++
++export default connect(mapStateToProps)(BackgroundRemovalOverlayComponent);
+diff --git a/node_modules/scratch-paint/src/containers/mode-tools.jsx b/node_modules/scratch-paint/src/containers/mode-tools.jsx
+index 0442552..bce933b 100644
+--- a/node_modules/scratch-paint/src/containers/mode-tools.jsx
++++ b/node_modules/scratch-paint/src/containers/mode-tools.jsx
+@@ -17,9 +17,15 @@ import {
+ } from '../helper/selection';
+ import {HANDLE_RATIO, ensureClockwise} from '../helper/math';
+ import {getRaster} from '../helper/layer';
+-import {flipBitmapHorizontal, flipBitmapVertical, selectAllBitmap} from '../helper/bitmap';
++import {flipBitmapHorizontal, flipBitmapVertical, removeBitmapBackground, selectAllBitmap} from '../helper/bitmap';
+ import Formats, {isBitmap} from '../lib/format';
+ import Modes from '../lib/modes';
++import log from '../log/log';
++import {
++    startBackgroundRemoval,
++    setBackgroundRemovalProgress,
++    endBackgroundRemoval
++} from '../reducers/background-removal';
+ 
+ class ModeTools extends React.Component {
+     constructor (props) {
+@@ -32,6 +38,7 @@ class ModeTools extends React.Component {
+             'handleCurvePoints',
+             'handleFlipHorizontal',
+             'handleFlipVertical',
++            'handleRemoveBackground',
+             'handleDelete',
+             'handlePasteFromClipboard',
+             'handlePointPoints'
+@@ -190,6 +197,29 @@ class ModeTools extends React.Component {
+             this._handleFlip(1, -1, selectedItems);
+         }
+     }
++    async handleRemoveBackground () {
++        if (!isBitmap(this.props.format)) return;
++        if (getSelectedRootItems().length !== 0) return;
++        if (this.props.backgroundRemovalActive) return;
++        this.props.startBackgroundRemoval();
++        try {
++            const newCanvas = await removeBitmapBackground(
++                getRaster().canvas,
++                (phase, current, total) => {
++                    this.props.setBackgroundRemovalProgress(
++                        phase,
++                        total > 0 ? current / total : 0
++                    );
++                }
++            );
++            getRaster().canvas = newCanvas;
++            this.props.onUpdateImage();
++        } catch (err) {
++            log.error('Background removal failed', err);
++        } finally {
++            this.props.endBackgroundRemoval();
++        }
++    }
+     handlePasteFromClipboard () {
+         if (this.props.onPasteFromClipboard()) {
+             this.props.onUpdateImage();
+@@ -212,6 +242,7 @@ class ModeTools extends React.Component {
+     render () {
+         return (
+             <ModeToolsComponent
++                backgroundRemovalActive={this.props.backgroundRemovalActive}
+                 hasSelectedUncurvedPoints={this.hasSelectedUncurvedPoints()}
+                 hasSelectedUnpointedPoints={this.hasSelectedUnpointedPoints()}
+                 onCopyToClipboard={this.props.onCopyToClipboard}
+@@ -221,6 +252,7 @@ class ModeTools extends React.Component {
+                 onFlipVertical={this.handleFlipVertical}
+                 onPasteFromClipboard={this.handlePasteFromClipboard}
+                 onPointPoints={this.handlePointPoints}
++                onRemoveBackground={this.handleRemoveBackground}
+                 onUpdateImage={this.props.onUpdateImage}
+             />
+         );
+@@ -228,7 +260,9 @@ class ModeTools extends React.Component {
+ }
+ 
+ ModeTools.propTypes = {
++    backgroundRemovalActive: PropTypes.bool,
+     clearSelectedItems: PropTypes.func.isRequired,
++    endBackgroundRemoval: PropTypes.func.isRequired,
+     format: PropTypes.oneOf(Object.keys(Formats)),
+     mode: PropTypes.oneOf(Object.keys(Modes)),
+     onCopyToClipboard: PropTypes.func.isRequired,
+@@ -237,10 +271,13 @@ ModeTools.propTypes = {
+     // Listen on selected items to update hasSelectedPoints
+     selectedItems:
+         PropTypes.arrayOf(PropTypes.instanceOf(paper.Item)),
+-    setSelectedItems: PropTypes.func.isRequired
++    setBackgroundRemovalProgress: PropTypes.func.isRequired,
++    setSelectedItems: PropTypes.func.isRequired,
++    startBackgroundRemoval: PropTypes.func.isRequired
+ };
+ 
+ const mapStateToProps = state => ({
++    backgroundRemovalActive: state.scratchPaint.backgroundRemoval.active,
+     format: state.scratchPaint.format,
+     mode: state.scratchPaint.mode,
+     selectedItems: state.scratchPaint.selectedItems
+@@ -251,6 +288,15 @@ const mapDispatchToProps = dispatch => ({
+     },
+     setSelectedItems: format => {
+         dispatch(setSelectedItems(getSelectedLeafItems(), isBitmap(format)));
++    },
++    startBackgroundRemoval: () => {
++        dispatch(startBackgroundRemoval());
++    },
++    setBackgroundRemovalProgress: (phase, fraction) => {
++        dispatch(setBackgroundRemovalProgress(phase, fraction));
++    },
++    endBackgroundRemoval: () => {
++        dispatch(endBackgroundRemoval());
+     }
+ });
+ 
+diff --git a/node_modules/scratch-paint/src/helper/bitmap.js b/node_modules/scratch-paint/src/helper/bitmap.js
+index 8872717..4bd9d02 100644
+--- a/node_modules/scratch-paint/src/helper/bitmap.js
++++ b/node_modules/scratch-paint/src/helper/bitmap.js
+@@ -742,6 +742,31 @@ const flipBitmapVertical = function (canvas) {
+     return tmpCanvas;
+ };
+ 
++const removeBitmapBackground = async function (canvas, onProgress) {
++    const {removeBackground} = await import('@imgly/background-removal');
++    const srcBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
++    const resultBlob = await removeBackground(srcBlob, {
++        progress: (key, current, total) => {
++            const phase = key.split(':', 1)[0];
++            if (onProgress) onProgress(phase, current, total);
++        }
++    });
++    const url = URL.createObjectURL(resultBlob);
++    try {
++        const img = await new Promise((resolve, reject) => {
++            const i = new Image();
++            i.onload = () => resolve(i);
++            i.onerror = reject;
++            i.src = url;
++        });
++        const out = createCanvas(canvas.width, canvas.height);
++        out.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
++        return out;
++    } finally {
++        URL.revokeObjectURL(url);
++    }
++};
++
+ const scaleBitmap = function (canvas, scale) {
+     let tmpCanvas = createCanvas(Math.round(canvas.width * Math.abs(scale.x)), canvas.height);
+     if (scale.x < 0) {
+@@ -964,6 +989,7 @@ export {
+     forEachLinePoint,
+     flipBitmapHorizontal,
+     flipBitmapVertical,
++    removeBitmapBackground,
+     scaleBitmap,
+     selectAllBitmap
+ };
+diff --git a/node_modules/scratch-paint/src/reducers/background-removal.js b/node_modules/scratch-paint/src/reducers/background-removal.js
+new file mode 100644
+index 0000000..0ab4e64
+--- /dev/null
++++ b/node_modules/scratch-paint/src/reducers/background-removal.js
+@@ -0,0 +1,46 @@
++const START = 'scratch-paint/background-removal/START';
++const PROGRESS = 'scratch-paint/background-removal/PROGRESS';
++const END = 'scratch-paint/background-removal/END';
++
++const initialState = {
++    active: false,
++    phase: null,
++    progress: 0
++};
++
++const reducer = function (state, action) {
++    if (typeof state === 'undefined') state = initialState;
++    switch (action.type) {
++    case START:
++        return {active: true, phase: null, progress: 0};
++    case PROGRESS:
++        return {
++            active: true,
++            phase: action.phase,
++            progress: action.fraction
++        };
++    case END:
++        return initialState;
++    default:
++        return state;
++    }
++};
++
++const startBackgroundRemoval = function () {
++    return {type: START};
++};
++
++const setBackgroundRemovalProgress = function (phase, fraction) {
++    return {type: PROGRESS, phase: phase, fraction: fraction};
++};
++
++const endBackgroundRemoval = function () {
++    return {type: END};
++};
++
++export {
++    reducer as default,
++    startBackgroundRemoval,
++    setBackgroundRemovalProgress,
++    endBackgroundRemoval
++};
+diff --git a/node_modules/scratch-paint/src/reducers/scratch-paint-reducer.js b/node_modules/scratch-paint/src/reducers/scratch-paint-reducer.js
+index e384cd7..1e4f530 100644
+--- a/node_modules/scratch-paint/src/reducers/scratch-paint-reducer.js
++++ b/node_modules/scratch-paint/src/reducers/scratch-paint-reducer.js
+@@ -1,5 +1,6 @@
+ import {combineReducers} from 'redux';
+ import modeReducer from './modes';
++import backgroundRemovalReducer from './background-removal';
+ import bitBrushSizeReducer from './bit-brush-size';
+ import bitEraserSizeReducer from './bit-eraser-size';
+ import brushModeReducer from './brush-mode';
+@@ -22,6 +23,7 @@ import zoomLevelsReducer from './zoom-levels';
+ 
+ export default combineReducers({
+     mode: modeReducer,
++    backgroundRemoval: backgroundRemovalReducer,
+     bitBrushSize: bitBrushSizeReducer,
+     bitEraserSize: bitEraserSizeReducer,
+     brushMode: brushModeReducer,
