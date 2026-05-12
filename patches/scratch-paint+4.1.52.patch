@@ -155,23 +155,33 @@ index 0000000..e5878a6
 +export default BackgroundRemovalOverlayComponent;
 diff --git a/node_modules/scratch-paint/src/components/mode-tools/icons/remove-background.svg b/node_modules/scratch-paint/src/components/mode-tools/icons/remove-background.svg
 new file mode 100644
-index 0000000..535050e
+index 0000000..1e652ce
 --- /dev/null
 +++ b/node_modules/scratch-paint/src/components/mode-tools/icons/remove-background.svg
-@@ -0,0 +1,14 @@
-+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-+  <defs>
-+    <pattern id="checker" width="6" height="6" patternUnits="userSpaceOnUse">
-+      <rect width="3" height="3" x="0" y="0" fill="#cfd4da"/>
-+      <rect width="3" height="3" x="3" y="3" fill="#cfd4da"/>
-+      <rect width="3" height="3" x="3" y="0" fill="#ffffff"/>
-+      <rect width="3" height="3" x="0" y="3" fill="#ffffff"/>
-+    </pattern>
-+  </defs>
-+  <rect x="2" y="2" width="20" height="20" rx="2" fill="url(#checker)" stroke="#575e75" stroke-width="1.2"/>
-+  <path d="M9 17c0-3.5 2-6 3.5-8 0.7-0.9 1.6-1.5 2.5-1.5 1.4 0 2 1.4 1.2 2.5L12 17H9z"
-+        fill="#4c97ff" stroke="#3373cc" stroke-width="1" stroke-linejoin="round"/>
-+  <circle cx="16.5" cy="7.5" r="1.4" fill="#ffd766" stroke="#cf8b17" stroke-width="0.8"/>
+@@ -0,0 +1,24 @@
++<?xml version="1.0" encoding="UTF-8" standalone="no"?>
++<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
++    <title>remove-background</title>
++    <defs>
++        <pattern id="rb-bg" x="1.25" y="1.25" width="5" height="5" patternUnits="userSpaceOnUse">
++            <rect x="0"   y="0"   width="2.5" height="2.5" fill="#FFFFFF"/>
++            <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="#FFFFFF"/>
++            <rect x="2.5" y="0"   width="2.5" height="2.5" fill="#D9D9D9"/>
++            <rect x="0"   y="2.5" width="2.5" height="2.5" fill="#D9D9D9"/>
++        </pattern>
++    </defs>
++    <g id="remove-background" stroke="none" stroke-width="1" fill-rule="evenodd">
++        <!-- Background checker (7×7 cells of 2.5px) -->
++        <rect x="1.25" y="1.25" width="17.5" height="17.5" fill="url(#rb-bg)"/>
++        <!-- Pixelated circle (10-cell diameter at 1.25px resolution) -->
++        <g fill="#855CD6">
++            <rect x="6.25" y="3.75"  width="7.5"  height="1.25"/>
++            <rect x="5"    y="5"     width="10"   height="1.25"/>
++            <rect x="3.75" y="6.25"  width="12.5" height="7.5"/>
++            <rect x="5"    y="13.75" width="10"   height="1.25"/>
++            <rect x="6.25" y="15"    width="7.5"  height="1.25"/>
++        </g>
++    </g>
 +</svg>
 diff --git a/node_modules/scratch-paint/src/components/mode-tools/mode-tools.jsx b/node_modules/scratch-paint/src/components/mode-tools/mode-tools.jsx
 index a86f4ea..b654667 100644
@@ -281,7 +291,7 @@ index 0000000..3a4cc22
 +
 +export default connect(mapStateToProps)(BackgroundRemovalOverlayComponent);
 diff --git a/node_modules/scratch-paint/src/containers/mode-tools.jsx b/node_modules/scratch-paint/src/containers/mode-tools.jsx
-index 0442552..bce933b 100644
+index 0442552..5be245d 100644
 --- a/node_modules/scratch-paint/src/containers/mode-tools.jsx
 +++ b/node_modules/scratch-paint/src/containers/mode-tools.jsx
 @@ -17,9 +17,15 @@ import {
@@ -309,18 +319,30 @@ index 0442552..bce933b 100644
              'handleDelete',
              'handlePasteFromClipboard',
              'handlePointPoints'
-@@ -190,6 +197,29 @@ class ModeTools extends React.Component {
+@@ -190,6 +197,48 @@ class ModeTools extends React.Component {
              this._handleFlip(1, -1, selectedItems);
          }
      }
 +    async handleRemoveBackground () {
 +        if (!isBitmap(this.props.format)) return;
-+        if (getSelectedRootItems().length !== 0) return;
 +        if (this.props.backgroundRemovalActive) return;
++
++        const selectedItems = getSelectedRootItems();
++        let selection = null;
++        let sourceCanvas;
++        if (selectedItems.length === 0) {
++            sourceCanvas = getRaster().canvas;
++        } else if (selectedItems.length === 1 && selectedItems[0] instanceof paper.Raster) {
++            selection = selectedItems[0];
++            sourceCanvas = selection.canvas;
++        } else {
++            return;
++        }
++
 +        this.props.startBackgroundRemoval();
 +        try {
 +            const newCanvas = await removeBitmapBackground(
-+                getRaster().canvas,
++                sourceCanvas,
 +                (phase, current, total) => {
 +                    this.props.setBackgroundRemovalProgress(
 +                        phase,
@@ -328,7 +350,14 @@ index 0442552..bce933b 100644
 +                    );
 +                }
 +            );
-+            getRaster().canvas = newCanvas;
++            if (selection) {
++                selection.canvas = newCanvas;
++                if (selection.data) {
++                    selection.data.expanded = null;
++                }
++            } else {
++                getRaster().canvas = newCanvas;
++            }
 +            this.props.onUpdateImage();
 +        } catch (err) {
 +            log.error('Background removal failed', err);
@@ -339,7 +368,7 @@ index 0442552..bce933b 100644
      handlePasteFromClipboard () {
          if (this.props.onPasteFromClipboard()) {
              this.props.onUpdateImage();
-@@ -212,6 +242,7 @@ class ModeTools extends React.Component {
+@@ -212,6 +261,7 @@ class ModeTools extends React.Component {
      render () {
          return (
              <ModeToolsComponent
@@ -347,7 +376,7 @@ index 0442552..bce933b 100644
                  hasSelectedUncurvedPoints={this.hasSelectedUncurvedPoints()}
                  hasSelectedUnpointedPoints={this.hasSelectedUnpointedPoints()}
                  onCopyToClipboard={this.props.onCopyToClipboard}
-@@ -221,6 +252,7 @@ class ModeTools extends React.Component {
+@@ -221,6 +271,7 @@ class ModeTools extends React.Component {
                  onFlipVertical={this.handleFlipVertical}
                  onPasteFromClipboard={this.handlePasteFromClipboard}
                  onPointPoints={this.handlePointPoints}
@@ -355,7 +384,7 @@ index 0442552..bce933b 100644
                  onUpdateImage={this.props.onUpdateImage}
              />
          );
-@@ -228,7 +260,9 @@ class ModeTools extends React.Component {
+@@ -228,7 +279,9 @@ class ModeTools extends React.Component {
  }
  
  ModeTools.propTypes = {
@@ -365,7 +394,7 @@ index 0442552..bce933b 100644
      format: PropTypes.oneOf(Object.keys(Formats)),
      mode: PropTypes.oneOf(Object.keys(Modes)),
      onCopyToClipboard: PropTypes.func.isRequired,
-@@ -237,10 +271,13 @@ ModeTools.propTypes = {
+@@ -237,10 +290,13 @@ ModeTools.propTypes = {
      // Listen on selected items to update hasSelectedPoints
      selectedItems:
          PropTypes.arrayOf(PropTypes.instanceOf(paper.Item)),
@@ -380,7 +409,7 @@ index 0442552..bce933b 100644
      format: state.scratchPaint.format,
      mode: state.scratchPaint.mode,
      selectedItems: state.scratchPaint.selectedItems
-@@ -251,6 +288,15 @@ const mapDispatchToProps = dispatch => ({
+@@ -251,6 +307,15 @@ const mapDispatchToProps = dispatch => ({
      },
      setSelectedItems: format => {
          dispatch(setSelectedItems(getSelectedLeafItems(), isBitmap(format)));
