@@ -291,15 +291,21 @@ index 0000000..3a4cc22
 +
 +export default connect(mapStateToProps)(BackgroundRemovalOverlayComponent);
 diff --git a/node_modules/scratch-paint/src/containers/mode-tools.jsx b/node_modules/scratch-paint/src/containers/mode-tools.jsx
-index 0442552..5be245d 100644
+index 0442552..32500a3 100644
 --- a/node_modules/scratch-paint/src/containers/mode-tools.jsx
 +++ b/node_modules/scratch-paint/src/containers/mode-tools.jsx
-@@ -17,9 +17,15 @@ import {
+@@ -17,9 +17,25 @@ import {
  } from '../helper/selection';
  import {HANDLE_RATIO, ensureClockwise} from '../helper/math';
  import {getRaster} from '../helper/layer';
 -import {flipBitmapHorizontal, flipBitmapVertical, selectAllBitmap} from '../helper/bitmap';
-+import {flipBitmapHorizontal, flipBitmapVertical, removeBitmapBackground, selectAllBitmap} from '../helper/bitmap';
++import {
++    flipBitmapHorizontal,
++    flipBitmapVertical,
++    preloadBackgroundRemoval,
++    removeBitmapBackground,
++    selectAllBitmap
++} from '../helper/bitmap';
  import Formats, {isBitmap} from '../lib/format';
  import Modes from '../lib/modes';
 +import log from '../log/log';
@@ -308,10 +314,14 @@ index 0442552..5be245d 100644
 +    setBackgroundRemovalProgress,
 +    endBackgroundRemoval
 +} from '../reducers/background-removal';
++
++// Module-level guard: only ever kick off one preload, regardless of how many
++// times the bitmap tools mount.
++let _bgRemovalPreloadStarted = false;
  
  class ModeTools extends React.Component {
      constructor (props) {
-@@ -32,6 +38,7 @@ class ModeTools extends React.Component {
+@@ -32,11 +48,30 @@ class ModeTools extends React.Component {
              'handleCurvePoints',
              'handleFlipHorizontal',
              'handleFlipVertical',
@@ -319,7 +329,30 @@ index 0442552..5be245d 100644
              'handleDelete',
              'handlePasteFromClipboard',
              'handlePointPoints'
-@@ -190,6 +197,48 @@ class ModeTools extends React.Component {
+         ]);
+     }
++    componentDidMount () {
++        this._maybePreloadBackgroundRemoval();
++    }
++    componentDidUpdate () {
++        this._maybePreloadBackgroundRemoval();
++    }
++    _maybePreloadBackgroundRemoval () {
++        // Warm the background-removal model the moment the user is in bitmap
++        // mode. The first inference cost is ~5s of model fetch + init on a
++        // cold cache; preloading hides that behind whatever the user does
++        // next in the bitmap editor.
++        if (_bgRemovalPreloadStarted) return;
++        if (!isBitmap(this.props.format)) return;
++        _bgRemovalPreloadStarted = true;
++        preloadBackgroundRemoval().catch(err => {
++            log.warn('Background-removal preload failed', err);
++        });
++    }
+     _getSelectedUncurvedPoints () {
+         const items = [];
+         const selectedItems = getSelectedLeafItems();
+@@ -190,6 +225,48 @@ class ModeTools extends React.Component {
              this._handleFlip(1, -1, selectedItems);
          }
      }
@@ -368,7 +401,7 @@ index 0442552..5be245d 100644
      handlePasteFromClipboard () {
          if (this.props.onPasteFromClipboard()) {
              this.props.onUpdateImage();
-@@ -212,6 +261,7 @@ class ModeTools extends React.Component {
+@@ -212,6 +289,7 @@ class ModeTools extends React.Component {
      render () {
          return (
              <ModeToolsComponent
@@ -376,7 +409,7 @@ index 0442552..5be245d 100644
                  hasSelectedUncurvedPoints={this.hasSelectedUncurvedPoints()}
                  hasSelectedUnpointedPoints={this.hasSelectedUnpointedPoints()}
                  onCopyToClipboard={this.props.onCopyToClipboard}
-@@ -221,6 +271,7 @@ class ModeTools extends React.Component {
+@@ -221,6 +299,7 @@ class ModeTools extends React.Component {
                  onFlipVertical={this.handleFlipVertical}
                  onPasteFromClipboard={this.handlePasteFromClipboard}
                  onPointPoints={this.handlePointPoints}
@@ -384,7 +417,7 @@ index 0442552..5be245d 100644
                  onUpdateImage={this.props.onUpdateImage}
              />
          );
-@@ -228,7 +279,9 @@ class ModeTools extends React.Component {
+@@ -228,7 +307,9 @@ class ModeTools extends React.Component {
  }
  
  ModeTools.propTypes = {
@@ -394,7 +427,7 @@ index 0442552..5be245d 100644
      format: PropTypes.oneOf(Object.keys(Formats)),
      mode: PropTypes.oneOf(Object.keys(Modes)),
      onCopyToClipboard: PropTypes.func.isRequired,
-@@ -237,10 +290,13 @@ ModeTools.propTypes = {
+@@ -237,10 +318,13 @@ ModeTools.propTypes = {
      // Listen on selected items to update hasSelectedPoints
      selectedItems:
          PropTypes.arrayOf(PropTypes.instanceOf(paper.Item)),
@@ -409,7 +442,7 @@ index 0442552..5be245d 100644
      format: state.scratchPaint.format,
      mode: state.scratchPaint.mode,
      selectedItems: state.scratchPaint.selectedItems
-@@ -251,6 +307,15 @@ const mapDispatchToProps = dispatch => ({
+@@ -251,6 +335,15 @@ const mapDispatchToProps = dispatch => ({
      },
      setSelectedItems: format => {
          dispatch(setSelectedItems(getSelectedLeafItems(), isBitmap(format)));
@@ -426,45 +459,197 @@ index 0442552..5be245d 100644
  });
  
 diff --git a/node_modules/scratch-paint/src/helper/bitmap.js b/node_modules/scratch-paint/src/helper/bitmap.js
-index 8872717..4bd9d02 100644
+index 8872717..e457813 100644
 --- a/node_modules/scratch-paint/src/helper/bitmap.js
 +++ b/node_modules/scratch-paint/src/helper/bitmap.js
-@@ -742,6 +742,31 @@ const flipBitmapVertical = function (canvas) {
+@@ -742,6 +742,182 @@ const flipBitmapVertical = function (canvas) {
      return tmpCanvas;
  };
  
-+const removeBitmapBackground = async function (canvas, onProgress) {
-+    const {removeBackground} = await import('@imgly/background-removal');
-+    const srcBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-+    const resultBlob = await removeBackground(srcBlob, {
-+        progress: (key, current, total) => {
-+            const phase = key.split(':', 1)[0];
-+            if (onProgress) onProgress(phase, current, total);
-+        }
-+    });
-+    const url = URL.createObjectURL(resultBlob);
-+    try {
-+        const img = await new Promise((resolve, reject) => {
-+            const i = new Image();
-+            i.onload = () => resolve(i);
-+            i.onerror = reject;
-+            i.src = url;
-+        });
-+        const out = createCanvas(canvas.width, canvas.height);
-+        out.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-+        return out;
-+    } finally {
-+        URL.revokeObjectURL(url);
-+    }
++let _bgRemovalRunCounter = 0;
++
++// Build the @imgly config in a deterministic shape & key order. @imgly's
++// init() memoizes by JSON.stringify(rawConfig), so preload() and
++// removeBackground() must produce identical key orderings for the preload
++// to actually warm the cache that removeBackground reads from.
++const _buildBgRemovalOptions = function (cfg, progress) {
++    const opts = {device: 'gpu', proxyToWorker: true};
++    if (cfg.device !== undefined) opts.device = cfg.device;
++    if (cfg.model !== undefined) opts.model = cfg.model;
++    if (cfg.proxyToWorker !== undefined) opts.proxyToWorker = cfg.proxyToWorker;
++    if (cfg.output !== undefined) opts.output = cfg.output;
++    if (cfg.publicPath !== undefined) opts.publicPath = cfg.publicPath;
++    if (cfg.debug !== undefined) opts.debug = cfg.debug;
++    if (progress) opts.progress = progress;
++    return opts;
 +};
++
++// Kick off the model download + session init without waiting for an actual
++// inference. Safe to call repeatedly; @imgly memoizes init by config key.
++const preloadBackgroundRemoval = async function () {
++    const cfg = (typeof window !== 'undefined' && window.__bgRemovalConfig) || {};
++    const opts = _buildBgRemovalOptions(cfg, null);
++    const m = await import('@imgly/background-removal');
++    if (typeof m.preload !== 'function') return;
++    await m.preload(opts);
++};
++
++const removeBitmapBackground = async function (canvas, onProgress) {
++    const cfg = (typeof window !== 'undefined' && window.__bgRemovalConfig) || {};
++    const runId = `${Date.now().toString(36)}-${++_bgRemovalRunCounter}`;
++    const PFX = `bgRemoval:${runId}`;
++    const mark = name => {
++        try {
++            performance.mark(`${PFX}:${name}`);
++        } catch (e) { /* ignore */ }
++    };
++    const measure = (name, start, end) => {
++        try {
++            performance.measure(`bgRemoval:${name}`, `${PFX}:${start}`, `${PFX}:${end}`);
++        } catch (e) { /* ignore */ }
++    };
++
++    mark('total-start');
++
++    // Optional downsample before inference. Image content is upscaled back
++    // when writing the result, so the visible output matches input dimensions.
++    let workCanvas = canvas;
++    if (cfg.maxEdge && Math.max(canvas.width, canvas.height) > cfg.maxEdge) {
++        const scale = cfg.maxEdge / Math.max(canvas.width, canvas.height);
++        workCanvas = createCanvas(Math.round(canvas.width * scale), Math.round(canvas.height * scale));
++        workCanvas.getContext('2d').drawImage(canvas, 0, 0, workCanvas.width, workCanvas.height);
++    }
++
++    mark('toBlob-start');
++    const srcBlob = await new Promise(resolve => workCanvas.toBlob(resolve, 'image/png'));
++    mark('toBlob-end');
++    measure('toBlob', 'toBlob-start', 'toBlob-end');
++
++    const {removeBackground} = await import('@imgly/background-removal');
++
++    // Bracket phase transitions reported by @imgly's progress callback so we
++    // can attribute model-fetch vs model-init costs.
++    let lastPhase = null;
++    const closePhase = phase => {
++        if (phase === 'fetch') {
++            mark('model-fetch-end');
++            measure('model-fetch', 'model-fetch-start', 'model-fetch-end');
++        } else if (phase === 'compute') {
++            mark('model-init-end');
++            measure('model-init', 'model-init-start', 'model-init-end');
++        }
++    };
++
++    // Production defaults: prefer WebGPU off the main thread. @imgly silently
++    // falls back to CPU when WebGPU is unavailable (e.g., embeddings without
++    // COOP/COEP, browsers without navigator.gpu), so this is safe to ship.
++    // Measured on M-series Mac with COOP/COEP: 1475ms (CPU default) -> 207ms
++    // (GPU + worker) on a 480x360 image.
++    const progressCallback = (key, current, total) => {
++        const phase = key.split(':', 1)[0];
++        if (phase !== lastPhase) {
++            if (lastPhase) closePhase(lastPhase);
++            if (phase === 'fetch') mark('model-fetch-start');
++            else if (phase === 'compute') mark('model-init-start');
++            lastPhase = phase;
++        }
++        if (onProgress) onProgress(phase, current, total);
++    };
++    const removeOpts = _buildBgRemovalOptions(cfg, progressCallback);
++
++    mark('inference-start');
++    const result = await removeBackground(srcBlob, removeOpts);
++    mark('inference-end');
++    measure('inference', 'inference-start', 'inference-end');
++
++    if (lastPhase) closePhase(lastPhase);
++
++    mark('decode-start');
++    const out = createCanvas(workCanvas.width, workCanvas.height);
++    if (cfg.output && cfg.output.format === 'image/x-rgba8') {
++        // Raw RGBA bytes from @imgly avoids PNG encode + Image decode round trip.
++        const buf = await result.arrayBuffer();
++        const imageData = new ImageData(new Uint8ClampedArray(buf), workCanvas.width, workCanvas.height);
++        out.getContext('2d').putImageData(imageData, 0, 0);
++    } else {
++        const url = URL.createObjectURL(result);
++        try {
++            const img = await new Promise((resolve, reject) => {
++                const i = new Image();
++                i.onload = () => resolve(i);
++                i.onerror = reject;
++                i.src = url;
++            });
++            out.getContext('2d').drawImage(img, 0, 0, workCanvas.width, workCanvas.height);
++        } finally {
++            URL.revokeObjectURL(url);
++        }
++    }
++    mark('decode-end');
++    measure('decode', 'decode-start', 'decode-end');
++
++    let finalCanvas = out;
++    if (workCanvas !== canvas) {
++        finalCanvas = createCanvas(canvas.width, canvas.height);
++        finalCanvas.getContext('2d').drawImage(out, 0, 0, canvas.width, canvas.height);
++    }
++
++    mark('total-end');
++    measure('total', 'total-start', 'total-end');
++
++    if (typeof window !== 'undefined') {
++        window.__bgRemovalLastRun = performance.now();
++        window.__bgRemovalLastConfig = {...removeOpts, progress: undefined, maxEdge: cfg.maxEdge};
++        window.__bgRemovalLastRunId = runId;
++    }
++
++    return finalCanvas;
++};
++
++// Perf-harness hook. Enabled by setting window.__bgRemovalEnableTestHooks
++// before scratch-paint loads (e.g., Playwright addInitScript). Production
++// scratch-www builds never set this flag.
++if (typeof window !== 'undefined' && window.__bgRemovalEnableTestHooks && !window.__bgRemovalTestHooks) {
++    window.__bgRemovalTestHooks = {
++        removeBitmapBackground,
++        runFromDataUrl: async dataUrl => {
++            const img = await new Promise((resolve, reject) => {
++                const i = new Image();
++                i.onload = () => resolve(i);
++                i.onerror = reject;
++                i.src = dataUrl;
++            });
++            const c = createCanvas(img.naturalWidth, img.naturalHeight);
++            c.getContext('2d').drawImage(img, 0, 0);
++            return removeBitmapBackground(c);
++        },
++        preload: async opts => {
++            const m = await import('@imgly/background-removal');
++            if (!m.preload) return null;
++            // Build the preload config identically to what
++            // removeBitmapBackground will pass to removeBackground, so
++            // @imgly's JSON.stringify-keyed memoize cache hits on the
++            // subsequent inference call.
++            const preloadOpts = _buildBgRemovalOptions(opts || {}, null);
++            return m.preload(preloadOpts);
++        },
++        clearMeasures: () => {
++            try {
++                performance.clearMeasures();
++                performance.clearMarks();
++            } catch (e) { /* ignore */ }
++        }
++    };
++}
 +
  const scaleBitmap = function (canvas, scale) {
      let tmpCanvas = createCanvas(Math.round(canvas.width * Math.abs(scale.x)), canvas.height);
      if (scale.x < 0) {
-@@ -964,6 +989,7 @@ export {
+@@ -964,6 +1140,8 @@ export {
      forEachLinePoint,
      flipBitmapHorizontal,
      flipBitmapVertical,
++    preloadBackgroundRemoval,
 +    removeBitmapBackground,
      scaleBitmap,
      selectAllBitmap

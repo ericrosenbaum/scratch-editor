@@ -151,6 +151,16 @@ const distStandaloneConfig = baseConfig.clone()
 const buildConfig = baseConfig.clone()
     .enableDevServer(process.env.PORT || 8601)
     .merge({
+        devServer: {
+            // crossOriginIsolated unlocks SharedArrayBuffer (threaded WASM) and is the
+            // practical precondition for ONNX Runtime's WebGPU backend used by
+            // @imgly/background-removal. file:// loading doesn't set headers, so the
+            // perf harness runs against the dev server.
+            headers: {
+                'Cross-Origin-Opener-Policy': 'same-origin',
+                'Cross-Origin-Embedder-Policy': 'require-corp'
+            }
+        },
         entry: {
             gui: './src/playground/index.jsx',
             guistandalone: './src/playground/standalone.jsx',
