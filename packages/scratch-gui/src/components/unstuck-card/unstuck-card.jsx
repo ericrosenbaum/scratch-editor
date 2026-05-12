@@ -825,7 +825,8 @@ class TipDisplay extends React.Component {
                                     className={styles.addToProjectButton}
                                     onClick={onAddToProject}
                                 >
-                                    {'Add to my project'}
+                                    <span className={styles.addToProjectButtonIcon}>{'+'}</span>
+                                    <span>{'Add'}</span>
                                 </button>
                             </div>
                         </div>

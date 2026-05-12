@@ -21,6 +21,7 @@ import {
 } from '../reducers/unstuck';
 
 import {activateDeck} from '../reducers/cards.js';
+import {activateTab, BLOCKS_TAB_INDEX} from '../reducers/editor-tab';
 import {updateMetrics as updateWorkspaceMetrics} from '../reducers/workspace-metrics';
 
 import UnstuckCardComponent from '../components/unstuck-card/unstuck-card.jsx';
@@ -232,6 +233,10 @@ class UnstuckCard extends React.Component {
 
         const activeTip = this.props.activeTipId ? tips[this.props.activeTipId] : null;
         if (!activeTip || !activeTip._capturedBlocks || activeTip._capturedBlocks.length === 0) return;
+
+        if (this.props.activeTabIndex !== BLOCKS_TAB_INDEX) {
+            this.props.dispatch(activateTab(BLOCKS_TAB_INDEX));
+        }
 
         // Captured blocks may reference variables/lists/broadcasts that don't
         // exist in the current project. Always create missing ones as GLOBAL

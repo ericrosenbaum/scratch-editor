@@ -240,14 +240,11 @@ class BlockPreview extends React.Component {
 
         const scale = this.workspace.scale || 0.55;
         const padding = 12;
-        const maxWidth = 460;
         const maxHeight = 500;
 
-        // Calculate total extent from block groups' transforms + bboxes
         const canvas = this.container.querySelector('.blocklyBlockCanvas');
         const svg = this.container.querySelector('svg.blocklySvg');
 
-        let contentRight = 0;
         let contentBottom = 0;
 
         if (canvas) {
@@ -258,9 +255,7 @@ class BlockPreview extends React.Component {
                 const bbox = group.getBBox();
                 const transform = group.getAttribute('transform') || '';
                 const match = transform.match(/translate\(\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/);
-                const tx = match ? parseFloat(match[1]) : 0;
                 const ty = match ? parseFloat(match[2]) : 0;
-                contentRight = Math.max(contentRight, tx + bbox.width);
                 contentBottom = Math.max(contentBottom, ty + bbox.height);
             }
         }
@@ -269,22 +264,18 @@ class BlockPreview extends React.Component {
             // Fallback to Blockly's metrics for single-stack templates
             const metrics = this.workspace.getBlocksBoundingBox();
             if (!metrics) return;
-            contentRight = metrics.right - metrics.left;
             contentBottom = metrics.bottom - metrics.top;
         }
 
-        const width = Math.max(200, (contentRight * scale) + (padding * 2));
         const height = Math.max(60, (contentBottom * scale) + (padding * 2));
-
-        const finalWidth = Math.min(width, maxWidth);
         const finalHeight = Math.min(height, maxHeight);
 
-        this.container.style.width = `${finalWidth}px`;
         this.container.style.height = `${finalHeight}px`;
 
-        // Also resize the SVG element so it doesn't clip content
+        // Let the SVG fill the container's actual width so there's no
+        // gap between the workspace and its bordered box.
         if (svg) {
-            svg.setAttribute('width', `${finalWidth}px`);
+            svg.setAttribute('width', '100%');
             svg.setAttribute('height', `${finalHeight}px`);
         }
     }
