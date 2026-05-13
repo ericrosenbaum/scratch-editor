@@ -146,6 +146,77 @@ class QueryInput extends React.Component {
             this.props.query;
         return (
             <div className={styles.queryRow}>
+                {this.props.onTogglePickMode ? (
+                    <button
+                        aria-label={this.props.pickMode ? 'Cancel block picker' : 'Pick a block'}
+                        className={classNames(
+                            styles.pickButton,
+                            {[styles.pickButtonActive]: this.props.pickMode}
+                        )}
+                        title={this.props.pickMode ?
+                            'Click a block, or press Esc to cancel' :
+                            'Pick a block to ask about'}
+                        onClick={this.props.onTogglePickMode}
+                    >
+                        <svg
+                            height="18"
+                            viewBox="0 0 18 18"
+                            width="18"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <circle
+                                cx="9"
+                                cy="9"
+                                fill="none"
+                                r="6"
+                                stroke="currentColor"
+                                strokeWidth="1.6"
+                            />
+                            <line
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeWidth="1.6"
+                                x1="9"
+                                x2="9"
+                                y1="1"
+                                y2="4"
+                            />
+                            <line
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeWidth="1.6"
+                                x1="9"
+                                x2="9"
+                                y1="14"
+                                y2="17"
+                            />
+                            <line
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeWidth="1.6"
+                                x1="1"
+                                x2="4"
+                                y1="9"
+                                y2="9"
+                            />
+                            <line
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeWidth="1.6"
+                                x1="14"
+                                x2="17"
+                                y1="9"
+                                y2="9"
+                            />
+                            <circle
+                                cx="9"
+                                cy="9"
+                                fill="currentColor"
+                                r="1.6"
+                            />
+                        </svg>
+                    </button>
+                ) : null}
                 <input
                     className={styles.queryInput}
                     placeholder="Or type your question..."
@@ -180,7 +251,9 @@ QueryInput.propTypes = {
     listening: PropTypes.bool,
     onQueryChange: PropTypes.func.isRequired,
     onSubmit: PropTypes.func.isRequired,
+    onTogglePickMode: PropTypes.func,
     onVoiceClick: PropTypes.func,
+    pickMode: PropTypes.bool,
     query: PropTypes.string.isRequired,
     voiceSupported: PropTypes.bool
 };
@@ -350,17 +423,19 @@ class SearchResults extends React.Component {
     }
     render () {
         const {results, tips, query, listening, interimTranscript, voiceSupported,
-            onQueryChange, onSubmit, onVoiceClick} = this.props;
+            pickMode, onQueryChange, onSubmit, onTogglePickMode, onVoiceClick} = this.props;
 
         return (
             <div className={styles.searchResults}>
                 <QueryInput
                     interimTranscript={interimTranscript}
                     listening={listening}
+                    pickMode={pickMode}
                     query={query}
                     voiceSupported={voiceSupported}
                     onQueryChange={onQueryChange}
                     onSubmit={onSubmit}
+                    onTogglePickMode={onTogglePickMode}
                     onVoiceClick={onVoiceClick}
                 />
                 <div className={styles.resultsLabel}>
@@ -586,7 +661,9 @@ SearchResults.propTypes = {
     onQueryChange: PropTypes.func.isRequired,
     onSelectResult: PropTypes.func.isRequired,
     onSubmit: PropTypes.func.isRequired,
+    onTogglePickMode: PropTypes.func,
     onVoiceClick: PropTypes.func,
+    pickMode: PropTypes.bool,
     query: PropTypes.string.isRequired,
     results: PropTypes.arrayOf(PropTypes.shape({
         tipId: PropTypes.string.isRequired,
@@ -920,7 +997,9 @@ const UnstuckCard = ({
     onStarterLinkClick,
     onSubmit,
     onToggleCode,
+    onTogglePickMode,
     onVoiceClick,
+    pickMode,
     query,
     quickPicks,
     searchResults,
@@ -959,7 +1038,10 @@ const UnstuckCard = ({
                 onStart={onStartDrag}
                 onStop={onEndDrag}
             >
-                <div className={styles.unstuckContainer}>
+                <div
+                    className={styles.unstuckContainer}
+                    data-unstuck-card-root="true"
+                >
                     <div className={styles.card}>
                         <UnstuckCardHeader
                             activeTip={activeTip}
@@ -972,6 +1054,14 @@ const UnstuckCard = ({
                             onClose={onClose}
                             onShrinkExpand={onShrinkExpand}
                         />
+                        {pickMode ? (
+                            <div className={styles.pickHintBanner}>
+                                <span className={styles.pickHintDot} />
+                                <span className={styles.pickHintText}>
+                                    {'Click any block — or press Esc to cancel'}
+                                </span>
+                            </div>
+                        ) : null}
                         {expanded ? (
                             <div className={classNames(styles.body, 'no-drag')}>
                                 {modelError ? (
@@ -1016,6 +1106,7 @@ const UnstuckCard = ({
                                     <SearchResults
                                         interimTranscript={interimTranscript}
                                         listening={listening}
+                                        pickMode={pickMode}
                                         query={query}
                                         results={searchResults}
                                         tips={tips}
@@ -1023,6 +1114,7 @@ const UnstuckCard = ({
                                         onQueryChange={onQueryChange}
                                         onSelectResult={onSelectResult}
                                         onSubmit={onSubmit}
+                                        onTogglePickMode={onTogglePickMode}
                                         onVoiceClick={onVoiceClick}
                                     />
                                 ) : browseAll ? (
@@ -1051,10 +1143,12 @@ const UnstuckCard = ({
                                         <QueryInput
                                             interimTranscript={interimTranscript}
                                             listening={listening}
+                                            pickMode={pickMode}
                                             query={query}
                                             voiceSupported={voiceSupported}
                                             onQueryChange={onQueryChange}
                                             onSubmit={onSubmit}
+                                            onTogglePickMode={onTogglePickMode}
                                             onVoiceClick={onVoiceClick}
                                         />
                                         {modelReady ? null : (
@@ -1123,7 +1217,9 @@ UnstuckCard.propTypes = {
     onStarterLinkClick: PropTypes.func,
     onSubmit: PropTypes.func.isRequired,
     onToggleCode: PropTypes.func,
+    onTogglePickMode: PropTypes.func,
     onVoiceClick: PropTypes.func,
+    pickMode: PropTypes.bool,
     query: PropTypes.string.isRequired,
     quickPicks: PropTypes.array.isRequired,
     searchResults: PropTypes.arrayOf(PropTypes.shape({

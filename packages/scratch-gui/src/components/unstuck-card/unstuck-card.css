@@ -356,6 +356,100 @@ body .unstuck-container {
     100% { transform: translateY(-50%) scale(1); }
 }
 
+/* Pick-block button — sits to the left of the input pill */
+.pick-button {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    margin-right: 0.4rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: hsla(215, 100%, 65%, 0.10);
+    color: $unstuck-blue;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+
+.pick-button:hover {
+    background: hsla(215, 100%, 65%, 0.22);
+    transform: scale(1.08);
+}
+
+.pick-button:focus {
+    outline: none;
+}
+
+.pick-button:focus-visible {
+    outline: 2px solid $unstuck-blue;
+    outline-offset: 2px;
+}
+
+.pick-button-active {
+    background: $unstuck-blue;
+    color: white;
+    animation: pick-pulse 1.4s ease-out infinite;
+}
+
+.pick-button-active:hover {
+    background: $unstuck-blue-dark;
+}
+
+@keyframes pick-pulse {
+    0%   { box-shadow: 0 0 0 0 hsla(215, 100%, 65%, 0.55); }
+    50%  { box-shadow: 0 0 0 6px hsla(215, 100%, 65%, 0.25); }
+    100% { box-shadow: 0 0 0 12px hsla(215, 100%, 65%, 0); }
+}
+
+/* Hint banner shown while pick mode is active */
+.pick-hint-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: hsla(215, 100%, 65%, 0.12);
+    border-bottom: 1px solid hsla(215, 100%, 65%, 0.35);
+    padding: 0.4rem 0.75rem;
+    font-size: 0.72rem;
+    color: hsla(215, 80%, 35%, 1);
+    font-weight: 600;
+}
+
+.pick-hint-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $unstuck-blue;
+    flex-shrink: 0;
+    animation: pick-hint-pulse 1.2s ease-in-out infinite;
+}
+
+.pick-hint-text {
+    flex: 1;
+    min-width: 0;
+}
+
+@keyframes pick-hint-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Global cursor while pick mode is active.
+   The container toggles `tip-pick-mode` on <body>; we use :global because
+   the class lives outside any CSS module scope. !important is required to
+   beat Blockly's inline cursor styles on workspace SVGs. */
+:global(body.tip-pick-mode),
+:global(body.tip-pick-mode) * {
+    cursor: help !important;
+}
+
+:global(body.tip-pick-mode) .blocklyDraggable,
+:global(body.tip-pick-mode) .blocklyDraggable * {
+    cursor: crosshair !important;
+}
+
 /* ===== TIP DISPLAY ===== */
 .tip-title {
     font-size: 1rem;

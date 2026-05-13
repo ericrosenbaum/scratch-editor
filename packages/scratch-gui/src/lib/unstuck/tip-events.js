@@ -114,6 +114,14 @@ const voiceStarted = () => track('tip_voice_started', baseProps());
 const voiceCompleted = transcript => track('tip_voice_completed', baseProps({transcript}));
 const voiceAborted = reason => track('tip_voice_aborted', baseProps({reason: reason || 'unknown'}));
 
+const pickModeActivated = () => track('tip_pick_mode_activated', baseProps());
+const pickModeCancelled = reason => track('tip_pick_mode_cancelled', baseProps({reason: reason || 'unknown'}));
+const blockPicked = (opcode, source, humanText) => track('tip_block_picked', baseProps({
+    opcode,
+    source,
+    humanText
+}));
+
 const resultClicked = (tipId, position, source) => {
     cardSession.tipsViewed += 1;
     track('tip_result_clicked', baseProps({tipId, position, source}));
@@ -163,6 +171,9 @@ export {
     voiceStarted,
     voiceCompleted,
     voiceAborted,
+    pickModeActivated,
+    pickModeCancelled,
+    blockPicked,
     resultClicked,
     browseOpened,
     browseFilter,

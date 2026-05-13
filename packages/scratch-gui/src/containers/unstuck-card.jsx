@@ -17,7 +17,8 @@ import {
     openUnstuck,
     toggleCodeExpanded,
     setBrowseAll,
-    setBrowseFilter
+    setBrowseFilter,
+    setPickMode
 } from '../reducers/unstuck';
 
 import {activateDeck} from '../reducers/cards.js';
@@ -32,6 +33,11 @@ import getProjectText from '../lib/unstuck/blocks-to-text.js';
 import buildContextQuery from '../lib/unstuck/context-query-builder.js';
 import {highlightElement, destroyHighlight} from '../lib/unstuck/pointer-actions.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/unstuck/voice-input.js';
+import {
+    resolveBlockFromEvent,
+    buildPickedBlockQuery,
+    applyPickedBlockBoost
+} from '../lib/unstuck/block-picker.js';
 import * as tipEvents from '../lib/unstuck/tip-events.js';
 import * as postTipWatcher from '../lib/unstuck/post-tip-watcher.js';
 import layoutInsertedBlocks, {VIEWPORT_MARGIN} from '../lib/unstuck/layout-inserted-blocks.js';
@@ -76,6 +82,9 @@ class UnstuckCard extends React.Component {
         this.handleSelectBrowseTip = this.handleSelectBrowseTip.bind(this);
         this.handleBackFromBrowseTip = this.handleBackFromBrowseTip.bind(this);
         this.handleRandomTip = this.handleRandomTip.bind(this);
+        this.handleTogglePickMode = this.handleTogglePickMode.bind(this);
+        this.handlePickModeClick = this.handlePickModeClick.bind(this);
+        this.handlePickModeKey = this.handlePickModeKey.bind(this);
     }
 
     componentDidMount () {
@@ -101,8 +110,29 @@ class UnstuckCard extends React.Component {
         }
     }
 
+    componentDidUpdate (prevProps) {
+        if (prevProps.pickMode !== this.props.pickMode) {
+            if (this.props.pickMode) {
+                this._attachPickListeners();
+                if (typeof document !== 'undefined') {
+                    document.body.classList.add('tip-pick-mode');
+                }
+                tipEvents.pickModeActivated();
+            } else {
+                this._detachPickListeners();
+                if (typeof document !== 'undefined') {
+                    document.body.classList.remove('tip-pick-mode');
+                }
+            }
+        }
+    }
+
     componentWillUnmount () {
         this._unmounted = true;
+        this._detachPickListeners();
+        if (typeof document !== 'undefined') {
+            document.body.classList.remove('tip-pick-mode');
+        }
         tipProvider.setProgressListener(null);
         destroyHighlight();
         tipEvents.cardClosed();
@@ -112,6 +142,110 @@ class UnstuckCard extends React.Component {
             vm: this.props.vm,
             activeTabIndex: this.props.activeTabIndex
         });
+    }
+
+    _attachPickListeners () {
+        // Fresh pick session: clear the per-click debounce.
+        this._lastPickHandledAt = 0;
+        // Listen on `window` in capture phase so our handler fires before any
+        // Blockly listener registered on descendants. Blockly normalizes its
+        // gestures from `pointerdown` (not `mousedown`), so we listen for both
+        // — pointerdown fires first on mouse devices and lets us intercept the
+        // gesture before Blockly opens an inline field edit input or starts a
+        // drag. mousedown is kept as a safety net for environments that don't
+        // fire pointer events.
+        window.addEventListener('pointerdown', this.handlePickModeClick, true);
+        window.addEventListener('mousedown', this.handlePickModeClick, true);
+        window.addEventListener('keydown', this.handlePickModeKey, true);
+    }
+
+    _detachPickListeners () {
+        window.removeEventListener('pointerdown', this.handlePickModeClick, true);
+        window.removeEventListener('mousedown', this.handlePickModeClick, true);
+        window.removeEventListener('keydown', this.handlePickModeKey, true);
+    }
+
+    handleTogglePickMode () {
+        this.props.onSetPickMode(!this.props.pickMode);
+    }
+
+    handlePickModeKey (e) {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            this.props.onSetPickMode(false);
+            tipEvents.pickModeCancelled('escape');
+        }
+    }
+
+    handlePickModeClick (e) {
+        // Clicks on the Tips card itself never trigger a pick — let the card
+        // stay interactive (close button, picker toggle, etc).
+        if (e.target && typeof e.target.closest === 'function' &&
+            e.target.closest('[data-unstuck-card-root]')) {
+            return;
+        }
+
+        // Debounce: pointerdown and mousedown both fire for one mouse click,
+        // so guard against running the handler twice per user click.
+        const now = Date.now();
+        if (this._lastPickHandledAt && now - this._lastPickHandledAt < 400) {
+            // Still suppress propagation so Blockly doesn't act on this event.
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        this._lastPickHandledAt = now;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Clear any stale driver.js highlight that might be on screen.
+        destroyHighlight();
+
+        const picked = resolveBlockFromEvent(e);
+        if (!picked) {
+            this.props.onSetPickMode(false);
+            tipEvents.pickModeCancelled('non_block_click');
+            return;
+        }
+
+        const query = buildPickedBlockQuery(picked);
+        if (!query) {
+            this.props.onSetPickMode(false);
+            tipEvents.pickModeCancelled('non_block_click');
+            return;
+        }
+
+        tipEvents.blockPicked(picked.opcode, picked.source, picked.humanText);
+
+        // Auto-expand if the card is shrunk so results have somewhere to render.
+        if (!this.props.expanded) {
+            this.props.onShrinkExpand();
+        }
+
+        this.props.onSetQuery(query);
+        this.props.onSetPickMode(false);
+        this.props.onSetLoading(true);
+        tipEvents.querySubmitted(query, 'block_pick');
+
+        const context = extractProjectContext(
+            this.props.vm,
+            this.props.activeTabIndex
+        );
+
+        queryTips(context, query)
+            .then(results => {
+                const ranked = applyPickedBlockBoost(results, tips, picked);
+                if (ranked.length > 0) {
+                    this.props.onSetSearchResults(ranked);
+                } else {
+                    this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
+                }
+            })
+            .catch(() => {
+                this.props.onSetSearchResults([{tipId: 'nothing-happens', score: 0}]);
+            });
     }
 
     handleQueryChange (e) {
@@ -441,6 +575,8 @@ class UnstuckCard extends React.Component {
                 onPickClick={this.handlePickClick}
                 onRandomTip={this.handleRandomTip}
                 onPointerClick={this.handlePointerClick}
+                pickMode={this.props.pickMode}
+                onTogglePickMode={this.handleTogglePickMode}
                 onQueryChange={this.handleQueryChange}
                 onSelectBrowseTip={this.handleSelectBrowseTip}
                 onSelectResult={this.handleSelectResult}
@@ -475,10 +611,12 @@ UnstuckCard.propTypes = {
     onDrag: PropTypes.func.isRequired,
     onEndDrag: PropTypes.func.isRequired,
     onSetLoading: PropTypes.func.isRequired,
+    onSetPickMode: PropTypes.func.isRequired,
     onSetQuery: PropTypes.func.isRequired,
     onSetSearchResults: PropTypes.func.isRequired,
     onSetTip: PropTypes.func.isRequired,
     onShrinkExpand: PropTypes.func.isRequired,
+    pickMode: PropTypes.bool.isRequired,
     onStartDrag: PropTypes.func.isRequired,
     onStarterLinkClick: PropTypes.func,
     onToggleCode: PropTypes.func.isRequired,
@@ -506,6 +644,7 @@ const mapStateToProps = state => ({
     isRtl: state.locales.isRtl,
     loading: state.scratchGui.unstuck.loading,
     locale: state.locales.locale,
+    pickMode: state.scratchGui.unstuck.pickMode,
     query: state.scratchGui.unstuck.query,
     searchResults: state.scratchGui.unstuck.searchResults,
     workspaceMetrics: state.scratchGui.workspaceMetrics,
@@ -524,6 +663,7 @@ const mapDispatchToProps = dispatch => ({
     onClearResults: () => dispatch(clearResults()),
     onOpen: () => dispatch(openUnstuck()),
     onSetLoading: loading => dispatch(setLoading(loading)),
+    onSetPickMode: active => dispatch(setPickMode(active)),
     onSetQuery: query => dispatch(setQuery(query)),
     onSetSearchResults: results => dispatch(setSearchResults(results)),
     onSetTip: tipId => dispatch(setTip(tipId)),

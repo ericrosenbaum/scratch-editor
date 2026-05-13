@@ -13,6 +13,7 @@ const CLEAR_RESULTS = 'scratch-gui/unstuck/CLEAR_RESULTS';
 const SET_BROWSE_ALL = 'scratch-gui/unstuck/SET_BROWSE_ALL';
 const SET_BROWSE_FILTER = 'scratch-gui/unstuck/SET_BROWSE_FILTER';
 const SET_CONTEXT_SUGGESTIONS = 'scratch-gui/unstuck/SET_CONTEXT_SUGGESTIONS';
+const SET_PICK_MODE = 'scratch-gui/unstuck/SET_PICK_MODE';
 
 const initialState = {
     visible: false,
@@ -25,6 +26,7 @@ const initialState = {
     browseAll: false,
     browseFilter: null,
     contextSuggestions: [],
+    pickMode: false,
     x: 0,
     y: 0,
     dragging: false
@@ -43,11 +45,13 @@ const reducer = function (state, action) {
             expanded: true,
             browseAll: false,
             browseFilter: null,
-            contextSuggestions: []
+            contextSuggestions: [],
+            pickMode: false
         });
     case CLOSE_UNSTUCK:
         return Object.assign({}, state, {
-            visible: false
+            visible: false,
+            pickMode: false
         });
     case SHRINK_EXPAND_UNSTUCK:
         return Object.assign({}, state, {
@@ -61,7 +65,8 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             activeTipId: action.tipId,
             loading: false,
-            codeExpanded: false
+            codeExpanded: false,
+            pickMode: false
         });
     case TOGGLE_CODE_EXPANDED:
         return Object.assign({}, state, {
@@ -72,7 +77,8 @@ const reducer = function (state, action) {
             searchResults: action.results,
             activeTipId: null,
             loading: false,
-            codeExpanded: false
+            codeExpanded: false,
+            pickMode: false
         });
     case CLEAR_RESULTS:
         return Object.assign({}, state, {
@@ -81,7 +87,8 @@ const reducer = function (state, action) {
             query: '',
             codeExpanded: false,
             browseAll: false,
-            browseFilter: null
+            browseFilter: null,
+            pickMode: false
         });
     case SET_BROWSE_ALL:
         return Object.assign({}, state, {
@@ -103,6 +110,10 @@ const reducer = function (state, action) {
     case SET_LOADING:
         return Object.assign({}, state, {
             loading: action.loading
+        });
+    case SET_PICK_MODE:
+        return Object.assign({}, state, {
+            pickMode: !!action.active
         });
     case DRAG_UNSTUCK:
         return Object.assign({}, state, {
@@ -182,6 +193,10 @@ const setContextSuggestions = function (suggestions) {
     return {type: SET_CONTEXT_SUGGESTIONS, suggestions};
 };
 
+const setPickMode = function (active) {
+    return {type: SET_PICK_MODE, active};
+};
+
 export {
     reducer as default,
     initialState as unstuckInitialState,
@@ -199,5 +214,6 @@ export {
     toggleCodeExpanded,
     setBrowseAll,
     setBrowseFilter,
-    setContextSuggestions
+    setContextSuggestions,
+    setPickMode
 };
