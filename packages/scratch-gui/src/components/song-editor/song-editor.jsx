@@ -109,6 +109,11 @@ class SongEditor extends React.Component {
             this._undoStack = [];
             this._redoStack = [];
             this.forceUpdate();
+        } else if (this.state.playing && prevProps.song !== this.props.song) {
+            // Same song, but content changed during playback. Push the new
+            // reference to the player so the scheduler's next loop wrap (or
+            // current iteration's remaining lookahead) picks up the edit.
+            this.player.updateSong(this.props.song);
         }
     }
 

@@ -18,6 +18,26 @@ class SongPlayer {
 
     setLoop (loop) {
         this._loop = !!loop;
+        // Toggle scheduler-native loop mode so flipping the loop button
+        // mid-playback takes effect without a scheduler restart.
+        if (this._scheduler && typeof this._scheduler.setLoop === 'function') {
+            this._scheduler.setLoop(this._loop);
+        }
+    }
+
+    /**
+     * Update the player's reference to the song JSON. Pushed to the running
+     * scheduler so edits made during a loop iteration are heard on the next
+     * wrap. The editor should call this whenever the user commits an edit.
+     *
+     * @param {object} song
+     */
+    updateSong (song) {
+        if (!song) return;
+        this._lastSong = song;
+        if (this._scheduler && typeof this._scheduler.updateSong === 'function') {
+            this._scheduler.updateSong(song);
+        }
     }
 
     /**
@@ -116,23 +136,21 @@ class SongPlayer {
         this._scheduler = new SongScheduler({
             song,
             startStep: opts.startStep || 0,
+            loop: this._loop,
             audioContext: ctx,
             destination: this._audioDestination(),
             getInstrumentBuffer: (inst, note) => this._getInstrumentBuffer(inst, note),
             getDrumBuffer: drum => this._getDrumBuffer(drum),
             onStart: () => this._fire('start'),
             onStep: (step, time) => this._fire('step', step, time),
-            onEnd: () => {
-                // When looping, restart immediately on the latest song JSON so
-                // edits made during playback are reflected in the next loop.
-                // Loop always restarts from the beginning (step 0), not from
-                // wherever the user originally started — that matches the way
-                // every DAW handles loop boundaries.
-                if (this._loop && this._lastSong && !this._suppressLoopOnce) {
-                    this._scheduler = null;
-                    this.play(this._lastSong, {startStep: 0});
-                    return;
+            // On every loop wrap, push the latest song reference into the
+            // scheduler so edits made during the previous iteration are heard.
+            onLoop: () => {
+                if (this._lastSong && this._scheduler) {
+                    this._scheduler.updateSong(this._lastSong);
                 }
+            },
+            onEnd: () => {
                 this._fire('end');
                 this._scheduler = null;
             }
@@ -142,12 +160,8 @@ class SongPlayer {
 
     stop () {
         if (this._scheduler) {
-            // Suppress one loop-restart: stop() fires the scheduler's onEnd
-            // which would otherwise re-enter play() because loop is enabled.
-            this._suppressLoopOnce = true;
             this._scheduler.stop();
             this._scheduler = null;
-            this._suppressLoopOnce = false;
         }
     }
 

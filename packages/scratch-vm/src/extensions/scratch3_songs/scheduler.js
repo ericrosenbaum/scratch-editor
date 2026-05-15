@@ -28,6 +28,8 @@ class SongScheduler {
      * @param {function} [opts.onNote] - called({trackId, step, pitch, drum}, ctxTime) when a note begins
      * @param {function} [opts.onEnd] - called once when the song's last note's release completes
      * @param {function} [opts.onStep] - called(stepIndex, ctxTime) when the playhead advances (for UI)
+     * @param {function} [opts.onLoop] - called(iterationIndex) just after the playhead wraps in loop mode
+     * @param {boolean} [opts.loop] - if true, playback wraps from the end of the song back to step 0 seamlessly
      * @param {number} [opts.tempoOverride] - if set, used instead of song.tempo
      */
     constructor (opts) {
@@ -41,7 +43,9 @@ class SongScheduler {
         this.onNote = opts.onNote || (() => {});
         this.onEnd = opts.onEnd || (() => {});
         this.onStep = opts.onStep || (() => {});
+        this.onLoop = opts.onLoop || (() => {});
         this.tempoOverride = opts.tempoOverride;
+        this._loop = !!opts.loop;
         // Allow callers to start playback partway through the song. Notes
         // whose step is below startStep are skipped entirely (they're "in the
         // past" relative to the user's intended start).
@@ -55,6 +59,7 @@ class SongScheduler {
         this._lastStepFiredAt = -1;
         this._started = false;
         this._ended = false;
+        this._iter = 0;
         this._notes = [];   // flat sorted list of {trackId, kind, instrument, drum, volume, muted, step, durationSteps, pitch}
         this._endTime = 0;
         // Per-track FX chains, keyed by trackId. Built lazily on first note of
@@ -243,12 +248,14 @@ class SongScheduler {
         if (this._started) return;
         this._started = true;
         this._ended = false;
-        this._notes = this._flattenNotes()
-            // Drop notes whose start step is before the requested start point.
-            // Notes that *cross* the start step are also dropped — partial
-            // sustains would require slicing the audio buffer; the user can
-            // re-position the cursor and re-trigger if they want that.
-            .filter(n => n.step >= this.startStep);
+        this._iter = 0;
+        // `_notes` is the full list; the startStep filter applies only to
+        // iteration 0 and is enforced inline during scheduling. Notes whose
+        // start step is below startStep are skipped on the first iteration —
+        // they're "in the past" relative to the user's intended start. Notes
+        // that *cross* the start step are dropped too; partial sustains would
+        // require slicing the audio buffer.
+        this._notes = this._flattenNotes();
         const sps = this.secondsPerStep;
         const length = this.song.lengthSteps || 32;
         // Anchor the audio timeline so step 0 maps to (now + offset - startStep*sps).
@@ -267,6 +274,47 @@ class SongScheduler {
 
         this._timer = setInterval(() => this._tick(), 25);
         this._tick();
+    }
+
+    /**
+     * Toggle loop mode on or off mid-playback. When turning off, the scheduler
+     * finishes the current iteration normally and then fires onEnd. When
+     * turning on, scheduling extends past the current iteration boundary.
+     *
+     * @param {boolean} loop
+     */
+    setLoop (loop) {
+        this._loop = !!loop;
+    }
+
+    /**
+     * Swap in a new song reference and re-flatten the note list. Used by the
+     * editor so edits made during one loop iteration are heard in the next.
+     * Notes already scheduled within the lookahead window will play with their
+     * old parameters — only notes scheduled after this call see the update.
+     *
+     * @param {object} song
+     */
+    updateSong (song) {
+        if (!song) return;
+        this.song = song;
+        this._notes = this._flattenNotes();
+    }
+
+    /**
+     * Internal: handle a loop wrap. Re-flattens notes from the (possibly
+     * updated) song reference so live edits show up in the new iteration,
+     * resets per-iteration step/beat counters so step 0 fires again, and
+     * fires onLoop.
+     *
+     * @param {number} newIter
+     */
+    _onLoopWrap (newIter) {
+        this._iter = newIter;
+        this._notes = this._flattenNotes();
+        this._lastStepFiredAt = -1;
+        this._nextBeatToFire = 0;
+        this.onLoop(newIter);
     }
 
     stop () {
@@ -309,41 +357,70 @@ class SongScheduler {
         const sps = this.secondsPerStep;
         const stepsPerBeat = this.song.stepsPerBeat || 4;
         const length = this.song.lengthSteps || 32;
+        const iterDuration = length * sps;
 
-        // UI step callback
-        const elapsed = now - this._startCtxTime;
+        // Detect loop wraps based on `now` (audible position). If the audible
+        // playhead has crossed into a later iteration than `_iter`, run the
+        // wrap handler — this refreshes notes from the latest song reference
+        // and resets the per-iteration step/beat counters.
+        const iterNow = Math.max(0, Math.floor((now - this._startCtxTime) / iterDuration));
+        if (this._loop && iterNow > this._iter) {
+            this._onLoopWrap(iterNow);
+        }
+
+        // UI step callback — step is local to the current iteration.
+        const elapsed = now - this._startCtxTime - (this._iter * iterDuration);
         const currentStep = Math.floor(elapsed / sps);
         if (currentStep !== this._lastStepFiredAt && currentStep >= 0 && currentStep < length) {
             this._lastStepFiredAt = currentStep;
             this.onStep(currentStep, now);
         }
 
-        // Schedule notes up to cursor
-        for (const note of this._notes) {
-            const noteCtxTime = this._startCtxTime + (note.step * sps);
-            if (noteCtxTime < this._enqueuedThroughCtxTime) continue;
-            if (noteCtxTime > cursor) break; // notes are sorted by step
-            this._scheduleNote(note, noteCtxTime);
+        // Schedule notes up to cursor. In loop mode, the cursor may extend
+        // past the current iteration's end, so we walk the note list once per
+        // iteration that overlaps the lookahead window. The startStep filter
+        // applies only to iteration 0 (the user's intended starting point);
+        // every subsequent loop iteration plays the full note list from step 0.
+        const cursorIter = this._loop ?
+            Math.floor((cursor - this._startCtxTime) / iterDuration) :
+            this._iter;
+        for (let i = this._iter; i <= cursorIter; i++) {
+            const iterStart = this._startCtxTime + (i * iterDuration);
+            const minStep = i === 0 ? this.startStep : 0;
+            for (const note of this._notes) {
+                if (note.step < minStep) continue;
+                const noteCtxTime = iterStart + (note.step * sps);
+                if (noteCtxTime < this._enqueuedThroughCtxTime) continue;
+                if (noteCtxTime > cursor) break; // notes are sorted by step
+                this._scheduleNote(note, noteCtxTime);
+            }
         }
         this._enqueuedThroughCtxTime = cursor;
 
-        // Fire beat events
+        // Fire beat events for the current iteration.
+        const iterStartForBeats = this._startCtxTime + (this._iter * iterDuration);
+        const beatsPerIter = Math.ceil(length / stepsPerBeat);
         while (true) {
-            const beatCtxTime = this._startCtxTime + (this._nextBeatToFire * stepsPerBeat * sps);
+            const beatCtxTime = iterStartForBeats + (this._nextBeatToFire * stepsPerBeat * sps);
             if (beatCtxTime > now + 0.01) break;
-            if (this._nextBeatToFire >= Math.ceil(length / stepsPerBeat)) break;
+            if (this._nextBeatToFire >= beatsPerIter) break;
             this.onBeat(this._nextBeatToFire, beatCtxTime);
             this._nextBeatToFire++;
         }
 
-        // End of song
-        if (now >= this._endTime + 0.05 && !this._ended) {
-            this._ended = true;
-            this.onEnd();
-            this._started = false;
-            if (this._timer) {
-                clearInterval(this._timer);
-                this._timer = null;
+        // End of song — only when not looping. Add a 50 ms tail so the final
+        // note's release ramp has time to play out before subscribers tear
+        // down audio nodes.
+        if (!this._loop) {
+            const currentIterEnd = this._startCtxTime + ((this._iter + 1) * iterDuration);
+            if (now >= currentIterEnd + 0.05 && !this._ended) {
+                this._ended = true;
+                this.onEnd();
+                this._started = false;
+                if (this._timer) {
+                    clearInterval(this._timer);
+                    this._timer = null;
+                }
             }
         }
     }

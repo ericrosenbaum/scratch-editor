@@ -133,6 +133,22 @@ class Scratch3SongsBlocks {
                     }
                 },
                 {
+                    opcode: 'playSongForever',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'songs.playSongForever',
+                        default: 'play song [SONG] forever',
+                        description: 'Play a song on loop until stopped'
+                    }),
+                    arguments: {
+                        SONG: {
+                            type: ArgumentType.STRING,
+                            menu: 'SONG',
+                            defaultValue: (songMenu[0] && songMenu[0].value) || ''
+                        }
+                    }
+                },
+                {
                     opcode: 'stopSong',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -253,7 +269,7 @@ class Scratch3SongsBlocks {
         return drumPlayer && drumPlayer.buffer;
     }
 
-    _startSong (songId, tempoOverride) {
+    _startSong (songId, tempoOverride, opts) {
         const ctx = this._audioContext();
         if (!ctx) return null;
         const song = this._findSong(songId);
@@ -262,8 +278,10 @@ class Scratch3SongsBlocks {
         // Stop any running instance of this song first.
         this._stopSong(songId);
 
+        const loop = !!(opts && opts.loop);
         const scheduler = new SongScheduler({
             song,
+            loop,
             audioContext: ctx,
             destination: this._audioDestination(),
             getInstrumentBuffer: (inst, note) => this._instrumentBuffer(inst, note),
@@ -296,6 +314,12 @@ class Scratch3SongsBlocks {
         const songId = Cast.toString(args.SONG);
         if (!songId) return;
         this._startSong(songId);
+    }
+
+    playSongForever (args) {
+        const songId = Cast.toString(args.SONG);
+        if (!songId) return;
+        this._startSong(songId, null, {loop: true});
     }
 
     playSongUntilDone (args, util) {

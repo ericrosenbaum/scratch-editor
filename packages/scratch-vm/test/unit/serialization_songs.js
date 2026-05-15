@@ -148,7 +148,7 @@ test('Song Maker: Sprite.duplicate clones songs with new ids', t => {
     });
 });
 
-test('Song Maker: Songs extension getInfo returns 9 blocks + 4 hats', t => {
+test('Song Maker: Songs extension getInfo returns 10 blocks + 4 hats', t => {
     const Scratch3SongsBlocks = require('../../src/extensions/scratch3_songs');
 
     class FakeRuntime {
@@ -170,12 +170,12 @@ test('Song Maker: Songs extension getInfo returns 9 blocks + 4 hats', t => {
     const ext = new Scratch3SongsBlocks(runtime);
     const info = ext.getInfo();
     t.equal(info.id, 'songs', 'extension id correct');
-    t.equal(info.blocks.length, 9, 'nine blocks total');
+    t.equal(info.blocks.length, 10, 'ten blocks total');
     const hats = info.blocks.filter(b => b.blockType === 'hat');
     t.equal(hats.length, 4, 'four hat blocks');
     const opcodes = info.blocks.map(b => b.opcode);
     for (const op of [
-        'playSong', 'playSongUntilDone', 'stopSong', 'stopAllSongsBlock', 'setSongTempo',
+        'playSong', 'playSongUntilDone', 'playSongForever', 'stopSong', 'stopAllSongsBlock', 'setSongTempo',
         'whenSongStarts', 'whenSongEnds', 'whenSongBeat', 'whenTrackPlaysNote'
     ]) {
         t.ok(opcodes.indexOf(op) >= 0, `has ${op} block`);
