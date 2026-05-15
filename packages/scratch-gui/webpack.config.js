@@ -1,5 +1,28 @@
+const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
+
+// Load values from the repo-root .env so e.g. ANTHROPIC_API_KEY is available to DefinePlugin
+// without requiring callers to export it in their shell first. Shell env still wins on conflicts.
+const loadDotEnv = () => {
+    const envPath = path.resolve(__dirname, '..', '..', '.env');
+    if (!fs.existsSync(envPath)) return;
+    for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const eq = trimmed.indexOf('=');
+        if (eq <= 0) continue;
+        const key = trimmed.slice(0, eq).trim();
+        if (process.env[key] !== undefined) continue; // don't override shell env
+        let value = trimmed.slice(eq + 1).trim();
+        if ((value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.slice(1, -1);
+        }
+        process.env[key] = value;
+    }
+};
+loadDotEnv();
 
 // Plugins
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -52,6 +75,13 @@ const baseConfig = new ScratchWebpackConfigBuilder(
                 stream: require.resolve('stream-browserify')
             },
             symlinks: false
+        },
+        // Watch sibling workspace packages (scratch-vm, scratch-render, etc.)
+        // even though they're symlinked into node_modules. Webpack's default
+        // watchOptions.ignored excludes node_modules wholesale, which means
+        // edits to a sibling package in this monorepo silently fail to rebuild.
+        watchOptions: {
+            ignored: ['**/.git/**', '**/node_modules/!(@scratch)/**']
         }
     })
     .addModuleRule({
@@ -63,7 +93,11 @@ const baseConfig = new ScratchWebpackConfigBuilder(
         'process.env.DEBUG': Boolean(process.env.DEBUG),
         'process.env.GA_ID': `"${process.env.GA_ID || 'UA-000000-01'}"`,
         'process.env.GTM_ENV_AUTH': `"${process.env.GTM_ENV_AUTH || ''}"`,
-        'process.env.GTM_ID': process.env.GTM_ID ? `"${process.env.GTM_ID}"` : null
+        'process.env.GTM_ID': process.env.GTM_ID ? `"${process.env.GTM_ID}"` : null,
+        // Experimental: AI song generation. Pass via shell env or set
+        // localStorage.scratchAnthropicApiKey at runtime. Never use in prod.
+        'process.env.ANTHROPIC_API_KEY': process.env.ANTHROPIC_API_KEY ?
+            `"${process.env.ANTHROPIC_API_KEY}"` : null
     }))
     .addPlugin(new CopyWebpackPlugin({
         patterns: [

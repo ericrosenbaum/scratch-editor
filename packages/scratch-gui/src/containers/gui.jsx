@@ -16,7 +16,8 @@ import {
     activateTab,
     BLOCKS_TAB_INDEX,
     COSTUMES_TAB_INDEX,
-    SOUNDS_TAB_INDEX
+    SOUNDS_TAB_INDEX,
+    SONGS_TAB_INDEX
 } from '../reducers/editor-tab';
 
 import {
@@ -200,6 +201,7 @@ const mapStateToProps = (state, ownProps) => {
         platform: ownProps.platform,
         projectId: state.scratchGui.projectState.projectId,
         soundsTabVisible: state.scratchGui.editorTab.activeTabIndex === SOUNDS_TAB_INDEX,
+        songsTabVisible: state.scratchGui.editorTab.activeTabIndex === SONGS_TAB_INDEX,
         targetIsStage: (
             state.scratchGui.targets.stage &&
             state.scratchGui.targets.stage.id === state.scratchGui.targets.editingTarget
@@ -216,6 +218,7 @@ const mapDispatchToProps = dispatch => ({
     onUpdateDynamicAssets: dynamicAssets => dispatch(setDynamicAssets(dynamicAssets)),
     onActivateCostumesTab: () => dispatch(activateTab(COSTUMES_TAB_INDEX)),
     onActivateSoundsTab: () => dispatch(activateTab(SOUNDS_TAB_INDEX)),
+    onActivateSongsTab: () => dispatch(activateTab(SONGS_TAB_INDEX)),
     setPlatform: platform => dispatch(setPlatform(platform)),
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),

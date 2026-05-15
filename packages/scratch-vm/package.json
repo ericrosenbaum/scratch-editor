@@ -20,7 +20,8 @@
       "node": "./dist/node/scratch-vm.js",
       "default": "./src/index.js"
     },
-    "./src/extension-support/block-type": "./src/extension-support/block-type"
+    "./src/extension-support/block-type": "./src/extension-support/block-type",
+    "./src/extensions/scratch3_songs/scheduler": "./src/extensions/scratch3_songs/scheduler.js"
   },
   "main": "./dist/node/scratch-vm.js",
   "browser": "./dist/web/scratch-vm.js",

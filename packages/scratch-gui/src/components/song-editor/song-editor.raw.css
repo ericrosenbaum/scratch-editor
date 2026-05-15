@@ -1,0 +1,1199 @@
+/* Allow the surrounding AssetPanel detail-area to shrink below its content's
+   intrinsic width and height. Without this, a wide piano-roll SVG can push
+   the whole layout off-screen, and a stack of tracks can grow the layout
+   beyond the viewport. The generated class names include the original class
+   string thanks to CSS Modules; substring selectors match the hashed names. */
+[class*="detail-area_"] {
+    min-width: 0;
+    min-height: 0;
+}
+
+/* And constrain the AssetPanel wrapper itself so its flex children stay within
+   the editor pane's available height. */
+[class*="asset-panel_wrapper_"] {
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* The Song Maker tab needs the react-tabs ancestry to shrink so a stack of
+   tracks doesn't push the whole layout past the viewport. We only constrain
+   ancestors that actually contain a .song-editor, so other tabs are
+   unaffected. */
+[class*="react-tabs__tab-panel"]:has(.song-editor),
+[class*="gui_tabs_"]:has(.song-editor),
+[class*="gui_editor-wrapper_"]:has(.song-editor) {
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.song-editor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    background: #f2f4fa;
+    font-family: 'Helvetica Neue', Helvetica, sans-serif;
+    color: #2c2c2c;
+    box-sizing: border-box;
+}
+
+.song-editor-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e6e8f0;
+    background: #fff;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+.song-editor-transport {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.transport-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 120ms ease, transform 80ms ease, box-shadow 120ms ease;
+}
+
+.transport-btn.play {
+    background: #4C97FF;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(76, 151, 255, 0.35);
+}
+
+.transport-btn.play:hover {
+    background: #3373CC;
+}
+
+.transport-btn.play:active {
+    transform: scale(0.96);
+}
+
+.transport-btn.play.is-playing {
+    background: #FF8C1A;
+    box-shadow: 0 2px 6px rgba(255, 140, 26, 0.35);
+}
+
+.transport-btn.play.is-playing:hover {
+    background: #CF6A0A;
+}
+
+.transport-btn.stop,
+.transport-btn.loop,
+.transport-btn.history {
+    background: #fff;
+    color: #575E75;
+    border: 1px solid #d6dbe6;
+    width: 32px;
+    height: 32px;
+}
+
+.transport-btn.stop:hover:not(:disabled),
+.transport-btn.loop:hover:not(:disabled),
+.transport-btn.history:hover:not(:disabled) {
+    background: #f4f6fb;
+    color: #2c2c2c;
+}
+
+.transport-btn.stop:disabled,
+.transport-btn.history:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.transport-btn.loop.is-on {
+    background: #4C97FF;
+    color: #fff;
+    border-color: #4C97FF;
+    box-shadow: 0 1px 3px rgba(76, 151, 255, 0.3);
+}
+
+.transport-btn.loop.is-on:hover:not(:disabled) {
+    background: #3373CC;
+    color: #fff;
+}
+
+.history-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 10px;
+    background: #f4f6fb;
+    border: 1px solid #e6e8f0;
+}
+
+.history-group .transport-btn.history {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+}
+
+.history-group .transport-btn.history:hover:not(:disabled) {
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(20, 30, 60, 0.06);
+}
+
+.transport-btn svg {
+    fill: currentColor;
+}
+
+.song-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+    background: #f4f6fb;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
+    min-width: 0;
+    flex-shrink: 1;
+    height: 40px;
+    box-sizing: border-box;
+}
+
+.song-meta-field {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 3px 10px;
+    border-radius: 7px;
+    background: transparent;
+    transition: background-color 120ms ease;
+    min-width: 0;
+}
+
+.song-meta-field:focus-within {
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(20, 30, 60, 0.06);
+}
+
+.song-meta-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #8a90a3;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.song-meta-field input {
+    border: none;
+    background: transparent;
+    color: #2c2c2c;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0;
+    line-height: 1.2;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.song-meta-field input:focus {
+    outline: none;
+}
+
+.song-meta-name {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.song-meta-name input {
+    min-width: 80px;
+    width: 100%;
+}
+
+.song-meta-field-numeric input[type="text"] {
+    width: 48px;
+    text-align: center;
+}
+
+/* Slider popover that drops out from a focused numeric field. Positioned
+   absolutely so the row height stays constant whether or not the popover
+   is open. */
+.song-meta-slider-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    width: 180px;
+    padding: 8px 10px 6px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(20, 30, 60, 0.18);
+}
+
+.song-meta-slider {
+    display: block;
+    width: 100%;
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    height: 4px;
+    background: #d6dbe6;
+    border-radius: 2px;
+    padding: 0;
+    outline: none;
+}
+
+.song-meta-slider-range {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 10px;
+    color: #7a8295;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+}
+
+.song-meta-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #4C97FF;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(20, 30, 60, 0.3);
+    cursor: pointer;
+}
+
+.song-meta-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #4C97FF;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(20, 30, 60, 0.3);
+    cursor: pointer;
+}
+
+/* The outer vertical scroll container for tracks. */
+.song-editor-tracks {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px 0;
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+.track-row {
+    display: flex;
+    align-items: stretch;
+    background: #fff;
+    margin: 8px 14px;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(20, 30, 60, 0.04), 0 0 0 1px #e6e8f0;
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: box-shadow 160ms ease;
+}
+
+.track-row.editing {
+    box-shadow: 0 4px 12px rgba(76, 151, 255, 0.12), 0 0 0 1px #4C97FF;
+}
+
+/* Compact tracks should be a single fixed strip — short, predictable, and not
+   pushed around by their controls panel's intrinsic height. The controls
+   panel scrolls internally if its content is taller. */
+.track-row.compact {
+    height: 110px;
+}
+
+/* Muted tracks: visually de-emphasize, but keep controls fully clickable. */
+.track-row.muted {
+    opacity: 0.55;
+    filter: grayscale(0.7);
+}
+
+.track-row.muted input,
+.track-row.muted select,
+.track-row.muted .icon-btn,
+.track-row.muted input[type="range"] {
+    opacity: 1; /* keep the controls themselves usable */
+}
+
+.track-row-controls {
+    flex: 0 0 224px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background: #fafbfd;
+    border-right: 1px solid #ecedf2;
+    font-size: 12px;
+    color: #575E75;
+    box-sizing: border-box;
+}
+
+/* For an editing drum track the lane picker is at the very top of the panel
+   so it aligns with the grid rows. Drop the top padding and gap so the
+   first lane row sits flush with the grid's first row. The picker itself
+   provides its own padding-bottom. */
+.track-row-controls.drum-track {
+    padding-top: 0;
+    gap: 6px;
+}
+
+/* Compact-mode controls panel is intentionally minimal: name+kind badge,
+   mute, delete. The full controls (volume, instrument, AI Edit, reorder)
+   live in the editing-mode panel below. */
+.track-row-controls.compact {
+    padding: 10px 12px;
+    gap: 6px;
+    justify-content: center;
+}
+
+.track-row-controls.compact .compact-actions {
+    margin-top: 4px;
+    flex-wrap: nowrap;
+}
+
+.track-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.track-kind-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.track-kind-badge.instrument {
+    background: #E5F0FF;
+    color: #2E64C7;
+}
+
+.track-kind-badge.drum {
+    background: #FFEBD8;
+    color: #B5570A;
+}
+
+.track-row-controls .track-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 2px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c2c2c;
+    box-sizing: border-box;
+    /* Truncate long instrument names rather than wrap, so the row stays
+       single-line and the Edit toggle stays on the right. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-row-controls select {
+    width: 100%;
+    border: 1px solid #e0e3eb;
+    border-radius: 7px;
+    padding: 5px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    background: #fff;
+    color: #2c2c2c;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.track-row-controls select:hover {
+    border-color: #c5cbd9;
+}
+
+.track-row-controls select:focus {
+    outline: none;
+    border-color: #4C97FF;
+    box-shadow: 0 0 0 3px rgba(76, 151, 255, 0.15);
+}
+
+.volume-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.volume-row .volume-icon {
+    color: #8a90a3;
+    flex-shrink: 0;
+}
+
+.volume-row input[type="range"] {
+    flex: 1 1 auto;
+    margin: 0;
+    height: 16px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.volume-row input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, #4C97FF 0%, #4C97FF var(--vol-pct, 80%), #e0e3eb var(--vol-pct, 80%), #e0e3eb 100%);
+}
+
+.volume-row input[type="range"]::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: #e0e3eb;
+}
+
+.volume-row input[type="range"]::-moz-range-progress {
+    height: 4px;
+    border-radius: 2px;
+    background: #4C97FF;
+}
+
+.volume-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #4C97FF;
+    margin-top: -4px;
+    box-shadow: 0 1px 2px rgba(20, 30, 60, 0.15);
+    cursor: pointer;
+}
+
+.volume-row input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #4C97FF;
+    box-shadow: 0 1px 2px rgba(20, 30, 60, 0.15);
+    cursor: pointer;
+}
+
+.volume-value {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8a90a3;
+    min-width: 22px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Per-track effects section, between the volume row and the bottom action row.
+   Visually distinct (lavender accent) so it reads as a separate audio-routing
+   block rather than as more track metadata. */
+.track-effects {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 7px 8px 8px;
+    background: #f7f6fd;
+    border: 1px solid #ecebf6;
+    border-radius: 8px;
+}
+
+.track-effects-title {
+    font-size: 9px;
+    font-weight: 700;
+    color: #7C5CFF;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.effect-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.effect-label {
+    flex: 0 0 42px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #575E75;
+}
+
+.effect-row input[type="range"] {
+    flex: 1 1 auto;
+    margin: 0;
+    height: 14px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.effect-row input[type="range"]::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(
+        to right,
+        #d9d3f5 0%,
+        #d9d3f5 var(--fx-pct, 0%),
+        #e0e3eb var(--fx-pct, 0%),
+        #e0e3eb 100%
+    );
+}
+
+.effect-row.centered input[type="range"]::-webkit-slider-runnable-track {
+    /* Pan: fill grows outward from the centre toward whichever side the user
+       moves the thumb. Implemented as a four-stop gradient with the active
+       region between --fx-left and --fx-right. */
+    background: linear-gradient(
+        to right,
+        #e0e3eb 0%,
+        #e0e3eb var(--fx-left, 50%),
+        #d9d3f5 var(--fx-left, 50%),
+        #d9d3f5 var(--fx-right, 50%),
+        #e0e3eb var(--fx-right, 50%),
+        #e0e3eb 100%
+    );
+}
+
+.effect-row input[type="range"]::-moz-range-track {
+    height: 3px;
+    border-radius: 2px;
+    background: #e0e3eb;
+}
+
+.effect-row input[type="range"]::-moz-range-progress {
+    height: 3px;
+    border-radius: 2px;
+    background: #d9d3f5;
+}
+
+.effect-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #7C5CFF;
+    margin-top: -4px;
+    box-shadow: 0 1px 2px rgba(20, 30, 60, 0.18);
+    cursor: pointer;
+}
+
+.effect-row input[type="range"]::-moz-range-thumb {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #7C5CFF;
+    box-shadow: 0 1px 2px rgba(20, 30, 60, 0.18);
+    cursor: pointer;
+}
+
+.effect-value {
+    font-size: 10px;
+    font-weight: 600;
+    color: #8a90a3;
+    min-width: 26px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.actions-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+    flex-wrap: wrap;
+}
+
+.actions-row.bottom-actions {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 6px;
+}
+
+.actions-spacer {
+    flex: 1 1 auto;
+    min-width: 4px;
+}
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid #e0e3eb;
+    background: #fff;
+    color: #575E75;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.icon-btn:hover:not(:disabled) {
+    background: #f4f6fb;
+    color: #2c2c2c;
+    border-color: #c5cbd9;
+}
+
+.icon-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.icon-btn.mute-btn.is-muted {
+    background: #FF8C1A;
+    color: #fff;
+    border-color: #E07710;
+    box-shadow: 0 1px 2px rgba(255, 140, 26, 0.3);
+}
+
+.icon-btn.mute-btn.is-muted:hover {
+    background: #E07710;
+}
+
+.icon-btn.ai-btn {
+    width: auto;
+    padding: 0 10px;
+    gap: 5px;
+    background: linear-gradient(135deg, #B377FF 0%, #7C5CFF 100%);
+    color: #fff;
+    border-color: transparent;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    box-shadow: 0 1px 3px rgba(124, 92, 255, 0.3);
+}
+
+.icon-btn.ai-btn:hover {
+    background: linear-gradient(135deg, #9C5CFF 0%, #6A4ADB 100%);
+    color: #fff;
+    border-color: transparent;
+}
+
+.icon-btn.delete-btn:hover:not(:disabled) {
+    background: #FFE4E4;
+    color: #CF1A1A;
+    border-color: #FFBABA;
+}
+
+.move-stack {
+    display: inline-flex;
+    border-radius: 7px;
+    overflow: hidden;
+    border: 1px solid #e0e3eb;
+    background: #fff;
+}
+
+.move-stack .icon-btn.move-btn {
+    width: 20px;
+    height: 28px;
+    border: none;
+    border-radius: 0;
+    color: #8a90a3;
+    background: transparent;
+}
+
+.move-stack .icon-btn.move-btn + .icon-btn.move-btn {
+    border-left: 1px solid #e0e3eb;
+}
+
+.move-stack .icon-btn.move-btn:hover:not(:disabled) {
+    background: #f4f6fb;
+    color: #2c2c2c;
+}
+
+/* The right side of an editing track stacks the piano roll on top and the
+   velocity strip beneath it, both sharing the same horizontal step columns. */
+.track-row-canvas {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+/* The track's note area. In edit mode it scrolls internally (vertical for the
+   piano-roll's full pitch range, horizontal for many steps). In compact mode
+   it's a fixed-height SVG that auto-fits via viewBox, so no internal scroll. */
+.track-row-grid {
+    flex: 1 1 auto;
+    min-width: 0; /* let the flex item shrink below SVG's intrinsic width */
+    background: #fff;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Velocity strip below the editing grid. Same horizontal alignment as the
+   piano-roll: 32px left gutter + 22px-wide step columns. The strip itself
+   scrolls horizontally in sync if the song is wider than the viewport. */
+.track-row-velocity {
+    flex: 0 0 auto;
+    background: #f6f8fc;
+    border-top: 1px solid #e6e8f0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.velocity-strip {
+    display: block;
+    user-select: none;
+    cursor: default;
+}
+
+.velocity-strip .velocity-bg {
+    fill: #fafbfd;
+}
+
+.velocity-strip .velocity-tick {
+    stroke: #e6e8f0;
+    stroke-width: 1;
+}
+
+.velocity-strip .velocity-baseline {
+    stroke: #c5cbd9;
+    stroke-width: 1;
+}
+
+.velocity-strip .velocity-gutter-label {
+    fill: #8a90a3;
+    font-size: 9px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.velocity-strip .velocity-stem circle {
+    cursor: ns-resize;
+    transition: r 80ms ease;
+}
+
+.velocity-strip .velocity-stem.is-dragging circle {
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.35));
+}
+
+/* Edit / Done toggle that lives at the top-right of a track's info panel,
+   next to its name. Compact tracks show "Edit" — when clicked the track
+   enters edit mode and the button becomes "Done". */
+.edit-toggle-btn {
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid #4C97FF;
+    background: #fff;
+    color: #4C97FF;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.edit-toggle-btn:hover {
+    background: #4C97FF;
+    color: #fff;
+}
+
+.edit-toggle-btn.is-editing {
+    background: #4C97FF;
+    color: #fff;
+}
+
+.edit-toggle-btn.is-editing:hover {
+    background: #3373CC;
+    border-color: #3373CC;
+}
+
+/* Selection toolbar in the header. Sits to the right of song meta and explains
+   what's actionable on the currently-selected notes. */
+.selection-toolbar {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    padding: 4px;
+    border-radius: 10px;
+    background: #f4f6fb;
+    border: 1px solid #e6e8f0;
+    flex-shrink: 0;
+}
+
+
+.selection-toolbar button {
+    padding: 5px 10px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: #575E75;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    line-height: 1;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.selection-toolbar button:hover:not(:disabled) {
+    background: #fff;
+    color: #2c2c2c;
+    box-shadow: 0 1px 2px rgba(20, 30, 60, 0.06);
+}
+
+.selection-toolbar button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.selection-toolbar button.selection-delete:hover:not(:disabled) {
+    background: #FFE4E4;
+    color: #CF1A1A;
+    box-shadow: 0 1px 2px rgba(207, 26, 26, 0.12);
+}
+
+/* Selection-rectangle overlay drawn while user drags in the grid. */
+.piano-roll rect.selection-rect,
+.drum-grid rect.selection-rect {
+    fill: rgba(76, 151, 255, 0.15);
+    stroke: #4C97FF;
+    stroke-width: 1;
+    stroke-dasharray: 3 2;
+    pointer-events: none;
+}
+
+/* Selected note highlight (outline color comes from inline style, see *.jsx). */
+.piano-roll rect.note-selected,
+.drum-grid rect.note-selected {
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.55));
+}
+
+.track-row-grid.is-editing {
+    overflow: auto;
+    max-height: 260px;
+}
+
+.track-row-grid.is-compact {
+    overflow: hidden;
+    padding: 0;
+    /* Let the inner SVG stretch to fill the row — the mini-grid uses
+       height="100%" and a per-render viewBox so it scales cleanly. */
+    display: block;
+}
+
+.track-row-grid.is-compact > .mini-grid {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.track-row-add {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px;
+}
+
+.track-row-add-group {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.add-track {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1.5px dashed #4C97FF;
+    color: #4C97FF;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.add-track:hover {
+    background: #E5F0FF;
+}
+
+.generate-track {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1.5px solid transparent;
+    background: linear-gradient(135deg, #B377FF 0%, #7C5CFF 100%);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(124, 92, 255, 0.3);
+}
+
+.generate-track:hover:not(:disabled) {
+    background: linear-gradient(135deg, #9C5CFF 0%, #6A4ADB 100%);
+}
+
+.generate-track:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Piano-roll wrapper stacks two SVGs in the same grid cell: the cells SVG
+   underneath (scrolls with horizontal scroll) and a labels SVG on top that
+   stays pinned to the left edge via position:sticky. */
+.piano-roll-wrap {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+
+.piano-roll-wrap > .piano-roll,
+.piano-roll-wrap > .piano-roll-labels {
+    grid-area: 1 / 1;
+}
+
+.piano-roll-labels {
+    position: sticky;
+    left: 0;
+    align-self: start;
+    justify-self: start;
+    pointer-events: none;
+    z-index: 2;
+    /* The labels SVG is exactly 32 px wide and aligned with the LABEL_W
+       gutter inside the cells SVG, so it overlaps the (blank) gutter rather
+       than pushing the cells column over. */
+}
+
+/* Piano-roll SVG */
+.piano-roll {
+    display: block;
+    cursor: pointer;
+    user-select: none;
+}
+
+.piano-roll rect.cell {
+    fill: #fff;
+    stroke: #eaeaf0;
+    stroke-width: 0.5;
+}
+
+.piano-roll rect.cell-alt {
+    fill: #f3f3f7;
+    stroke: #eaeaf0;
+    stroke-width: 0.5;
+}
+
+.piano-roll rect.cell-beat {
+    stroke: #cbd1dd;
+    stroke-width: 0.8;
+}
+
+/* Piano-roll notes get their fill/stroke from the per-pitch palette via inline
+   attributes on the <rect>; only the rounded corners + base size live in CSS. */
+.piano-roll rect.note {
+    rx: 2;
+}
+
+.piano-roll text.row-label,
+.piano-roll-labels text.row-label {
+    fill: #7a8295;
+    font-size: 7px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    pointer-events: none;
+}
+
+.piano-roll line.playhead {
+    stroke: #FF5C5C;
+    stroke-width: 2;
+    pointer-events: none;
+}
+
+/* The user-positionable cursor / playhead-start indicator. Only shown when
+   not currently playing, so it never visually fights the live playhead. */
+.piano-roll line.cursor,
+.drum-grid line.cursor {
+    stroke: #FF8C1A;
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+/* Draggable grip at the top of the paused-playhead cursor. Sized so it's
+   easy to grab but small enough to stay out of the way of note clicks at
+   the same step. Inherits pointer events so the SVG-level mousedown still
+   fires and the cursor-drag logic in the grid component takes over. */
+.piano-roll polygon.cursor-handle,
+.drum-grid polygon.cursor-handle {
+    fill: #FF8C1A;
+    cursor: ew-resize;
+}
+
+.piano-roll rect.note-moving {
+    opacity: 0.85;
+    filter: drop-shadow(0 1px 3px rgba(20, 30, 60, 0.35));
+}
+
+/* Drum grid */
+.drum-grid {
+    display: block;
+    cursor: pointer;
+    user-select: none;
+}
+
+.drum-grid rect.cell {
+    fill: #fff;
+    stroke: #eaeaf0;
+    stroke-width: 0.5;
+}
+
+.drum-grid rect.cell-beat {
+    stroke: #cbd1dd;
+    stroke-width: 0.8;
+}
+
+.drum-grid rect.cell-alt {
+    fill: #f8f9fc;
+}
+
+.drum-grid line.playhead {
+    stroke: #FF5C5C;
+    stroke-width: 2;
+    pointer-events: none;
+}
+
+/* Drum lane picker (sits in the controls panel of an editing drum track).
+   Each row is the exact pixel height of one grid row (CELL_H = 28 px in
+   drum-grid.jsx) and uses zero inter-row gap, so the dropdowns line up
+   one-to-one with the grid rows on the right. */
+.drum-lane-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.drum-lane-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 28px;
+    box-sizing: border-box;
+}
+
+.drum-lane-row select {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 24px;
+    padding: 2px 6px;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.drum-lane-row .lane-remove-btn {
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    color: #8a90a3;
+    flex-shrink: 0;
+}
+
+.drum-lane-row .lane-remove-btn:hover:not(:disabled) {
+    color: #CF1A1A;
+    background: #FFE4E4;
+    border-color: #FFBABA;
+}
+
+.drum-lane-add {
+    border: 1px dashed #c5cbd9;
+    background: transparent;
+    color: #575E75;
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+}
+
+.drum-lane-add:hover:not(:disabled) {
+    background: #f4f6fb;
+    border-color: #4C97FF;
+    color: #4C97FF;
+}
+
+.drum-lane-add:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Mini compact preview grid */
+.mini-grid {
+    display: block;
+    width: 100%;
+}
+
+.mini-grid rect.mini-bg {
+    fill: #f8f8fb;
+}
+
+.mini-grid line.mini-beat {
+    stroke: #e0e2ea;
+    stroke-width: 0.4;
+}
+
+/* Piano mini-grid notes are filled per-pitch-class via inline fill/stroke attrs
+   on the <rect>; we only set a fallback here. */
+.mini-grid.mini-piano rect.mini-note {
+    stroke-width: 0.3;
+    rx: 0.5;
+}
+
+.mini-grid.mini-drum rect.mini-note {
+    fill: #4C97FF;
+    stroke: #295EA8;
+    stroke-width: 0.3;
+    rx: 0.5;
+}
+
+.mini-grid line.mini-playhead {
+    stroke: #FF5C5C;
+    stroke-width: 0.6;
+}
+
+.song-editor-empty {
+    padding: 32px;
+    color: #575E75;
+    text-align: center;
+    font-size: 14px;
+}

@@ -4,6 +4,9 @@ import {FormattedMessage} from 'react-intl';
 import musicIconURL from './music/music.png';
 import musicInsetIconURL from './music/music-small.svg';
 
+import songsIconURL from './songs/songs.svg';
+import songsInsetIconURL from './songs/songs-small.svg';
+
 import penIconURL from './pen/pen.png';
 import penInsetIconURL from './pen/pen-small.svg';
 
@@ -66,6 +69,26 @@ export default [
                 defaultMessage="Play instruments and drums."
                 description="Description for the 'Music' extension"
                 id="gui.extension.music.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Songs"
+                description="Name for the 'Songs' extension"
+                id="gui.extension.songs.name"
+            />
+        ),
+        extensionId: 'songs',
+        iconURL: songsIconURL,
+        insetIconURL: songsInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Play songs you made in the Song Maker tab, and react to beats and notes."
+                description="Description for the 'Songs' extension"
+                id="gui.extension.songs.description"
             />
         ),
         featured: true

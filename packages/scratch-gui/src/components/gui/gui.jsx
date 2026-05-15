@@ -14,6 +14,7 @@ import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
+import SongTab from '../../containers/song-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
 import Loader from '../loader/loader.jsx';
 import Box from '../box/box.jsx';
@@ -42,6 +43,7 @@ import styles from './gui.css';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
+import songsIcon from './icon--songs.svg';
 import DebugModal from '../debug-modal/debug-modal.jsx';
 import {setPlatform} from '../../reducers/platform.js';
 import {setTheme} from '../../reducers/settings.js';
@@ -83,6 +85,11 @@ const ariaMessages = defineMessages({
         id: 'gui.aria.soundsPanel',
         defaultMessage: 'Sounds editor panel',
         description: 'ARIA label for the sounds editor panel'
+    },
+    songsPanel: {
+        id: 'gui.aria.songsPanel',
+        defaultMessage: 'Song Maker panel',
+        description: 'ARIA label for the Song Maker panel'
     },
     backpack: {
         id: 'gui.aria.backpack',
@@ -173,6 +180,7 @@ const GUIComponent = props => {
         onToggleLoginOpen,
         onActivateCostumesTab,
         onActivateSoundsTab,
+        onActivateSongsTab,
         onActivateTab,
         onClickLogo,
         onExtensionButtonClick,
@@ -195,6 +203,7 @@ const GUIComponent = props => {
         showComingSoon,
         showNewFeatureCallouts,
         soundsTabVisible,
+        songsTabVisible,
         stageSizeMode,
         targetIsStage,
         telemetryModalVisible,
@@ -462,6 +471,22 @@ const GUIComponent = props => {
                                                 id="gui.gui.soundsTab"
                                             />
                                         </Tab>
+                                        <Tab
+                                            className={tabClassNames.tab}
+                                            onClick={onActivateSongsTab}
+                                            role="tab"
+                                            tabIndex="0"
+                                        >
+                                            <img
+                                                draggable={false}
+                                                src={songsIcon}
+                                            />
+                                            <FormattedMessage
+                                                defaultMessage="Song Maker"
+                                                description="Button to get to the Song Maker panel"
+                                                id="gui.gui.songsTab"
+                                            />
+                                        </Tab>
                                     </TabList>
                                 </Box>
                                 <TabPanel
@@ -516,6 +541,17 @@ const GUIComponent = props => {
                                     {soundsTabVisible ?
                                         <SoundTab
                                             ariaLabel={intl.formatMessage(ariaMessages.soundsPanel)}
+                                            ariaRole="region"
+                                            vm={vm}
+                                        /> : null}
+                                </TabPanel>
+                                <TabPanel
+                                    className={tabClassNames.tabPanel}
+                                    role="tabpanel"
+                                >
+                                    {songsTabVisible ?
+                                        <SongTab
+                                            ariaLabel={intl.formatMessage(ariaMessages.songsPanel)}
                                             ariaRole="region"
                                             vm={vm}
                                         /> : null}
@@ -626,6 +662,7 @@ GUIComponent.propTypes = {
     menuBarHidden: PropTypes.bool,
     onActivateCostumesTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
+    onActivateSongsTab: PropTypes.func,
     onActivateTab: PropTypes.func,
     onClickAccountNav: PropTypes.func,
     onClickLogo: PropTypes.func,
@@ -656,6 +693,7 @@ GUIComponent.propTypes = {
     showComingSoon: PropTypes.bool,
     showNewFeatureCallouts: PropTypes.bool,
     soundsTabVisible: PropTypes.bool,
+    songsTabVisible: PropTypes.bool,
     stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
     setPlatform: PropTypes.func,
     targetIsStage: PropTypes.bool,

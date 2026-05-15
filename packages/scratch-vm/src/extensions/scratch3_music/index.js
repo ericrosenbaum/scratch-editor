@@ -88,6 +88,10 @@ class Scratch3MusicBlocks {
 
         this._playNoteForPicker = this._playNoteForPicker.bind(this);
         this.runtime.on('PLAY_NOTE', this._playNoteForPicker);
+
+        // Expose the music extension instance on the runtime so peer extensions
+        // (e.g. Songs) can borrow already-decoded instrument/drum buffers.
+        runtime._musicExtension = this;
     }
 
     /**
@@ -1328,6 +1332,38 @@ class Scratch3MusicBlocks {
             return stage.tempo;
         }
         return 60;
+    }
+
+    /**
+     * Public accessor used by the Song Maker tab and Songs extension.
+     * Returns the loaded sound player for the chosen instrument/note (or null
+     * if samples aren't decoded yet).
+     * @param {number} instIndex 0-indexed instrument number.
+     * @param {number} note MIDI note number.
+     * @returns {?object} an object {player, sampleNote, releaseTime} for scheduling.
+     */
+    getInstrumentPlayer (instIndex, note) {
+        const info = this.INSTRUMENT_INFO[instIndex];
+        if (!info) return null;
+        const samples = info.samples;
+        const sampleIndex = this._selectSampleIndexForNote(note, samples);
+        const arr = this._instrumentPlayerArrays[instIndex];
+        if (!arr || !arr[sampleIndex]) return null;
+        return {
+            player: arr[sampleIndex],
+            sampleNote: samples[sampleIndex],
+            releaseTime: typeof info.releaseTime === 'undefined' ? 0.01 : info.releaseTime
+        };
+    }
+
+    /**
+     * Public accessor: returns the loaded SoundPlayer for the given drum (0-indexed),
+     * or null if not loaded yet.
+     * @param {number} drumIndex 0-indexed drum number.
+     * @returns {?object} the drum SoundPlayer.
+     */
+    getDrumPlayer (drumIndex) {
+        return this._drumPlayers[drumIndex] || null;
     }
 }
 

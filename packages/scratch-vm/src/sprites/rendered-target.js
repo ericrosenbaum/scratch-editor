@@ -1110,6 +1110,7 @@ class RenderedTarget extends Target {
             variables: this.variables,
             costumes: costumes,
             sounds: this.getSounds(),
+            songs: (this.sprite && Array.isArray(this.sprite.songs)) ? this.sprite.songs : [],
             textToSpeechLanguage: this.textToSpeechLanguage,
             tempo: this.tempo,
             volume: this.volume,

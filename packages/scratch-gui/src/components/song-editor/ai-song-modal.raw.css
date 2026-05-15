@@ -1,0 +1,191 @@
+/* The modal container's overall width — applied to the ReactModal root so the
+   header bar matches the body instead of stretching the full viewport. */
+.ai-song-modal {
+    width: 30rem;
+    max-width: calc(100vw - 2rem);
+}
+
+.ai-song-modal-body {
+    background: white;
+    padding: 1.25rem 1.5rem 1.25rem;
+    box-sizing: border-box;
+    /* The modal frame controls the outer width now; the body just fills it. */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+/* The Modal frame already shows the title in its header bar — we don't need a
+   second one in the body. Keep the element for screen readers but hide it
+   visually. */
+.ai-song-modal-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+}
+
+.ai-song-modal-subtitle {
+    font-weight: 400;
+    opacity: 0.65;
+}
+
+.ai-song-modal-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: hsl(220, 12%, 35%);
+    margin: 0;
+    letter-spacing: 0.01em;
+}
+
+.ai-song-modal-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: hsl(220, 20%, 15%);
+    background: hsl(220, 25%, 98%);
+    border: 1px solid hsl(220, 15%, 86%);
+    border-radius: 0.5rem;
+    resize: vertical;
+    min-height: 5rem;
+    transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.ai-song-modal-textarea:focus {
+    outline: none;
+    background: #fff;
+    border-color: hsl(215, 100%, 65%);
+    box-shadow: 0 0 0 3px hsla(215, 100%, 65%, 0.18);
+}
+
+.ai-song-modal-textarea:disabled {
+    opacity: 0.6;
+    background: hsl(220, 15%, 96%);
+}
+
+.ai-song-modal-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.ai-song-modal-examples-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: hsl(220, 10%, 50%);
+    margin-right: 0.15rem;
+}
+
+.ai-song-modal-example-chip {
+    background: hsl(215, 100%, 97%);
+    border: 1px solid hsl(215, 70%, 88%);
+    color: hsl(215, 70%, 35%);
+    border-radius: 999px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.ai-song-modal-example-chip:hover:not(:disabled) {
+    background: hsl(215, 100%, 92%);
+    border-color: hsl(215, 100%, 70%);
+    color: hsl(215, 100%, 35%);
+}
+
+.ai-song-modal-example-chip:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.ai-song-modal-error {
+    padding: 0.6rem 0.85rem;
+    background: hsl(0, 80%, 97%);
+    border: 1px solid hsl(0, 70%, 85%);
+    color: hsl(0, 55%, 32%);
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    word-break: break-word;
+}
+
+.ai-song-modal-buttons {
+    margin-top: 0.4rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+/* Need extra specificity here so the .ai-song-modal-generate styles below
+   actually win against this generic descendant selector. */
+.ai-song-modal-buttons button {
+    padding: 0.55rem 1.15rem;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(220, 15%, 86%);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    background: white;
+    color: hsl(220, 20%, 25%);
+    min-width: 5rem;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.ai-song-modal-buttons button:hover:not(:disabled) {
+    background: hsl(220, 25%, 96%);
+    border-color: hsl(220, 15%, 75%);
+}
+
+.ai-song-modal-buttons button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+/* Bump specificity (selector matches two classes on the same element) so the
+   primary action visually dominates. */
+.ai-song-modal-buttons button.ai-song-modal-generate {
+    background: hsl(215, 100%, 65%);
+    color: white;
+    border-color: hsl(215, 100%, 55%);
+    min-width: 7rem;
+    box-shadow: 0 1px 3px hsla(215, 100%, 55%, 0.3);
+}
+
+.ai-song-modal-buttons button.ai-song-modal-generate:hover:not(:disabled) {
+    background: hsl(215, 100%, 60%);
+    border-color: hsl(215, 100%, 50%);
+    color: white;
+}
+
+.ai-song-modal-spinner-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ai-song-modal-spinner {
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    border: 2px solid hsla(0, 0%, 100%, 0.4);
+    border-top-color: white;
+    animation: ai-song-modal-spin 0.8s linear infinite;
+}
+
+@keyframes ai-song-modal-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

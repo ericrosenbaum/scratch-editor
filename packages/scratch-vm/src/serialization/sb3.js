@@ -471,6 +471,60 @@ const serializeSound = function (sound) {
 };
 
 /**
+ * Serialize the given song (Song Maker tab data).
+ * Songs hold no binary assets, so we just round-trip the schema.
+ * @param {object} song The song to be serialized.
+ * @returns {object} A serialized representation of the song.
+ */
+const serializeSong = function (song) {
+    const obj = Object.create(null);
+    obj.songId = song.songId;
+    obj.name = song.name;
+    obj.tempo = song.tempo;
+    obj.lengthSteps = song.lengthSteps;
+    obj.stepsPerBeat = song.stepsPerBeat;
+    obj.tracks = (song.tracks || []).map(track => {
+        const t = Object.create(null);
+        t.trackId = track.trackId;
+        t.kind = track.kind;
+        if (track.kind === 'drum') {
+            // Multi-lane drum track. Persist the lane list, and also keep
+            // the legacy single `drum` field for backwards compatibility
+            // with readers that don't yet know about drumLanes.
+            const lanes = Array.isArray(track.drumLanes) && track.drumLanes.length > 0 ?
+                track.drumLanes.slice() :
+                [track.drum || 1];
+            t.drumLanes = lanes;
+            t.drum = lanes[0];
+        } else {
+            t.instrument = track.instrument;
+        }
+        t.volume = track.volume;
+        t.muted = !!track.muted;
+        t.notes = (track.notes || []).map(note => {
+            const n = Object.create(null);
+            n.step = note.step;
+            n.durationSteps = note.durationSteps;
+            if (track.kind === 'drum') {
+                // Per-note drum so multi-lane patterns round-trip. Default
+                // to the track's first lane if a legacy note didn't have one.
+                n.drum = typeof note.drum === 'number' ?
+                    note.drum :
+                    (track.drum || (Array.isArray(track.drumLanes) ? track.drumLanes[0] : 1));
+            } else {
+                n.pitch = note.pitch;
+            }
+            if (typeof note.velocity === 'number') {
+                n.velocity = note.velocity;
+            }
+            return n;
+        });
+        return t;
+    });
+    return obj;
+};
+
+/**
  * Serialize the given variables object.
  * @param {object} variables The variables to be serialized.
  * @returns {object} A serialized representation of the variables. They get
@@ -551,6 +605,13 @@ const serializeTarget = function (target, extensions) {
     obj.currentCostume = target.currentCostume;
     obj.costumes = target.costumes.map(serializeCostume);
     obj.sounds = target.sounds.map(serializeSound);
+    // `target` may be either a live RenderedTarget or its toJSON output, which
+    // surfaces sprite.songs as `target.songs`. Handle both shapes.
+    const songsForTarget = (target.songs && Array.isArray(target.songs) && target.songs) ||
+        (target.sprite && Array.isArray(target.sprite.songs) && target.sprite.songs);
+    if (songsForTarget && songsForTarget.length > 0) {
+        obj.songs = songsForTarget.map(serializeSong);
+    }
     if (Object.prototype.hasOwnProperty.call(target, 'volume')) obj.volume = target.volume;
     if (Object.prototype.hasOwnProperty.call(target, 'layerOrder')) obj.layerOrder = target.layerOrder;
     if (obj.isStage) { // Only the stage should have these properties
@@ -1292,6 +1353,10 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
         // Make sure if soundBank is undefined, sprite.soundBank is then null.
         sprite.soundBank = soundBank || null;
     });
+    // Songs hold no binary assets — assign synchronously.
+    if (Array.isArray(object.songs)) {
+        sprite.songs = object.songs.map(s => JSON.parse(JSON.stringify(s)));
+    }
     return Promise.all(costumePromises.concat(soundPromises)).then(() => target);
 };
 

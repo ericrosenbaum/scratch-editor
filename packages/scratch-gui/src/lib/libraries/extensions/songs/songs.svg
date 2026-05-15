@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE0B2"/>
+      <stop offset="100%" stop-color="#FFCC80"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="20" fill="url(#bg)"/>
+  <rect x="30" y="40" width="140" height="120" rx="10" fill="#fff" stroke="#575E75" stroke-width="3"/>
+  <line x1="30" y1="70" x2="170" y2="70" stroke="#E5E7EB" stroke-width="2"/>
+  <line x1="30" y1="100" x2="170" y2="100" stroke="#E5E7EB" stroke-width="2"/>
+  <line x1="30" y1="130" x2="170" y2="130" stroke="#E5E7EB" stroke-width="2"/>
+  <rect x="40" y="72" width="14" height="14" fill="#FFAB19" stroke="#cf8b08" stroke-width="1.5"/>
+  <rect x="62" y="102" width="14" height="14" fill="#FFAB19" stroke="#cf8b08" stroke-width="1.5"/>
+  <rect x="84" y="72" width="14" height="14" fill="#FFAB19" stroke="#cf8b08" stroke-width="1.5"/>
+  <rect x="106" y="132" width="14" height="14" fill="#4C97FF" stroke="#295EA8" stroke-width="1.5"/>
+  <rect x="128" y="132" width="14" height="14" fill="#4C97FF" stroke="#295EA8" stroke-width="1.5"/>
+  <rect x="150" y="102" width="14" height="14" fill="#FFAB19" stroke="#cf8b08" stroke-width="1.5"/>
+  <path d="M40 30v8M50 30v8M60 30v8" stroke="#575E75" stroke-width="2" stroke-linecap="round"/>
+</svg>

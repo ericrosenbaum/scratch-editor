@@ -16,6 +16,7 @@ const builtinExtensions = {
     pen: () => require('../extensions/scratch3_pen'),
     wedo2: () => require('../extensions/scratch3_wedo2'),
     music: () => require('../extensions/scratch3_music'),
+    songs: () => require('../extensions/scratch3_songs'),
     microbit: () => require('../extensions/scratch3_microbit'),
     text2speech: () => require('../extensions/scratch3_text2speech'),
     translate: () => require('../extensions/scratch3_translate'),
@@ -93,6 +94,12 @@ class ExtensionManager {
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        // Expose this manager on the runtime so peer extensions can find each
+        // other (e.g. the Songs extension borrowing samples from Music).
+        if (runtime) {
+            runtime.extensionManager = this;
+        }
 
         dispatch.setService('extensions', this).catch(e => {
             log.error(`ExtensionManager was unable to register extension service: ${JSON.stringify(e)}`);
