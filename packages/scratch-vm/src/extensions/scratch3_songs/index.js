@@ -3,7 +3,6 @@ const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
 const Timer = require('../../util/timer');
-const SongScheduler = require('./scheduler');
 const {displayNameForTrack} = require('./song-defaults');
 
 // eslint-disable-next-line @stylistic/max-len
@@ -17,20 +16,18 @@ class Scratch3SongsBlocks {
     constructor (runtime) {
         this.runtime = runtime;
 
-        /** Active scheduler per songId @type {Map<string, SongScheduler>} */
-        this._activeSongs = new Map();
-
         /**
-         * Per-songId edge-triggered fire flags. When a moment fires, set the
-         * flag to true; the corresponding hat predicate returns true once and
+         * Edge-triggered fire flags keyed by `${songId}|<event>` (or
+         * `${songId}|${trackId}|note`). When a scheduler callback fires we set
+         * the flag; the corresponding hat predicate returns true once and
          * clears the flag.
          */
         this._fireFlags = {};
 
-        // Ensure music extension is loaded so we can borrow its instrument/drum buffers.
-        this._loadMusicIfPossible();
-
-        this.runtime.on('PROJECT_STOP_ALL', () => this.stopAllSongs());
+        // PROJECT_STOP_ALL is wired up by SongPlayback itself; we just need to
+        // refresh the toolbox menus when the song list changes. The runtime
+        // also fans SONGS_CHANGED out from handleProjectLoaded, so this
+        // single listener covers both authoring edits and project loads.
         this.runtime.on('SONGS_CHANGED', () => {
             if (this.runtime.requestToolboxExtensionsUpdate) {
                 this.runtime.requestToolboxExtensionsUpdate();
@@ -38,52 +35,35 @@ class Scratch3SongsBlocks {
         });
     }
 
-    _music () {
-        if (!this.runtime._musicExtension) {
-            this._loadMusicIfPossible();
-        }
-        return this.runtime._musicExtension || null;
-    }
-
-    _loadMusicIfPossible () {
-        const em = this.runtime.extensionManager;
-        if (em && em.isExtensionLoaded && !em.isExtensionLoaded('music')) {
-            try { em.loadExtensionIdSync('music'); } catch (e) { /* no-op */ }
-        }
-    }
-
-    _audioContext () {
-        return this.runtime.audioEngine && this.runtime.audioEngine.audioContext;
-    }
-
-    _audioDestination () {
-        const engine = this.runtime.audioEngine;
-        if (engine && typeof engine.getInputNode === 'function') return engine.getInputNode();
-        return engine && engine.audioContext && engine.audioContext.destination;
-    }
-
-    /** Search every sprite for a song matching songId. @returns {?object} */
+    /** Look up a song in the project's global list. @returns {?object} */
     _findSong (songId) {
-        const targets = this.runtime.targets || [];
-        for (const t of targets) {
-            const songs = t.sprite && t.sprite.songs;
-            if (!songs) continue;
-            for (const s of songs) {
-                if (s.songId === songId) return s;
-            }
+        const songs = this.runtime.songs || [];
+        for (const s of songs) {
+            if (s.songId === songId) return s;
         }
         return null;
     }
 
-    /** Get all songs from the editing target (used to build the SONG menu). */
-    _editingTargetSongs () {
-        const target = this.runtime.getEditingTarget && this.runtime.getEditingTarget();
-        if (!target) return [];
-        return (target.sprite && target.sprite.songs) || [];
+    /** Get all project songs (used to build the SONG / TRACK menus). */
+    _allSongs () {
+        return this.runtime.songs || [];
+    }
+
+    /**
+     * Build the callbacks bag that the runtime's SongPlayback should invoke
+     * for hat-block firing on this specific song.
+     */
+    _callbacksForSong (songId) {
+        return {
+            onStart: () => this._setFlag(`${songId}|start`),
+            onEnd: () => this._setFlag(`${songId}|end`),
+            onBeat: () => this._setFlag(`${songId}|beat`),
+            onNote: note => this._setFlag(`${songId}|${note.trackId}|note`)
+        };
     }
 
     getInfo () {
-        const songs = this._editingTargetSongs();
+        const songs = this._allSongs();
         const songMenu = songs.length > 0 ?
             songs.map(s => ({text: s.name, value: s.songId})) :
             [{text: '—', value: ''}];
@@ -146,6 +126,20 @@ class Scratch3SongsBlocks {
                             menu: 'SONG',
                             defaultValue: (songMenu[0] && songMenu[0].value) || ''
                         }
+                    }
+                },
+                {
+                    opcode: 'playSongNext',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'songs.playSongNext',
+                        // eslint-disable-next-line @stylistic/max-len
+                        default: 'play song [SONG] when current song ends',
+                        // eslint-disable-next-line @stylistic/max-len
+                        description: 'Schedule a song to start at the current song\'s next loop boundary'
+                    }),
+                    arguments: {
+                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: (songMenu[0] && songMenu[0].value) || ''}
                     }
                 },
                 {
@@ -250,76 +244,38 @@ class Scratch3SongsBlocks {
         return false;
     }
 
-    _instrumentBuffer (instIdx, midiNote) {
-        const music = this._music();
-        if (!music) return null;
-        const info = music.getInstrumentPlayer(instIdx, midiNote);
-        if (!info) return null;
-        return {
-            buffer: info.player && info.player.buffer,
-            sampleNote: info.sampleNote,
-            releaseTime: info.releaseTime
-        };
-    }
-
-    _drumBuffer (drumIdx) {
-        const music = this._music();
-        if (!music) return null;
-        const drumPlayer = music.getDrumPlayer(drumIdx);
-        return drumPlayer && drumPlayer.buffer;
-    }
-
-    _startSong (songId, tempoOverride, opts) {
-        const ctx = this._audioContext();
-        if (!ctx) return null;
-        const song = this._findSong(songId);
-        if (!song) return null;
-
-        // Stop any running instance of this song first.
-        this._stopSong(songId);
-
-        const loop = !!(opts && opts.loop);
-        const scheduler = new SongScheduler({
-            song,
-            loop,
-            audioContext: ctx,
-            destination: this._audioDestination(),
-            getInstrumentBuffer: (inst, note) => this._instrumentBuffer(inst, note),
-            getDrumBuffer: drum => this._drumBuffer(drum),
-            tempoOverride,
-            onStart: () => this._setFlag(`${songId}|start`),
-            onEnd: () => {
-                this._setFlag(`${songId}|end`);
-                this._activeSongs.delete(songId);
-            },
-            onBeat: () => this._setFlag(`${songId}|beat`),
-            onNote: note => this._setFlag(`${songId}|${note.trackId}|note`)
-        });
-        this._activeSongs.set(songId, scheduler);
-        scheduler.play();
-        return scheduler;
-    }
-
-    _stopSong (songId) {
-        const sched = this._activeSongs.get(songId);
-        if (sched) {
-            sched.stop();
-            this._activeSongs.delete(songId);
-        }
-    }
-
     /* Block implementations */
 
     playSong (args) {
         const songId = Cast.toString(args.SONG);
         if (!songId) return;
-        this._startSong(songId);
+        const song = this._findSong(songId);
+        if (!song) return;
+        this.runtime.songPlayback.play(song, {callbacks: this._callbacksForSong(songId)});
     }
 
     playSongForever (args) {
         const songId = Cast.toString(args.SONG);
         if (!songId) return;
-        this._startSong(songId, null, {loop: true});
+        const song = this._findSong(songId);
+        if (!song) return;
+        this.runtime.songPlayback.play(song, {
+            loop: true,
+            callbacks: this._callbacksForSong(songId)
+        });
+    }
+
+    /**
+     * Defer the start of [SONG] until the currently playing song's next
+     * iteration boundary. With nothing currently playing, behaves like
+     * playSong. The new song inherits the current song's loop state by default.
+     */
+    playSongNext (args) {
+        const songId = Cast.toString(args.SONG);
+        if (!songId) return;
+        const song = this._findSong(songId);
+        if (!song) return;
+        this.runtime.songPlayback.queueNext(song, {callbacks: this._callbacksForSong(songId)});
     }
 
     playSongUntilDone (args, util) {
@@ -329,7 +285,7 @@ class Scratch3SongsBlocks {
         if (!util.stackFrame.songStarted) {
             const song = this._findSong(songId);
             if (!song) return;
-            this._startSong(songId);
+            this.runtime.songPlayback.play(song, {callbacks: this._callbacksForSong(songId)});
             util.stackFrame.songStarted = true;
             util.stackFrame.songId = songId;
             const sps = (60 / (song.tempo || 120)) / (song.stepsPerBeat || 4);
@@ -339,9 +295,11 @@ class Scratch3SongsBlocks {
             util.yield();
             return;
         }
-        // Wait until either the song's scheduler is no longer active or expected duration elapsed.
+        // Wait until either the scheduler has moved on (interrupted by
+        // another play, stop, or finished naturally) or the expected duration
+        // has elapsed with a small grace window.
         const elapsed = util.stackFrame.timer.timeElapsed();
-        const stillRunning = this._activeSongs.has(util.stackFrame.songId);
+        const stillRunning = this.runtime.songPlayback.currentSongId() === util.stackFrame.songId;
         if (stillRunning && elapsed < util.stackFrame.expectedDuration + 200) {
             util.yield();
         }
@@ -350,17 +308,14 @@ class Scratch3SongsBlocks {
     stopSong (args) {
         const songId = Cast.toString(args.SONG);
         if (!songId) return;
-        this._stopSong(songId);
+        // Only stop if the song currently playing is the one named.
+        if (this.runtime.songPlayback.currentSongId() === songId) {
+            this.runtime.songPlayback.stop();
+        }
     }
 
     stopAllSongsBlock () {
-        this.stopAllSongs();
-    }
-
-    stopAllSongs () {
-        for (const songId of Array.from(this._activeSongs.keys())) {
-            this._stopSong(songId);
-        }
+        this.runtime.songPlayback.stop();
     }
 
     setSongTempo (args) {
@@ -368,8 +323,9 @@ class Scratch3SongsBlocks {
         const bpm = Math.max(20, Math.min(500, Cast.toNumber(args.BPM)));
         const song = this._findSong(songId);
         if (song) song.tempo = bpm;
-        const sched = this._activeSongs.get(songId);
-        if (sched) sched.tempoOverride = bpm;
+        if (this.runtime.songPlayback.currentSongId() === songId) {
+            this.runtime.songPlayback.setTempoOverride(bpm);
+        }
     }
 
     whenSongStarts (args) {

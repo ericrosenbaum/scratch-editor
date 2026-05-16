@@ -44,6 +44,7 @@ class SongScheduler {
         this.onEnd = opts.onEnd || (() => {});
         this.onStep = opts.onStep || (() => {});
         this.onLoop = opts.onLoop || (() => {});
+        this.onSongSwap = opts.onSongSwap || (() => {});
         this.tempoOverride = opts.tempoOverride;
         this._loop = !!opts.loop;
         // Allow callers to start playback partway through the song. Notes
@@ -62,6 +63,11 @@ class SongScheduler {
         this._iter = 0;
         this._notes = [];   // flat sorted list of {trackId, kind, instrument, drum, volume, muted, step, durationSteps, pitch}
         this._endTime = 0;
+        // Pending swap to a different song at the current iteration's
+        // boundary. Set by queueSong(); cleared when the swap is performed.
+        this._queuedSong = null;
+        this._queuedOpts = null;
+        this._loopBeforeQueue = false;
         // Per-track FX chains, keyed by trackId. Built lazily on first note of
         // a track so empty / muted tracks cost nothing.
         this._trackChains = {};
@@ -220,8 +226,14 @@ class SongScheduler {
 
     _flattenNotes () {
         const notes = [];
-        for (const track of (this.song.tracks || [])) {
+        // If any track is solo'd, only solo'd tracks play — mute is otherwise
+        // honored as before. This matches typical DAW solo semantics: enabling
+        // solo on one or more tracks silences everything else.
+        const tracks = this.song.tracks || [];
+        const hasSolo = tracks.some(t => t && t.solo && !t.muted);
+        for (const track of tracks) {
             if (track.muted) continue;
+            if (hasSolo && !track.solo) continue;
             for (const note of (track.notes || [])) {
                 // For drums, prefer the per-note drum field (the new
                 // multi-lane drum-machine shape). Fall back to the legacy
@@ -317,6 +329,80 @@ class SongScheduler {
         this.onLoop(newIter);
     }
 
+    /**
+     * Queue a new song to start at the current iteration's boundary. While a
+     * song is queued, the current iteration plays out normally but no further
+     * iterations of the current song are scheduled — the boundary becomes a
+     * hand-off point. Any notes that the lookahead had already scheduled past
+     * the boundary are cancelled so they don't play over the queued song.
+     *
+     * If queueSong is called twice before the boundary, last-write-wins.
+     *
+     * @param {object} song
+     * @param {object} [opts] - {loop?: boolean} — if omitted, inherits the
+     *   current scheduler's pre-queue loop state.
+     */
+    queueSong (song, opts) {
+        if (!song) return;
+        this._queuedSong = song;
+        this._queuedOpts = opts || {};
+        // Stop pre-scheduling further iterations of the current song. Without
+        // this, the lookahead would keep adding wrap-iter notes that should
+        // belong to the queued song after the boundary.
+        if (this._loop) {
+            this._loopBeforeQueue = true;
+            this._loop = false;
+        }
+        // Cancel any already-scheduled future notes that would overlap with
+        // the queued song. Anything starting at-or-past the boundary belongs
+        // to the (no-longer-needed) next iteration of the current song.
+        const sps = this.secondsPerStep;
+        const length = this.song.lengthSteps || 32;
+        const boundary = this._startCtxTime + ((this._iter + 1) * length * sps);
+        for (let i = this._activeSources.length - 1; i >= 0; i--) {
+            const src = this._activeSources[i];
+            if (typeof src._scheduledStart === 'number' && src._scheduledStart >= boundary) {
+                try {
+                    src.stop();
+                    src.disconnect();
+                } catch (e) { /* already stopped */ }
+                this._activeSources.splice(i, 1);
+            }
+        }
+    }
+
+    /**
+     * Internal: perform the song swap at the boundary. Fires onSongSwap so the
+     * caller can hand off callbacks before the new song's events start
+     * firing, then re-anchors the timing so step 0 of the queued song begins
+     * exactly at the boundary.
+     */
+    _performSwap (boundary) {
+        const queued = this._queuedSong;
+        const opts = this._queuedOpts || {};
+        this._queuedSong = null;
+        this._queuedOpts = null;
+        this.onSongSwap(queued);
+        this.song = queued;
+        if (Object.prototype.hasOwnProperty.call(opts, 'loop')) {
+            this._loop = !!opts.loop;
+        } else {
+            this._loop = this._loopBeforeQueue;
+        }
+        this._loopBeforeQueue = false;
+        this._startCtxTime = boundary;
+        this._iter = 0;
+        this._lastStepFiredAt = -1;
+        this._nextBeatToFire = 0;
+        this._notes = this._flattenNotes();
+        const sps = this.secondsPerStep;
+        const length = this.song.lengthSteps || 32;
+        this._endTime = boundary + (length * sps);
+        // The next _tick will schedule the queued song's notes from the
+        // boundary forward into the lookahead.
+        this._enqueuedThroughCtxTime = boundary;
+    }
+
     stop () {
         if (!this._started) return;
         this._started = false;
@@ -410,9 +496,14 @@ class SongScheduler {
 
         // End of song — only when not looping. Add a 50 ms tail so the final
         // note's release ramp has time to play out before subscribers tear
-        // down audio nodes.
+        // down audio nodes. If a song is queued, swap at the boundary rather
+        // than ending.
         if (!this._loop) {
             const currentIterEnd = this._startCtxTime + ((this._iter + 1) * iterDuration);
+            if (this._queuedSong && now >= currentIterEnd) {
+                this._performSwap(currentIterEnd);
+                return;
+            }
             if (now >= currentIterEnd + 0.05 && !this._ended) {
                 this._ended = true;
                 this.onEnd();
@@ -496,6 +587,9 @@ class SongScheduler {
 
         source.start(when);
         source.stop(releaseEnd + 0.01);
+        // Tagged so queueSong() can cancel future-scheduled-but-not-yet-started
+        // notes that would otherwise play past the swap boundary.
+        source._scheduledStart = when;
 
         this._activeSources.push(source);
         source.onended = () => {

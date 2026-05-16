@@ -318,6 +318,50 @@
     box-shadow: 0 4px 12px rgba(76, 151, 255, 0.12), 0 0 0 1px #4C97FF;
 }
 
+/* Drum-editing rows hoist the track name + Done button into a full-width
+   header bar above the controls + canvas split, so they read as the title
+   of the panel and the lane picker below stays aligned with the grid rows. */
+.track-row.drum-editing {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.track-row.drum-editing > .track-row-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: #fafbfd;
+    border-bottom: 1px solid #ecedf2;
+    box-sizing: border-box;
+}
+
+/* Match the controls-panel width below so the Done button lines up vertically
+   with where the compact-mode Edit button sat, instead of sliding to the far
+   right of the header bar. */
+.track-row.drum-editing > .track-row-header .track-name-row {
+    flex: 0 0 200px;
+    min-width: 0;
+}
+
+.track-row.drum-editing > .track-row-header .track-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 2px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c2c2c;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-row.drum-editing > .track-row-body {
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
 /* Compact tracks should be a single fixed strip — short, predictable, and not
    pushed around by their controls panel's intrinsic height. The controls
    panel scrolls internally if its content is taller. */
@@ -361,17 +405,28 @@
 }
 
 /* Compact-mode controls panel is intentionally minimal: name+kind badge,
-   mute, delete. The full controls (volume, instrument, AI Edit, reorder)
-   live in the editing-mode panel below. */
+   mute, solo, reorder, delete. The full controls (volume, instrument, AI
+   Edit) live in the editing-mode panel below. Title pinned to top, action
+   row pinned to bottom. */
 .track-row-controls.compact {
     padding: 10px 12px;
     gap: 6px;
-    justify-content: center;
+    justify-content: space-between;
 }
 
+/* Action row at the bottom of the compact panel: mute+solo grouped at the
+   left, move-stack centered, delete pinned to the right — same horizontal
+   order/positioning as the bottom-actions row in edit mode. */
 .track-row-controls.compact .compact-actions {
-    margin-top: 4px;
+    margin-top: auto;
     flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+.track-state-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .track-name-row {
@@ -682,6 +737,27 @@
 
 .icon-btn.mute-btn.is-muted:hover {
     background: #E07710;
+}
+
+/* Solo button. Off: neutral, like other icon-btns. On: high-contrast yellow
+   so it reads as "this track is exclusive" at a glance. */
+.icon-btn.solo-btn {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.icon-btn.solo-btn.is-solo {
+    background: #F5C518;
+    color: #2c2c2c;
+    border-color: #D6A800;
+    box-shadow: 0 1px 2px rgba(245, 197, 24, 0.4);
+}
+
+.icon-btn.solo-btn.is-solo:hover {
+    background: #D6A800;
+    color: #2c2c2c;
+    border-color: #B58F00;
 }
 
 .icon-btn.ai-btn {

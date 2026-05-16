@@ -90,6 +90,7 @@ class SongEditor extends React.Component {
         if (this._unsubStep) this._unsubStep();
         if (this._unsubEnd) this._unsubEnd();
         if (this._unsubStart) this._unsubStart();
+        if (this.player.dispose) this.player.dispose();
         window.removeEventListener('keydown', this.handleKeyDown);
     }
 

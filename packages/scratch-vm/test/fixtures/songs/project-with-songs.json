@@ -1,0 +1,112 @@
+{
+    "targets": [
+        {
+            "isStage": true,
+            "name": "Stage",
+            "variables": {},
+            "lists": {},
+            "broadcasts": {},
+            "blocks": {},
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "assetId": "cd21514d0531fdffb22204e0ec5ed84a",
+                    "name": "backdrop1",
+                    "md5ext": "cd21514d0531fdffb22204e0ec5ed84a.svg",
+                    "dataFormat": "svg",
+                    "rotationCenterX": 240,
+                    "rotationCenterY": 180
+                }
+            ],
+            "sounds": [],
+            "volume": 100,
+            "layerOrder": 0,
+            "tempo": 60,
+            "videoTransparency": 50,
+            "videoState": "on",
+            "textToSpeechLanguage": null
+        },
+        {
+            "isStage": false,
+            "name": "Sprite1",
+            "variables": {},
+            "lists": {},
+            "broadcasts": {},
+            "blocks": {},
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "assetId": "bcf454acf82e4504149f7ffe07081dbc",
+                    "name": "costume1",
+                    "bitmapResolution": 1,
+                    "md5ext": "bcf454acf82e4504149f7ffe07081dbc.svg",
+                    "dataFormat": "svg",
+                    "rotationCenterX": 48,
+                    "rotationCenterY": 50
+                }
+            ],
+            "sounds": [],
+            "volume": 100,
+            "layerOrder": 1,
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "size": 100,
+            "direction": 90,
+            "draggable": false,
+            "rotationStyle": "all around"
+        }
+    ],
+    "monitors": [],
+    "extensions": [],
+    "songs": [
+        {
+            "songId": "song-verse",
+            "name": "Verse",
+            "tempo": 110,
+            "lengthSteps": 16,
+            "stepsPerBeat": 4,
+            "tracks": [
+                {
+                    "trackId": "track-piano",
+                    "kind": "instrument",
+                    "instrument": 1,
+                    "volume": 80,
+                    "muted": false,
+                    "notes": [
+                        {"step": 0, "durationSteps": 2, "pitch": 60, "velocity": 100},
+                        {"step": 4, "durationSteps": 1, "pitch": 64, "velocity": 70}
+                    ]
+                }
+            ]
+        },
+        {
+            "songId": "song-bridge",
+            "name": "Bridge",
+            "tempo": 100,
+            "lengthSteps": 8,
+            "stepsPerBeat": 4,
+            "tracks": [
+                {
+                    "trackId": "track-drums",
+                    "kind": "drum",
+                    "drumLanes": [1, 2],
+                    "drum": 1,
+                    "volume": 70,
+                    "muted": false,
+                    "notes": [
+                        {"step": 0, "durationSteps": 1, "drum": 1, "velocity": 110},
+                        {"step": 4, "durationSteps": 1, "drum": 2, "velocity": 90}
+                    ]
+                }
+            ]
+        }
+    ],
+    "meta": {
+        "semver": "3.0.0",
+        "vm": "13.7.2",
+        "agent": "test"
+    }
+}

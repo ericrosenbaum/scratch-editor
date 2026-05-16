@@ -501,6 +501,7 @@ const serializeSong = function (song) {
         }
         t.volume = track.volume;
         t.muted = !!track.muted;
+        t.solo = !!track.solo;
         t.notes = (track.notes || []).map(note => {
             const n = Object.create(null);
             n.step = note.step;
@@ -605,13 +606,6 @@ const serializeTarget = function (target, extensions) {
     obj.currentCostume = target.currentCostume;
     obj.costumes = target.costumes.map(serializeCostume);
     obj.sounds = target.sounds.map(serializeSound);
-    // `target` may be either a live RenderedTarget or its toJSON output, which
-    // surfaces sprite.songs as `target.songs`. Handle both shapes.
-    const songsForTarget = (target.songs && Array.isArray(target.songs) && target.songs) ||
-        (target.sprite && Array.isArray(target.sprite.songs) && target.sprite.songs);
-    if (songsForTarget && songsForTarget.length > 0) {
-        obj.songs = songsForTarget.map(serializeSong);
-    }
     if (Object.prototype.hasOwnProperty.call(target, 'volume')) obj.volume = target.volume;
     if (Object.prototype.hasOwnProperty.call(target, 'layerOrder')) obj.layerOrder = target.layerOrder;
     if (obj.isStage) { // Only the stage should have these properties
@@ -708,6 +702,12 @@ const serialize = function (runtime, targetId) {
     }
 
     obj.targets = serializedTargets;
+
+    // Project-level Song Maker data. Songs are not per-sprite; they belong to
+    // the project as a whole.
+    if (Array.isArray(runtime.songs) && runtime.songs.length > 0) {
+        obj.songs = runtime.songs.map(serializeSong);
+    }
 
     obj.monitors = serializeMonitors(runtime.getMonitorState());
 
@@ -1353,10 +1353,6 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
         // Make sure if soundBank is undefined, sprite.soundBank is then null.
         sprite.soundBank = soundBank || null;
     });
-    // Songs hold no binary assets — assign synchronously.
-    if (Array.isArray(object.songs)) {
-        sprite.songs = object.songs.map(s => JSON.parse(JSON.stringify(s)));
-    }
     return Promise.all(costumePromises.concat(soundPromises)).then(() => target);
 };
 
@@ -1525,6 +1521,41 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
     const targetObjects = ((isSingleSprite ? [json] : json.targets) || [])
         .map((t, i) => Object.assign(t, {targetPaneOrder: i}))
         .sort((a, b) => a.layerOrder - b.layerOrder);
+
+    // Project-level songs. Only set for whole-project loads (not single-sprite
+    // imports, which would otherwise wipe existing project songs). Prefer the
+    // new top-level `songs` array; otherwise hoist any per-sprite `songs`
+    // arrays found in target objects (migrating from the old per-sprite
+    // shape). Dedupe by songId, first-seen wins.
+    if (isSingleSprite) {
+        // Single-sprite import: drop any legacy per-sprite songs the sprite
+        // carries (they belong to the source project, not this one) so they
+        // don't get re-emitted by serializeTarget. Leave existing
+        // runtime.songs untouched.
+        for (const t of targetObjects) {
+            if (Array.isArray(t.songs)) delete t.songs;
+        }
+    } else {
+        const collectedSongs = [];
+        const seenSongIds = new Set();
+        const ingestSong = song => {
+            if (!song || !song.songId) return;
+            if (seenSongIds.has(song.songId)) return;
+            seenSongIds.add(song.songId);
+            collectedSongs.push(JSON.parse(JSON.stringify(song)));
+        };
+        if (Array.isArray(json.songs)) {
+            for (const s of json.songs) ingestSong(s);
+        }
+        for (const t of targetObjects) {
+            if (Array.isArray(t.songs)) {
+                for (const s of t.songs) ingestSong(s);
+                // Don't carry the legacy field forward into target parsing.
+                delete t.songs;
+            }
+        }
+        runtime.songs = collectedSongs;
+    }
 
     const monitorObjects = json.monitors || [];
 

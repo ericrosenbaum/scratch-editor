@@ -4,7 +4,6 @@ import bindAll from 'lodash.bindall';
 import {defineMessages, injectIntl} from 'react-intl';
 import intlShape from '../lib/intlShape.js';
 import VM from '@scratch/scratch-vm';
-import {connect} from 'react-redux';
 
 import AssetPanel from '../components/asset-panel/asset-panel.jsx';
 import songIcon from '../components/asset-panel/icon--song.svg';
@@ -42,22 +41,30 @@ class SongTab extends React.Component {
         };
     }
 
-    componentWillReceiveProps (nextProps) {
-        const {editingTarget, sprites, stage} = nextProps;
-        const target = editingTarget && sprites[editingTarget] ? sprites[editingTarget] : stage;
-        if (!target) return;
-        const songs = target.songs || [];
-        if (this.props.editingTarget !== editingTarget) {
-            this.setState({selectedSongIndex: 0});
-        } else if (this.state.selectedSongIndex > songs.length - 1) {
-            this.setState({selectedSongIndex: Math.max(songs.length - 1, 0)});
+    componentDidMount () {
+        // Songs live on the runtime (global to the project), not on a target.
+        // Re-render whenever the list mutates so the asset panel stays in sync.
+        // The runtime fans SONGS_CHANGED out from handleProjectLoaded too, so
+        // this one listener handles both authoring edits and project loads.
+        this._onSongsChanged = () => {
+            const songs = this._currentSongs();
+            if (this.state.selectedSongIndex > songs.length - 1) {
+                this.setState({selectedSongIndex: Math.max(songs.length - 1, 0)});
+            } else {
+                this.forceUpdate();
+            }
+        };
+        this.props.vm.runtime.on('SONGS_CHANGED', this._onSongsChanged);
+    }
+
+    componentWillUnmount () {
+        if (this._onSongsChanged) {
+            this.props.vm.runtime.removeListener('SONGS_CHANGED', this._onSongsChanged);
         }
     }
 
     _currentSongs () {
-        const {vm} = this.props;
-        if (!vm.editingTarget) return [];
-        const songs = vm.editingTarget.sprite.songs;
+        const songs = this.props.vm.runtime.songs;
         return Array.isArray(songs) ? songs : [];
     }
 
@@ -76,14 +83,8 @@ class SongTab extends React.Component {
     handleNewSong () {
         const song = createBlankSong(this._uniqueName('Song'));
         this.props.vm.addSong(song);
-        // Select the newly added song.
-        // Optimistically advance selection; we re-sync below after the redux update.
-        this.setState({selectedSongIndex: this._currentSongs().length});
-        // Force selection update after redux change:
-        setTimeout(() => {
-            const songs = this._currentSongs();
-            this.setState({selectedSongIndex: Math.max(0, songs.length - 1)});
-        }, 0);
+        const songs = this._currentSongs();
+        this.setState({selectedSongIndex: Math.max(0, songs.length - 1)});
     }
 
     handleSurpriseSong () {
@@ -102,10 +103,8 @@ class SongTab extends React.Component {
             drumTrack.notes.push({step: s, durationSteps: 1});
         }
         this.props.vm.addSong(song);
-        setTimeout(() => {
-            const songs = this._currentSongs();
-            this.setState({selectedSongIndex: Math.max(0, songs.length - 1)});
-        }, 0);
+        const songs = this._currentSongs();
+        this.setState({selectedSongIndex: Math.max(0, songs.length - 1)});
     }
 
     handleOpenAiModal () {
@@ -124,11 +123,13 @@ class SongTab extends React.Component {
             const generated = await generateSongFromPrompt({prompt, fallbackName});
             generated.name = this._uniqueName(generated.name || fallbackName);
             this.props.vm.addSong(generated);
-            this.setState({aiBusy: false, aiModalOpen: false, aiError: null});
-            setTimeout(() => {
-                const songs = this._currentSongs();
-                this.setState({selectedSongIndex: Math.max(0, songs.length - 1)});
-            }, 0);
+            const songs = this._currentSongs();
+            this.setState({
+                aiBusy: false,
+                aiModalOpen: false,
+                aiError: null,
+                selectedSongIndex: Math.max(0, songs.length - 1)
+            });
         } catch (err) {
             const message = err instanceof SongAiError ?
                 err.message :
@@ -146,9 +147,7 @@ class SongTab extends React.Component {
 
     handleDuplicateSong (idx) {
         this.props.vm.duplicateSong(idx);
-        setTimeout(() => {
-            this.setState({selectedSongIndex: idx + 1});
-        }, 0);
+        this.setState({selectedSongIndex: idx + 1});
     }
 
     handleSongUpdate (updatedSong) {
@@ -161,7 +160,6 @@ class SongTab extends React.Component {
 
     render () {
         const {ariaLabel, ariaRole, intl, vm} = this.props;
-        if (!vm.editingTarget) return null;
 
         const songs = this._currentSongs();
         const items = songs.map(song => ({
@@ -244,19 +242,10 @@ class SongTab extends React.Component {
 SongTab.propTypes = {
     ariaLabel: PropTypes.string,
     ariaRole: PropTypes.string,
-    editingTarget: PropTypes.string,
     intl: intlShape,
-    sprites: PropTypes.object,
-    stage: PropTypes.object,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 
-const mapStateToProps = state => ({
-    editingTarget: state.scratchGui.targets.editingTarget,
-    sprites: state.scratchGui.targets.sprites,
-    stage: state.scratchGui.targets.stage
-});
-
 export default errorBoundaryHOC('Song Tab')(
-    injectIntl(connect(mapStateToProps)(SongTab))
+    injectIntl(SongTab)
 );

@@ -197,6 +197,13 @@ class Runtime extends EventEmitter {
         this.executableTargets = [];
 
         /**
+         * Project-level songs (Song Maker). Each song is a JSON object:
+         * {songId, name, tempo, lengthSteps, stepsPerBeat, tracks: [...]}.
+         * @type {Array.<!object>}
+         */
+        this.songs = [];
+
+        /**
          * A list of threads that are currently running in the VM.
          * Threads are added when execution starts and pruned when execution ends.
          * @type {Array.<Thread>}
@@ -409,6 +416,21 @@ class Runtime extends EventEmitter {
         this._initScratchLink();
 
         this.resetRunId();
+    }
+
+    /**
+     * Project-wide song playback singleton. Lazily initialized on first access
+     * since the audio engine may not be ready at runtime construction time and
+     * many runtimes never touch songs at all.
+     * @returns {SongPlayback}
+     */
+    get songPlayback () {
+        if (!this._songPlayback) {
+            // eslint-disable-next-line global-require
+            const SongPlayback = require('../extensions/scratch3_songs/song-playback');
+            this._songPlayback = new SongPlayback(this);
+        }
+        return this._songPlayback;
     }
 
     /**
@@ -2525,6 +2547,13 @@ class Runtime extends EventEmitter {
      */
     handleProjectLoaded () {
         this.emit(Runtime.PROJECT_LOADED);
+        // Deserialize replaces `runtime.songs` wholesale without firing
+        // SONGS_CHANGED. Fan it out from the centralized post-load hook so
+        // subscribers (the Songs extension's toolbox menus, the GUI's Song
+        // Maker tab) re-read the new project's songs. If a listener happens
+        // to also subscribe to PROJECT_LOADED, that's fine — both events
+        // fire and the second is a cheap no-op (re-reads runtime.songs).
+        this.emit('SONGS_CHANGED');
         this.resetRunId();
     }
 

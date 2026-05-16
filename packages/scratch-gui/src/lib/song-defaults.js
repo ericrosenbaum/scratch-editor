@@ -38,6 +38,7 @@ const createBlankTrack = (kind = 'instrument') => {
         instrument: kind === 'instrument' ? 1 : undefined,
         volume: 80,
         muted: false,
+        solo: false,
         notes: [],
         effects: {...DEFAULT_EFFECTS}
     };

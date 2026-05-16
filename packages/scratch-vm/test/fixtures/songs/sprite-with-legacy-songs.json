@@ -1,0 +1,41 @@
+{
+    "isStage": false,
+    "name": "ImportedSprite",
+    "variables": {},
+    "lists": {},
+    "broadcasts": {},
+    "blocks": {},
+    "comments": {},
+    "currentCostume": 0,
+    "costumes": [
+        {
+            "assetId": "bcf454acf82e4504149f7ffe07081dbc",
+            "name": "costume1",
+            "bitmapResolution": 1,
+            "md5ext": "bcf454acf82e4504149f7ffe07081dbc.svg",
+            "dataFormat": "svg",
+            "rotationCenterX": 48,
+            "rotationCenterY": 50
+        }
+    ],
+    "sounds": [],
+    "volume": 100,
+    "layerOrder": 1,
+    "visible": true,
+    "x": 0,
+    "y": 0,
+    "size": 100,
+    "direction": 90,
+    "draggable": false,
+    "rotationStyle": "all around",
+    "songs": [
+        {
+            "songId": "song-from-imported-sprite",
+            "name": "Imported Sprite Song",
+            "tempo": 130,
+            "lengthSteps": 8,
+            "stepsPerBeat": 4,
+            "tracks": []
+        }
+    ]
+}

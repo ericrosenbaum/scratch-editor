@@ -873,41 +873,36 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
-     * Add a song to the current editing target.
+     * Add a song to the project's global song list.
      * @param {!object} song A song JSON object (see Song Maker schema).
-     * @param {string} [optTargetId] - the id of the target to add to.
      */
-    addSong (song, optTargetId) {
-        const target = optTargetId ? this.runtime.getTargetById(optTargetId) : this.editingTarget;
-        if (!target) return;
-        if (!Array.isArray(target.sprite.songs)) target.sprite.songs = [];
-        target.sprite.songs.push(song);
+    addSong (song) {
+        if (!Array.isArray(this.runtime.songs)) this.runtime.songs = [];
+        this.runtime.songs.push(song);
         this.runtime.emitProjectChanged();
         this.runtime.emit('SONGS_CHANGED');
-        this.emitTargetsUpdate();
     }
 
     /**
-     * Update a song on the editing target (replace by index).
+     * Update a song in the project's global list (replace by index).
      * @param {!int} songIndex
      * @param {!object} song
      */
     updateSong (songIndex, song) {
-        const songs = this.editingTarget.sprite.songs;
+        const songs = this.runtime.songs;
         if (!songs || songIndex < 0 || songIndex >= songs.length) return;
         songs[songIndex] = song;
         this.runtime.emitProjectChanged();
         this.runtime.emit('SONGS_CHANGED');
-        this.emitTargetsUpdate();
     }
 
     /**
-     * Rename a song on the editing target.
+     * Rename a song in the project's global list.
      * @param {!int} songIndex
      * @param {!string} newName
      */
     renameSong (songIndex, newName) {
-        const songs = this.editingTarget.sprite.songs;
+        const songs = this.runtime.songs;
         if (!songs || songIndex < 0 || songIndex >= songs.length) return;
         const usedNames = songs.map((s, i) => (i === songIndex ? '' : s.name));
         let candidate = String(newName).trim();
@@ -920,7 +915,6 @@ class VirtualMachine extends EventEmitter {
         songs[songIndex].name = final;
         this.runtime.emitProjectChanged();
         this.runtime.emit('SONGS_CHANGED');
-        this.emitTargetsUpdate();
     }
 
     /**
@@ -928,7 +922,7 @@ class VirtualMachine extends EventEmitter {
      * @param {!int} songIndex
      */
     duplicateSong (songIndex) {
-        const songs = this.editingTarget.sprite.songs;
+        const songs = this.runtime.songs;
         if (!songs || songIndex < 0 || songIndex >= songs.length) return;
         const clone = JSON.parse(JSON.stringify(songs[songIndex]));
         clone.songId = `song-${Math.random().toString(36).slice(2, 10)}`;
@@ -947,26 +941,22 @@ class VirtualMachine extends EventEmitter {
         songs.splice(songIndex + 1, 0, clone);
         this.runtime.emitProjectChanged();
         this.runtime.emit('SONGS_CHANGED');
-        this.emitTargetsUpdate();
     }
 
     /**
-     * Delete a song from the editing target.
+     * Delete a song from the project's global list.
      * @param {!int} songIndex
      * @returns {?Function} restore function, or null
      */
     deleteSong (songIndex) {
-        const target = this.editingTarget;
-        const songs = target.sprite.songs;
+        const songs = this.runtime.songs;
         if (!songs || songIndex < 0 || songIndex >= songs.length) return null;
         const [deleted] = songs.splice(songIndex, 1);
         this.runtime.emitProjectChanged();
         this.runtime.emit('SONGS_CHANGED');
-        this.emitTargetsUpdate();
         return () => {
-            target.sprite.songs.splice(songIndex, 0, deleted);
+            this.runtime.songs.splice(songIndex, 0, deleted);
             this.runtime.emit('SONGS_CHANGED');
-            this.emitTargetsUpdate();
         };
     }
 

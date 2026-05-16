@@ -24,6 +24,7 @@ class TrackRow extends React.Component {
         this.handleDrumChange = this.handleDrumChange.bind(this);
         this.handleVolumeChange = this.handleVolumeChange.bind(this);
         this.handleMuteToggle = this.handleMuteToggle.bind(this);
+        this.handleSoloToggle = this.handleSoloToggle.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
         this.handleEditToggle = this.handleEditToggle.bind(this);
 
@@ -254,6 +255,25 @@ class TrackRow extends React.Component {
         this._updateTrack({muted: !this.props.track.muted});
     }
 
+    handleSoloToggle () {
+        this._updateTrack({solo: !this.props.track.solo});
+    }
+
+    renderSoloButton () {
+        const {track} = this.props;
+        const isSolo = !!track.solo;
+        return (
+            <button
+                type="button"
+                className={`icon-btn track-btn solo-btn ${isSolo ? 'is-solo' : ''}`}
+                onClick={this.handleSoloToggle}
+                aria-label={isSolo ? 'Unsolo' : 'Solo'}
+                aria-pressed={isSolo}
+                title={isSolo ? 'Unsolo (play all tracks)' : 'Solo (play only this track)'}
+            >S</button>
+        );
+    }
+
     handleDelete () {
         this.props.onDelete();
     }
@@ -387,111 +407,47 @@ class TrackRow extends React.Component {
 
     renderCompactControls () {
         const {track, isFirst, isLast, onMoveUp, onMoveDown, onMoveTop, onMoveBottom} = this.props;
-        const isDrum = track.kind === 'drum';
         return (
             <div className="track-row-controls compact">
-                <div className="track-name-row">
-                    <span
-                        className={`track-kind-badge ${isDrum ? 'drum' : 'instrument'}`}
-                        aria-hidden="true"
-                        title={isDrum ? 'Drum track' : 'Instrument track'}
-                    >{isDrum ? (
-                            <svg
-                                viewBox="0 0 16 16"
-                                width="12"
-                                height="12"
-                            ><ellipse
-                                cx="8"
-                                cy="5"
-                                rx="6"
-                                ry="2.5"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.4"
-                            /><path
-                                d="M2 5v6c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V5"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.4"
-                            /></svg>
-                        ) : (
-                            <svg
-                                viewBox="0 0 16 16"
-                                width="12"
-                                height="12"
-                            ><path
-                                d="M7 2v8.6a2.4 2.4 0 1 1-1.4-2.2V3.4l6.4-1.4v7.2A2.4 2.4 0 1 1 10.6 7V3.5L7 4.3z"
-                                fill="currentColor"
-                            /></svg>
-                        )}</span>
-                    <span
-                        className="track-name"
-                        aria-label="Track name"
-                    >{displayNameForTrack(track)}</span>
-                    {this.renderEditToggleButton()}
-                </div>
+                {this.renderNameRow()}
                 <div className="actions-row compact-actions">
-                    <button
-                        type="button"
-                        className={`icon-btn track-btn mute-btn ${track.muted ? 'is-muted' : ''}`}
-                        onClick={this.handleMuteToggle}
-                        aria-label={track.muted ? 'Muted' : 'Mute'}
-                        aria-pressed={!!track.muted}
-                        title={track.muted ? 'Unmute' : 'Mute'}
-                    >
-                        <svg
-                            viewBox="0 0 16 16"
-                            width="14"
-                            height="14"
-                            aria-hidden="true"
-                        ><path
-                            d="M3 6v4h2.5L9 12.5V3.5L5.5 6H3z"
-                            fill="currentColor"
-                        />{track.muted ? (
-                                <path
-                                    d="M11 5l4 4M15 5l-4 4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.4"
-                                    strokeLinecap="round"
-                                />
-                            ) : (
-                                <path
-                                    d="M11 5.5a3 3 0 0 1 0 5M12.5 4a5 5 0 0 1 0 8"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.3"
-                                    strokeLinecap="round"
-                                />
-                            )}</svg>
-                    </button>
-                    <button
-                        type="button"
-                        className="icon-btn delete-btn"
-                        onClick={this.handleDelete}
-                        aria-label="Delete track"
-                        title="Delete track"
-                    >
-                        <svg
-                            viewBox="0 0 16 16"
-                            width="14"
-                            height="14"
-                            aria-hidden="true"
-                        ><path
-                            d="M6.7 2.2a.7 .7 0 0 0-.7 .7V3.5H2.5a.5 .5 0 0 0 0 1h11a.5 .5 0 0 0 0-1H10V2.9a.7 .7 0 0 0-.7-.7zm.3 1.3V2.9a.07 .07 0 0 1 .07-.07h1.86a.07 .07 0 0 1 .07 .07V3.5z"
-                            fill="currentColor"
-                            fillRule="evenodd"
-                        /><path
-                            d="M3.4 5.7h9.2l-.7 8.1a1.3 1.3 0 0 1-1.3 1.2H5.4a1.3 1.3 0 0 1-1.3-1.2z"
-                            fill="currentColor"
-                        /><path
-                            d="M6.5 7.5v6M9.5 7.5v6"
-                            stroke="#fff"
-                            strokeWidth="0.9"
-                            strokeLinecap="round"
-                            fill="none"
-                        /></svg>
-                    </button>
+                    <div className="track-state-group">
+                        <button
+                            type="button"
+                            className={`icon-btn track-btn mute-btn ${track.muted ? 'is-muted' : ''}`}
+                            onClick={this.handleMuteToggle}
+                            aria-label={track.muted ? 'Muted' : 'Mute'}
+                            aria-pressed={!!track.muted}
+                            title={track.muted ? 'Unmute' : 'Mute'}
+                        >
+                            <svg
+                                viewBox="0 0 16 16"
+                                width="14"
+                                height="14"
+                                aria-hidden="true"
+                            ><path
+                                d="M3 6v4h2.5L9 12.5V3.5L5.5 6H3z"
+                                fill="currentColor"
+                            />{track.muted ? (
+                                    <path
+                                        d="M11 5l4 4M15 5l-4 4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.4"
+                                        strokeLinecap="round"
+                                    />
+                                ) : (
+                                    <path
+                                        d="M11 5.5a3 3 0 0 1 0 5M12.5 4a5 5 0 0 1 0 8"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.3"
+                                        strokeLinecap="round"
+                                    />
+                                )}</svg>
+                        </button>
+                        {this.renderSoloButton()}
+                    </div>
                     <div className="move-stack">
                         <button
                             type="button"
@@ -586,6 +542,33 @@ class TrackRow extends React.Component {
                             strokeLinejoin="round"
                         /></svg></button>
                     </div>
+                    <button
+                        type="button"
+                        className="icon-btn delete-btn"
+                        onClick={this.handleDelete}
+                        aria-label="Delete track"
+                        title="Delete track"
+                    >
+                        <svg
+                            viewBox="0 0 16 16"
+                            width="14"
+                            height="14"
+                            aria-hidden="true"
+                        ><path
+                            d="M6.7 2.2a.7 .7 0 0 0-.7 .7V3.5H2.5a.5 .5 0 0 0 0 1h11a.5 .5 0 0 0 0-1H10V2.9a.7 .7 0 0 0-.7-.7zm.3 1.3V2.9a.07 .07 0 0 1 .07-.07h1.86a.07 .07 0 0 1 .07 .07V3.5z"
+                            fill="currentColor"
+                            fillRule="evenodd"
+                        /><path
+                            d="M3.4 5.7h9.2l-.7 8.1a1.3 1.3 0 0 1-1.3 1.2H5.4a1.3 1.3 0 0 1-1.3-1.2z"
+                            fill="currentColor"
+                        /><path
+                            d="M6.5 7.5v6M9.5 7.5v6"
+                            stroke="#fff"
+                            strokeWidth="0.9"
+                            strokeLinecap="round"
+                            fill="none"
+                        /></svg>
+                    </button>
                 </div>
             </div>
         );
@@ -658,11 +641,10 @@ class TrackRow extends React.Component {
         );
     }
 
-    renderControls () {
-        const {track, isFirst, isLast, onMoveUp, onMoveDown, onMoveTop, onMoveBottom} = this.props;
+    renderNameRow () {
+        const {track} = this.props;
         const isDrum = track.kind === 'drum';
-        const volume = typeof track.volume === 'number' ? track.volume : 80;
-        const nameRow = (
+        return (
             <div className="track-name-row">
                 <span
                     className={`track-kind-badge ${isDrum ? 'drum' : 'instrument'}`}
@@ -704,19 +686,23 @@ class TrackRow extends React.Component {
                 {this.renderEditToggleButton()}
             </div>
         );
+    }
+
+    renderControls () {
+        const {track, isFirst, isLast, onMoveUp, onMoveDown, onMoveTop, onMoveBottom} = this.props;
+        const isDrum = track.kind === 'drum';
+        const volume = typeof track.volume === 'number' ? track.volume : 80;
         return (
             <div className={`track-row-controls ${isDrum ? 'drum-track' : ''}`}>
                 {isDrum ? (
                     // Drum tracks put the lane picker at the very top of the
                     // panel so its rows are vertically aligned with the grid's
-                    // rows on the right. Name + edit toggle slide below.
-                    <React.Fragment>
-                        {this.renderLanePicker()}
-                        {nameRow}
-                    </React.Fragment>
+                    // rows on the right. The track name + edit toggle live in
+                    // a full-width header bar above the controls panel.
+                    this.renderLanePicker()
                 ) : (
                     <React.Fragment>
-                        {nameRow}
+                        {this.renderNameRow()}
                         <select
                             value={track.instrument || 1}
                             onChange={this.handleInstrumentChange}
@@ -774,6 +760,7 @@ class TrackRow extends React.Component {
                             /></svg>
                         )}
                     </button>
+                    {this.renderSoloButton()}
                     <input
                         type="range"
                         min={0}
@@ -946,10 +933,11 @@ class TrackRow extends React.Component {
         const {track, lengthSteps, stepsPerBeat, playStep, isEditing, selectedKeys} = this.props;
         const isDrum = track.kind === 'drum';
         const muted = !!track.muted;
+        const isDrumEditing = isEditing && isDrum;
         // selectedKeys for compact mode is ignored — only the editing track shows selection state.
 
-        return (
-            <div className={`track-row ${muted ? 'muted' : ''} ${isEditing ? 'editing' : 'compact'}`}>
+        const body = (
+            <React.Fragment>
                 {isEditing ? this.renderControls() : this.renderCompactControls()}
                 <div
                     ref={this._canvasRef}
@@ -1021,6 +1009,21 @@ class TrackRow extends React.Component {
                         </div>
                     ) : null}
                 </div>
+            </React.Fragment>
+        );
+
+        return (
+            <div className={`track-row ${muted ? 'muted' : ''} ${isEditing ? 'editing' : 'compact'} ${isDrumEditing ? 'drum-editing' : ''}`}>
+                {isDrumEditing ? (
+                    <React.Fragment>
+                        <div className="track-row-header">
+                            {this.renderNameRow()}
+                        </div>
+                        <div className="track-row-body">
+                            {body}
+                        </div>
+                    </React.Fragment>
+                ) : body}
             </div>
         );
     }

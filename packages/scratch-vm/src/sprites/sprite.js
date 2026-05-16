@@ -45,12 +45,6 @@ class Sprite {
          */
         this.sounds = [];
         /**
-         * List of songs for this sprite (Song Maker tab).
-         * Each song is a JSON object: {songId, name, tempo, lengthSteps, stepsPerBeat, tracks: [...]}.
-         * @type {Array.<!object>}
-         */
-        this.songs = [];
-        /**
          * List of clones for this sprite, including the original.
          * @type {Array.<!RenderedTarget>}
          */
@@ -168,18 +162,6 @@ class Sprite {
             const soundAsset = sound.asset;
             assetPromises.push(loadSoundFromAsset(newSound, soundAsset, this.runtime, newSprite.soundBank));
             return newSound;
-        });
-
-        // Deep-clone songs; regenerate songId/trackId so dup'd songs don't collide.
-        newSprite.songs = (this.songs || []).map(song => {
-            const cloned = JSON.parse(JSON.stringify(song));
-            cloned.songId = StringUtil.replaceUnsafeChars(`song-${Math.random().toString(36).slice(2, 10)}`);
-            if (Array.isArray(cloned.tracks)) {
-                cloned.tracks.forEach(track => {
-                    track.trackId = `track-${Math.random().toString(36).slice(2, 10)}`;
-                });
-            }
-            return cloned;
         });
 
         return Promise.all(assetPromises).then(() => newSprite);
