@@ -16,11 +16,16 @@ import {getPreActionForTarget, getSideForTarget} from './pointer-targets';
 
 let activeDriver = null;
 let highlightCleanup = null;
+let dismissListener = null;
 
 /**
  * Destroy any active driver highlight.
  */
 const destroyHighlight = function () {
+    if (dismissListener) {
+        window.removeEventListener('pointerdown', dismissListener, true);
+        dismissListener = null;
+    }
     if (highlightCleanup) {
         highlightCleanup();
         highlightCleanup = null;
@@ -29,6 +34,19 @@ const destroyHighlight = function () {
         activeDriver.destroy();
         activeDriver = null;
     }
+};
+
+/**
+ * Install a one-shot global pointerdown listener that dismisses the highlight.
+ * The user's click is allowed to propagate (so e.g. clicking the highlighted
+ * tab still activates it) — we just tear down the spotlight on top of it.
+ */
+const installDismissOnPointerdown = function () {
+    if (dismissListener) return;
+    dismissListener = () => {
+        destroyHighlight();
+    };
+    window.addEventListener('pointerdown', dismissListener, true);
 };
 
 /**
@@ -229,6 +247,7 @@ const highlightElement = function (pointer, dispatch, vm) {
                     align: 'center'
                 }
             });
+            installDismissOnPointerdown();
         });
     } else {
         // CSS-selector-based highlighting
@@ -295,6 +314,7 @@ const highlightElement = function (pointer, dispatch, vm) {
                     align: 'center'
                 }
             });
+            installDismissOnPointerdown();
         };
 
         const preAction = getPreActionForTarget(pointer.target);
