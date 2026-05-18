@@ -21,7 +21,8 @@ const blockThumbnails = blockThumbnailsCache.thumbnails || {};
 /* ===== HEADER ===== */
 const UnstuckCardHeader = ({
     activeTip, browseAll, hasResults, onClose, onShrinkExpand,
-    onAskAnother, onBackToResults, onBackFromBrowseTip, expanded
+    onAskAnother, onBackToResults, onBackFromBrowseTip, expanded,
+    usingKeywordFallback
 }) => {
     let headerContent;
     if (activeTip && browseAll) {
@@ -92,6 +93,14 @@ const UnstuckCardHeader = ({
         <div className={styles.header}>
             <div className={styles.headerLeft}>
                 {headerContent}
+                {usingKeywordFallback ? (
+                    <span
+                        className={styles.fallbackBadge}
+                        title={'Smart search model couldn’t load — using basic keyword search.'}
+                    >
+                        {'Basic search'}
+                    </span>
+                ) : null}
             </div>
             <div className={styles.headerButtons}>
                 <button
@@ -126,7 +135,8 @@ UnstuckCardHeader.propTypes = {
     onBackFromBrowseTip: PropTypes.func.isRequired,
     onBackToResults: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
-    onShrinkExpand: PropTypes.func.isRequired
+    onShrinkExpand: PropTypes.func.isRequired,
+    usingKeywordFallback: PropTypes.bool
 };
 
 /* ===== QUERY INPUT (with mic inside) ===== */
@@ -1004,6 +1014,7 @@ const UnstuckCard = ({
     quickPicks,
     searchResults,
     tips,
+    usingKeywordFallback,
     vm,
     voiceSupported,
     x,
@@ -1048,6 +1059,7 @@ const UnstuckCard = ({
                             browseAll={browseAll}
                             expanded={expanded}
                             hasResults={searchResults.length > 0}
+                            usingKeywordFallback={usingKeywordFallback}
                             onAskAnother={onAskAnother}
                             onBackFromBrowseTip={onBackFromBrowseTip}
                             onBackToResults={onBackToResults}
@@ -1227,6 +1239,7 @@ UnstuckCard.propTypes = {
         score: PropTypes.number.isRequired
     })).isRequired,
     tips: PropTypes.object.isRequired,
+    usingKeywordFallback: PropTypes.bool,
     // eslint-disable-next-line react/forbid-prop-types
     vm: PropTypes.object,
     voiceSupported: PropTypes.bool,

@@ -110,6 +110,8 @@ const resultsReturned = (query, results, latencyMs) => {
     }));
 };
 
+const embeddingFallback = reason => track('tip_embedding_fallback', baseProps({reason: reason || 'unknown'}));
+
 const voiceStarted = () => track('tip_voice_started', baseProps());
 const voiceCompleted = transcript => track('tip_voice_completed', baseProps({transcript}));
 const voiceAborted = reason => track('tip_voice_aborted', baseProps({reason: reason || 'unknown'}));
@@ -168,6 +170,7 @@ export {
     cardClosed,
     querySubmitted,
     resultsReturned,
+    embeddingFallback,
     voiceStarted,
     voiceCompleted,
     voiceAborted,

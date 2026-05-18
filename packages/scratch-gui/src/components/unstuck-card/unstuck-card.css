@@ -75,6 +75,26 @@ body .unstuck-container {
     margin-right: 0.25rem;
 }
 
+/* Status pill shown when the embedding model couldn't load and we fell back
+   to keyword search. Subdued so it doesn't look alarming, but legible at
+   Zoom-share compression for UXR observation. */
+.fallback-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 0.75rem;
+    background: hsla(0, 0%, 100%, 0.18);
+    color: hsla(0, 0%, 100%, 0.92);
+    font-size: 0.6rem;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1.4;
+    white-space: nowrap;
+    cursor: help;
+}
+
 .back-button {
     cursor: pointer;
     color: white;

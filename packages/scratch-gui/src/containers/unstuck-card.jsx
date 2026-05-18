@@ -28,6 +28,7 @@ import {updateMetrics as updateWorkspaceMetrics} from '../reducers/workspace-met
 import UnstuckCardComponent from '../components/unstuck-card/unstuck-card.jsx';
 import tips, {quickPicks} from '../lib/libraries/tips/index.js';
 import EmbeddingTipProvider from '../lib/unstuck/embedding-tip-provider.js';
+import {KeywordTipProvider} from '../lib/unstuck/tip-provider.js';
 import extractProjectContext from '../lib/unstuck/context-extractor.js';
 import getProjectText from '../lib/unstuck/blocks-to-text.js';
 import buildContextQuery from '../lib/unstuck/context-query-builder.js';
@@ -43,7 +44,11 @@ import * as postTipWatcher from '../lib/unstuck/post-tip-watcher.js';
 import layoutInsertedBlocks, {VIEWPORT_MARGIN} from '../lib/unstuck/layout-inserted-blocks.js';
 import {BLOCKS_DEFAULT_SCALE} from '../lib/layout-constants';
 
-const tipProvider = new EmbeddingTipProvider(tips);
+// Module-level provider so the singleton outlives card open/close cycles.
+// Swapped to KeywordTipProvider if the embedding model can't load (CDN blocked,
+// offline, unsupported browser); queryTips below reads this reference each call.
+let tipProvider = new EmbeddingTipProvider(tips);
+let usingKeywordFallback = false;
 
 const queryTips = function (context, query) {
     console.log(`[Tips] query="${query}"`);
@@ -65,9 +70,10 @@ class UnstuckCard extends React.Component {
         this.state = {
             listening: false,
             interimTranscript: '',
-            modelReady: tipProvider._ready,
+            modelReady: usingKeywordFallback || tipProvider._ready,
             modelError: false,
-            modelProgress: 0
+            modelProgress: 0,
+            usingKeywordFallback: usingKeywordFallback
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleQueryChange = this.handleQueryChange.bind(this);
@@ -103,9 +109,25 @@ class UnstuckCard extends React.Component {
                     if (this._unmounted) return;
                     this.setState({modelReady: true});
                 })
-                .catch(() => {
+                .catch(err => {
+                    // Embedding model failed to load (CDN blocked, offline, FF ESR
+                    // <114, CSP rejection, etc.). Swap to the keyword-only provider
+                    // so the rest of the feature (search, picker, voice, browse)
+                    // keeps working. The UI surfaces a "Basic search" pill so this
+                    // path is observable in UXR sessions.
+                    const reason = (err && err.message) || 'unknown';
+                    if (tipProvider && typeof tipProvider.dispose === 'function') {
+                        tipProvider.dispose();
+                    }
+                    tipProvider = new KeywordTipProvider(tips);
+                    usingKeywordFallback = true;
+                    tipEvents.embeddingFallback(reason);
                     if (this._unmounted) return;
-                    this.setState({modelError: true});
+                    this.setState({
+                        modelReady: true,
+                        modelError: false,
+                        usingKeywordFallback: true
+                    });
                 });
         }
     }
@@ -554,6 +576,7 @@ class UnstuckCard extends React.Component {
                 modelReady={this.state.modelReady}
                 modelError={this.state.modelError}
                 modelProgress={this.state.modelProgress}
+                usingKeywordFallback={this.state.usingKeywordFallback}
                 query={this.props.query}
                 searchResults={this.props.searchResults}
                 voiceSupported={isVoiceSupported()}
