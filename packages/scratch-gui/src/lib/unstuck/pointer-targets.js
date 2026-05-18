@@ -19,7 +19,7 @@ const uiTargets = [
         side: 'top'
     },
     {label: 'Add Backdrop button', selector: '[class*="stage-selector"] [class*="add-button"]', side: 'top'},
-    {label: 'Sprite info panel', selector: '[class*="sprite-info"]', side: 'left'},
+    {label: 'Sprite info panel', selector: '[class*="sprite-info_sprite-info"]', side: 'left'},
     {label: 'Costumes tab', selector: '[class*="tab-list"] [class*="tab"]:nth-child(2)', side: 'bottom'},
     {label: 'Sounds tab', selector: '[class*="tab-list"] [class*="tab"]:nth-child(3)', side: 'bottom'},
     {

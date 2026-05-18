@@ -2394,7 +2394,7 @@
             "pointers": [
                 {
                     "label": "Check the sprite info here",
-                    "target": "[class*=\"sprite-info\"]"
+                    "target": "[class*=\"sprite-info_sprite-info\"]"
                 },
                 {
                     "label": "Try the \"show\" block",
@@ -6204,7 +6204,7 @@
             "pointers": [
                 {
                     "label": "Check rotation style in sprite info",
-                    "target": "[class*=\"sprite-info\"]"
+                    "target": "[class*=\"sprite-info_sprite-info\"]"
                 }
             ]
         },
@@ -7567,7 +7567,7 @@
             "pointers": [
                 {
                     "label": "Set rotation style in sprite info",
-                    "target": "[class*=\"sprite-info\"]"
+                    "target": "[class*=\"sprite-info_sprite-info\"]"
                 }
             ]
         },
@@ -7962,7 +7962,7 @@
             "pointers": [
                 {
                     "label": "See x and y position here",
-                    "target": "[class*=\"sprite-info\"]"
+                    "target": "[class*=\"sprite-info_sprite-info\"]"
                 },
                 {
                     "label": "Check the box to show the x position",

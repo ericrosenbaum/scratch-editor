@@ -277,13 +277,23 @@ const highlightElement = function (pointer, dispatch, vm) {
             // above the overlay (z-index 10000) so it covers everything
             // in the cutout, and hide overlapping siblings so they don't
             // show through the spotlight padding area.
+            // Only promote to position:relative when the element is statically
+            // positioned — overriding an existing absolute/fixed position would
+            // visibly shift the element (e.g. the Add Sprite button).
             const prevTargetZIndex = element.style.zIndex;
-            const prevTargetPosition = element.style.position;
             element.style.zIndex = '10001';
-            element.style.position = 'relative';
+            const isStatic = window.getComputedStyle(element).position === 'static';
+            let restorePosition;
+            if (isStatic) {
+                const prevTargetPosition = element.style.position;
+                element.style.position = 'relative';
+                restorePosition = () => {
+                    element.style.position = prevTargetPosition;
+                };
+            }
             cleanups.push(() => {
                 element.style.zIndex = prevTargetZIndex;
-                element.style.position = prevTargetPosition;
+                if (restorePosition) restorePosition();
             });
 
             // Hide sibling tabs that overlap into the spotlight cutout.
