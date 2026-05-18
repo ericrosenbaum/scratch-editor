@@ -566,12 +566,13 @@ class MenuBar extends React.Component {
                                 onRequestClose={this.props.onRequestCloseEdit}
                             >
                                 <DeletionRestorer>{(handleRestore, {restorable, deletedItem}) => (
-                                    <MenuItem
-                                        className={classNames({[styles.disabled]: !restorable})}
-                                        onClick={this.handleRestoreOption(handleRestore)}
-                                    >
-                                        {this.restoreOptionMessage(deletedItem)}
-                                    </MenuItem>
+                                    restorable ? (
+                                        <MenuItem
+                                            onClick={this.handleRestoreOption(handleRestore)}
+                                        >
+                                            {this.restoreOptionMessage(deletedItem)}
+                                        </MenuItem>
+                                    ) : null
                                 )}</DeletionRestorer>
                                 <MenuSection>
                                     <TurboMode>{(toggleTurboMode, {turboMode}) => (

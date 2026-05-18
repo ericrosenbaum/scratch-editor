@@ -40,10 +40,6 @@ export default appTarget => {
         HashParserHOC
     )(GUI);
 
-    // TODO a hack for testing the backpack, allow backpack host to be set by url param
-    const backpackHostMatches = window.location.href.match(/[?&]backpack_host=([^&]*)&?/);
-    const backpackHost = backpackHostMatches ? backpackHostMatches[1] : null;
-
     // Allow asset host to be overridden via URL param for third-party deployments
     // (e.g. GitHub Pages) where assets.scratch.mit.edu may block cross-origin requests
     const assetHostMatches = window.location.href.match(/[?&]asset_host=([^&]*)&?/);
@@ -83,9 +79,6 @@ export default appTarget => {
             /> :
             <WrappedGui
                 canEditTitle
-                backpackVisible
-                showComingSoon
-                backpackHost={backpackHost}
                 canSave={false}
                 onClickLogo={onClickLogo}
                 {...(assetHost ? {assetHost} : {})}
