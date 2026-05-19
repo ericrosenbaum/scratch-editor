@@ -489,6 +489,7 @@ body .unstuck-container {
     display: flex;
     align-items: flex-end;
     gap: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .tip-text-row .tip-text {
