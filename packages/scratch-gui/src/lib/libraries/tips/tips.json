@@ -7555,7 +7555,7 @@
         "face-without-flip": {
             "id": "face-without-flip",
             "title": "Face left (no flip)",
-            "text": "Set rotation style to \"left-right\" in the sprite info area — then your sprite will flip horizontally without going upside down!",
+            "text": "Set rotation style to \"left-right\" in the sprite info area. Then your sprite will flip horizontally without going upside down",
             "tags": [
                 "motion",
                 "looks",
@@ -7566,8 +7566,8 @@
             ],
             "pointers": [
                 {
-                    "label": "Set rotation style in sprite info",
-                    "target": "[class*=\"sprite-info_sprite-info\"]"
+                    "label": "Set rotation style to \"left-right\"",
+                    "target": "[class*=\"direction-picker_button-row\"]"
                 }
             ]
         },

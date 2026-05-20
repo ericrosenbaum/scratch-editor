@@ -20,6 +20,12 @@ const uiTargets = [
     },
     {label: 'Add Backdrop button', selector: '[class*="stage-selector"] [class*="add-button"]', side: 'top'},
     {label: 'Sprite info panel', selector: '[class*="sprite-info_sprite-info"]', side: 'left'},
+    {
+        label: 'Rotation style buttons',
+        selector: '[class*="direction-picker_button-row"]',
+        preAction: 'openDirectionPicker',
+        side: 'left'
+    },
     {label: 'Costumes tab', selector: '[class*="tab-list"] [class*="tab"]:nth-child(2)', side: 'bottom'},
     {label: 'Sounds tab', selector: '[class*="tab-list"] [class*="tab"]:nth-child(3)', side: 'bottom'},
     {

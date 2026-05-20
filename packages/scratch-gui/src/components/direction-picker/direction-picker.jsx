@@ -95,6 +95,7 @@ const DirectionPicker = props => {
             >
                 <BufferedInput
                     small
+                    data-direction-picker-input=""
                     disabled={props.disabled}
                     label={directionLabel}
                     tabIndex="0"

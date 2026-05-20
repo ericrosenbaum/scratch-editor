@@ -74,12 +74,63 @@ const executePreAction = function (preAction, dispatch, vm) {
             if (stage) vm.setEditingTarget(stage.id);
         }
         break;
+    case 'openDirectionPicker': {
+        const input = document.querySelector('[data-direction-picker-input]');
+        if (input) input.focus();
+        break;
+    }
     default:
         break;
     }
 
     // Give the UI time to re-render after the dispatch
     return new Promise(resolve => setTimeout(resolve, 300));
+};
+
+/**
+ * After driver.js positions its popover, re-anchor the arrow so it points at
+ * the actual target center. driver.js's built-in arrow alignment ignores how
+ * the popover was positioned and flips to start/end based on a flawed viewport
+ * check, producing arrows that land far from the highlighted element.
+ * @param {Element} element - The highlighted target element
+ */
+const realignPopoverArrow = function (element) {
+    if (!element) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        const popover = document.querySelector('.driver-popover');
+        if (!popover) return;
+        const arrow = popover.querySelector('.driver-popover-arrow');
+        if (!arrow || arrow.classList.contains('driver-popover-arrow-none')) return;
+
+        const popoverRect = popover.getBoundingClientRect();
+        const targetRect = element.getBoundingClientRect();
+        const isHorizontal = arrow.classList.contains('driver-popover-arrow-side-top') ||
+            arrow.classList.contains('driver-popover-arrow-side-bottom');
+        const isVertical = arrow.classList.contains('driver-popover-arrow-side-left') ||
+            arrow.classList.contains('driver-popover-arrow-side-right');
+
+        arrow.classList.remove(
+            'driver-popover-arrow-align-start',
+            'driver-popover-arrow-align-center',
+            'driver-popover-arrow-align-end'
+        );
+
+        if (isHorizontal) {
+            const targetCenterX = targetRect.left + (targetRect.width / 2);
+            const desired = targetCenterX - popoverRect.left - 5;
+            const clamped = Math.max(10, Math.min(popoverRect.width - 20, desired));
+            arrow.style.left = `${clamped}px`;
+            arrow.style.right = 'auto';
+            arrow.style.marginLeft = '0';
+        } else if (isVertical) {
+            const targetCenterY = targetRect.top + (targetRect.height / 2);
+            const desired = targetCenterY - popoverRect.top - 5;
+            const clamped = Math.max(10, Math.min(popoverRect.height - 20, desired));
+            arrow.style.top = `${clamped}px`;
+            arrow.style.bottom = 'auto';
+            arrow.style.marginTop = '0';
+        }
+    }));
 };
 
 /**
@@ -247,6 +298,7 @@ const highlightElement = function (pointer, dispatch, vm) {
                     align: 'center'
                 }
             });
+            realignPopoverArrow(blockElement);
             installDismissOnPointerdown();
         });
     } else {
@@ -324,6 +376,7 @@ const highlightElement = function (pointer, dispatch, vm) {
                     align: 'center'
                 }
             });
+            realignPopoverArrow(element);
             installDismissOnPointerdown();
         };
 
