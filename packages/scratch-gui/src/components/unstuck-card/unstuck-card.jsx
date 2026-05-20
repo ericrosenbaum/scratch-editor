@@ -18,6 +18,14 @@ import blockThumbnailsCache from '../../lib/libraries/tips/block-thumbnails-cach
 
 const blockThumbnails = blockThumbnailsCache.thumbnails || {};
 
+// Append /editor to a scratch.mit.edu project URL so it opens in the editor
+// rather than the project page.
+const toEditorUrl = url => {
+    if (!url) return url;
+    const trimmed = url.replace(/\/+$/, '');
+    return /\/editor$/.test(trimmed) ? trimmed : `${trimmed}/editor`;
+};
+
 /* ===== HEADER ===== */
 const UnstuckCardHeader = ({
     activeTip, browseAll, hasResults, onClose, onShrinkExpand,
@@ -826,7 +834,7 @@ class TipDisplay extends React.Component {
                     <div className={styles.starterProject}>
                         <a
                             className={styles.thumbnailLink}
-                            href={tip.projectUrl}
+                            href={toEditorUrl(tip.projectUrl)}
                             rel="noopener noreferrer"
                             target="_blank"
                             onClick={this.handleStarterLink}
@@ -839,7 +847,7 @@ class TipDisplay extends React.Component {
                         </a>
                         <a
                             className={styles.openProjectButton}
-                            href={tip.projectUrl}
+                            href={toEditorUrl(tip.projectUrl)}
                             rel="noopener noreferrer"
                             target="_blank"
                             onClick={this.handleStarterLink}
