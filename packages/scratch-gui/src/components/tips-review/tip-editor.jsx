@@ -7,6 +7,7 @@ import allTips from '../../lib/libraries/tips/index.js';
 import {
     uiTargets,
     blockOpcodesByCategory,
+    blockCheckboxOpcodesByCategory,
     categoryNames
 } from '../../lib/unstuck/pointer-targets.js';
 import {captureWorkspaceBlocks, combineScripts} from '../../lib/unstuck/workspace-capture.js';
@@ -195,11 +196,24 @@ class TipEditor extends React.Component {
         this.updateDraft(draft => {
             const arr = [...(draft.pointers || [])];
             arr[index] = {...arr[index], [field]: value};
-            // If selecting a block opcode, set category and clear UI target
+            // If selecting a block opcode, set category and clear other shapes.
             if (field === 'blockOpcode') {
                 delete arr[index].target;
+                delete arr[index].blockCheckboxOpcode;
                 delete arr[index].category;
                 for (const [cat, opcodes] of Object.entries(blockOpcodesByCategory)) {
+                    if (opcodes.find(o => o.opcode === value)) {
+                        arr[index].category = cat;
+                        break;
+                    }
+                }
+            }
+            // If selecting a block checkbox, set category and clear other shapes.
+            if (field === 'blockCheckboxOpcode') {
+                delete arr[index].target;
+                delete arr[index].blockOpcode;
+                delete arr[index].category;
+                for (const [cat, opcodes] of Object.entries(blockCheckboxOpcodesByCategory)) {
                     if (opcodes.find(o => o.opcode === value)) {
                         arr[index].category = cat;
                         break;
@@ -209,6 +223,7 @@ class TipEditor extends React.Component {
             // If selecting a UI target, set target and clear block fields
             if (field === 'target') {
                 delete arr[index].blockOpcode;
+                delete arr[index].blockCheckboxOpcode;
                 delete arr[index].category;
             }
             return {pointers: arr};
@@ -395,16 +410,20 @@ class TipEditor extends React.Component {
     }
 
     renderPointerTargetSelect (pointer, index) {
-        const isBlockType = 'blockOpcode' in pointer;
+        let kind = 'ui';
+        if ('blockOpcode' in pointer) kind = 'block';
+        else if ('blockCheckboxOpcode' in pointer) kind = 'checkbox';
 
         return (
             <div className={styles.editorPointerTarget}>
                 <select
                     className={styles.editorSelect}
-                    value={isBlockType ? 'block' : 'ui'}
+                    value={kind}
                     onChange={e => {
                         if (e.target.value === 'block') {
                             this.updatePointer(index, 'blockOpcode', '');
+                        } else if (e.target.value === 'checkbox') {
+                            this.updatePointer(index, 'blockCheckboxOpcode', '');
                         } else {
                             this.updatePointer(index, 'target', '');
                         }
@@ -412,9 +431,10 @@ class TipEditor extends React.Component {
                 >
                     <option value="ui">{'UI Element'}</option>
                     <option value="block">{'Block'}</option>
+                    <option value="checkbox">{'Block Checkbox'}</option>
                 </select>
 
-                {isBlockType ? (
+                {kind === 'block' && (
                     <select
                         className={styles.editorSelect}
                         value={pointer.blockOpcode || ''}
@@ -435,7 +455,32 @@ class TipEditor extends React.Component {
                             </optgroup>
                         ))}
                     </select>
-                ) : (
+                )}
+
+                {kind === 'checkbox' && (
+                    <select
+                        className={styles.editorSelect}
+                        value={pointer.blockCheckboxOpcode || ''}
+                        onChange={e => this.updatePointer(index, 'blockCheckboxOpcode', e.target.value)}
+                    >
+                        <option value="">{'Select checkbox...'}</option>
+                        {Object.entries(blockCheckboxOpcodesByCategory).map(([cat, opcodes]) => (
+                            <optgroup
+                                key={cat}
+                                label={categoryNames[cat]}
+                            >
+                                {opcodes.map(o => (
+                                    <option
+                                        key={o.opcode}
+                                        value={o.opcode}
+                                    >{o.label}</option>
+                                ))}
+                            </optgroup>
+                        ))}
+                    </select>
+                )}
+
+                {kind === 'ui' && (
                     <select
                         className={styles.editorSelect}
                         value={pointer.target || ''}

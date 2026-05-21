@@ -266,11 +266,35 @@ const createDriver = function () {
 };
 
 /**
+ * Find the SVG element for a flyout block's monitor checkbox.
+ * The checkbox is rendered by FlyoutCheckboxIcon as a bubble on the flyout
+ * workspace's bubble canvas — not as a child of the block element — so we
+ * have to look it up through the Blockly API.
+ * @param {string} opcode - The block opcode (e.g. 'motion_xposition')
+ * @returns {SVGGElement|null} The bubble's SVG group element, or null
+ */
+const findFlyoutCheckboxElement = function (opcode) {
+    const workspace = ScratchBlocks.getMainWorkspace();
+    const flyout = workspace && workspace.getFlyout();
+    const flyoutWorkspace = flyout && flyout.getWorkspace();
+    if (!flyoutWorkspace) return null;
+
+    const block = flyoutWorkspace.getAllBlocks(false)
+        .find(b => b.type === opcode);
+    if (!block) return null;
+
+    const icon = block.getIcon && block.getIcon('checkbox');
+    const bubble = icon && icon.getBubble && icon.getBubble();
+    return bubble ? bubble.getSvgRoot() : null;
+};
+
+/**
  * Highlight a UI element using driver.js.
  *
- * Supports two pointer shapes:
+ * Supports three pointer shapes:
  * - CSS selector: { label, target }
  * - Block opcode: { label, blockOpcode, category }
+ * - Block monitor checkbox: { label, blockCheckboxOpcode, category }
  *
  * @param {object} pointer - Pointer config from a tip
  * @param {function} dispatch - Redux dispatch function
@@ -280,7 +304,31 @@ const highlightElement = function (pointer, dispatch, vm) {
     // Clean up any existing highlight
     destroyHighlight();
 
-    if (pointer.blockOpcode) {
+    if (pointer.blockCheckboxOpcode) {
+        // Checkbox-targeting pointer: open category, scroll to the block,
+        // then look up its checkbox bubble in the flyout workspace.
+        openCategoryAndScrollToBlock(
+            pointer.category,
+            pointer.blockCheckboxOpcode,
+            dispatch
+        ).then(blockElement => {
+            if (!blockElement) return;
+            const checkboxElement = findFlyoutCheckboxElement(pointer.blockCheckboxOpcode);
+            if (!checkboxElement) return;
+
+            activeDriver = createDriver();
+            activeDriver.highlight({
+                element: checkboxElement,
+                popover: {
+                    title: pointer.label,
+                    side: 'left',
+                    align: 'center'
+                }
+            });
+            realignPopoverArrow(checkboxElement);
+            installDismissOnPointerdown();
+        });
+    } else if (pointer.blockOpcode) {
         // Block-targeting pointer: open category and highlight the block
         openCategoryAndScrollToBlock(
             pointer.category,

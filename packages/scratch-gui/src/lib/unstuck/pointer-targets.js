@@ -259,9 +259,37 @@ const categoryNames = {
     lists: 'Lists'
 };
 
+// Reporter blocks that render a checkbox in the flyout to toggle their
+// monitor on the stage. Keep in sync with the `monitor_block` extension in
+// scratch-blocks. Variable/list reporters (data_variable, data_listcontents)
+// are project-specific and not included here.
+const blockCheckboxOpcodesByCategory = {
+    motion: [
+        {opcode: 'motion_xposition', label: 'x position'},
+        {opcode: 'motion_yposition', label: 'y position'},
+        {opcode: 'motion_direction', label: 'direction'}
+    ],
+    looks: [
+        {opcode: 'looks_costumenumbername', label: 'costume number/name'},
+        {opcode: 'looks_backdropnumbername', label: 'backdrop number/name'},
+        {opcode: 'looks_size', label: 'size'}
+    ],
+    sound: [
+        {opcode: 'sound_volume', label: 'volume'}
+    ],
+    sensing: [
+        {opcode: 'sensing_answer', label: 'answer'},
+        {opcode: 'sensing_loudness', label: 'loudness'},
+        {opcode: 'sensing_timer', label: 'timer'},
+        {opcode: 'sensing_current', label: 'current'},
+        {opcode: 'sensing_username', label: 'username'}
+    ]
+};
+
 export {
     uiTargets,
     blockOpcodesByCategory,
+    blockCheckboxOpcodesByCategory,
     getPreActionForTarget,
     getSideForTarget,
     categoryNames

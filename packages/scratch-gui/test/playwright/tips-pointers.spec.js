@@ -149,12 +149,16 @@ test.describe('Tips Pointers - Data Integrity', () => {
                     issues.push(`${tipId}.pointers[${i}]: missing label`);
                 }
 
-                if (!p.target && !p.blockOpcode) {
-                    issues.push(`${tipId}.pointers[${i}]: must have target or blockOpcode`);
+                if (!p.target && !p.blockOpcode && !p.blockCheckboxOpcode) {
+                    issues.push(`${tipId}.pointers[${i}]: must have target, blockOpcode, or blockCheckboxOpcode`);
                 }
 
                 if (p.blockOpcode && !p.category) {
                     issues.push(`${tipId}.pointers[${i}]: blockOpcode without category`);
+                }
+
+                if (p.blockCheckboxOpcode && !p.category) {
+                    issues.push(`${tipId}.pointers[${i}]: blockCheckboxOpcode without category`);
                 }
 
                 if (p.side && !['top', 'bottom', 'left', 'right'].includes(p.side)) {

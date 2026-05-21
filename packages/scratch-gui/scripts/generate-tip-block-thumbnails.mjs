@@ -16,10 +16,12 @@ import {readFileSync, existsSync} from 'fs';
 import {fileURLToPath} from 'url';
 import {dirname, resolve} from 'path';
 import {execFileSync} from 'child_process';
+import {createRequire} from 'module';
 import http from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
 
 const RENDERER_VERSION = 'v1-96px-q92';
 const TIPS_JSON_PATH = resolve(__dirname, '../src/lib/libraries/tips/tips.json');
@@ -108,10 +110,25 @@ if (!baseURL) {
 
 console.log('[generate-tip-block-thumbnails] Launching Playwright spec to render thumbnails...');
 
+// Resolve playwright's own cli.js rather than relying on `npx playwright`.
+// The workspace also depends on playwright-chromium, whose bin shadows
+// `node_modules/.bin/playwright` with a CLI that lacks the `test` subcommand —
+// so `npx playwright test` fails with "unknown command 'test'".
+// `cli.js` isn't an exported subpath, so resolve via package.json + bin map.
+let playwrightCli;
+try {
+    const pkgJsonPath = require.resolve('playwright/package.json');
+    const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
+    playwrightCli = resolve(dirname(pkgJsonPath), pkg.bin.playwright);
+} catch (err) {
+    console.error('[generate-tip-block-thumbnails] Cannot resolve playwright CLI — is `@playwright/test` installed?');
+    process.exit(1);
+}
+
 try {
     execFileSync(
-        'npx',
-        ['playwright', 'test', SPEC_PATH, '--project=chromium', '--reporter=list'],
+        process.execPath,
+        [playwrightCli, 'test', SPEC_PATH, '--project=chromium', '--reporter=list'],
         {
             cwd: resolve(__dirname, '..'),
             stdio: 'inherit',
