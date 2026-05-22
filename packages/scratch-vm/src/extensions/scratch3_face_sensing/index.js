@@ -49,6 +49,205 @@ const TILT = {
     RIGHT: 'right'
 };
 
+const getPartInfo = () => [{
+    text: formatMessage({
+        id: 'faceSensing.nose',
+        default: 'nose',
+        description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
+    }),
+    value: PARTS.NOSE
+}, {
+    text: formatMessage({
+        id: 'faceSensing.mouth',
+        default: 'mouth',
+        description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
+    }),
+    value: PARTS.MOUTH
+}, {
+    text: formatMessage({
+        id: 'faceSensing.leftEye',
+        default: 'left eye',
+        description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
+    }),
+    value: PARTS.LEFT_EYE
+}, {
+    text: formatMessage({
+        id: 'faceSensing.rightEye',
+        default: 'right eye',
+        description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
+    }),
+    value: PARTS.RIGHT_EYE
+}, {
+    text: formatMessage({
+        id: 'faceSensing.betweenEyes',
+        default: 'between eyes',
+        description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
+    }),
+    value: PARTS.BETWEEN_EYES
+}, {
+    text: formatMessage({
+        id: 'faceSensing.leftEar',
+        default: 'left ear',
+        description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
+    }),
+    value: PARTS.LEFT_EAR
+}, {
+    text: formatMessage({
+        id: 'faceSensing.rightEar',
+        default: 'right ear',
+        description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
+    }),
+    value: PARTS.RIGHT_EAR
+}, {
+    text: formatMessage({
+        id: 'faceSensing.topOfHead',
+        default: 'top of head',
+        description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
+    }),
+    value: PARTS.TOP_OF_HEAD
+}];
+
+const getTiltInfo = () => [{
+    text: formatMessage({
+        id: 'faceSensing.left',
+        default: 'left',
+        description: 'Argument for the "when face tilts [DIRECTION]" block'
+    }),
+    value: TILT.LEFT
+}, {
+    text: formatMessage({
+        id: 'faceSensing.right',
+        default: 'right',
+        description: 'Argument for the "when face tilts [DIRECTION]" block'
+    }),
+    value: TILT.RIGHT
+}];
+
+const getStaticExtensionInfo = () => ({
+    id: 'faceSensing',
+    name: formatMessage({
+        id: 'faceSensing.categoryName',
+        default: 'Face Sensing',
+        description: 'Name of face sensing extension'
+    }),
+    blockIconURI: blockIconURI,
+    menuIconURI: menuIconURI,
+    blocks: [
+        {
+            opcode: 'goToPart',
+            text: formatMessage({
+                id: 'faceSensing.goToPart',
+                default: 'go to [PART]',
+                description: 'Command that moves target to [PART]'
+            }),
+            blockType: BlockType.COMMAND,
+            arguments: {
+                PART: {
+                    type: ArgumentType.STRING,
+                    menu: 'PART',
+                    defaultValue: PARTS.NOSE
+                }
+            },
+            filter: [TargetType.SPRITE]
+        },
+        {
+            opcode: 'pointInFaceTiltDirection',
+            text: formatMessage({
+                id: 'faceSensing.pointInFaceTiltDirection',
+                default: 'point in direction of face tilt',
+                description: 'Command that points the target in the direction of face tilt'
+            }),
+            blockType: BlockType.COMMAND,
+            filter: [TargetType.SPRITE]
+        },
+        {
+            opcode: 'setSizeToFaceSize',
+            text: formatMessage({
+                id: 'faceSensing.setSizeToFaceSize',
+                default: 'set size to face size',
+                description: 'Command that sets the size of the target to the face size'
+            }),
+            blockType: BlockType.COMMAND,
+            filter: [TargetType.SPRITE]
+        },
+        '---',
+        {
+            opcode: 'whenTilted',
+            text: formatMessage({
+                id: 'faceSensing.whenTilted',
+                default: 'when face tilts [DIRECTION]',
+                description: 'Event that triggers when face tilts [DIRECTION]'
+            }),
+            blockType: BlockType.HAT,
+            arguments: {
+                DIRECTION: {
+                    type: ArgumentType.STRING,
+                    menu: 'TILT',
+                    defaultValue: TILT.LEFT
+                }
+            }
+        },
+        {
+            opcode: 'whenSpriteTouchesPart',
+            text: formatMessage({
+                id: 'faceSensing.whenSpriteTouchesPart',
+                default: 'when this sprite touches a [PART]',
+                description: 'Event that triggers when sprite touches a [PART]'
+            }),
+            arguments: {
+                PART: {
+                    type: ArgumentType.STRING,
+                    menu: 'PART',
+                    defaultValue: PARTS.NOSE
+                }
+            },
+            blockType: BlockType.HAT,
+            filter: [TargetType.SPRITE]
+        },
+        {
+            opcode: 'whenFaceDetected',
+            text: formatMessage({
+                id: 'faceSensing.whenFaceDetected',
+                default: 'when a face is detected',
+                description: 'Event that triggers when a face is detected'
+            }),
+            blockType: BlockType.HAT
+        },
+        '---',
+        {
+            opcode: 'faceIsDetected',
+            text: formatMessage({
+                id: 'faceSensing.faceDetected',
+                default: 'a face is detected?',
+                description: 'Reporter that returns whether a face is detected'
+            }),
+            blockType: BlockType.BOOLEAN
+        },
+        {
+            opcode: 'faceTilt',
+            text: formatMessage({
+                id: 'faceSensing.faceTilt',
+                default: 'face tilt',
+                description: 'Reporter that returns the face tilt'
+            }),
+            blockType: BlockType.REPORTER
+        },
+        {
+            opcode: 'faceSize',
+            text: formatMessage({
+                id: 'faceSensing.faceSize',
+                default: 'face size',
+                description: 'Reporter that returns the face size'
+            }),
+            blockType: BlockType.REPORTER
+        }
+    ],
+    menus: {
+        PART: getPartInfo(),
+        TILT: getTiltInfo()
+    }
+});
+
 /**
  * Class for the Face sensing blocks in Scratch 3.0
  * @param {Runtime} runtime - the runtime instantiating this block package.
@@ -159,99 +358,13 @@ class Scratch3FaceSensingBlocks {
     }
 
     /**
-     * An array of info about the face part menu choices.
-     * @type {object[]}
+     * Returns extension metadata without any runtime side effects. Used by
+     * UI surfaces (e.g. tip block previews) that need block definitions but
+     * must not trigger camera activation.
+     * @returns {object} metadata for this extension and its blocks.
      */
-    get PART_INFO () {
-        return [{
-            text: formatMessage({
-                id: 'faceSensing.nose',
-                default: 'nose',
-                description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
-
-            }),
-            value: PARTS.NOSE
-        }, {
-            text: formatMessage({
-                id: 'faceSensing.mouth',
-                default: 'mouth',
-                description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
-
-            }),
-            value: PARTS.MOUTH
-        }, {
-            text: formatMessage({
-                id: 'faceSensing.leftEye',
-                default: 'left eye',
-                description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
-
-            }),
-            value: PARTS.LEFT_EYE
-        }, {
-            text: formatMessage({
-                id: 'faceSensing.rightEye',
-                default: 'right eye',
-                description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
-
-            }),
-            value: PARTS.RIGHT_EYE
-        }, {
-            text: formatMessage({
-                id: 'faceSensing.betweenEyes',
-                default: 'between eyes',
-                description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
-
-            }),
-            value: PARTS.BETWEEN_EYES
-        }, {
-            text: formatMessage({
-                id: 'faceSensing.leftEar',
-                default: 'left ear',
-                description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
-
-            }),
-            value: PARTS.LEFT_EAR
-        }, {
-            text: formatMessage({
-                id: 'faceSensing.rightEar',
-                default: 'right ear',
-                description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
-
-            }),
-            value: PARTS.RIGHT_EAR
-        }, {
-            text: formatMessage({
-                id: 'faceSensing.topOfHead',
-                default: 'top of head',
-                description: 'Option for the "go to [PART]" and "when sprite touches [PART] blocks'
-
-            }),
-            value: PARTS.TOP_OF_HEAD
-        }];
-    }
-
-    /**
-     * An array of choices about the tilt direction menu.
-     * @type {object[]}
-     */
-    get TILT_INFO () {
-        return [{
-            text: formatMessage({
-                id: 'faceSensing.left',
-                default: 'left',
-                description: 'Argument for the "when face tilts [DIRECTION]" block'
-
-            }),
-            value: TILT.LEFT
-        }, {
-            text: formatMessage({
-                id: 'faceSensing.right',
-                default: 'right',
-                description: 'Argument for the "when face tilts [DIRECTION]" block'
-
-            }),
-            value: TILT.RIGHT
-        }];
+    static getInfoStatic () {
+        return getStaticExtensionInfo();
     }
 
     /**
@@ -324,130 +437,7 @@ class Scratch3FaceSensingBlocks {
                 this._videoLoadingCompleted = true;
             });
 
-        return {
-            id: 'faceSensing',
-            name: formatMessage({
-                id: 'faceSensing.categoryName',
-                default: 'Face Sensing',
-                description: 'Name of face sensing extension'
-            }),
-            blockIconURI: blockIconURI,
-            menuIconURI: menuIconURI,
-            blocks: [
-                {
-                    opcode: 'goToPart',
-                    text: formatMessage({
-                        id: 'faceSensing.goToPart',
-                        default: 'go to [PART]',
-                        description: 'Command that moves target to [PART]'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        PART: {
-                            type: ArgumentType.STRING,
-                            menu: 'PART',
-                            defaultValue: PARTS.NOSE
-                        }
-                    },
-                    filter: [TargetType.SPRITE]
-                },
-                {
-                    opcode: 'pointInFaceTiltDirection',
-                    text: formatMessage({
-                        id: 'faceSensing.pointInFaceTiltDirection',
-                        default: 'point in direction of face tilt',
-                        description: 'Command that points the target in the direction of face tilt'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    filter: [TargetType.SPRITE]
-                },
-                {
-                    opcode: 'setSizeToFaceSize',
-                    text: formatMessage({
-                        id: 'faceSensing.setSizeToFaceSize',
-                        default: 'set size to face size',
-                        description: 'Command that sets the size of the target to the face size'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    filter: [TargetType.SPRITE]
-                },
-                '---',
-                {
-                    opcode: 'whenTilted',
-                    text: formatMessage({
-                        id: 'faceSensing.whenTilted',
-                        default: 'when face tilts [DIRECTION]',
-                        description: 'Event that triggers when face tilts [DIRECTION]'
-                    }),
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        DIRECTION: {
-                            type: ArgumentType.STRING,
-                            menu: 'TILT',
-                            defaultValue: TILT.LEFT
-                        }
-                    }
-                },
-                {
-                    opcode: 'whenSpriteTouchesPart',
-                    text: formatMessage({
-                        id: 'faceSensing.whenSpriteTouchesPart',
-                        default: 'when this sprite touches a [PART]',
-                        description: 'Event that triggers when sprite touches a [PART]'
-                    }),
-                    arguments: {
-                        PART: {
-                            type: ArgumentType.STRING,
-                            menu: 'PART',
-                            defaultValue: PARTS.NOSE
-                        }
-                    },
-                    blockType: BlockType.HAT,
-                    filter: [TargetType.SPRITE]
-                },
-                {
-                    opcode: 'whenFaceDetected',
-                    text: formatMessage({
-                        id: 'faceSensing.whenFaceDetected',
-                        default: 'when a face is detected',
-                        description: 'Event that triggers when a face is detected'
-                    }),
-                    blockType: BlockType.HAT
-                },
-                '---',
-                {
-                    opcode: 'faceIsDetected',
-                    text: formatMessage({
-                        id: 'faceSensing.faceDetected',
-                        default: 'a face is detected?',
-                        description: 'Reporter that returns whether a face is detected'
-                    }),
-                    blockType: BlockType.BOOLEAN
-                },
-                {
-                    opcode: 'faceTilt',
-                    text: formatMessage({
-                        id: 'faceSensing.faceTilt',
-                        default: 'face tilt',
-                        description: 'Reporter that returns the face tilt'
-                    }),
-                    blockType: BlockType.REPORTER
-                },
-                {
-                    opcode: 'faceSize',
-                    text: formatMessage({
-                        id: 'faceSensing.faceSize',
-                        default: 'face size',
-                        description: 'Reporter that returns the face size'
-                    }),
-                    blockType: BlockType.REPORTER
-                }
-            ],
-            menus: {
-                PART: this.PART_INFO,
-                TILT: this.TILT_INFO
-            }
-        };
+        return getStaticExtensionInfo();
     }
 
     /**

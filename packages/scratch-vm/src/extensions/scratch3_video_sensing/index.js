@@ -65,6 +65,171 @@ const VideoState = {
     ON_FLIPPED: 'on-flipped'
 };
 
+const buildMenu = info => info.map((entry, index) => ({
+    text: entry.name,
+    value: entry.value || String(index + 1)
+}));
+
+const getAttributeInfo = () => [
+    {
+        name: formatMessage({
+            id: 'videoSensing.motion',
+            default: 'motion',
+            description: 'Attribute for the "video [ATTRIBUTE] on [SUBJECT]" block'
+        }),
+        value: SensingAttribute.MOTION
+    },
+    {
+        name: formatMessage({
+            id: 'videoSensing.direction',
+            default: 'direction',
+            description: 'Attribute for the "video [ATTRIBUTE] on [SUBJECT]" block'
+        }),
+        value: SensingAttribute.DIRECTION
+    }
+];
+
+const getSubjectInfo = () => [
+    {
+        name: formatMessage({
+            id: 'videoSensing.sprite',
+            default: 'sprite',
+            description: 'Subject for the "video [ATTRIBUTE] on [SUBJECT]" block'
+        }),
+        value: SensingSubject.SPRITE
+    },
+    {
+        name: formatMessage({
+            id: 'videoSensing.stage',
+            default: 'stage',
+            description: 'Subject for the "video [ATTRIBUTE] on [SUBJECT]" block'
+        }),
+        value: SensingSubject.STAGE
+    }
+];
+
+const getVideoStateInfo = () => [
+    {
+        name: formatMessage({
+            id: 'videoSensing.off',
+            default: 'off',
+            description: 'Option for the "turn video [STATE]" block'
+        }),
+        value: VideoState.OFF
+    },
+    {
+        name: formatMessage({
+            id: 'videoSensing.on',
+            default: 'on',
+            description: 'Option for the "turn video [STATE]" block'
+        }),
+        value: VideoState.ON
+    },
+    {
+        name: formatMessage({
+            id: 'videoSensing.onFlipped',
+            default: 'on flipped',
+            description: 'Option for the "turn video [STATE]" block that causes the video to be flipped' +
+                ' horizontally (reversed as in a mirror)'
+        }),
+        value: VideoState.ON_FLIPPED
+    }
+];
+
+const getStaticExtensionInfo = () => ({
+    id: 'videoSensing',
+    name: formatMessage({
+        id: 'videoSensing.categoryName',
+        default: 'Video Sensing',
+        description: 'Label for the video sensing extension category'
+    }),
+    blockIconURI: blockIconURI,
+    menuIconURI: menuIconURI,
+    blocks: [
+        {
+            // @todo this hat needs to be set itself to restart existing
+            // threads like Scratch 2's behaviour.
+            opcode: 'whenMotionGreaterThan',
+            text: formatMessage({
+                id: 'videoSensing.whenMotionGreaterThan',
+                default: 'when video motion > [REFERENCE]',
+                description: 'Event that triggers when the amount of motion is greater than [REFERENCE]'
+            }),
+            blockType: BlockType.HAT,
+            arguments: {
+                REFERENCE: {
+                    type: ArgumentType.NUMBER,
+                    defaultValue: 10
+                }
+            }
+        },
+        {
+            opcode: 'videoOn',
+            blockType: BlockType.REPORTER,
+            text: formatMessage({
+                id: 'videoSensing.videoOn',
+                default: 'video [ATTRIBUTE] on [SUBJECT]',
+                description: 'Reporter that returns the amount of [ATTRIBUTE] for the selected [SUBJECT]'
+            }),
+            arguments: {
+                ATTRIBUTE: {
+                    type: ArgumentType.NUMBER,
+                    menu: 'ATTRIBUTE',
+                    defaultValue: SensingAttribute.MOTION
+                },
+                SUBJECT: {
+                    type: ArgumentType.NUMBER,
+                    menu: 'SUBJECT',
+                    defaultValue: SensingSubject.SPRITE
+                }
+            }
+        },
+        {
+            opcode: 'videoToggle',
+            text: formatMessage({
+                id: 'videoSensing.videoToggle',
+                default: 'turn video [VIDEO_STATE]',
+                description: 'Controls display of the video preview layer'
+            }),
+            arguments: {
+                VIDEO_STATE: {
+                    type: ArgumentType.NUMBER,
+                    menu: 'VIDEO_STATE',
+                    defaultValue: VideoState.ON
+                }
+            }
+        },
+        {
+            opcode: 'setVideoTransparency',
+            text: formatMessage({
+                id: 'videoSensing.setVideoTransparency',
+                default: 'set video transparency to [TRANSPARENCY]',
+                description: 'Controls transparency of the video preview layer'
+            }),
+            arguments: {
+                TRANSPARENCY: {
+                    type: ArgumentType.NUMBER,
+                    defaultValue: 50
+                }
+            }
+        }
+    ],
+    menus: {
+        ATTRIBUTE: {
+            acceptReporters: true,
+            items: buildMenu(getAttributeInfo())
+        },
+        SUBJECT: {
+            acceptReporters: true,
+            items: buildMenu(getSubjectInfo())
+        },
+        VIDEO_STATE: {
+            acceptReporters: true,
+            items: buildMenu(getVideoStateInfo())
+        }
+    }
+});
+
 /**
  * Class for the motion-related blocks in Scratch 3.0
  * @param {Runtime} runtime - the runtime instantiating this block package.
@@ -258,24 +423,6 @@ class Scratch3VideoSensingBlocks {
     }
 
     /**
-     * Create data for a menu in scratch-blocks format, consisting of an array
-     * of objects with text and value properties. The text is a translated
-     * string, and the value is one-indexed.
-     * @param {object[]} info - An array of info objects each having a name
-     *   property.
-     * @returns {Array} - An array of objects with text and value properties.
-     * @private
-     */
-    _buildMenu (info) {
-        return info.map((entry, index) => {
-            const obj = {};
-            obj.text = entry.name;
-            obj.value = entry.value || String(index + 1);
-            return obj;
-        });
-    }
-
-    /**
      * @param {Target} target - collect motion state for this target.
      * @returns {MotionState} the mutable motion state associated with that
      *   target. This will be created if necessary.
@@ -294,100 +441,18 @@ class Scratch3VideoSensingBlocks {
         return SensingAttribute;
     }
 
-    /**
-     * An array of choices of whether a reporter should return the frame's
-     * motion amount or direction.
-     * @type {object[]}
-     * @param {string} name - the translatable name to display in sensor
-     *   attribute menu
-     * @param {string} value - the serializable value of the attribute
-     */
-    get ATTRIBUTE_INFO () {
-        return [
-            {
-                name: formatMessage({
-                    id: 'videoSensing.motion',
-                    default: 'motion',
-                    description: 'Attribute for the "video [ATTRIBUTE] on [SUBJECT]" block'
-                }),
-                value: SensingAttribute.MOTION
-            },
-            {
-                name: formatMessage({
-                    id: 'videoSensing.direction',
-                    default: 'direction',
-                    description: 'Attribute for the "video [ATTRIBUTE] on [SUBJECT]" block'
-                }),
-                value: SensingAttribute.DIRECTION
-            }
-        ];
-    }
-
     static get SensingSubject () {
         return SensingSubject;
     }
 
     /**
-     * An array of info about the subject choices.
-     * @type {object[]}
-     * @param {string} name - the translatable name to display in the subject menu
-     * @param {string} value - the serializable value of the subject
+     * Returns extension metadata without any runtime side effects. Used by
+     * UI surfaces (e.g. tip block previews) that need block definitions but
+     * must not trigger camera activation.
+     * @returns {object} metadata for this extension and its blocks.
      */
-    get SUBJECT_INFO () {
-        return [
-            {
-                name: formatMessage({
-                    id: 'videoSensing.sprite',
-                    default: 'sprite',
-                    description: 'Subject for the "video [ATTRIBUTE] on [SUBJECT]" block'
-                }),
-                value: SensingSubject.SPRITE
-            },
-            {
-                name: formatMessage({
-                    id: 'videoSensing.stage',
-                    default: 'stage',
-                    description: 'Subject for the "video [ATTRIBUTE] on [SUBJECT]" block'
-                }),
-                value: SensingSubject.STAGE
-            }
-        ];
-    }
-
-    /**
-     * An array of info on video state options for the "turn video [STATE]" block.
-     * @type {object[]}
-     * @param {string} name - the translatable name to display in the video state menu
-     * @param {string} value - the serializable value stored in the block
-     */
-    get VIDEO_STATE_INFO () {
-        return [
-            {
-                name: formatMessage({
-                    id: 'videoSensing.off',
-                    default: 'off',
-                    description: 'Option for the "turn video [STATE]" block'
-                }),
-                value: VideoState.OFF
-            },
-            {
-                name: formatMessage({
-                    id: 'videoSensing.on',
-                    default: 'on',
-                    description: 'Option for the "turn video [STATE]" block'
-                }),
-                value: VideoState.ON
-            },
-            {
-                name: formatMessage({
-                    id: 'videoSensing.onFlipped',
-                    default: 'on flipped',
-                    description: 'Option for the "turn video [STATE]" block that causes the video to be flipped' +
-                        ' horizontally (reversed as in a mirror)'
-                }),
-                value: VideoState.ON_FLIPPED
-            }
-        ];
+    static getInfoStatic () {
+        return getStaticExtensionInfo();
     }
 
     /**
@@ -405,100 +470,7 @@ class Scratch3VideoSensingBlocks {
             this.firstInstall = false;
         }
 
-        // Return extension definition
-        return {
-            id: 'videoSensing',
-            name: formatMessage({
-                id: 'videoSensing.categoryName',
-                default: 'Video Sensing',
-                description: 'Label for the video sensing extension category'
-            }),
-            blockIconURI: blockIconURI,
-            menuIconURI: menuIconURI,
-            blocks: [
-                {
-                    // @todo this hat needs to be set itself to restart existing
-                    // threads like Scratch 2's behaviour.
-                    opcode: 'whenMotionGreaterThan',
-                    text: formatMessage({
-                        id: 'videoSensing.whenMotionGreaterThan',
-                        default: 'when video motion > [REFERENCE]',
-                        description: 'Event that triggers when the amount of motion is greater than [REFERENCE]'
-                    }),
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        REFERENCE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 10
-                        }
-                    }
-                },
-                {
-                    opcode: 'videoOn',
-                    blockType: BlockType.REPORTER,
-                    text: formatMessage({
-                        id: 'videoSensing.videoOn',
-                        default: 'video [ATTRIBUTE] on [SUBJECT]',
-                        description: 'Reporter that returns the amount of [ATTRIBUTE] for the selected [SUBJECT]'
-                    }),
-                    arguments: {
-                        ATTRIBUTE: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'ATTRIBUTE',
-                            defaultValue: SensingAttribute.MOTION
-                        },
-                        SUBJECT: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'SUBJECT',
-                            defaultValue: SensingSubject.SPRITE
-                        }
-                    }
-                },
-                {
-                    opcode: 'videoToggle',
-                    text: formatMessage({
-                        id: 'videoSensing.videoToggle',
-                        default: 'turn video [VIDEO_STATE]',
-                        description: 'Controls display of the video preview layer'
-                    }),
-                    arguments: {
-                        VIDEO_STATE: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'VIDEO_STATE',
-                            defaultValue: VideoState.ON
-                        }
-                    }
-                },
-                {
-                    opcode: 'setVideoTransparency',
-                    text: formatMessage({
-                        id: 'videoSensing.setVideoTransparency',
-                        default: 'set video transparency to [TRANSPARENCY]',
-                        description: 'Controls transparency of the video preview layer'
-                    }),
-                    arguments: {
-                        TRANSPARENCY: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 50
-                        }
-                    }
-                }
-            ],
-            menus: {
-                ATTRIBUTE: {
-                    acceptReporters: true,
-                    items: this._buildMenu(this.ATTRIBUTE_INFO)
-                },
-                SUBJECT: {
-                    acceptReporters: true,
-                    items: this._buildMenu(this.SUBJECT_INFO)
-                },
-                VIDEO_STATE: {
-                    acceptReporters: true,
-                    items: this._buildMenu(this.VIDEO_STATE_INFO)
-                }
-            }
-        };
+        return getStaticExtensionInfo();
     }
 
     /**

@@ -833,9 +833,13 @@ class Runtime extends EventEmitter {
     /**
      * Register the primitives provided by an extension.
      * @param {ExtensionMetadata} extensionInfo - information about the extension (id, blocks, etc.)
+     * @param {boolean} [isPreview=false] - when true, skip adding the category
+     *   to `_blockInfo` so it does not appear in the editor's toolbox/blocks
+     *   palette. Used by metadata-only preview loads (see ExtensionManager
+     *   `loadExtensionMetadataForPreview`).
      * @private
      */
-    _registerExtensionPrimitives (extensionInfo) {
+    _registerExtensionPrimitives (extensionInfo, isPreview = false) {
         const categoryInfo = {
             id: extensionInfo.id,
             name: maybeFormatMessage(extensionInfo.name),
@@ -854,7 +858,9 @@ class Runtime extends EventEmitter {
             categoryInfo.color3 = defaultExtensionColors[2];
         }
 
-        this._blockInfo.push(categoryInfo);
+        if (!isPreview) {
+            this._blockInfo.push(categoryInfo);
+        }
 
         this._fillExtensionCategory(categoryInfo, extensionInfo);
 

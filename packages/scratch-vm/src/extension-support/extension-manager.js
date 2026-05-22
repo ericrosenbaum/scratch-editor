@@ -88,6 +88,19 @@ class ExtensionManager {
         this._loadedExtensions = new Map();
 
         /**
+         * Set of extension IDs that have been registered for preview-only
+         * rendering (via `loadExtensionMetadataForPreview`). These are NOT in
+         * `_loadedExtensions` — a later full `loadExtensionURL` will still do
+         * the real load. We track them here just to make the preview path
+         * idempotent: re-emitting EXTENSION_ADDED on every preview render
+         * would otherwise re-enter through BlockPreview's EXTENSION_ADDED
+         * listener and recurse.
+         * @type {Set.<string>}
+         * @private
+         */
+        this._previewLoadedExtensions = new Set();
+
+        /**
          * Keep a reference to the runtime so we can construct internal extension objects.
          * TODO: remove this in favor of extensions accessing the runtime as a service.
          * @type {Runtime}
@@ -162,6 +175,53 @@ class ExtensionManager {
             this.pendingExtensions.push({extensionURL, resolve, reject});
             dispatch.addWorker(worker);
         });
+    }
+
+    /**
+     * Register an extension's block primitives using a static metadata method,
+     * without instantiating the extension class. Used by UI surfaces (e.g. tip
+     * block previews) that need to render extension blocks but must not
+     * trigger constructor / getInfo side effects like camera activation or
+     * ML model loading.
+     *
+     * The extension is NOT added to `_loadedExtensions`, so a subsequent
+     * `loadExtensionURL` call still performs the full real load. The preview
+     * registration also skips pushing the category to `runtime._blockInfo`,
+     * so it does not appear in the editor's toolbox/blocks-palette.
+     *
+     * @param {string} extensionId - the ID of a built-in extension whose class
+     *   exposes a `static getInfoStatic()` method.
+     * @returns {boolean} - true if the metadata was registered, false if the
+     *   extension is already loaded, not built-in, or has no static metadata.
+     */
+    loadExtensionMetadataForPreview (extensionId) {
+        if (this._loadedExtensions.has(extensionId)) return false;
+        if (this._previewLoadedExtensions.has(extensionId)) return false;
+        if (!Object.prototype.hasOwnProperty.call(builtinExtensions, extensionId)) return false;
+
+        const ExtClass = builtinExtensions[extensionId]();
+        if (typeof ExtClass.getInfoStatic !== 'function') return false;
+
+        const info = ExtClass.getInfoStatic();
+        const fakeWorkerId = this.nextExtensionWorker++;
+        const serviceName = `extension_${fakeWorkerId}_${info.id}`;
+        // Stub service: block `func` and menu callbacks are bound to this
+        // during _prepareExtensionInfo, but the preview workspace is readOnly
+        // so they are never invoked. We populate no-op methods for each block
+        // opcode/func name so registration doesn't log "function not found"
+        // warnings for the entire palette.
+        const stub = {};
+        const noop = () => {};
+        for (const block of info.blocks || []) {
+            if (block && typeof block === 'object' && block.opcode) {
+                stub[block.func || block.opcode] = noop;
+            }
+        }
+        dispatch.setServiceSync(serviceName, stub);
+        const prepared = this._prepareExtensionInfo(serviceName, info);
+        this._previewLoadedExtensions.add(extensionId);
+        this.runtime._registerExtensionPrimitives(prepared, true);
+        return true;
     }
 
     /**

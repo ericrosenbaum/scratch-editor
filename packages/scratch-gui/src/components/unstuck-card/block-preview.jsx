@@ -14,6 +14,12 @@ const KNOWN_EXTENSION_IDS = new Set([
     'videoSensing', 'ev3', 'makeymakey', 'boost', 'gdxfor', 'faceSensing'
 ]);
 
+// Loading these extensions normally turns the webcam on as a side effect of
+// the extension's constructor / getInfo (see scratch3_video_sensing and
+// scratch3_face_sensing). For block previews we use a metadata-only path
+// so the camera does not activate just from viewing a tip.
+const CAMERA_EXTENSION_IDS = new Set(['videoSensing', 'faceSensing']);
+
 // All extensions render in the same Scratch-extension green in the
 // preview, regardless of any custom category color the extension declares.
 // Matches `defaultExtensionColors` in scratch-vm/src/engine/runtime.js.
@@ -105,7 +111,14 @@ class BlockPreview extends React.Component {
         if (!vm || !vm.extensionManager) return;
         const ids = extensionsInTemplate(blocks);
         for (const extId of ids) {
-            if (!vm.extensionManager.isExtensionLoaded(extId)) {
+            if (vm.extensionManager.isExtensionLoaded(extId)) continue;
+            if (CAMERA_EXTENSION_IDS.has(extId)) {
+                // Metadata-only registration: no constructor, no getInfo
+                // side effects, and the extension is not added to the
+                // editor's toolbox. A later user-initiated load will still
+                // run the full extension.
+                vm.extensionManager.loadExtensionMetadataForPreview(extId);
+            } else {
                 // Fire-and-forget; EXTENSION_ADDED triggers a re-render.
                 Promise.resolve(vm.extensionManager.loadExtensionURL(extId))
                     .catch(() => { /* extension load failed; preview stays empty */ });
@@ -193,6 +206,16 @@ class BlockPreview extends React.Component {
         // definitions are registered with ScratchBlocks before we render.
         // EXTENSION_ADDED triggers a re-render once loaded.
         this.ensureExtensionsLoaded(blocks);
+
+        // ensureExtensionsLoaded may have just emitted EXTENSION_ADDED for an
+        // extension whose blocks were registered for the first time. The
+        // editor's blocks.jsx handler reacts by calling setBlockStyle on the
+        // main workspace's theme and then setTheme() to refresh it. Our
+        // preview workspace's theme already has the style seeded in setRef,
+        // but ScratchBlocks only resolves block colours from the theme when
+        // setTheme() runs — so without this refresh, the first render shows
+        // extension blocks as black.
+        this.workspace.setTheme(this.workspace.getTheme());
 
         try {
             const dom = ScratchBlocks.utils.xml.textToDom(xml);
