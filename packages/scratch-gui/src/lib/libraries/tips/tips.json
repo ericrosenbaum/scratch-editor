@@ -2380,8 +2380,13 @@
             ],
             "pointers": [
                 {
-                    "label": "Drag the \"set volume\" block into your code",
+                    "label": "Try the \"set volume\" block",
                     "blockOpcode": "sound_setvolumeto",
+                    "category": "sound"
+                },
+                {
+                    "label": "Show the current volume",
+                    "blockCheckboxOpcode": "sound_volume",
                     "category": "sound"
                 }
             ]
@@ -4636,6 +4641,11 @@
                     "label": "Find \"timer\" in Sensing",
                     "blockOpcode": "sensing_timer",
                     "category": "sensing"
+                },
+                {
+                    "label": "Show the timer on the stage",
+                    "blockCheckboxOpcode": "sensing_timer",
+                    "category": "sensing"
                 }
             ],
             "_capturedBlocks": [
@@ -6376,7 +6386,7 @@
             "pointers": [
                 {
                     "label": "Check rotation style in sprite info",
-                    "target": "[class*=\"sprite-info_sprite-info\"]"
+                    "target": "[class*=\"direction-picker_button-row\"]"
                 }
             ]
         },
@@ -8139,7 +8149,7 @@
                     "target": "[class*=\"sprite-info_sprite-info\"]"
                 },
                 {
-                    "label": "Check the box to show the x position",
+                    "label": "Try x position block",
                     "blockOpcode": "motion_xposition",
                     "category": "motion"
                 }
@@ -10503,6 +10513,11 @@
                     "label": "Find \"loudness\" in Sensing",
                     "blockOpcode": "sensing_loudness",
                     "category": "sensing"
+                },
+                {
+                    "label": "Show loudness on the stage",
+                    "blockCheckboxOpcode": "sensing_loudness",
+                    "category": "sensing"
                 }
             ],
             "_capturedBlocks": [
@@ -12696,8 +12711,13 @@
             ],
             "pointers": [
                 {
-                    "label": "Drag \"change volume by\" into your code",
+                    "label": "Try \"change volume by\"",
                     "blockOpcode": "sound_changevolumeby",
+                    "category": "sound"
+                },
+                {
+                    "label": "Show volume on the stage",
+                    "blockCheckboxOpcode": "sound_volume",
                     "category": "sound"
                 }
             ],
