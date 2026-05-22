@@ -37,7 +37,7 @@ import {isSupported as isVoiceSupported, listen as voiceListen} from '../lib/uns
 import {
     resolveBlockFromEvent,
     buildPickedBlockQuery,
-    applyPickedBlockBoost
+    rankTipsForPickedBlock
 } from '../lib/unstuck/block-picker.js';
 import * as tipEvents from '../lib/unstuck/tip-events.js';
 import * as postTipWatcher from '../lib/unstuck/post-tip-watcher.js';
@@ -258,7 +258,7 @@ class UnstuckCard extends React.Component {
 
         queryTips(context, query)
             .then(results => {
-                const ranked = applyPickedBlockBoost(results, tips, picked);
+                const ranked = rankTipsForPickedBlock(results, tips, picked);
                 if (ranked.length > 0) {
                     this.props.onSetSearchResults(ranked);
                 } else {

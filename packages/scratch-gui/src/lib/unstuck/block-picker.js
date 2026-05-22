@@ -5,6 +5,7 @@
  * this module is the inverse direction (DOM element → opcode + human text).
  */
 import * as ScratchBlocks from 'scratch-blocks';
+import extensionsLibrary from '../libraries/extensions/index.jsx';
 
 const OPCODE_CLASS_RE = /^[a-z][a-z0-9]*_[a-z0-9_]+$/i;
 
@@ -174,34 +175,6 @@ const resolveBlockFromEvent = function (event) {
 };
 
 /**
- * Build the visible / search query for a picked block.
- * @param {{opcode: string, humanText: string}} picked - The picked block info
- * @returns {string} The constructed natural-language query, or empty string
- */
-const buildPickedBlockQuery = function (picked) {
-    if (!picked) return '';
-    const niceOpcode = (picked.opcode || '')
-        .replace(/^[^_]+_/, '')
-        .replace(/_/g, ' ')
-        .trim();
-    const text = picked.humanText && picked.humanText.trim() ? picked.humanText.trim() : niceOpcode;
-    if (!text) return '';
-    return `How do I use the ${text} block?`;
-};
-
-// Re-ranking constants. Boosts are additive on top of cosine-similarity
-// scores (0–1) returned by the embedding provider, so a tip that matches
-// the picked block on all signals can outscore a strong embedding-only hit.
-const STOPWORDS = new Set([
-    'the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'on', 'with', 'by', 'for'
-]);
-const TITLE_BOOST = 0.25;
-const CODE_BOOST = 0.25;
-const POINTER_BOOST = 0.20;
-const DESC_BOOST = 0.10;
-const TAG_BOOST = 0.05;
-
-/**
  * Get the block's category prefix from its opcode, e.g.
  * `"motion_movesteps"` → `"motion"`.
  * @param {string} opcode
@@ -213,90 +186,123 @@ const categoryFromOpcode = function (opcode) {
     return idx > 0 ? opcode.slice(0, idx) : '';
 };
 
-/**
- * Extract content tokens from the picked block, used for case-insensitive
- * substring matching against tip titles and descriptions.
- * @param {{opcode: string, humanText: string}} picked
- * @returns {string[]} lowercased tokens, ≥3 chars, not numbers, not stopwords
- */
-const getMatchTokens = function (picked) {
-    const source = (picked && picked.humanText && picked.humanText.trim()) ||
-        ((picked && picked.opcode) || '').replace(/^[^_]+_/, '').replace(/_/g, ' ');
-    return source.toLowerCase()
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .split(/\s+/)
-        .filter(t => t.length >= 3 && !STOPWORDS.has(t) && !/^\d+$/.test(t));
-};
-
-/**
- * Compute the deterministic boost for one tip given a picked block.
- * @param {object} tip - A tip from the tips library
- * @param {{opcode: string}} picked - The picked block info
- * @param {string[]} tokens - Pre-computed match tokens
- * @param {string} category - Pre-computed category prefix
- * @returns {number} Sum of applicable boosts, 0 if no signals match
- */
-const scoreTipForPickedBlock = function (tip, picked, tokens, category) {
-    if (!tip || !picked) return 0;
-    let boost = 0;
-    const opcode = picked.opcode;
-
-    if (tip.title && tokens.some(tok => tip.title.toLowerCase().includes(tok))) {
-        boost += TITLE_BOOST;
-    }
-    if (tip._capturedBlocks && tip._capturedBlocks.some(b => b.opcode === opcode)) {
-        boost += CODE_BOOST;
-    }
-    if (tip.pointers && tip.pointers.some(p => p.blockOpcode === opcode)) {
-        boost += POINTER_BOOST;
-    }
-    if (tip.text && tokens.some(tok => tip.text.toLowerCase().includes(tok))) {
-        boost += DESC_BOOST;
-    }
-    if (category && tip.tags && tip.tags.includes(category)) {
-        boost += TAG_BOOST;
-    }
-    return boost;
-};
-
-/**
- * Re-rank tip search results to bias toward tips that explicitly reference
- * the picked block. Merges the embedding-ranked results with deterministic
- * matches scanned across the full tip library (hybrid mode): tips with
- * strong block-specific signals can surface even if they weren't in the
- * embedding top-10.
- *
- * @param {Array<{tipId: string, score: number}>} embeddingResults
- * @param {Object<string, object>} allTips - tip id → tip
- * @param {{opcode: string, humanText: string}} picked
- * @returns {Array<{tipId: string, score: number}>} Top-10 final ranking
- */
-const applyPickedBlockBoost = function (embeddingResults, allTips, picked) {
-    if (!picked) return embeddingResults;
-    const tokens = getMatchTokens(picked);
-    const category = categoryFromOpcode(picked.opcode);
-
-    const scoreMap = new Map();
-    for (const r of embeddingResults || []) {
-        scoreMap.set(r.tipId, {tipId: r.tipId, embedding: r.score, boost: 0});
-    }
-    if (allTips) {
-        for (const tipId in allTips) {
-            const boost = scoreTipForPickedBlock(allTips[tipId], picked, tokens, category);
-            if (boost <= 0) continue;
-            const existing = scoreMap.get(tipId);
-            if (existing) {
-                existing.boost = boost;
-            } else {
-                scoreMap.set(tipId, {tipId, embedding: 0, boost});
+// Lazy-built map from extensionId → display name. Built-in categories
+// (motion, looks, event, control, …) aren't in the extensions list, so
+// they naturally return null and skip query augmentation.
+let _extensionNameMap = null;
+const getExtensionDisplayName = function (extensionId) {
+    if (!extensionId) return null;
+    if (!_extensionNameMap) {
+        _extensionNameMap = new Map();
+        for (const ext of extensionsLibrary) {
+            if (!ext || !ext.extensionId) continue;
+            const name = ext.name;
+            if (typeof name === 'string') {
+                _extensionNameMap.set(ext.extensionId, name);
+            } else if (name && name.props && typeof name.props.defaultMessage === 'string') {
+                _extensionNameMap.set(ext.extensionId, name.props.defaultMessage);
             }
         }
     }
+    return _extensionNameMap.get(extensionId) || null;
+};
 
-    return Array.from(scoreMap.values())
-        .map(e => ({tipId: e.tipId, score: e.embedding + e.boost}))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 10);
+/**
+ * Build the visible / search query for a picked block. For extension blocks
+ * (opcode prefix matches an extensionId), append the extension's display
+ * name so the embedding pulls in tutorials/starters that describe themselves
+ * by extension name rather than by individual block name.
+ * @param {{opcode: string, humanText: string}} picked - The picked block info
+ * @returns {string} The constructed natural-language query, or empty string
+ */
+const buildPickedBlockQuery = function (picked) {
+    if (!picked) return '';
+    const niceOpcode = (picked.opcode || '')
+        .replace(/^[^_]+_/, '')
+        .replace(/_/g, ' ')
+        .trim();
+    const text = picked.humanText && picked.humanText.trim() ? picked.humanText.trim() : niceOpcode;
+    if (!text) return '';
+    const extensionName = getExtensionDisplayName(categoryFromOpcode(picked.opcode));
+    if (extensionName) {
+        return `How do I use the ${text} block? (${extensionName})`;
+    }
+    return `How do I use the ${text} block?`;
+};
+
+// Bucket 1 cap — captured-block matches take at most this many slots so
+// tutorials and starter projects (which never have _capturedBlocks) still
+// reach the result list for heavily-used blocks like event_whenflagclicked.
+const CAPTURED_BUCKET_CAP = 5;
+const FINAL_RESULT_LIMIT = 10;
+
+const countOpcodeInCaptures = function (tip, opcode) {
+    if (!tip._capturedBlocks) return 0;
+    let count = 0;
+    for (const b of tip._capturedBlocks) {
+        if (b.opcode === opcode) count++;
+    }
+    return count;
+};
+
+/**
+ * Rank tip search results for a picked block using a two-bucket merge.
+ *
+ * Bucket 1 (capped at CAPTURED_BUCKET_CAP): tips where the picked opcode
+ * appears in `_capturedBlocks` or `pointers`. Ranked by:
+ *   - Tier A: opcode in `pointers[]` (author-declared "this tip is about
+ *     this block"). Tier B: only in `_capturedBlocks`.
+ *   - Within each tier: capture ratio (count / total captured blocks), so
+ *     tips that focus on the picked block outrank tips that use it
+ *     incidentally. Ties: lexicographic on tipId for determinism.
+ *
+ * Bucket 2: embedding results in their original order, skipping any
+ * tipId already in bucket 1, until the combined list reaches the limit.
+ *
+ * @param {Array<{tipId: string, score: number}>} embeddingResults
+ * @param {Object<string, object>} allTips - tip id → tip
+ * @param {{opcode: string}} picked
+ * @returns {Array<{tipId: string, score: number}>} Up to 10 ranked tips
+ */
+const rankTipsForPickedBlock = function (embeddingResults, allTips, picked) {
+    if (!picked || !allTips) return (embeddingResults || []).slice(0, FINAL_RESULT_LIMIT);
+    const opcode = picked.opcode;
+
+    const capturedEntries = [];
+    for (const tipId in allTips) {
+        const tip = allTips[tipId];
+        const inPointers = !!(tip.pointers && tip.pointers.some(p => p.blockOpcode === opcode));
+        const captureCount = countOpcodeInCaptures(tip, opcode);
+        if (!inPointers && captureCount === 0) continue;
+        const totalCaptures = (tip._capturedBlocks && tip._capturedBlocks.length) || 0;
+        const ratio = totalCaptures > 0 ? captureCount / totalCaptures : 0;
+        capturedEntries.push({tipId, tier: inPointers ? 0 : 1, ratio});
+    }
+    capturedEntries.sort((a, b) => {
+        if (a.tier !== b.tier) return a.tier - b.tier;
+        if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+        return a.tipId.localeCompare(b.tipId);
+    });
+    const bucket1 = capturedEntries.slice(0, CAPTURED_BUCKET_CAP);
+
+    const usedIds = new Set(bucket1.map(e => e.tipId));
+    const bucket2 = [];
+    for (const r of embeddingResults || []) {
+        if (usedIds.has(r.tipId)) continue;
+        bucket2.push(r);
+        if (bucket1.length + bucket2.length >= FINAL_RESULT_LIMIT) break;
+    }
+
+    // Assign synthetic scores that preserve final-list order if a downstream
+    // consumer re-sorts. Bucket 1 entries sit above any cosine score (≤ 1).
+    const final = [];
+    for (let i = 0; i < bucket1.length; i++) {
+        final.push({tipId: bucket1[i].tipId, score: 1.5 - (i / 1000)});
+    }
+    for (const r of bucket2) {
+        final.push({tipId: r.tipId, score: r.score});
+    }
+    return final;
 };
 
 export {
@@ -304,7 +310,6 @@ export {
     getBlockHumanText,
     buildPickedBlockQuery,
     categoryFromOpcode,
-    getMatchTokens,
-    scoreTipForPickedBlock,
-    applyPickedBlockBoost
+    getExtensionDisplayName,
+    rankTipsForPickedBlock
 };

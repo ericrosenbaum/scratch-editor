@@ -386,6 +386,78 @@ test.describe('Tips Block Picker', () => {
         });
     }
 
+    // Extension blocks should pull in tutorials/starters that describe the
+    // extension by name (e.g. "Text to Speech"), not just blocks that share
+    // a literal word with the picked block.
+    test('picking text2speech_speakAndWait surfaces TTS tutorials/starters', async ({page}) => {
+        await waitForEditor(page);
+
+        // Load the Text to Speech extension and wait for its category to
+        // appear in the toolbox flyout.
+        await page.evaluate(() => new Promise(resolve => {
+            const vm = window.__scratchStore.getState().scratchGui.vm;
+            Promise.resolve(vm.extensionManager.loadExtensionURL('text2speech'))
+                .then(resolve, resolve);
+        }));
+        await page.waitForFunction(
+            () => !!document.querySelector('.blocklyFlyout .text2speech_speakAndWait.blocklyDraggable'),
+            null, {timeout: 15000}
+        );
+
+        await openUnstuck(page);
+        const pickButton = page.locator(
+            'button[class*="pick-button"], button[class*="pickButton"]'
+        ).first();
+        await pickButton.click();
+        await page.waitForFunction(() => document.body.classList.contains('tip-pick-mode'));
+
+        const dispatched = await page.evaluate(() => {
+            const block = document.querySelector(
+                '.blocklyFlyout .text2speech_speakAndWait.blocklyDraggable'
+            );
+            if (!block) return false;
+            const r = block.getBoundingClientRect();
+            const inner = block.querySelector('path.blocklyPath') || block;
+            inner.dispatchEvent(new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                clientX: r.left + (r.width / 2),
+                clientY: r.top + (r.height / 2),
+                button: 0
+            }));
+            return true;
+        });
+        expect(dispatched).toBe(true);
+
+        await page.waitForFunction(() => {
+            const s = window.__scratchStore.getState().scratchGui.unstuck;
+            return s.searchResults && s.searchResults.length > 0 && !s.loading;
+        }, null, {timeout: 60000});
+
+        const state = await page.evaluate(() => {
+            const s = window.__scratchStore.getState().scratchGui.unstuck;
+            return {
+                query: s.query,
+                tipIds: s.searchResults.map(r => r.tipId)
+            };
+        });
+
+        // Query was augmented with the extension display name.
+        expect(state.query).toContain('(Text to Speech)');
+
+        // Bucket 1: the captured-block tip is first.
+        expect(state.tipIds[0]).toBe('text-to-speech-extension');
+
+        // Bucket 2: at least one TTS-themed tutorial or starter is present.
+        const ttsExtras = ['tutorial-say-it-out-loud', 'tip-sounds-tts', 'starter-text-speech'];
+        const found = ttsExtras.filter(id => state.tipIds.includes(id));
+        expect(
+            found.length,
+            `expected at least one of ${ttsExtras.join(', ')}; got ${state.tipIds.join(', ')}`
+        ).toBeGreaterThan(0);
+    });
+
     test('clicks on the Tips card itself do not exit pick mode', async ({page}) => {
         await waitForEditor(page);
         await openUnstuck(page);
