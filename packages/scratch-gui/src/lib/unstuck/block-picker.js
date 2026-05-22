@@ -19,12 +19,17 @@ const findOpcodeFromClassList = function (el) {
 
 const walkPastReporters = function (block) {
     // A clicked shadow value like the "10" inside `move 10 steps` is its own
-    // block (e.g. math_number) with an output connection. We want the
-    // enclosing statement block instead, so walk up while we're sitting on a
-    // reporter/value block.
+    // block (e.g. math_number) with no useful identity of its own, so walk up
+    // to the enclosing block. Non-shadow reporters (variables, list items,
+    // operator reporters the user dropped into an input slot) keep their own
+    // identity — clicking one means "tell me about this reporter".
     let current = block;
     let safety = 8;
-    while (current && current.outputConnection && safety-- > 0) {
+    while (
+        current &&
+        typeof current.isShadow === 'function' && current.isShadow() &&
+        safety-- > 0
+    ) {
         const parent = typeof current.getParent === 'function' ? current.getParent() : null;
         if (!parent) break;
         current = parent;
@@ -38,21 +43,30 @@ const looksLikeImageOrUrl = function (s) {
 };
 
 /**
- * Build a human-readable text representation for a block by walking its
- * inputList and recursing into any connected value blocks.
+ * Build a human-readable text representation for a block from its own field
+ * row labels only. Connected child blocks (shadow defaults like the "10" in
+ * `move 10 steps`, user-inserted reporters, nested C-block statements) are
+ * deliberately ignored — the query should describe the picked block by its
+ * default shape, not by whatever the user has typed or dropped into its
+ * input slots.
  * @param {object} block - ScratchBlocks Block instance
- * @param {number} [depth] - Recursion depth (internal)
- * @returns {string} Human-readable text for the block (e.g. "move 10 steps")
+ * @returns {string} Human-readable text for the block (e.g. "move steps")
  */
-const getBlockHumanText = function (block, depth) {
+const getBlockHumanText = function (block) {
     if (!block) return '';
-    const d = depth || 0;
-    if (d > 3) return '';
     const parts = [];
     const inputs = block.inputList || [];
     for (const input of inputs) {
         const fields = input.fieldRow || [];
         for (const field of fields) {
+            // Skip variable and list name fields (data_* blocks) — the
+            // user-chosen variable/list name shouldn't pollute the search.
+            // When the field row collapses to nothing (e.g. the bare
+            // `data_variable` reporter), buildPickedBlockQuery falls back to
+            // the opcode-derived text ("variable", "list contents").
+            if (field && (field.name === 'VARIABLE' || field.name === 'LIST')) {
+                continue;
+            }
             let text = '';
             if (typeof field.getText === 'function') {
                 try {
@@ -74,12 +88,6 @@ const getBlockHumanText = function (block, depth) {
             if (text && !looksLikeImageOrUrl(text)) {
                 parts.push(text);
             }
-        }
-        const conn = input.connection;
-        const childBlock = conn && typeof conn.targetBlock === 'function' ? conn.targetBlock() : null;
-        if (childBlock) {
-            const childText = getBlockHumanText(childBlock, d + 1);
-            if (childText) parts.push(childText);
         }
     }
     const combined = parts.join(' ')
@@ -217,6 +225,12 @@ const getExtensionDisplayName = function (extensionId) {
  */
 const buildPickedBlockQuery = function (picked) {
     if (!picked) return '';
+    // Custom block calls all share one query — the specific procedure name
+    // and arguments aren't useful for matching tips about the My Blocks
+    // feature itself.
+    if (picked.opcode === 'procedures_call') {
+        return 'How do I use custom my blocks?';
+    }
     const niceOpcode = (picked.opcode || '')
         .replace(/^[^_]+_/, '')
         .replace(/_/g, ' ')
