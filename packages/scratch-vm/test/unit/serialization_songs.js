@@ -16,7 +16,6 @@ const sampleSong = () => ({
     tracks: [
         {
             trackId: 'track-1',
-            name: 'Piano',
             kind: 'instrument',
             instrument: 1,
             volume: 80,
@@ -28,7 +27,6 @@ const sampleSong = () => ({
         },
         {
             trackId: 'track-2',
-            name: 'Snare',
             kind: 'drum',
             drum: 1,
             volume: 70,
@@ -46,17 +44,16 @@ const loadDefaultProject = vm => {
     return vm.loadProject(readFileToBuffer(defaultProjectPath));
 };
 
-test('Song Maker: vm.addSong stores in the project-global runtime.songs', t => {
+test('Song Maker: vm.setSong stores the project song on runtime.song', t => {
     const vm = new VirtualMachine();
     loadDefaultProject(vm).then(() => {
-        vm.addSong(sampleSong());
-        const songs = vm.runtime.songs;
-        t.equal(songs.length, 1, 'one song added');
-        t.equal(songs[0].name, 'Beat 1', 'name correct');
-        t.equal(songs[0].tracks.length, 2, 'two tracks');
-        // Songs are not sprite-scoped any more.
+        vm.setSong(sampleSong());
+        const song = vm.runtime.song;
+        t.ok(song, 'song stored on runtime');
+        t.equal(song.name, 'Beat 1', 'name correct');
+        t.equal(song.tracks.length, 2, 'two tracks');
         t.notOk(vm.editingTarget.sprite.songs,
-            'sprite no longer carries a songs array');
+            'sprite does not carry a songs array');
         t.end();
     }).catch(err => {
         t.fail(err.message);
@@ -64,15 +61,15 @@ test('Song Maker: vm.addSong stores in the project-global runtime.songs', t => {
     });
 });
 
-test('Song Maker: sb3 round-trip preserves project songs', t => {
+test('Song Maker: sb3 round-trip preserves the project song', t => {
     const vm = new VirtualMachine();
     loadDefaultProject(vm).then(() => {
-        vm.runtime.songs = [sampleSong()];
+        vm.runtime.song = sampleSong();
 
         const serialized = sb3.serialize(vm.runtime);
-        t.ok(Array.isArray(serialized.songs), 'project-level songs array present');
-        t.equal(serialized.songs.length, 1, 'one song serialized at project level');
-        const song = serialized.songs[0];
+        t.ok(serialized.song, 'project-level song object present');
+        t.notOk(Array.isArray(serialized.songs), 'no legacy songs array emitted');
+        const song = serialized.song;
         t.equal(song.tempo, 90, 'tempo preserved');
         t.equal(song.tracks[0].notes.length, 2, 'piano notes preserved');
         t.equal(song.tracks[1].notes.length, 2, 'drum notes preserved');
@@ -82,17 +79,15 @@ test('Song Maker: sb3 round-trip preserves project songs', t => {
         t.equal(song.tracks[1].kind, 'drum', 'kind preserved');
         t.notOk('pitch' in song.tracks[1].notes[0], 'drum notes omit pitch');
 
-        const targetHasSong = serialized.targets.some(tt => Array.isArray(tt.songs));
-        t.notOk(targetHasSong, 'no target carries a songs array post-refactor');
+        const targetHasSong = serialized.targets.some(tt => tt.song || Array.isArray(tt.songs));
+        t.notOk(targetHasSong, 'no target carries a song');
 
-        // Deserialize back
         const vm2 = new VirtualMachine();
         sb3.deserialize(serialized, vm2.runtime).then(() => {
-            t.ok(Array.isArray(vm2.runtime.songs), 'runtime.songs assigned');
-            t.equal(vm2.runtime.songs.length, 1, 'one song restored');
-            t.equal(vm2.runtime.songs[0].tempo, 90, 'tempo round-trips');
-            t.equal(vm2.runtime.songs[0].tracks[0].notes[0].pitch, 60, 'pitch round-trips');
-            t.equal(vm2.runtime.songs[0].tracks[0].notes[0].velocity, 100, 'velocity round-trips');
+            t.ok(vm2.runtime.song, 'runtime.song assigned');
+            t.equal(vm2.runtime.song.tempo, 90, 'tempo round-trips');
+            t.equal(vm2.runtime.song.tracks[0].notes[0].pitch, 60, 'pitch round-trips');
+            t.equal(vm2.runtime.song.tracks[0].notes[0].velocity, 100, 'velocity round-trips');
             t.end();
         });
     }).catch(err => {
@@ -101,25 +96,44 @@ test('Song Maker: sb3 round-trip preserves project songs', t => {
     });
 });
 
-test('Song Maker: sb3 deserialize migrates legacy per-sprite songs into project list', t => {
+test('Song Maker: sb3 deserialize migrates legacy multi-song format (first wins)', t => {
     const vm = new VirtualMachine();
     loadDefaultProject(vm).then(() => {
-        // Simulate an SB3 saved by an older build that put songs on a target.
+        // Hand-craft a legacy serialized form with a top-level songs[] array.
         const serialized = sb3.serialize(vm.runtime);
-        // Attach the song to the first sprite target's serialized payload, as
-        // older serializations would have. Dedupe should keep both visible at
-        // the project level even if multiple targets carried copies.
+        delete serialized.song;
+        serialized.songs = [
+            sampleSong(),
+            Object.assign(sampleSong(), {songId: 'second', name: 'Beat 2'})
+        ];
+
+        const vm2 = new VirtualMachine();
+        sb3.deserialize(serialized, vm2.runtime).then(() => {
+            t.ok(vm2.runtime.song, 'song hoisted to runtime');
+            t.equal(vm2.runtime.song.songId, 'song-abc', 'first song wins');
+            t.equal(vm2.runtime.song.name, 'Beat 1', 'song content preserved');
+            t.end();
+        });
+    }).catch(err => {
+        t.fail(err.message);
+        t.end();
+    });
+});
+
+test('Song Maker: sb3 deserialize migrates legacy per-sprite songs', t => {
+    const vm = new VirtualMachine();
+    loadDefaultProject(vm).then(() => {
+        const serialized = sb3.serialize(vm.runtime);
+        delete serialized.song;
+        // Older builds put songs on a target as a `.songs` array.
         const firstSprite = serialized.targets.find(tt => !tt.isStage);
         firstSprite.songs = [sampleSong()];
-        // Second target with the same songId — should dedupe to one entry.
-        const stage = serialized.targets.find(tt => tt.isStage);
-        if (stage) stage.songs = [sampleSong()];
 
         const vm2 = new VirtualMachine();
         sb3.deserialize(serialized, vm2.runtime).then(() => {
-            t.ok(Array.isArray(vm2.runtime.songs), 'songs hoisted to runtime');
-            t.equal(vm2.runtime.songs.length, 1, 'duplicate songIds deduped');
-            t.equal(vm2.runtime.songs[0].name, 'Beat 1', 'song content preserved');
+            t.ok(vm2.runtime.song, 'song hoisted to runtime');
+            t.equal(vm2.runtime.song.name, 'Beat 1', 'song content preserved');
+            t.notOk(firstSprite.songs, 'legacy field stripped from target');
             t.end();
         });
     }).catch(err => {
@@ -128,54 +142,24 @@ test('Song Maker: sb3 deserialize migrates legacy per-sprite songs into project 
     });
 });
 
-test('Song Maker: vm.updateSong / renameSong / duplicateSong / deleteSong', t => {
-    const vm = new VirtualMachine();
-    loadDefaultProject(vm).then(() => {
-        vm.addSong(sampleSong());
-
-        // update
-        const updated = Object.assign({}, vm.runtime.songs[0], {tempo: 200});
-        vm.updateSong(0, updated);
-        t.equal(vm.runtime.songs[0].tempo, 200, 'updateSong applied');
-
-        // rename
-        vm.renameSong(0, 'Renamed');
-        t.equal(vm.runtime.songs[0].name, 'Renamed', 'renameSong applied');
-
-        // duplicate
-        vm.duplicateSong(0);
-        t.equal(vm.runtime.songs.length, 2, 'duplicate adds entry');
-        t.not(
-            vm.runtime.songs[0].songId,
-            vm.runtime.songs[1].songId,
-            'duplicate gets a new songId'
-        );
-
-        // delete
-        vm.deleteSong(1);
-        t.equal(vm.runtime.songs.length, 1, 'delete removes entry');
-
-        t.end();
-    }).catch(err => {
-        t.fail(err.message);
-        t.end();
-    });
-});
-
-test('Song Maker: Songs extension getInfo returns 11 blocks + 4 hats', t => {
+test('Song Maker: Songs extension getInfo returns the new block set', t => {
     const Scratch3SongsBlocks = require('../../src/extensions/scratch3_songs');
 
     class FakeRuntime {
         constructor () {
             this.targets = [];
-            this.songs = [];
+            this.song = null;
             this.extensionManager = {
                 isExtensionLoaded: () => false,
                 loadExtensionIdSync: () => null
             };
             this.audioEngine = null;
             this._handlers = {};
+            this._songPlayback = {
+                setHatCallbacks: () => {}
+            };
         }
+        get songPlayback () { return this._songPlayback; }
         on (e, fn) { (this._handlers[e] = this._handlers[e] || []).push(fn); }
         emit () { /* no-op */ }
         getEditingTarget () { return null; }
@@ -185,21 +169,20 @@ test('Song Maker: Songs extension getInfo returns 11 blocks + 4 hats', t => {
     const ext = new Scratch3SongsBlocks(runtime);
     const info = ext.getInfo();
     t.equal(info.id, 'songs', 'extension id correct');
-    t.equal(info.blocks.length, 11, 'eleven blocks total (with playSongNext)');
-    const hats = info.blocks.filter(b => b.blockType === 'hat');
-    t.equal(hats.length, 4, 'four hat blocks');
     const opcodes = info.blocks.map(b => b.opcode);
     for (const op of [
-        'playSong', 'playSongUntilDone', 'playSongForever', 'playSongNext',
-        'stopSong', 'stopAllSongsBlock', 'setSongTempo',
-        'whenSongStarts', 'whenSongEnds', 'whenSongBeat', 'whenTrackPlaysNote'
+        'playTrack', 'stopTrack', 'fadeTrack',
+        'changeTrackParam', 'setTrackParam',
+        'whenBeat', 'whenTrackPlaysNote'
     ]) {
         t.ok(opcodes.indexOf(op) >= 0, `has ${op} block`);
     }
+    const hats = info.blocks.filter(b => b.blockType === 'hat');
+    t.equal(hats.length, 2, 'two hat blocks (whenBeat + whenTrackPlaysNote)');
     t.end();
 });
 
-test('Song Maker: scheduler schedules notes & fires beat callback', t => {
+test('Song Maker: scheduler schedules notes & fires beat callback for active tracks', t => {
     const SongScheduler = require('../../src/extensions/scratch3_songs/scheduler');
 
     let currentTime = 0;
@@ -208,6 +191,7 @@ test('Song Maker: scheduler schedules notes & fires beat callback', t => {
             setValueAtTime: () => {},
             linearRampToValueAtTime: () => {},
             setTargetAtTime: () => {},
+            cancelScheduledValues: () => {},
             value: 0
         },
         pan: {setTargetAtTime: () => {}, value: 0},
@@ -270,7 +254,9 @@ test('Song Maker: scheduler schedules notes & fires beat callback', t => {
         onBeat: i => beats.push(i),
         onNote: n => notes.push(n)
     });
-    sched.play();
+    // Activate t1 and start the transport. An idle scheduler with no active
+    // tracks would stop on the first tick.
+    sched.start({activeTracks: ['t1']});
     currentTime = 5;
     sched._tick();
     sched.stop();
@@ -279,7 +265,7 @@ test('Song Maker: scheduler schedules notes & fires beat callback', t => {
     t.end();
 });
 
-test('Song Maker: queueSong swaps to next song at boundary', t => {
+test('Song Maker: inactive tracks are filtered out of the schedule', t => {
     const SongScheduler = require('../../src/extensions/scratch3_songs/scheduler');
 
     let currentTime = 0;
@@ -288,13 +274,13 @@ test('Song Maker: queueSong swaps to next song at boundary', t => {
             setValueAtTime: () => {},
             linearRampToValueAtTime: () => {},
             setTargetAtTime: () => {},
+            cancelScheduledValues: () => {},
             value: 0
         },
         pan: {setTargetAtTime: () => {}, value: 0},
         frequency: {setTargetAtTime: () => {}, value: 12000},
         Q: {value: 0.7},
         delayTime: {value: 0.1},
-        type: 'lowpass',
         connect: () => {},
         disconnect: () => {}
     });
@@ -323,57 +309,42 @@ test('Song Maker: queueSong swaps to next song at boundary', t => {
     };
     const buffer = {duration: 1, sampleRate: 44100};
 
-    const verse = {
-        songId: 'verse',
+    const notes = [];
+    const song = {
+        songId: 's',
         tempo: 120,
         lengthSteps: 4,
         stepsPerBeat: 4,
-        tracks: [{
-            trackId: 't1',
-            kind: 'instrument',
-            instrument: 1,
-            volume: 100,
-            muted: false,
-            notes: [{step: 0, durationSteps: 1, pitch: 60}]
-        }]
+        tracks: [
+            {
+                trackId: 't1',
+                kind: 'instrument',
+                instrument: 1,
+                volume: 100,
+                notes: [{step: 0, durationSteps: 1, pitch: 60}]
+            },
+            {
+                trackId: 't2',
+                kind: 'instrument',
+                instrument: 1,
+                volume: 100,
+                notes: [{step: 2, durationSteps: 1, pitch: 67}]
+            }
+        ]
     };
-    const bridge = {
-        songId: 'bridge',
-        tempo: 120,
-        lengthSteps: 4,
-        stepsPerBeat: 4,
-        tracks: [{
-            trackId: 't1',
-            kind: 'instrument',
-            instrument: 1,
-            volume: 100,
-            muted: false,
-            notes: [{step: 0, durationSteps: 1, pitch: 67}]
-        }]
-    };
-
-    let swapped = null;
-    let endedNaturally = false;
     const sched = new SongScheduler({
-        song: verse,
+        song,
         audioContext: audioCtx,
-        loop: false,
         getInstrumentBuffer: () => ({buffer, sampleNote: 60, releaseTime: 0.05}),
         getDrumBuffer: () => buffer,
-        onSongSwap: newSong => { swapped = newSong; },
-        onEnd: () => { endedNaturally = true; }
+        onNote: n => notes.push(n)
     });
-    sched.play();
-    sched.queueSong(bridge);
-    // Advance well past the verse's length (4 steps @ 120 BPM stepsPerBeat=4
-    // = 0.5s) but only just past the boundary so the swap fires before the
-    // natural-end grace window.
-    currentTime = 1.0;
+    // Only activate t1 — t2's note should never fire.
+    sched.start({activeTracks: ['t1']});
+    currentTime = 5;
     sched._tick();
-    t.ok(swapped, 'onSongSwap fired');
-    t.equal(swapped && swapped.songId, 'bridge', 'swapped to queued song');
-    t.equal(sched.song.songId, 'bridge', 'scheduler now references bridge');
-    t.notOk(endedNaturally, 'did not fire onEnd — handed off cleanly');
     sched.stop();
+    t.ok(notes.length > 0, 'active track\'s notes fire');
+    t.notOk(notes.some(n => n.trackId === 't2'), 'inactive track\'s notes are filtered out');
     t.end();
 });

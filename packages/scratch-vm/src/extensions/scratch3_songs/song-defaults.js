@@ -1,4 +1,5 @@
-const newId = prefix => `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
+const newId = prefix => `${prefix}-${Math.random().toString(36)
+    .slice(2, 10)}`;
 
 // Keep these arrays in sync with packages/scratch-gui/src/lib/song-defaults.js.
 // They're duplicated so the runtime can derive track display names from the

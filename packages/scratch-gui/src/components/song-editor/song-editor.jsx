@@ -54,7 +54,6 @@ class SongEditor extends React.Component {
         this.handlePlay = this.handlePlay.bind(this);
         this.handlePause = this.handlePause.bind(this);
         this.handleLoopToggle = this.handleLoopToggle.bind(this);
-        this.handleNameChange = this.handleNameChange.bind(this);
         this.handleTempoChange = this.handleTempoChange.bind(this);
         this.handleLengthChange = this.handleLengthChange.bind(this);
         this.handleAddInstrumentTrack = this.handleAddInstrumentTrack.bind(this);
@@ -251,11 +250,6 @@ class SongEditor extends React.Component {
             this.player.setLoop(loop);
             return {loop};
         });
-    }
-
-    handleNameChange (e) {
-        this._pushHistory();
-        this.props.onRename(e.target.value);
     }
 
     handleTempoChange (tempo) {
@@ -742,16 +736,6 @@ class SongEditor extends React.Component {
                         </button>
                     </div>
                     <div className="song-meta">
-                        <label className="song-meta-field song-meta-name">
-                            <span className="song-meta-label">Song</span>
-                            <input
-                                type="text"
-                                value={song.name || ''}
-                                onChange={this.handleNameChange}
-                                aria-label="Song name"
-                                placeholder="Untitled"
-                            />
-                        </label>
                         <NumericMetaField
                             label="BPM"
                             value={song.tempo || 120}
@@ -880,8 +864,7 @@ class SongEditor extends React.Component {
 SongEditor.propTypes = {
     song: PropTypes.object.isRequired,
     vm: PropTypes.object.isRequired,
-    onChange: PropTypes.func.isRequired,
-    onRename: PropTypes.func.isRequired
+    onChange: PropTypes.func.isRequired
 };
 
 export default SongEditor;

@@ -1268,8 +1268,23 @@
 }
 
 .song-editor-empty {
+    flex: 1 1 auto;
     padding: 32px;
     color: #575E75;
     text-align: center;
     font-size: 14px;
+}
+
+/* Fills the full width/height of the TabPanel so the song editor (and the
+   empty-state placeholder) don't collapse to fit content. The parent
+   `.tab-panel.is-selected` is a row flex, so we need flex-grow on this
+   child to take all the available horizontal space. */
+.song-tab-root {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
 }

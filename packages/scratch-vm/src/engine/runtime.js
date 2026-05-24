@@ -197,11 +197,12 @@ class Runtime extends EventEmitter {
         this.executableTargets = [];
 
         /**
-         * Project-level songs (Song Maker). Each song is a JSON object:
+         * Project-level song (Song Maker). A single JSON object:
          * {songId, name, tempo, lengthSteps, stepsPerBeat, tracks: [...]}.
-         * @type {Array.<!object>}
+         * Null until the editor or a loaded project populates it.
+         * @type {?object}
          */
-        this.songs = [];
+        this.song = null;
 
         /**
          * A list of threads that are currently running in the VM.
@@ -2547,12 +2548,10 @@ class Runtime extends EventEmitter {
      */
     handleProjectLoaded () {
         this.emit(Runtime.PROJECT_LOADED);
-        // Deserialize replaces `runtime.songs` wholesale without firing
+        // Deserialize replaces `runtime.song` wholesale without firing
         // SONGS_CHANGED. Fan it out from the centralized post-load hook so
         // subscribers (the Songs extension's toolbox menus, the GUI's Song
-        // Maker tab) re-read the new project's songs. If a listener happens
-        // to also subscribe to PROJECT_LOADED, that's fine — both events
-        // fire and the second is a cheap no-op (re-reads runtime.songs).
+        // Maker tab) re-read the new project's song.
         this.emit('SONGS_CHANGED');
         this.resetRunId();
     }

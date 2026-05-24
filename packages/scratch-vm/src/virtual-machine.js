@@ -873,91 +873,30 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
-     * Add a song to the project's global song list.
+     * Replace the project's song wholesale (used by AI generation, Surprise,
+     * and initial editor population on an empty project).
      * @param {!object} song A song JSON object (see Song Maker schema).
      */
-    addSong (song) {
-        if (!Array.isArray(this.runtime.songs)) this.runtime.songs = [];
-        this.runtime.songs.push(song);
+    setSong (song) {
+        this.runtime.song = song || null;
         this.runtime.emitProjectChanged();
         this.runtime.emit('SONGS_CHANGED');
     }
 
     /**
-     * Update a song in the project's global list (replace by index).
-     * @param {!int} songIndex
+     * Push a modified song reference back to the runtime (used by the editor
+     * after authoring edits). Forwards the latest reference to the live
+     * scheduler so loop wraps pick up note edits.
      * @param {!object} song
      */
-    updateSong (songIndex, song) {
-        const songs = this.runtime.songs;
-        if (!songs || songIndex < 0 || songIndex >= songs.length) return;
-        songs[songIndex] = song;
-        this.runtime.emitProjectChanged();
-        this.runtime.emit('SONGS_CHANGED');
-    }
-
-    /**
-     * Rename a song in the project's global list.
-     * @param {!int} songIndex
-     * @param {!string} newName
-     */
-    renameSong (songIndex, newName) {
-        const songs = this.runtime.songs;
-        if (!songs || songIndex < 0 || songIndex >= songs.length) return;
-        const usedNames = songs.map((s, i) => (i === songIndex ? '' : s.name));
-        let candidate = String(newName).trim();
-        if (!candidate) candidate = 'song';
-        let final = candidate;
-        let suffix = 2;
-        while (usedNames.indexOf(final) !== -1) {
-            final = `${candidate}${suffix++}`;
+    updateSong (song) {
+        if (!song) return;
+        this.runtime.song = song;
+        if (this.runtime.songPlayback && this.runtime.songPlayback.updateSong) {
+            this.runtime.songPlayback.updateSong(song);
         }
-        songs[songIndex].name = final;
         this.runtime.emitProjectChanged();
         this.runtime.emit('SONGS_CHANGED');
-    }
-
-    /**
-     * Duplicate a song at the given index.
-     * @param {!int} songIndex
-     */
-    duplicateSong (songIndex) {
-        const songs = this.runtime.songs;
-        if (!songs || songIndex < 0 || songIndex >= songs.length) return;
-        const clone = JSON.parse(JSON.stringify(songs[songIndex]));
-        clone.songId = `song-${Math.random().toString(36).slice(2, 10)}`;
-        if (Array.isArray(clone.tracks)) {
-            clone.tracks.forEach(track => {
-                track.trackId = `track-${Math.random().toString(36).slice(2, 10)}`;
-            });
-        }
-        const usedNames = songs.map(s => s.name);
-        let candidate = clone.name || 'song';
-        let suffix = 2;
-        while (usedNames.indexOf(candidate) !== -1) {
-            candidate = `${clone.name}${suffix++}`;
-        }
-        clone.name = candidate;
-        songs.splice(songIndex + 1, 0, clone);
-        this.runtime.emitProjectChanged();
-        this.runtime.emit('SONGS_CHANGED');
-    }
-
-    /**
-     * Delete a song from the project's global list.
-     * @param {!int} songIndex
-     * @returns {?Function} restore function, or null
-     */
-    deleteSong (songIndex) {
-        const songs = this.runtime.songs;
-        if (!songs || songIndex < 0 || songIndex >= songs.length) return null;
-        const [deleted] = songs.splice(songIndex, 1);
-        this.runtime.emitProjectChanged();
-        this.runtime.emit('SONGS_CHANGED');
-        return () => {
-            this.runtime.songs.splice(songIndex, 0, deleted);
-            this.runtime.emit('SONGS_CHANGED');
-        };
     }
 
     /**

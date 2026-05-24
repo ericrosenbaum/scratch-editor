@@ -2,32 +2,38 @@ const formatMessage = require('format-message');
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
-const Timer = require('../../util/timer');
 const {displayNameForTrack} = require('./song-defaults');
 
 // eslint-disable-next-line @stylistic/max-len
 const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB4PSI2IiB5PSI4IiB3aWR0aD0iMjgiIGhlaWdodD0iMjQiIHJ4PSIyIiBmaWxsPSIjZmZmIiBzdHJva2U9IiM0NDQiLz48cGF0aCBkPSJNMTAgMTRoMjBNMTAgMjBoMjBNMTAgMjZoMjAiIHN0cm9rZT0iI2NjYyIvPjxyZWN0IHg9IjEwIiB5PSIxNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iI2ZmYjMzMyIvPjxyZWN0IHg9IjE4IiB5PSIyMCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iI2ZmYjMzMyIvPjxyZWN0IHg9IjI2IiB5PSIyNiIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iI2ZmYjMzMyIvPjwvc3ZnPg==';
 
+const ALL_TRACKS = '__all__';
+
 /**
- * Songs extension — plays back per-sprite "song" data authored in the
- * Song Maker tab and fires hat blocks on song / beat / track-note events.
+ * Songs extension — real-time controls for the single project-wide track set
+ * authored in the Song Maker tab. The transport always loops; blocks toggle
+ * tracks active/inactive (immediately or quantized to the next loop), fade
+ * tracks in/out, and tweak per-track effect parameters live.
  */
 class Scratch3SongsBlocks {
     constructor (runtime) {
         this.runtime = runtime;
 
         /**
-         * Edge-triggered fire flags keyed by `${songId}|<event>` (or
-         * `${songId}|${trackId}|note`). When a scheduler callback fires we set
-         * the flag; the corresponding hat predicate returns true once and
-         * clears the flag.
+         * Edge-triggered fire flags for hat blocks. Keys: `beat` (global) and
+         * `<trackId>|note` (per track).
          */
         this._fireFlags = {};
 
-        // PROJECT_STOP_ALL is wired up by SongPlayback itself; we just need to
-        // refresh the toolbox menus when the song list changes. The runtime
-        // also fans SONGS_CHANGED out from handleProjectLoaded, so this
-        // single listener covers both authoring edits and project loads.
+        // Wire hat-block callbacks once. The scheduler picks them up next
+        // time it's built.
+        this.runtime.songPlayback.setHatCallbacks({
+            onBeat: () => this._setFlag('beat'),
+            onNote: note => this._setFlag(`${note.trackId}|note`)
+        });
+
+        // Refresh toolbox menus whenever the song changes (tracks added,
+        // instruments changed, project loaded, etc).
         this.runtime.on('SONGS_CHANGED', () => {
             if (this.runtime.requestToolboxExtensionsUpdate) {
                 this.runtime.requestToolboxExtensionsUpdate();
@@ -35,49 +41,42 @@ class Scratch3SongsBlocks {
         });
     }
 
-    /** Look up a song in the project's global list. @returns {?object} */
-    _findSong (songId) {
-        const songs = this.runtime.songs || [];
-        for (const s of songs) {
-            if (s.songId === songId) return s;
+    _song () {
+        return this.runtime.song || null;
+    }
+
+    _tracks () {
+        const s = this._song();
+        return (s && s.tracks) || [];
+    }
+
+    _trackById (trackId) {
+        for (const t of this._tracks()) {
+            if (t.trackId === trackId) return t;
         }
         return null;
     }
 
-    /** Get all project songs (used to build the SONG / TRACK menus). */
-    _allSongs () {
-        return this.runtime.songs || [];
-    }
-
     /**
-     * Build the callbacks bag that the runtime's SongPlayback should invoke
-     * for hat-block firing on this specific song.
+     * Resolve a TRACK menu value to a list of track IDs to act on. `__all__`
+     * expands to every track in the project song; an individual trackId
+     * resolves to a single-element list (or empty if the track is gone).
+     * @param value
      */
-    _callbacksForSong (songId) {
-        return {
-            onStart: () => this._setFlag(`${songId}|start`),
-            onEnd: () => this._setFlag(`${songId}|end`),
-            onBeat: () => this._setFlag(`${songId}|beat`),
-            onNote: note => this._setFlag(`${songId}|${note.trackId}|note`)
-        };
+    _resolveTrackIds (value) {
+        const v = Cast.toString(value);
+        if (!v) return [];
+        if (v === ALL_TRACKS) return this._tracks().map(t => t.trackId);
+        return this._trackById(v) ? [v] : [];
     }
 
     getInfo () {
-        const songs = this._allSongs();
-        const songMenu = songs.length > 0 ?
-            songs.map(s => ({text: s.name, value: s.songId})) :
-            [{text: '—', value: ''}];
-
-        const trackMenu = [];
-        for (const s of songs) {
-            for (const t of (s.tracks || [])) {
-                trackMenu.push({
-                    text: `${s.name} · ${displayNameForTrack(t)}`,
-                    value: `${s.songId}|${t.trackId}`
-                });
-            }
+        const tracks = this._tracks();
+        const trackMenu = [{text: 'all tracks', value: ALL_TRACKS}];
+        for (const t of tracks) {
+            trackMenu.push({text: displayNameForTrack(t), value: t.trackId});
         }
-        if (trackMenu.length === 0) trackMenu.push({text: '—', value: ''});
+        const defaultTrack = trackMenu[0].value;
 
         return {
             id: 'songs',
@@ -89,145 +88,131 @@ class Scratch3SongsBlocks {
             blockIconURI,
             blocks: [
                 {
-                    opcode: 'playSong',
+                    opcode: 'playTrack',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'songs.playSong',
-                        default: 'play song [SONG]',
-                        description: 'Start playing a song'
+                        id: 'songs.playTrack',
+                        default: 'play [TRACK] [WHEN]',
+                        description: 'Activate one or more tracks'
                     }),
                     arguments: {
-                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: (songMenu[0] && songMenu[0].value) || ''}
+                        TRACK: {type: ArgumentType.STRING, menu: 'TRACK', defaultValue: defaultTrack},
+                        WHEN: {type: ArgumentType.STRING, menu: 'WHEN', defaultValue: 'now'}
                     }
                 },
                 {
-                    opcode: 'playSongUntilDone',
+                    opcode: 'stopTrack',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'songs.playSongUntilDone',
-                        default: 'play song [SONG] until done',
-                        description: 'Play a song and wait for it to finish'
+                        id: 'songs.stopTrack',
+                        default: 'stop [TRACK] [WHEN]',
+                        description: 'Deactivate one or more tracks'
                     }),
                     arguments: {
-                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: (songMenu[0] && songMenu[0].value) || ''}
+                        TRACK: {type: ArgumentType.STRING, menu: 'TRACK', defaultValue: defaultTrack},
+                        WHEN: {type: ArgumentType.STRING, menu: 'WHEN', defaultValue: 'now'}
                     }
                 },
                 {
-                    opcode: 'playSongForever',
+                    opcode: 'fadeTrack',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'songs.playSongForever',
-                        default: 'play song [SONG] forever',
-                        description: 'Play a song on loop until stopped'
+                        id: 'songs.fadeTrack',
+                        default: 'fade [DIR] [TRACK] [WHEN]',
+                        description: 'Fade tracks in or out'
                     }),
                     arguments: {
-                        SONG: {
-                            type: ArgumentType.STRING,
-                            menu: 'SONG',
-                            defaultValue: (songMenu[0] && songMenu[0].value) || ''
-                        }
+                        DIR: {type: ArgumentType.STRING, menu: 'DIR', defaultValue: 'in'},
+                        TRACK: {type: ArgumentType.STRING, menu: 'TRACK', defaultValue: defaultTrack},
+                        WHEN: {type: ArgumentType.STRING, menu: 'WHEN', defaultValue: 'now'}
                     }
                 },
                 {
-                    opcode: 'playSongNext',
+                    opcode: 'changeTrackParam',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'songs.playSongNext',
-                        // eslint-disable-next-line @stylistic/max-len
-                        default: 'play song [SONG] when current song ends',
-                        // eslint-disable-next-line @stylistic/max-len
-                        description: 'Schedule a song to start at the current song\'s next loop boundary'
+                        id: 'songs.changeTrackParam',
+                        default: 'change [TRACK] [PARAM] by [VALUE]',
+                        description: 'Increment a per-track parameter'
                     }),
                     arguments: {
-                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: (songMenu[0] && songMenu[0].value) || ''}
+                        TRACK: {type: ArgumentType.STRING, menu: 'TRACK', defaultValue: defaultTrack},
+                        PARAM: {type: ArgumentType.STRING, menu: 'PARAM', defaultValue: 'volume'},
+                        VALUE: {type: ArgumentType.NUMBER, defaultValue: 10}
                     }
                 },
                 {
-                    opcode: 'stopSong',
+                    opcode: 'setTrackParam',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'songs.stopSong',
-                        default: 'stop song [SONG]',
-                        description: 'Stop a specific song'
+                        id: 'songs.setTrackParam',
+                        default: 'set [TRACK] [PARAM] to [VALUE]',
+                        description: 'Set a per-track parameter to an absolute value'
                     }),
                     arguments: {
-                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: (songMenu[0] && songMenu[0].value) || ''}
+                        TRACK: {type: ArgumentType.STRING, menu: 'TRACK', defaultValue: defaultTrack},
+                        PARAM: {type: ArgumentType.STRING, menu: 'PARAM', defaultValue: 'volume'},
+                        VALUE: {type: ArgumentType.NUMBER, defaultValue: 100}
                     }
                 },
                 {
-                    opcode: 'stopAllSongsBlock',
-                    blockType: BlockType.COMMAND,
+                    opcode: 'whenBeat',
+                    blockType: BlockType.HAT,
                     text: formatMessage({
-                        id: 'songs.stopAllSongs',
-                        default: 'stop all songs',
-                        description: 'Stop every playing song'
+                        id: 'songs.whenBeat',
+                        default: 'when beat',
+                        description: 'Hat — fires on each transport beat'
                     })
-                },
-                {
-                    opcode: 'setSongTempo',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'songs.setSongTempo',
-                        default: 'set tempo of song [SONG] to [BPM]',
-                        description: 'Change the tempo of a song'
-                    }),
-                    arguments: {
-                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: (songMenu[0] && songMenu[0].value) || ''},
-                        BPM: {type: ArgumentType.NUMBER, defaultValue: 120}
-                    }
-                },
-                {
-                    opcode: 'whenSongStarts',
-                    blockType: BlockType.HAT,
-                    text: formatMessage({
-                        id: 'songs.whenSongStarts',
-                        default: 'when song [SONG] starts',
-                        description: 'Hat block — when song begins playing'
-                    }),
-                    arguments: {
-                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: (songMenu[0] && songMenu[0].value) || ''}
-                    }
-                },
-                {
-                    opcode: 'whenSongEnds',
-                    blockType: BlockType.HAT,
-                    text: formatMessage({
-                        id: 'songs.whenSongEnds',
-                        default: 'when song [SONG] ends',
-                        description: 'Hat block — when song finishes playing'
-                    }),
-                    arguments: {
-                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: (songMenu[0] && songMenu[0].value) || ''}
-                    }
-                },
-                {
-                    opcode: 'whenSongBeat',
-                    blockType: BlockType.HAT,
-                    text: formatMessage({
-                        id: 'songs.whenSongBeat',
-                        default: 'when song [SONG] beat',
-                        description: 'Hat block — on every beat of a song'
-                    }),
-                    arguments: {
-                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: (songMenu[0] && songMenu[0].value) || ''}
-                    }
                 },
                 {
                     opcode: 'whenTrackPlaysNote',
                     blockType: BlockType.HAT,
                     text: formatMessage({
                         id: 'songs.whenTrackPlaysNote',
-                        default: 'when track [TRACK] plays note',
-                        description: 'Hat block — when a track plays any note'
+                        default: 'when [TRACK] plays note',
+                        description: 'Hat — fires when a track plays any note'
                     }),
                     arguments: {
-                        TRACK: {type: ArgumentType.STRING, menu: 'TRACK', defaultValue: (trackMenu[0] && trackMenu[0].value) || ''}
+                        TRACK: {
+                            type: ArgumentType.STRING,
+                            menu: 'TRACK_NO_ALL',
+                            defaultValue: (tracks[0] && tracks[0].trackId) || ''
+                        }
                     }
                 }
             ],
             menus: {
-                SONG: {acceptReporters: true, items: songMenu},
-                TRACK: {acceptReporters: true, items: trackMenu}
+                TRACK: {acceptReporters: true, items: trackMenu},
+                TRACK_NO_ALL: {
+                    acceptReporters: true,
+                    items: tracks.length > 0 ?
+                        tracks.map(t => ({text: displayNameForTrack(t), value: t.trackId})) :
+                        [{text: '—', value: ''}]
+                },
+                WHEN: {
+                    acceptReporters: false,
+                    items: [
+                        {text: 'now', value: 'now'},
+                        {text: 'at next loop', value: 'loop'}
+                    ]
+                },
+                DIR: {
+                    acceptReporters: false,
+                    items: [
+                        {text: 'in', value: 'in'},
+                        {text: 'out', value: 'out'}
+                    ]
+                },
+                PARAM: {
+                    acceptReporters: false,
+                    items: [
+                        {text: 'volume', value: 'volume'},
+                        {text: 'filter', value: 'filter'},
+                        {text: 'delay', value: 'delay'},
+                        {text: 'reverb', value: 'reverb'},
+                        {text: 'pan', value: 'pan'}
+                    ]
+                }
             }
         };
     }
@@ -246,104 +231,104 @@ class Scratch3SongsBlocks {
 
     /* Block implementations */
 
-    playSong (args) {
-        const songId = Cast.toString(args.SONG);
-        if (!songId) return;
-        const song = this._findSong(songId);
-        if (!song) return;
-        this.runtime.songPlayback.play(song, {callbacks: this._callbacksForSong(songId)});
+    playTrack (args) {
+        const when = Cast.toString(args.WHEN) === 'loop' ? 'loop' : 'now';
+        for (const id of this._resolveTrackIds(args.TRACK)) {
+            this.runtime.songPlayback.setTrackActive(id, true, when);
+        }
     }
 
-    playSongForever (args) {
-        const songId = Cast.toString(args.SONG);
-        if (!songId) return;
-        const song = this._findSong(songId);
-        if (!song) return;
-        this.runtime.songPlayback.play(song, {
-            loop: true,
-            callbacks: this._callbacksForSong(songId)
-        });
+    stopTrack (args) {
+        const when = Cast.toString(args.WHEN) === 'loop' ? 'loop' : 'now';
+        const ids = this._resolveTrackIds(args.TRACK);
+        if (ids.length === 0) return;
+        // Stopping every track immediately is equivalent to stop() — but
+        // doing it per-track lets the user mix `__all__` deactivations with
+        // partial ones cleanly.
+        for (const id of ids) {
+            this.runtime.songPlayback.setTrackActive(id, false, when);
+        }
     }
 
-    /**
-     * Defer the start of [SONG] until the currently playing song's next
-     * iteration boundary. With nothing currently playing, behaves like
-     * playSong. The new song inherits the current song's loop state by default.
-     */
-    playSongNext (args) {
-        const songId = Cast.toString(args.SONG);
-        if (!songId) return;
-        const song = this._findSong(songId);
-        if (!song) return;
-        this.runtime.songPlayback.queueNext(song, {callbacks: this._callbacksForSong(songId)});
+    fadeTrack (args) {
+        const dir = Cast.toString(args.DIR) === 'out' ? 'out' : 'in';
+        const when = Cast.toString(args.WHEN) === 'loop' ? 'loop' : 'now';
+        for (const id of this._resolveTrackIds(args.TRACK)) {
+            this.runtime.songPlayback.fadeTrack(id, dir, when, 1.0);
+        }
     }
 
-    playSongUntilDone (args, util) {
-        const songId = Cast.toString(args.SONG);
-        if (!songId) return;
-
-        if (!util.stackFrame.songStarted) {
-            const song = this._findSong(songId);
-            if (!song) return;
-            this.runtime.songPlayback.play(song, {callbacks: this._callbacksForSong(songId)});
-            util.stackFrame.songStarted = true;
-            util.stackFrame.songId = songId;
-            const sps = (60 / (song.tempo || 120)) / (song.stepsPerBeat || 4);
-            util.stackFrame.expectedDuration = (song.lengthSteps || 32) * sps * 1000;
-            util.stackFrame.timer = new Timer();
-            util.stackFrame.timer.start();
-            util.yield();
+    _writeParam (track, param, value) {
+        // Volume lives directly on the track (0..100). Effects live in the
+        // effects bag with engine-native ranges (0..1, pan -1..1). Convert
+        // from the block's user-facing range before writing.
+        if (param === 'volume') {
+            track.volume = Math.max(0, Math.min(100, value));
             return;
         }
-        // Wait until either the scheduler has moved on (interrupted by
-        // another play, stop, or finished naturally) or the expected duration
-        // has elapsed with a small grace window.
-        const elapsed = util.stackFrame.timer.timeElapsed();
-        const stillRunning = this.runtime.songPlayback.currentSongId() === util.stackFrame.songId;
-        if (stillRunning && elapsed < util.stackFrame.expectedDuration + 200) {
-            util.yield();
+        if (!track.effects) track.effects = {};
+        if (param === 'pan') {
+            track.effects.pan = Math.max(-1, Math.min(1, value / 100));
+            return;
+        }
+        track.effects[param] = Math.max(0, Math.min(1, value / 100));
+    }
+
+    _readParam (track, param) {
+        // Read back in user-facing units so `change … by` composes correctly.
+        if (param === 'volume') return typeof track.volume === 'number' ? track.volume : 80;
+        const fx = track.effects || {};
+        if (param === 'pan') return (typeof fx.pan === 'number' ? fx.pan : 0) * 100;
+        // filter defaults to 1 (open) so a fresh track maps to "100".
+        const def = param === 'filter' ? 1 : 0;
+        return (typeof fx[param] === 'number' ? fx[param] : def) * 100;
+    }
+
+    _commitTrackChange (track, param) {
+        // Notify the playback layer so the change is heard live. Effect
+        // changes go through setTrackEffects (zero-restart, smoothed). Volume
+        // is read at note-schedule time, so we push the new song reference
+        // through updateSong to refresh the next loop's note list.
+        if (param === 'volume') {
+            if (this.runtime.songPlayback && this.runtime.songPlayback.updateSong) {
+                this.runtime.songPlayback.updateSong(this.runtime.song);
+            }
+        } else {
+            this.runtime.songPlayback.setTrackEffects(track.trackId, track.effects);
         }
     }
 
-    stopSong (args) {
-        const songId = Cast.toString(args.SONG);
-        if (!songId) return;
-        // Only stop if the song currently playing is the one named.
-        if (this.runtime.songPlayback.currentSongId() === songId) {
-            this.runtime.songPlayback.stop();
+    changeTrackParam (args) {
+        const param = Cast.toString(args.PARAM);
+        const delta = Cast.toNumber(args.VALUE);
+        for (const id of this._resolveTrackIds(args.TRACK)) {
+            const track = this._trackById(id);
+            if (!track) continue;
+            const current = this._readParam(track, param);
+            this._writeParam(track, param, current + delta);
+            this._commitTrackChange(track, param);
         }
     }
 
-    stopAllSongsBlock () {
-        this.runtime.songPlayback.stop();
-    }
-
-    setSongTempo (args) {
-        const songId = Cast.toString(args.SONG);
-        const bpm = Math.max(20, Math.min(500, Cast.toNumber(args.BPM)));
-        const song = this._findSong(songId);
-        if (song) song.tempo = bpm;
-        if (this.runtime.songPlayback.currentSongId() === songId) {
-            this.runtime.songPlayback.setTempoOverride(bpm);
+    setTrackParam (args) {
+        const param = Cast.toString(args.PARAM);
+        const value = Cast.toNumber(args.VALUE);
+        for (const id of this._resolveTrackIds(args.TRACK)) {
+            const track = this._trackById(id);
+            if (!track) continue;
+            this._writeParam(track, param, value);
+            this._commitTrackChange(track, param);
         }
     }
 
-    whenSongStarts (args) {
-        return this._consumeFlag(`${Cast.toString(args.SONG)}|start`);
-    }
-
-    whenSongEnds (args) {
-        return this._consumeFlag(`${Cast.toString(args.SONG)}|end`);
-    }
-
-    whenSongBeat (args) {
-        return this._consumeFlag(`${Cast.toString(args.SONG)}|beat`);
+    whenBeat () {
+        return this._consumeFlag('beat');
     }
 
     whenTrackPlaysNote (args) {
-        const combined = Cast.toString(args.TRACK); // "songId|trackId"
-        if (!combined || combined.indexOf('|') === -1) return false;
-        return this._consumeFlag(`${combined}|note`);
+        const trackId = Cast.toString(args.TRACK);
+        if (!trackId) return false;
+        return this._consumeFlag(`${trackId}|note`);
     }
 }
 

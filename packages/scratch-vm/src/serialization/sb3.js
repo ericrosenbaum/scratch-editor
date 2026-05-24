@@ -703,10 +703,10 @@ const serialize = function (runtime, targetId) {
 
     obj.targets = serializedTargets;
 
-    // Project-level Song Maker data. Songs are not per-sprite; they belong to
-    // the project as a whole.
-    if (Array.isArray(runtime.songs) && runtime.songs.length > 0) {
-        obj.songs = runtime.songs.map(serializeSong);
+    // Project-level Song Maker data. The song belongs to the project as a
+    // whole (not per-sprite). There is at most one song.
+    if (runtime.song) {
+        obj.song = serializeSong(runtime.song);
     }
 
     obj.monitors = serializeMonitors(runtime.getMonitorState());
@@ -1522,39 +1522,43 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         .map((t, i) => Object.assign(t, {targetPaneOrder: i}))
         .sort((a, b) => a.layerOrder - b.layerOrder);
 
-    // Project-level songs. Only set for whole-project loads (not single-sprite
-    // imports, which would otherwise wipe existing project songs). Prefer the
-    // new top-level `songs` array; otherwise hoist any per-sprite `songs`
-    // arrays found in target objects (migrating from the old per-sprite
-    // shape). Dedupe by songId, first-seen wins.
+    // Project-level song. Only set for whole-project loads (not single-sprite
+    // imports, which would otherwise wipe the existing project song). Prefer
+    // the new top-level `song` object; otherwise migrate from legacy multi-
+    // song formats (`songs[]` at the top level or per-sprite `songs` arrays)
+    // by taking the first song found.
     if (isSingleSprite) {
         // Single-sprite import: drop any legacy per-sprite songs the sprite
         // carries (they belong to the source project, not this one) so they
         // don't get re-emitted by serializeTarget. Leave existing
-        // runtime.songs untouched.
+        // runtime.song untouched.
         for (const t of targetObjects) {
+            if (t.song) delete t.song;
             if (Array.isArray(t.songs)) delete t.songs;
         }
     } else {
-        const collectedSongs = [];
-        const seenSongIds = new Set();
-        const ingestSong = song => {
-            if (!song || !song.songId) return;
-            if (seenSongIds.has(song.songId)) return;
-            seenSongIds.add(song.songId);
-            collectedSongs.push(JSON.parse(JSON.stringify(song)));
+        let firstSong = null;
+        const considerSong = song => {
+            if (firstSong || !song || !song.songId) return;
+            firstSong = JSON.parse(JSON.stringify(song));
         };
-        if (Array.isArray(json.songs)) {
-            for (const s of json.songs) ingestSong(s);
+        if (json.song) {
+            considerSong(json.song);
+        } else if (Array.isArray(json.songs)) {
+            for (const s of json.songs) considerSong(s);
         }
         for (const t of targetObjects) {
-            if (Array.isArray(t.songs)) {
-                for (const s of t.songs) ingestSong(s);
-                // Don't carry the legacy field forward into target parsing.
-                delete t.songs;
+            if (!firstSong) {
+                if (t.song) considerSong(t.song);
+                else if (Array.isArray(t.songs)) {
+                    for (const s of t.songs) considerSong(s);
+                }
             }
+            // Don't carry legacy fields forward into target parsing.
+            if (t.song) delete t.song;
+            if (Array.isArray(t.songs)) delete t.songs;
         }
-        runtime.songs = collectedSongs;
+        runtime.song = firstSong;
     }
 
     const monitorObjects = json.monitors || [];

@@ -1,9 +1,11 @@
 /**
  * Song scheduler — pure module used by both the runtime Songs extension and the
- * GUI editor's preview. Given a song JSON, an audio context, and accessors to
- * get instrument/drum sample buffers, it schedules `AudioBufferSourceNode`s
- * for the song's notes and fires beat/note/start/end callbacks at the right
- * audio-context times.
+ * GUI editor's preview. Holds a single shared transport keyed to the project's
+ * song (tempo + length + tracks). Tracks are individually `active` or
+ * `inactive`; the transport ticks whenever ≥1 track is active and always loops.
+ * Track activation can be scheduled to take effect immediately ("now") or at
+ * the next loop boundary ("loop"). Per-track fades animate a gain node on the
+ * track's FX chain so they compose with per-note velocity gain.
  */
 
 const ratioForPitchInterval = interval => Math.pow(2, interval / 12);
@@ -23,13 +25,12 @@ class SongScheduler {
      * @param {AudioNode} [opts.destination] - audio destination node (defaults to ctx.destination)
      * @param {function} opts.getInstrumentBuffer - (instIdx0, midiNote) -> {buffer, sampleNote, releaseTime} or null
      * @param {function} opts.getDrumBuffer - (drumIdx0) -> AudioBuffer or null
-     * @param {function} [opts.onStart] - called once at start
+     * @param {function} [opts.onStart] - called once when the transport spins up
      * @param {function} [opts.onBeat] - called(beatIndex, ctxTime) when a beat boundary is reached
      * @param {function} [opts.onNote] - called({trackId, step, pitch, drum}, ctxTime) when a note begins
-     * @param {function} [opts.onEnd] - called once when the song's last note's release completes
+     * @param {function} [opts.onEnd] - called once when the transport idles out (no active tracks remain)
      * @param {function} [opts.onStep] - called(stepIndex, ctxTime) when the playhead advances (for UI)
-     * @param {function} [opts.onLoop] - called(iterationIndex) just after the playhead wraps in loop mode
-     * @param {boolean} [opts.loop] - if true, playback wraps from the end of the song back to step 0 seamlessly
+     * @param {function} [opts.onLoop] - called(iterationIndex) just after the playhead wraps
      * @param {number} [opts.tempoOverride] - if set, used instead of song.tempo
      */
     constructor (opts) {
@@ -44,13 +45,7 @@ class SongScheduler {
         this.onEnd = opts.onEnd || (() => {});
         this.onStep = opts.onStep || (() => {});
         this.onLoop = opts.onLoop || (() => {});
-        this.onSongSwap = opts.onSongSwap || (() => {});
         this.tempoOverride = opts.tempoOverride;
-        this._loop = !!opts.loop;
-        // Allow callers to start playback partway through the song. Notes
-        // whose step is below startStep are skipped entirely (they're "in the
-        // past" relative to the user's intended start).
-        this.startStep = Math.max(0, Math.floor(opts.startStep || 0));
 
         this._activeSources = [];
         this._timer = null;
@@ -61,36 +56,53 @@ class SongScheduler {
         this._started = false;
         this._ended = false;
         this._iter = 0;
-        this._notes = [];   // flat sorted list of {trackId, kind, instrument, drum, volume, muted, step, durationSteps, pitch}
-        this._endTime = 0;
-        // Pending swap to a different song at the current iteration's
-        // boundary. Set by queueSong(); cleared when the swap is performed.
-        this._queuedSong = null;
-        this._queuedOpts = null;
-        this._loopBeforeQueue = false;
+        this._notes = [];
+
+        // Per-track active set. A track is heard only when its trackId is in
+        // this set; otherwise it's filtered out of the flat note list. The
+        // transport runs as long as this set is non-empty.
+        this._activeTracks = new Set();
+        // Pending activate/deactivate changes to apply at the next loop
+        // boundary. Map<trackId, boolean>. Last write wins.
+        this._pendingTrackChanges = new Map();
+        // Pending deactivations triggered by fade-out: when audioContext time
+        // reaches the stored ctxTime, the track is removed from _activeTracks.
+        // Map<trackId, number /* ctxTime */>.
+        this._pendingDeactivations = new Map();
+
         // Per-track FX chains, keyed by trackId. Built lazily on first note of
         // a track so empty / muted tracks cost nothing.
         this._trackChains = {};
         // Latest effect values pushed via setTrackEffects, keyed by trackId.
-        // Persists across the lifetime of the scheduler so a chain built AFTER
-        // a slider drag still picks up the live values (the scheduler's song
-        // reference is frozen at construction and may be stale by then).
         this._effectsCache = {};
         // Shared synthesized impulse response for all per-track reverbs.
         this._reverbBuffer = null;
     }
 
     get tempo () {
-        return this.tempoOverride || this.song.tempo || 120;
+        return this.tempoOverride || (this.song && this.song.tempo) || 120;
     }
 
     get secondsPerStep () {
-        const stepsPerBeat = this.song.stepsPerBeat || 4;
+        const stepsPerBeat = (this.song && this.song.stepsPerBeat) || 4;
         return (60 / this.tempo) / stepsPerBeat;
     }
 
+    get iterDuration () {
+        const length = (this.song && this.song.lengthSteps) || 32;
+        return length * this.secondsPerStep;
+    }
+
+    isRunning () {
+        return this._started;
+    }
+
+    activeTrackIds () {
+        return Array.from(this._activeTracks);
+    }
+
     _trackById (trackId) {
-        for (const t of (this.song.tracks || [])) {
+        for (const t of ((this.song && this.song.tracks) || [])) {
             if (t.trackId === trackId) return t;
         }
         return null;
@@ -113,13 +125,11 @@ class SongScheduler {
         const seconds = 1.8;
         const length = Math.floor(sr * seconds);
         const buffer = ctx.createBuffer(2, length, sr);
-        // Decaying white noise — a cheap, characterful "room" impulse. Two
-        // independent channels so the result is naturally stereo.
         for (let ch = 0; ch < 2; ch++) {
             const data = buffer.getChannelData(ch);
             for (let i = 0; i < length; i++) {
                 const env = Math.pow(1 - (i / length), 2.6);
-                data[i] = (Math.random() * 2 - 1) * env;
+                data[i] = ((Math.random() * 2) - 1) * env;
             }
         }
         this._reverbBuffer = buffer;
@@ -137,8 +147,6 @@ class SongScheduler {
         filter.Q.value = 0.7;
         filter.frequency.value = 12000;
 
-        // StereoPannerNode isn't in every WebAudio implementation; fall back to
-        // a passthrough gain so the chain still works (just without pan).
         const panner = typeof ctx.createStereoPanner === 'function' ?
             ctx.createStereoPanner() : ctx.createGain();
         if (panner.pan) panner.pan.value = 0;
@@ -151,9 +159,7 @@ class SongScheduler {
         const reverbSend = ctx.createGain();
         reverbSend.gain.value = 0;
 
-        // 1/8-note delay at the song's tempo. Held constant for the lifetime
-        // of this chain; tempo changes go through a scheduler restart.
-        const stepsPerBeat = this.song.stepsPerBeat || 4;
+        const stepsPerBeat = (this.song && this.song.stepsPerBeat) || 4;
         const eighth = this.secondsPerStep * (stepsPerBeat / 2);
         const delay = ctx.createDelay(2.0);
         delay.delayTime.value = Math.min(2.0, Math.max(0.05, eighth));
@@ -167,8 +173,6 @@ class SongScheduler {
         panner.connect(dry);
         dry.connect(this.destination);
 
-        // Sends fork off the panner so the wet paths share filter+pan colour
-        // with the dry. Cheap and produces the most "natural" result.
         panner.connect(reverbSend);
         reverbSend.connect(reverb);
         reverb.connect(this.destination);
@@ -181,8 +185,6 @@ class SongScheduler {
 
         const chain = {input, filter, panner, dry, reverb, reverbSend, delay, delaySend, feedback};
         this._trackChains[trackId] = chain;
-        // Prefer the most recent live-pushed values over the construction-time
-        // song JSON, since the song reference doesn't update mid-playback.
         const cached = this._effectsCache[trackId];
         const track = this._trackById(trackId);
         const effects = cached || this._normalizeEffects(track && track.effects);
@@ -195,8 +197,6 @@ class SongScheduler {
         const now = ctx.currentTime;
         const tau = 0.02;
         const clamp01 = v => Math.max(0, Math.min(1, v));
-        // Filter: 0 = closed (200 Hz), 1 = open (12 kHz). Log-mapped so a slider
-        // feels musical end-to-end.
         const f = clamp01(effects.filter);
         const cutoff = 200 * Math.pow(60, f);
         chain.filter.frequency.setTargetAtTime(cutoff, now, tau);
@@ -204,17 +204,16 @@ class SongScheduler {
             const p = Math.max(-1, Math.min(1, effects.pan));
             chain.panner.pan.setTargetAtTime(p, now, tau);
         }
-        // Scale wet sends below 1.0 so even max settings stay in a usable range
-        // (otherwise reverb at 1.0 swamps the dry signal).
         chain.reverbSend.gain.setTargetAtTime(clamp01(effects.reverb) * 0.6, now, tau);
         chain.delaySend.gain.setTargetAtTime(clamp01(effects.delay) * 0.55, now, tau);
     }
 
     /**
-     * Apply live effect values to a track's audio chain (no-op if no chain has
-     * been built yet for this trackId, i.e. the track has not played a note
-     * since play() was called). Lets the editor's sliders be heard mid-playback
-     * without restarting the scheduler.
+     * Apply live effect values to a track's audio chain. Builds the chain on
+     * demand so a slider drag on a track that hasn't yet played a note still
+     * applies the next time it does.
+     * @param trackId
+     * @param effects
      */
     setTrackEffects (trackId, effects) {
         const normalized = this._normalizeEffects(effects);
@@ -226,18 +225,11 @@ class SongScheduler {
 
     _flattenNotes () {
         const notes = [];
-        // If any track is solo'd, only solo'd tracks play — mute is otherwise
-        // honored as before. This matches typical DAW solo semantics: enabling
-        // solo on one or more tracks silences everything else.
-        const tracks = this.song.tracks || [];
-        const hasSolo = tracks.some(t => t && t.solo && !t.muted);
+        const tracks = (this.song && this.song.tracks) || [];
         for (const track of tracks) {
+            if (!this._activeTracks.has(track.trackId)) continue;
             if (track.muted) continue;
-            if (hasSolo && !track.solo) continue;
             for (const note of (track.notes || [])) {
-                // For drums, prefer the per-note drum field (the new
-                // multi-lane drum-machine shape). Fall back to the legacy
-                // single-track drum index so old projects still play.
                 const drumIdx = (typeof note.drum === 'number' ? note.drum : (track.drum || 1)) - 1;
                 notes.push({
                     trackId: track.trackId,
@@ -256,112 +248,88 @@ class SongScheduler {
         return notes;
     }
 
-    play () {
+    /**
+     * Spin up the transport. Idempotent — calling start() on an already-running
+     * scheduler is a no-op. The transport then loops forever until the active
+     * set empties out (or stop() is called explicitly).
+     * @param {object} [opts]
+     * @param {number} [opts.startStep] - anchor the transport so that this
+     *   step lines up with "now". Useful for editor previews that resume at a
+     *   non-zero cursor. The transport still loops normally from there.
+     * @param {Array.<string>} [opts.activeTracks] - track IDs to mark active
+     *   before the first tick, so the transport doesn't immediately idle out.
+     */
+    start (opts) {
         if (this._started) return;
+        if (!this.song) return;
+        const startStep = Math.max(0, Math.floor((opts && opts.startStep) || 0));
+        if (opts && Array.isArray(opts.activeTracks)) {
+            for (const id of opts.activeTracks) this._activeTracks.add(id);
+        }
         this._started = true;
         this._ended = false;
         this._iter = 0;
-        // `_notes` is the full list; the startStep filter applies only to
-        // iteration 0 and is enforced inline during scheduling. Notes whose
-        // start step is below startStep are skipped on the first iteration —
-        // they're "in the past" relative to the user's intended start. Notes
-        // that *cross* the start step are dropped too; partial sustains would
-        // require slicing the audio buffer.
         this._notes = this._flattenNotes();
         const sps = this.secondsPerStep;
-        const length = this.song.lengthSteps || 32;
-        // Anchor the audio timeline so step 0 maps to (now + offset - startStep*sps).
-        // That way each note still fires at (startCtxTime + note.step * sps),
-        // and the playhead reads correctly from the very first onStep tick.
         const offset = 0.05;
         const now = this.audioContext.currentTime;
-        this._startCtxTime = now + offset - (this.startStep * sps);
-        this._endTime = this._startCtxTime + (length * sps);
+        // Anchor so that (now + offset) corresponds to startStep within iter 0.
+        this._startCtxTime = now + offset - (startStep * sps);
         this._enqueuedThroughCtxTime = now + offset;
-        this._nextBeatToFire = Math.floor(this.startStep / (this.song.stepsPerBeat || 4));
-        this._lastStepFiredAt = this.startStep - 1;
-
-        // Fire onStart slightly later so subscribers can wire up.
+        this._nextBeatToFire = Math.floor(startStep / ((this.song && this.song.stepsPerBeat) || 4));
+        this._lastStepFiredAt = startStep - 1;
         setTimeout(() => this.onStart(), 0);
-
         this._timer = setInterval(() => this._tick(), 25);
         this._tick();
     }
 
     /**
-     * Toggle loop mode on or off mid-playback. When turning off, the scheduler
-     * finishes the current iteration normally and then fires onEnd. When
-     * turning on, scheduling extends past the current iteration boundary.
-     *
-     * @param {boolean} loop
+     * Schedule a track to become active or inactive.
+     * @param {string} trackId
+     * @param {boolean} active
+     * @param {string} [when] - 'now' for immediate; 'loop' to defer to
+     *   the next loop boundary so musical phase is preserved.
      */
-    setLoop (loop) {
-        this._loop = !!loop;
-    }
-
-    /**
-     * Swap in a new song reference and re-flatten the note list. Used by the
-     * editor so edits made during one loop iteration are heard in the next.
-     * Notes already scheduled within the lookahead window will play with their
-     * old parameters — only notes scheduled after this call see the update.
-     *
-     * @param {object} song
-     */
-    updateSong (song) {
-        if (!song) return;
-        this.song = song;
-        this._notes = this._flattenNotes();
-    }
-
-    /**
-     * Internal: handle a loop wrap. Re-flattens notes from the (possibly
-     * updated) song reference so live edits show up in the new iteration,
-     * resets per-iteration step/beat counters so step 0 fires again, and
-     * fires onLoop.
-     *
-     * @param {number} newIter
-     */
-    _onLoopWrap (newIter) {
-        this._iter = newIter;
-        this._notes = this._flattenNotes();
-        this._lastStepFiredAt = -1;
-        this._nextBeatToFire = 0;
-        this.onLoop(newIter);
-    }
-
-    /**
-     * Queue a new song to start at the current iteration's boundary. While a
-     * song is queued, the current iteration plays out normally but no further
-     * iterations of the current song are scheduled — the boundary becomes a
-     * hand-off point. Any notes that the lookahead had already scheduled past
-     * the boundary are cancelled so they don't play over the queued song.
-     *
-     * If queueSong is called twice before the boundary, last-write-wins.
-     *
-     * @param {object} song
-     * @param {object} [opts] - {loop?: boolean} — if omitted, inherits the
-     *   current scheduler's pre-queue loop state.
-     */
-    queueSong (song, opts) {
-        if (!song) return;
-        this._queuedSong = song;
-        this._queuedOpts = opts || {};
-        // Stop pre-scheduling further iterations of the current song. Without
-        // this, the lookahead would keep adding wrap-iter notes that should
-        // belong to the queued song after the boundary.
-        if (this._loop) {
-            this._loopBeforeQueue = true;
-            this._loop = false;
+    setTrackActive (trackId, active, when = 'now') {
+        if (!trackId) return;
+        // 'loop' only makes sense when something is already running; with the
+        // transport idle there's no boundary to wait for, so collapse to 'now'.
+        if (when === 'loop' && this._started) {
+            this._pendingTrackChanges.set(trackId, !!active);
+            return;
         }
-        // Cancel any already-scheduled future notes that would overlap with
-        // the queued song. Anything starting at-or-past the boundary belongs
-        // to the (no-longer-needed) next iteration of the current song.
-        const sps = this.secondsPerStep;
-        const length = this.song.lengthSteps || 32;
-        const boundary = this._startCtxTime + ((this._iter + 1) * length * sps);
+        this._applyTrackActiveChange(trackId, !!active);
+    }
+
+    _applyTrackActiveChange (trackId, active) {
+        if (active) {
+            if (this._activeTracks.has(trackId)) return;
+            this._activeTracks.add(trackId);
+            this._pendingDeactivations.delete(trackId);
+            if (this._started) {
+                this._notes = this._flattenNotes();
+            } else {
+                this.start();
+            }
+        } else {
+            if (!this._activeTracks.has(trackId)) return;
+            this._activeTracks.delete(trackId);
+            this._notes = this._flattenNotes();
+            // Cancel any not-yet-started scheduled sources for this track so
+            // we don't hear notes from a track the user just stopped.
+            this._cancelScheduledForTrack(trackId);
+        }
+    }
+
+    _cancelScheduledForTrack (trackId) {
+        const now = this.audioContext.currentTime;
         for (let i = this._activeSources.length - 1; i >= 0; i--) {
             const src = this._activeSources[i];
-            if (typeof src._scheduledStart === 'number' && src._scheduledStart >= boundary) {
+            if (src._trackId !== trackId) continue;
+            // Only cancel sources that haven't started yet — letting an
+            // already-sounding note finish its release sounds more natural
+            // than a hard cut.
+            if (typeof src._scheduledStart === 'number' && src._scheduledStart > now) {
                 try {
                     src.stop();
                     src.disconnect();
@@ -372,35 +340,92 @@ class SongScheduler {
     }
 
     /**
-     * Internal: perform the song swap at the boundary. Fires onSongSwap so the
-     * caller can hand off callbacks before the new song's events start
-     * firing, then re-anchors the timing so step 0 of the queued song begins
-     * exactly at the boundary.
+     * Start a linear gain fade on a track. Direction 'in' activates the
+     * track (silent, ramping up); direction 'out' ramps down and deactivates
+     * once the fade completes.
+     * @param {string} trackId
+     * @param {string} direction - 'in' or 'out'
+     * @param {string} [when] - 'now' or 'loop'
+     * @param {number} [durationSec]
      */
-    _performSwap (boundary) {
-        const queued = this._queuedSong;
-        const opts = this._queuedOpts || {};
-        this._queuedSong = null;
-        this._queuedOpts = null;
-        this.onSongSwap(queued);
-        this.song = queued;
-        if (Object.prototype.hasOwnProperty.call(opts, 'loop')) {
-            this._loop = !!opts.loop;
-        } else {
-            this._loop = this._loopBeforeQueue;
+    fadeTrack (trackId, direction, when = 'now', durationSec = 1.0) {
+        if (!trackId) return;
+        if (when === 'loop' && this._started) {
+            // Defer the entire fade by scheduling it at the next boundary in
+            // _tick. We co-opt _pendingTrackChanges with a sentinel object.
+            this._pendingTrackChanges.set(trackId, {fade: direction, durationSec});
+            return;
         }
-        this._loopBeforeQueue = false;
-        this._startCtxTime = boundary;
-        this._iter = 0;
+        this._beginFade(trackId, direction, durationSec);
+    }
+
+    _beginFade (trackId, direction, durationSec) {
+        const ctx = this.audioContext;
+        if (direction === 'in') {
+            // Build the chain proactively so we can set gain=0 before any note
+            // hits, then activate so notes start flowing.
+            const chain = this._getTrackChain(trackId);
+            const now = ctx.currentTime;
+            try {
+                chain.input.gain.cancelScheduledValues(now);
+            } catch (e) { /* ignore */ }
+            chain.input.gain.setValueAtTime(0, now);
+            chain.input.gain.linearRampToValueAtTime(1, now + durationSec);
+            this._pendingDeactivations.delete(trackId);
+            this._applyTrackActiveChange(trackId, true);
+        } else if (direction === 'out') {
+            // If the track isn't active, there's nothing to fade.
+            if (!this._activeTracks.has(trackId)) return;
+            const chain = this._getTrackChain(trackId);
+            const now = ctx.currentTime;
+            try {
+                chain.input.gain.cancelScheduledValues(now);
+            } catch (e) { /* ignore */ }
+            // Capture the current gain so the ramp starts from where we are.
+            const startVal = chain.input.gain.value;
+            chain.input.gain.setValueAtTime(startVal, now);
+            chain.input.gain.linearRampToValueAtTime(0, now + durationSec);
+            // Mark for deactivation when the fade completes. _tick checks the
+            // map each cycle and removes the track from _activeTracks at that
+            // time, restoring the chain gain to 1 so a later activation isn't
+            // silent.
+            this._pendingDeactivations.set(trackId, now + durationSec);
+        }
+    }
+
+    /**
+     * Swap in a new song reference and re-flatten the note list. Used by the
+     * editor so edits made during one loop iteration are heard in the next.
+     * If track set changed (e.g. tracks added/removed), prune stale entries
+     * from _activeTracks so the scheduler can decide to idle correctly.
+     * @param song
+     */
+    updateSong (song) {
+        if (!song) return;
+        this.song = song;
+        const validIds = new Set((song.tracks || []).map(t => t.trackId));
+        for (const id of Array.from(this._activeTracks)) {
+            if (!validIds.has(id)) this._activeTracks.delete(id);
+        }
+        this._notes = this._flattenNotes();
+    }
+
+    _onLoopWrap (newIter) {
+        this._iter = newIter;
+        if (this._pendingTrackChanges.size > 0) {
+            for (const [trackId, value] of this._pendingTrackChanges) {
+                if (value && typeof value === 'object' && value.fade) {
+                    this._beginFade(trackId, value.fade, value.durationSec);
+                } else {
+                    this._applyTrackActiveChange(trackId, !!value);
+                }
+            }
+            this._pendingTrackChanges.clear();
+        }
+        this._notes = this._flattenNotes();
         this._lastStepFiredAt = -1;
         this._nextBeatToFire = 0;
-        this._notes = this._flattenNotes();
-        const sps = this.secondsPerStep;
-        const length = this.song.lengthSteps || 32;
-        this._endTime = boundary + (length * sps);
-        // The next _tick will schedule the queued song's notes from the
-        // boundary forward into the lookahead.
-        this._enqueuedThroughCtxTime = boundary;
+        this.onLoop(newIter);
     }
 
     stop () {
@@ -417,17 +442,19 @@ class SongScheduler {
             } catch (e) { /* already stopped */ }
         }
         this._activeSources = [];
-        // Tear down per-track FX chains so we don't leak audio nodes across
-        // play/stop cycles. The reverb impulse buffer is cheap to retain;
-        // the audio nodes themselves are not.
         for (const trackId of Object.keys(this._trackChains)) {
             const chain = this._trackChains[trackId];
             for (const key of Object.keys(chain)) {
-                try { chain[key].disconnect(); } catch (e) { /* ignore */ }
+                try {
+                    chain[key].disconnect();
+                } catch (e) { /* ignore */ }
             }
         }
         this._trackChains = {};
         this._effectsCache = {};
+        this._activeTracks.clear();
+        this._pendingTrackChanges.clear();
+        this._pendingDeactivations.clear();
         if (!this._ended) {
             this._ended = true;
             this.onEnd();
@@ -441,17 +468,52 @@ class SongScheduler {
         const lookahead = 0.1;
         const cursor = now + lookahead;
         const sps = this.secondsPerStep;
-        const stepsPerBeat = this.song.stepsPerBeat || 4;
-        const length = this.song.lengthSteps || 32;
+        const stepsPerBeat = (this.song && this.song.stepsPerBeat) || 4;
+        const length = (this.song && this.song.lengthSteps) || 32;
         const iterDuration = length * sps;
 
-        // Detect loop wraps based on `now` (audible position). If the audible
-        // playhead has crossed into a later iteration than `_iter`, run the
-        // wrap handler — this refreshes notes from the latest song reference
-        // and resets the per-iteration step/beat counters.
+        // Loop wraps based on audible position.
         const iterNow = Math.max(0, Math.floor((now - this._startCtxTime) / iterDuration));
-        if (this._loop && iterNow > this._iter) {
+        if (iterNow > this._iter) {
             this._onLoopWrap(iterNow);
+        }
+
+        // Apply fade-out deactivations whose ramps have completed.
+        if (this._pendingDeactivations.size > 0) {
+            for (const [trackId, atTime] of Array.from(this._pendingDeactivations)) {
+                if (now >= atTime) {
+                    this._activeTracks.delete(trackId);
+                    this._pendingDeactivations.delete(trackId);
+                    // Restore chain gain so a future fade-in / play starts at full level.
+                    const chain = this._trackChains[trackId];
+                    if (chain) {
+                        try {
+                            chain.input.gain.cancelScheduledValues(now);
+                        } catch (e) { /* ignore */ }
+                        chain.input.gain.setValueAtTime(1, now);
+                    }
+                    this._notes = this._flattenNotes();
+                    this._cancelScheduledForTrack(trackId);
+                }
+            }
+        }
+
+        // Idle-out when nothing is active and no pending work remains.
+        if (this._activeTracks.size === 0 &&
+            this._pendingTrackChanges.size === 0 &&
+            this._pendingDeactivations.size === 0 &&
+            this._activeSources.length === 0) {
+            // Defer to next tick to give onStep a final flush, then halt.
+            this._started = false;
+            if (this._timer) {
+                clearInterval(this._timer);
+                this._timer = null;
+            }
+            if (!this._ended) {
+                this._ended = true;
+                this.onEnd();
+            }
+            return;
         }
 
         // UI step callback — step is local to the current iteration.
@@ -462,22 +524,15 @@ class SongScheduler {
             this.onStep(currentStep, now);
         }
 
-        // Schedule notes up to cursor. In loop mode, the cursor may extend
-        // past the current iteration's end, so we walk the note list once per
-        // iteration that overlaps the lookahead window. The startStep filter
-        // applies only to iteration 0 (the user's intended starting point);
-        // every subsequent loop iteration plays the full note list from step 0.
-        const cursorIter = this._loop ?
-            Math.floor((cursor - this._startCtxTime) / iterDuration) :
-            this._iter;
+        // Schedule notes up to cursor across however many iterations overlap
+        // the lookahead window (typically 0 or 1 boundaries).
+        const cursorIter = Math.floor((cursor - this._startCtxTime) / iterDuration);
         for (let i = this._iter; i <= cursorIter; i++) {
             const iterStart = this._startCtxTime + (i * iterDuration);
-            const minStep = i === 0 ? this.startStep : 0;
             for (const note of this._notes) {
-                if (note.step < minStep) continue;
                 const noteCtxTime = iterStart + (note.step * sps);
                 if (noteCtxTime < this._enqueuedThroughCtxTime) continue;
-                if (noteCtxTime > cursor) break; // notes are sorted by step
+                if (noteCtxTime > cursor) break;
                 this._scheduleNote(note, noteCtxTime);
             }
         }
@@ -492,27 +547,6 @@ class SongScheduler {
             if (this._nextBeatToFire >= beatsPerIter) break;
             this.onBeat(this._nextBeatToFire, beatCtxTime);
             this._nextBeatToFire++;
-        }
-
-        // End of song — only when not looping. Add a 50 ms tail so the final
-        // note's release ramp has time to play out before subscribers tear
-        // down audio nodes. If a song is queued, swap at the boundary rather
-        // than ending.
-        if (!this._loop) {
-            const currentIterEnd = this._startCtxTime + ((this._iter + 1) * iterDuration);
-            if (this._queuedSong && now >= currentIterEnd) {
-                this._performSwap(currentIterEnd);
-                return;
-            }
-            if (now >= currentIterEnd + 0.05 && !this._ended) {
-                this._ended = true;
-                this.onEnd();
-                this._started = false;
-                if (this._timer) {
-                    clearInterval(this._timer);
-                    this._timer = null;
-                }
-            }
         }
     }
 
@@ -541,33 +575,14 @@ class SongScheduler {
 
         const volumeGain = ctx.createGain();
         const trackVol = (typeof note.volume === 'number' ? note.volume : 80) / 100;
-        // MIDI-style velocity (1-127) scales the per-note amplitude on top of
-        // the track volume. A linear v/127 is far too flat — the Scratch
-        // music samples are already loudness-normalized, so the gain node is
-        // doing the *entire* job of expressing dynamics. A cubed curve
-        // (v/127)^3 gives roughly ~36 dB of useful range from softest to
-        // loudest, which is close to the MIDI spec's recommended dB curve and
-        // is dramatic enough that an 80 vs 110 difference is plainly audible.
         const velocity = typeof note.velocity === 'number' ? note.velocity : 80;
         const vNorm = Math.max(0, Math.min(1, velocity / 127));
+        // Cubed velocity curve so 80 vs 110 is plainly audible (the music
+        // samples are already loudness-normalized).
         const velocityGain = Math.max(0.002, vNorm * vNorm * vNorm);
         const finalGain = trackVol * velocityGain;
         volumeGain.gain.setValueAtTime(finalGain, when);
-        // Also set the value directly so it takes effect immediately, even if
-        // `when` ends up in the past relative to currentTime by the time the
-        // node is connected. setValueAtTime alone scheduled in the past can
-        // be a no-op in some WebAudio implementations.
         volumeGain.gain.value = finalGain;
-        // Debug: log every scheduled note's velocity → gain so the user can
-        // verify in the browser console that distinct velocities produce
-        // distinct gains. Remove once we're confident the chain is correct.
-        if (typeof console !== 'undefined' && console.debug) {
-            console.debug(
-                `[song] step=${note.step} kind=${note.kind} ` +
-                `vel=${velocity} → vGain=${velocityGain.toFixed(4)} ` +
-                `trackVol=${trackVol} finalGain=${finalGain.toFixed(4)}`
-            );
-        }
 
         const releaseGain = ctx.createGain();
         releaseGain.gain.setValueAtTime(1, when);
@@ -579,17 +594,13 @@ class SongScheduler {
 
         source.connect(volumeGain);
         volumeGain.connect(releaseGain);
-        // Route through the track's FX chain so per-track filter / pan /
-        // reverb / delay shape the sound. _getTrackChain builds the chain
-        // on first hit for a track and caches it for the rest of playback.
         const chain = note.trackId ? this._getTrackChain(note.trackId) : null;
         releaseGain.connect(chain ? chain.input : this.destination);
 
         source.start(when);
         source.stop(releaseEnd + 0.01);
-        // Tagged so queueSong() can cancel future-scheduled-but-not-yet-started
-        // notes that would otherwise play past the swap boundary.
         source._scheduledStart = when;
+        source._trackId = note.trackId;
 
         this._activeSources.push(source);
         source.onended = () => {
