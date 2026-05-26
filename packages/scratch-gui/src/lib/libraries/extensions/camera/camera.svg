@@ -1,0 +1,11 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <title>camera-icon</title>
+    <g fill="none" fill-rule="evenodd">
+        <circle fill="#4C97FF" cx="100" cy="100" r="100"/>
+        <path d="M52 70h28l8-12h24l8 12h28a14 14 0 0 1 14 14v52a14 14 0 0 1-14 14H52a14 14 0 0 1-14-14V84a14 14 0 0 1 14-14z"
+            fill="#FFF" stroke="#3373CC" stroke-width="4"/>
+        <circle cx="100" cy="113" r="30" fill="#4C97FF" stroke="#3373CC" stroke-width="4"/>
+        <circle cx="100" cy="113" r="13" fill="#FFF"/>
+        <circle cx="148" cy="84" r="5" fill="#3373CC"/>
+    </g>
+</svg>

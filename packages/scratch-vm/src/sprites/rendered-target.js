@@ -268,7 +268,11 @@ class RenderedTarget extends Target {
         const oldX = this.x;
         const oldY = this.y;
         if (this.renderer) {
-            const position = this.renderer.getFencedPositionOfDrawable(this.drawableID, [x, y]);
+            // When fencing is disabled (e.g. by the camera extension), sprites
+            // may move arbitrarily far off-stage.
+            const position = this.runtime && this.runtime.disableFencing ?
+                [x, y] :
+                this.renderer.getFencedPositionOfDrawable(this.drawableID, [x, y]);
             this.x = position[0];
             this.y = position[1];
 

@@ -149,10 +149,15 @@ class Stage extends React.Component {
     }
     getScratchCoords (x, y) {
         const nativeSize = this.renderer.getNativeSize();
-        return [
-            (nativeSize[0] / this.rect.width) * (x - (this.rect.width / 2)),
-            (nativeSize[1] / this.rect.height) * (y - (this.rect.height / 2))
-        ];
+        const screenX = (nativeSize[0] / this.rect.width) * (x - (this.rect.width / 2));
+        const screenY = (nativeSize[1] / this.rect.height) * (y - (this.rect.height / 2));
+        // If the renderer has a camera transform applied, inverse-transform
+        // the point so scripts see world-space coordinates (which is the same
+        // space sprite x/y live in).
+        if (this.renderer.screenToWorld) {
+            return this.renderer.screenToWorld(screenX, screenY);
+        }
+        return [screenX, screenY];
     }
     getColorInfo (x, y) {
         return {

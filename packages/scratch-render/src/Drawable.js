@@ -107,6 +107,11 @@ class Drawable {
         this._inverseTransformDirty = true;
         this._visible = true;
 
+        // When true, this Drawable is treated as a HUD: it is drawn without the
+        // camera view transform, and is hit-tested in screen-aligned scratch
+        // coordinates instead of world coordinates.
+        this._ignoreCamera = false;
+
         /**
          * A bitmask identifying which effects are currently in use.
          * @readonly
@@ -249,6 +254,23 @@ class Drawable {
             this._visible = visible;
             this.setConvexHullDirty();
         }
+    }
+
+    /**
+     * @returns {boolean} Whether this Drawable should ignore the camera view transform.
+     */
+    getIgnoreCamera () {
+        return this._ignoreCamera;
+    }
+
+    /**
+     * Set whether this Drawable should ignore the camera view transform.
+     * HUD drawables are drawn after the world pass with the plain projection
+     * matrix, and are hit-tested in screen-aligned scratch coordinates.
+     * @param {boolean} ignoreCamera New flag value.
+     */
+    setIgnoreCamera (ignoreCamera) {
+        this._ignoreCamera = Boolean(ignoreCamera);
     }
 
     /**

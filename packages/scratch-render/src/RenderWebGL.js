@@ -214,6 +214,16 @@ class RenderWebGL extends EventEmitter {
 
         this.on(RenderConstants.Events.NativeSizeChanged, this.onNativeSizeChanged);
 
+        // Camera state. (cameraX, cameraY) is the world point the view is
+        // centered on; cameraZoom scales the view (1 = identity, 2 = 2x in).
+        // With default values the projection matrix is unchanged, so behavior
+        // is byte-identical to a renderer without camera support.
+        this._cameraX = 0;
+        this._cameraY = 0;
+        this._cameraZoom = 1;
+        this._cameraViewMatrix = twgl.m4.identity();
+        this._cameraProjection = twgl.m4.identity();
+
         this.setBackgroundColor(1, 1, 1);
         this.setStageSize(xLeft || -240, xRight || 240, yBottom || -180, yTop || 180);
         this.resize(this._nativeSize[0], this._nativeSize[1]);
@@ -313,6 +323,102 @@ class RenderWebGL extends EventEmitter {
         this._projection = twgl.m4.ortho(xLeft, xRight, yBottom, yTop, -1, 1);
 
         this._setNativeSize(Math.abs(xRight - xLeft), Math.abs(yBottom - yTop));
+        this._recomputeCameraMatrices();
+    }
+
+    /**
+     * Set the camera view (where the camera is looking and how far in).
+     * The default (x: 0, y: 0, zoom: 1) is identity and matches no-camera behavior.
+     * @param {object} [view] - camera parameters; omitted fields keep their current value.
+     * @param {number} [view.x] - the world X coordinate the camera is centered on.
+     * @param {number} [view.y] - the world Y coordinate the camera is centered on.
+     * @param {number} [view.zoom] - the camera zoom factor (must be > 0).
+     */
+    setCamera (view) {
+        if (!view) return;
+        if (typeof view.x === 'number' && Number.isFinite(view.x)) this._cameraX = view.x;
+        if (typeof view.y === 'number' && Number.isFinite(view.y)) this._cameraY = view.y;
+        if (typeof view.zoom === 'number' && Number.isFinite(view.zoom) && view.zoom > 0) {
+            this._cameraZoom = view.zoom;
+        }
+        this._recomputeCameraMatrices();
+    }
+
+    /**
+     * @returns {{x: number, y: number, zoom: number}} the current camera view.
+     */
+    getCamera () {
+        return {x: this._cameraX, y: this._cameraY, zoom: this._cameraZoom};
+    }
+
+    /**
+     * Mark a drawable as HUD (ignores camera) or as a normal world-space sprite.
+     * @param {int} drawableID - the ID of the drawable to update.
+     * @param {boolean} ignoreCamera - whether the drawable should ignore the camera view.
+     */
+    setDrawableIgnoreCamera (drawableID, ignoreCamera) {
+        const drawable = this._allDrawables[drawableID];
+        if (drawable) drawable.setIgnoreCamera(ignoreCamera);
+    }
+
+    /**
+     * Convert a screen-aligned scratch-space point to world-space (the inverse
+     * of the current camera view transform). Used to map mouse input and
+     * picking points into the same coordinate system as world-space sprites.
+     * @param {number} screenX - the x coordinate in screen-aligned scratch space.
+     * @param {number} screenY - the y coordinate in screen-aligned scratch space.
+     * @returns {Array<number>} [worldX, worldY].
+     */
+    screenToWorld (screenX, screenY) {
+        return [
+            (screenX / this._cameraZoom) + this._cameraX,
+            (screenY / this._cameraZoom) + this._cameraY
+        ];
+    }
+
+    /**
+     * Convert a world-space point to screen-aligned scratch space (the forward
+     * camera view transform).
+     * @param {number} worldX - the x coordinate in world space.
+     * @param {number} worldY - the y coordinate in world space.
+     * @returns {Array<number>} [screenX, screenY].
+     */
+    worldToScreen (worldX, worldY) {
+        return [
+            (worldX - this._cameraX) * this._cameraZoom,
+            (worldY - this._cameraY) * this._cameraZoom
+        ];
+    }
+
+    /**
+     * @returns {boolean} Whether the current camera is identity.
+     * @private
+     */
+    _cameraIsIdentity () {
+        return this._cameraX === 0 && this._cameraY === 0 && this._cameraZoom === 1;
+    }
+
+    /**
+     * Recompute the camera view matrix, its inverse, and the projection×view
+     * matrix used by the world pass. Called whenever camera state or the
+     * stage projection changes.
+     * @private
+     */
+    _recomputeCameraMatrices () {
+        const view = this._cameraViewMatrix;
+        // view = scale(zoom) * translate(-cx, -cy)
+        // Column-major layout matches twgl's m4 helpers.
+        const z = this._cameraZoom;
+        view[0] = z; view[1] = 0; view[2] = 0; view[3] = 0;
+        view[4] = 0; view[5] = z; view[6] = 0; view[7] = 0;
+        view[8] = 0; view[9] = 0; view[10] = 1; view[11] = 0;
+        view[12] = -this._cameraX * z;
+        view[13] = -this._cameraY * z;
+        view[14] = 0; view[15] = 1;
+
+        if (this._projection) {
+            twgl.m4.multiply(this._projection, view, this._cameraProjection);
+        }
     }
 
     /**
@@ -658,10 +764,35 @@ class RenderWebGL extends EventEmitter {
         gl.clearColor(...this._backgroundColor4f);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-        this._drawThese(this._drawList, ShaderManager.DRAW_MODE.default, this._projection, {
+        const drawOpts = {
             framebufferWidth: gl.canvas.width,
             framebufferHeight: gl.canvas.height
-        });
+        };
+
+        if (this._cameraIsIdentity()) {
+            this._drawThese(this._drawList, ShaderManager.DRAW_MODE.default, this._projection, drawOpts);
+        } else {
+            // Partition into world-space and HUD drawables. The world pass uses
+            // projection × camera-view; the HUD pass uses the plain projection.
+            // HUD drawables always render after world drawables (i.e. on top),
+            // regardless of their position in the draw list.
+            const worldList = [];
+            const hudList = [];
+            for (let i = 0; i < this._drawList.length; i++) {
+                const id = this._drawList[i];
+                const drawable = this._allDrawables[id];
+                if (drawable && drawable.getIgnoreCamera()) {
+                    hudList.push(id);
+                } else {
+                    worldList.push(id);
+                }
+            }
+            this._drawThese(worldList, ShaderManager.DRAW_MODE.default, this._cameraProjection, drawOpts);
+            if (hudList.length > 0) {
+                this._drawThese(hudList, ShaderManager.DRAW_MODE.default, this._projection, drawOpts);
+            }
+        }
+
         if (this._snapshotCallbacks.length > 0) {
             const snapshot = gl.canvas.toDataURL();
             this._snapshotCallbacks.forEach(cb => cb(snapshot));
@@ -1053,13 +1184,24 @@ class RenderWebGL extends EventEmitter {
             return false;
         }
         const bounds = this.clientSpaceToScratchBounds(centerX, centerY, touchWidth, touchHeight);
-        const worldPos = twgl.v3.create();
+        const testPos = twgl.v3.create();
+        // HUD drawables live in screen-aligned scratch space, so we hit-test
+        // them directly against the bounds. World-space drawables must be
+        // tested against the inverse-camera-transformed point.
+        const useCamera = !this._cameraIsIdentity() && !drawable.getIgnoreCamera();
 
         drawable.updateCPURenderAttributes();
 
-        for (worldPos[1] = bounds.bottom; worldPos[1] <= bounds.top; worldPos[1]++) {
-            for (worldPos[0] = bounds.left; worldPos[0] <= bounds.right; worldPos[0]++) {
-                if (drawable.isTouching(worldPos)) {
+        for (let y = bounds.bottom; y <= bounds.top; y++) {
+            for (let x = bounds.left; x <= bounds.right; x++) {
+                if (useCamera) {
+                    testPos[0] = (x / this._cameraZoom) + this._cameraX;
+                    testPos[1] = (y / this._cameraZoom) + this._cameraY;
+                } else {
+                    testPos[0] = x;
+                    testPos[1] = y;
+                }
+                if (drawable.isTouching(testPos)) {
                     return true;
                 }
             }
@@ -1127,9 +1269,25 @@ class RenderWebGL extends EventEmitter {
      * RenderConstants.ID_NONE if there is no Drawable at that location.
      */
     pick (centerX, centerY, touchWidth, touchHeight, candidateIDs) {
-        const bounds = this.clientSpaceToScratchBounds(centerX, centerY, touchWidth, touchHeight);
-        if (bounds.left === -Infinity || bounds.bottom === -Infinity) {
+        const screenBounds = this.clientSpaceToScratchBounds(centerX, centerY, touchWidth, touchHeight);
+        if (screenBounds.left === -Infinity || screenBounds.bottom === -Infinity) {
             return false;
+        }
+
+        // The picking bounds returned above are in screen-aligned scratch
+        // space. For world-space sprites we also need a world-space bounds for
+        // the bounding-box intersect prefilter; for HUD sprites the screen
+        // bounds is correct as-is.
+        const cameraOn = !this._cameraIsIdentity();
+        let worldBounds = screenBounds;
+        if (cameraOn) {
+            const tl = this.screenToWorld(screenBounds.left, screenBounds.top);
+            const br = this.screenToWorld(screenBounds.right, screenBounds.bottom);
+            worldBounds = new Rectangle();
+            worldBounds.initFromBounds(
+                Math.min(tl[0], br[0]), Math.max(tl[0], br[0]),
+                Math.min(tl[1], br[1]), Math.max(tl[1], br[1])
+            );
         }
 
         candidateIDs = (candidateIDs || this._drawList).filter(id => {
@@ -1137,7 +1295,8 @@ class RenderWebGL extends EventEmitter {
             // default pick list ignores visible and ghosted sprites.
             if (drawable.getVisible() && drawable.getUniforms().u_ghost !== 0) {
                 const drawableBounds = drawable.getFastBounds();
-                const inRange = bounds.intersects(drawableBounds);
+                const inRange = (drawable.getIgnoreCamera() ? screenBounds : worldBounds)
+                    .intersects(drawableBounds);
                 if (!inRange) return false;
 
                 drawable.updateCPURenderAttributes();
@@ -1150,19 +1309,31 @@ class RenderWebGL extends EventEmitter {
         }
 
         const hits = [];
+        const screenPos = twgl.v3.create(0, 0, 0);
         const worldPos = twgl.v3.create(0, 0, 0);
-        // Iterate over the scratch pixels and check if any candidate can be
-        // touched at that point.
-        for (worldPos[1] = bounds.bottom; worldPos[1] <= bounds.top; worldPos[1]++) {
-            for (worldPos[0] = bounds.left; worldPos[0] <= bounds.right; worldPos[0]++) {
+        // Iterate over the screen-space scratch pixels and check if any
+        // candidate can be touched at that point — using world coords for
+        // world-space drawables and screen coords for HUD drawables.
+        for (let y = screenBounds.bottom; y <= screenBounds.top; y++) {
+            for (let x = screenBounds.left; x <= screenBounds.right; x++) {
+                screenPos[0] = x;
+                screenPos[1] = y;
+                if (cameraOn) {
+                    worldPos[0] = (x / this._cameraZoom) + this._cameraX;
+                    worldPos[1] = (y / this._cameraZoom) + this._cameraY;
+                } else {
+                    worldPos[0] = x;
+                    worldPos[1] = y;
+                }
 
                 // Check candidates in the reverse order they would have been
-                // drawn. This will determine what candiate's silhouette pixel
+                // drawn. This will determine what candidate's silhouette pixel
                 // would have been drawn at the point.
                 for (let d = candidateIDs.length - 1; d >= 0; d--) {
                     const id = candidateIDs[d];
                     const drawable = this._allDrawables[id];
-                    if (drawable.isTouching(worldPos)) {
+                    const point = drawable.getIgnoreCamera() ? screenPos : worldPos;
+                    if (drawable.isTouching(point)) {
                         hits[id] = (hits[id] || 0) + 1;
                         break;
                     }

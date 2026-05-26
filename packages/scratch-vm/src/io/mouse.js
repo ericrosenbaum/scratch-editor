@@ -57,21 +57,33 @@ class Mouse {
      * @param  {object} data Data from DOM event.
      */
     postData (data) {
+        const renderer = this.runtime && this.runtime.renderer;
+        const nativeSize = renderer && renderer.getNativeSize ?
+            renderer.getNativeSize() : [480, 360];
+        let cameraOn = false;
+        if (renderer && renderer.screenToWorld && renderer.getCamera) {
+            const c = renderer.getCamera();
+            cameraOn = c.x !== 0 || c.y !== 0 || c.zoom !== 1;
+        }
+
         if (data.x) {
             this._clientX = data.x;
-            this._scratchX = Math.round(MathUtil.clamp(
-                480 * ((data.x / data.canvasWidth) - 0.5),
-                -240,
-                240
-            ));
+            const screenX = nativeSize[0] * ((data.x / data.canvasWidth) - 0.5);
+            if (cameraOn) {
+                // World coords can extend arbitrarily far; do not clamp.
+                this._scratchX = Math.round(renderer.screenToWorld(screenX, 0)[0]);
+            } else {
+                this._scratchX = Math.round(MathUtil.clamp(screenX, -240, 240));
+            }
         }
         if (data.y) {
             this._clientY = data.y;
-            this._scratchY = Math.round(MathUtil.clamp(
-                -360 * ((data.y / data.canvasHeight) - 0.5),
-                -180,
-                180
-            ));
+            const screenY = -nativeSize[1] * ((data.y / data.canvasHeight) - 0.5);
+            if (cameraOn) {
+                this._scratchY = Math.round(renderer.screenToWorld(0, screenY)[1]);
+            } else {
+                this._scratchY = Math.round(MathUtil.clamp(screenY, -180, 180));
+            }
         }
         if (typeof data.isDown !== 'undefined') {
             const previousDownState = this._isDown;
