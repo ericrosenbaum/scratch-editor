@@ -156,6 +156,43 @@ class Scratch3SongsBlocks {
                     }
                 },
                 {
+                    opcode: 'setSongTempo',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'songs.setSongTempo',
+                        default: 'set tempo to [TEMPO] bpm',
+                        description: 'Override the song tempo at playback time'
+                    }),
+                    arguments: {
+                        TEMPO: {type: ArgumentType.NUMBER, defaultValue: 120}
+                    }
+                },
+                {
+                    opcode: 'setSongKey',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'songs.setSongKey',
+                        default: 'set key to [NOTE] octave [OCTAVE]',
+                        description: 'Override the song root note at playback time'
+                    }),
+                    arguments: {
+                        NOTE: {type: ArgumentType.STRING, menu: 'NOTE', defaultValue: '0'},
+                        OCTAVE: {type: ArgumentType.NUMBER, defaultValue: 4}
+                    }
+                },
+                {
+                    opcode: 'setSongScale',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'songs.setSongScale',
+                        default: 'set scale to [SCALE]',
+                        description: 'Override the song scale at playback time'
+                    }),
+                    arguments: {
+                        SCALE: {type: ArgumentType.STRING, menu: 'SCALE', defaultValue: 'major'}
+                    }
+                },
+                {
                     opcode: 'whenBeat',
                     blockType: BlockType.HAT,
                     text: formatMessage({
@@ -211,6 +248,33 @@ class Scratch3SongsBlocks {
                         {text: 'delay', value: 'delay'},
                         {text: 'reverb', value: 'reverb'},
                         {text: 'pan', value: 'pan'}
+                    ]
+                },
+                NOTE: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'C', value: '0'},
+                        {text: 'C#', value: '1'},
+                        {text: 'D', value: '2'},
+                        {text: 'D#', value: '3'},
+                        {text: 'E', value: '4'},
+                        {text: 'F', value: '5'},
+                        {text: 'F#', value: '6'},
+                        {text: 'G', value: '7'},
+                        {text: 'G#', value: '8'},
+                        {text: 'A', value: '9'},
+                        {text: 'A#', value: '10'},
+                        {text: 'B', value: '11'}
+                    ]
+                },
+                SCALE: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'major', value: 'major'},
+                        {text: 'minor', value: 'minor'},
+                        {text: 'pentatonic major', value: 'pentatonicMajor'},
+                        {text: 'pentatonic minor', value: 'pentatonicMinor'},
+                        {text: 'chromatic', value: 'chromatic'}
                     ]
                 }
             }
@@ -308,6 +372,31 @@ class Scratch3SongsBlocks {
         for (const id of this._resolveTrackIds(args.TRACK)) {
             this._writeParam(id, param, value);
         }
+    }
+
+    setSongTempo (args) {
+        const pb = this.runtime.songPlayback;
+        if (!pb) return;
+        const bpm = Math.max(20, Math.min(500, Cast.toNumber(args.TEMPO)));
+        pb.setTempoOverride(bpm);
+    }
+
+    setSongKey (args) {
+        const pb = this.runtime.songPlayback;
+        if (!pb) return;
+        const pc = Math.max(0, Math.min(11, parseInt(Cast.toString(args.NOTE), 10) || 0));
+        const oct = Math.max(1, Math.min(7, Cast.toNumber(args.OCTAVE) || 4));
+        // Octave 4 + pitch class 0 = MIDI 60 (C4). Same encoding as the editor.
+        const midi = ((oct + 1) * 12) + pc;
+        pb.setRootPitchOverride(midi);
+    }
+
+    setSongScale (args) {
+        const pb = this.runtime.songPlayback;
+        if (!pb) return;
+        const valid = {major: 1, minor: 1, pentatonicMajor: 1, pentatonicMinor: 1, chromatic: 1};
+        const raw = Cast.toString(args.SCALE);
+        pb.setScaleTypeOverride(valid[raw] ? raw : 'chromatic');
     }
 
     whenBeat () {

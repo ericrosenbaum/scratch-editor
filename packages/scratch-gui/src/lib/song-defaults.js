@@ -117,6 +117,8 @@ const createBlankSong = (name = 'Song') => ({
     tempo: 120,
     lengthSteps: 32,
     stepsPerBeat: 4,
+    rootPitch: 60,
+    scaleType: 'major',
     tracks: [createBlankTrack('instrument')]
 });
 

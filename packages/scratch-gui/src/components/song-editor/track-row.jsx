@@ -1295,6 +1295,8 @@ class TrackRow extends React.Component {
                                     notes={track.notes || []}
                                     lengthSteps={lengthSteps}
                                     stepsPerBeat={stepsPerBeat}
+                                    rootPitch={this.props.rootPitch}
+                                    scaleType={this.props.scaleType}
                                     cellWidth={this.state.cellWidth}
                                     playStep={playStep}
                                     cursorStep={this.props.cursorStep}
@@ -1358,6 +1360,8 @@ TrackRow.propTypes = {
     track: PropTypes.object.isRequired,
     lengthSteps: PropTypes.number.isRequired,
     stepsPerBeat: PropTypes.number.isRequired,
+    rootPitch: PropTypes.number,
+    scaleType: PropTypes.string,
     playStep: PropTypes.number,
     isEditing: PropTypes.bool.isRequired,
     isFirst: PropTypes.bool.isRequired,

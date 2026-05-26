@@ -9,6 +9,7 @@
  */
 
 const {getTrackSynth} = require('./synth-defaults');
+const {snapToScale, MIN_PITCH, MAX_PITCH} = require('./scale-utils');
 
 const ratioForPitchInterval = interval => Math.pow(2, interval / 12);
 
@@ -36,6 +37,12 @@ class SongScheduler {
      * @param {function} [opts.onStep] - called(stepIndex, ctxTime) when the playhead advances (for UI)
      * @param {function} [opts.onLoop] - called(iterationIndex) just after the playhead wraps
      * @param {number} [opts.tempoOverride] - if set, used instead of song.tempo
+     * @param {number} [opts.rootPitchOverride] - MIDI int; if set, transposes
+     *   playback by (override - song.rootPitch) semitones at flatten time.
+     * @param {string} [opts.scaleTypeOverride] - scale name; if set, played
+     *   notes are snapped to this scale (using the effective root) at flatten
+     *   time. Both pitch overrides only affect pitched tracks (drums pass
+     *   through unchanged) and never mutate the underlying song.
      */
     constructor (opts) {
         this.song = opts.song;
@@ -50,6 +57,9 @@ class SongScheduler {
         this.onStep = opts.onStep || (() => {});
         this.onLoop = opts.onLoop || (() => {});
         this.tempoOverride = opts.tempoOverride;
+        this.rootPitchOverride = (typeof opts.rootPitchOverride === 'number') ?
+            opts.rootPitchOverride : null;
+        this.scaleTypeOverride = opts.scaleTypeOverride || null;
 
         this._activeSources = [];
         this._timer = null;
@@ -335,12 +345,28 @@ class SongScheduler {
         // Solo overrides mute: if any track is soloed, only soloed (and
         // unmuted) tracks are audible. Otherwise honor mute as before.
         const anySolo = tracks.some(t => t && t.solo);
+        const songRoot = (this.song && typeof this.song.rootPitch === 'number') ?
+            this.song.rootPitch : 60;
+        const songScale = (this.song && this.song.scaleType) || 'chromatic';
+        const effRoot = (this.rootPitchOverride === null) ? songRoot : this.rootPitchOverride;
+        const effScale = this.scaleTypeOverride || songScale;
+        // Only apply the transform when the effective values differ from the
+        // song's authored values — keeps drum / chromatic / no-override paths
+        // bit-identical to the previous behavior.
+        const transformPitch = (effRoot !== songRoot) || (effScale !== songScale);
+        const delta = effRoot - songRoot;
         for (const track of tracks) {
             if (!this._activeTracks.has(track.trackId)) continue;
             if (track.muted) continue;
             if (anySolo && !track.solo) continue;
+            const isPitched = track.kind !== 'drum';
             for (const note of (track.notes || [])) {
                 const drumIdx = (typeof note.drum === 'number' ? note.drum : (track.drum || 1)) - 1;
+                let pitch = typeof note.pitch === 'number' ? note.pitch : 60;
+                if (transformPitch && isPitched) {
+                    pitch = snapToScale(pitch + delta, effRoot, effScale);
+                    if (pitch < MIN_PITCH || pitch > MAX_PITCH) continue;
+                }
                 notes.push({
                     trackId: track.trackId,
                     kind: track.kind,
@@ -349,12 +375,26 @@ class SongScheduler {
                     velocity: typeof note.velocity === 'number' ? note.velocity : 80,
                     step: note.step,
                     durationSteps: note.durationSteps || 1,
-                    pitch: typeof note.pitch === 'number' ? note.pitch : 60
+                    pitch
                 });
             }
         }
         notes.sort((a, b) => a.step - b.step);
         return notes;
+    }
+
+    /**
+     * Update key / scale overrides on a running scheduler and re-flatten the
+     * note list so the next scheduling pass picks them up. Notes already
+     * scheduled in the immediate lookahead window play at their previous
+     * pitch — that's a one-tick glitch, not a leak.
+     * @param {number|null} rootPitch - MIDI int, or null to clear the override.
+     * @param {string|null} scaleType - scale name, or null to clear the override.
+     */
+    setPitchOverrides (rootPitch, scaleType) {
+        this.rootPitchOverride = (typeof rootPitch === 'number') ? rootPitch : null;
+        this.scaleTypeOverride = scaleType || null;
+        this._notes = this._flattenNotes();
     }
 
     /**

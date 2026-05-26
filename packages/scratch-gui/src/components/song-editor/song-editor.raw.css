@@ -231,6 +231,30 @@
     text-align: center;
 }
 
+.song-meta-field-select .song-meta-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: none;
+    background: transparent;
+    color: #2c2c2c;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0 14px 0 0;
+    line-height: 1.2;
+    box-sizing: border-box;
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, #8a90a3 50%),
+                      linear-gradient(135deg, #8a90a3 50%, transparent 50%);
+    background-position: right 4px center, right 1px center;
+    background-size: 4px 4px, 4px 4px;
+    background-repeat: no-repeat;
+}
+
+.song-meta-field-select .song-meta-select:focus {
+    outline: none;
+}
+
 /* Slider popover that drops out from a focused numeric field. Positioned
    absolutely so the row height stays constant whether or not the popover
    is open. */
@@ -1190,6 +1214,27 @@
 .piano-roll rect.cell-beat {
     stroke: #cbd1dd;
     stroke-width: 0.8;
+}
+
+/* Rows whose pitch class falls outside the song's scale are dimmed so the
+   in-key rows read as the primary editing surface. Drag-to-move can still
+   pass through these rows; only click-to-add is constrained (in JS). */
+.piano-roll rect.cell-out-of-scale {
+    fill: #e2e4ec;
+}
+
+.piano-roll rect.cell-out-of-scale.cell-alt {
+    fill: #d6d9e4;
+}
+
+/* Every octave of the root note gets a faint accent band so the user can
+   orient melodies around the tonic at a glance. */
+.piano-roll rect.cell-root {
+    fill: #e9f0ff;
+}
+
+.piano-roll rect.cell-root.cell-alt {
+    fill: #dde6f8;
 }
 
 /* Piano-roll notes get their fill/stroke from the per-pitch palette via inline

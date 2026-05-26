@@ -12,6 +12,16 @@ import KeyboardEntryModal from './keyboard-entry-modal.jsx';
 import SongPlayer from '../../lib/song-player.js';
 import {createBlankTrack, displayNameForTrack, unusedTrackName} from '../../lib/song-defaults.js';
 import {editTrackWithPrompt, generateSongFromPrompt, generateTrackWithPrompt, SongAiError} from '../../lib/song-ai.js';
+import {
+    SCALE_LABELS,
+    PITCH_CLASS_NAMES,
+    DEFAULT_ROOT_PITCH,
+    DEFAULT_SCALE_TYPE_LEGACY,
+    MIN_PITCH,
+    MAX_PITCH,
+    transposeNotes,
+    snapNotesToScale
+} from './scale-utils.js';
 
 import './song-editor.raw.css';
 
@@ -74,6 +84,11 @@ class SongEditor extends React.Component {
         this.handleLoopToggle = this.handleLoopToggle.bind(this);
         this.handleTempoChange = this.handleTempoChange.bind(this);
         this.handleLengthChange = this.handleLengthChange.bind(this);
+        this.handleRootPitchChange = this.handleRootPitchChange.bind(this);
+        this.handleScaleTypeChange = this.handleScaleTypeChange.bind(this);
+        this.handleRootPitchClassChange = this.handleRootPitchClassChange.bind(this);
+        this.handleRootOctaveChange = this.handleRootOctaveChange.bind(this);
+        this.handleScaleSelectChange = this.handleScaleSelectChange.bind(this);
         this.handleAddInstrumentTrack = this.handleAddInstrumentTrack.bind(this);
         this.handleAddDrumTrack = this.handleAddDrumTrack.bind(this);
         this.handleAddSynthTrack = this.handleAddSynthTrack.bind(this);
@@ -311,6 +326,46 @@ class SongEditor extends React.Component {
         this._commit({lengthSteps: clamped, tracks});
         // Notes may have been culled; clear selection to avoid stale keys.
         this.setState({selectedKeys: new Set()});
+    }
+
+    handleRootPitchChange (newRootPitch) {
+        const oldRoot = (typeof this.props.song.rootPitch === 'number') ?
+            this.props.song.rootPitch : DEFAULT_ROOT_PITCH;
+        const clamped = Math.max(MIN_PITCH, Math.min(MAX_PITCH,
+            parseInt(newRootPitch, 10) || DEFAULT_ROOT_PITCH));
+        if (clamped === oldRoot) return;
+        const tracks = transposeNotes(this.props.song.tracks || [], clamped - oldRoot);
+        this._commit({rootPitch: clamped, tracks});
+        this.setState({selectedKeys: new Set()});
+    }
+
+    handleScaleTypeChange (newScaleType) {
+        const oldScale = this.props.song.scaleType || DEFAULT_SCALE_TYPE_LEGACY;
+        if (newScaleType === oldScale) return;
+        const rootPitch = (typeof this.props.song.rootPitch === 'number') ?
+            this.props.song.rootPitch : DEFAULT_ROOT_PITCH;
+        const tracks = snapNotesToScale(this.props.song.tracks || [], rootPitch, newScaleType);
+        this._commit({scaleType: newScaleType, tracks});
+        this.setState({selectedKeys: new Set()});
+    }
+
+    handleRootPitchClassChange (e) {
+        const newPc = parseInt(e.target.value, 10);
+        const root = (typeof this.props.song.rootPitch === 'number') ?
+            this.props.song.rootPitch : DEFAULT_ROOT_PITCH;
+        const oct = Math.floor(root / 12) - 1;
+        this.handleRootPitchChange(((oct + 1) * 12) + newPc);
+    }
+
+    handleRootOctaveChange (newOct) {
+        const root = (typeof this.props.song.rootPitch === 'number') ?
+            this.props.song.rootPitch : DEFAULT_ROOT_PITCH;
+        const pc = ((root % 12) + 12) % 12;
+        this.handleRootPitchChange(((newOct + 1) * 12) + pc);
+    }
+
+    handleScaleSelectChange (e) {
+        this.handleScaleTypeChange(e.target.value);
     }
 
     _existingTrackNames () {
@@ -706,6 +761,10 @@ class SongEditor extends React.Component {
         const keyEntryTrack = keyEntryTrackIdx !== null ? tracks[keyEntryTrackIdx] : null;
         const canUndo = this._undoStack.length > 0;
         const canRedo = this._redoStack.length > 0;
+        const rootPitch = (typeof song.rootPitch === 'number') ? song.rootPitch : DEFAULT_ROOT_PITCH;
+        const rootPitchClass = ((rootPitch % 12) + 12) % 12;
+        const rootOctave = Math.floor(rootPitch / 12) - 1;
+        const scaleType = song.scaleType || DEFAULT_SCALE_TYPE_LEGACY;
 
         return (
             <div
@@ -915,6 +974,45 @@ class SongEditor extends React.Component {
                             sliderStep={4}
                             onCommit={this.handleLengthChange}
                         />
+                        <label className="song-meta-field song-meta-field-select">
+                            <span className="song-meta-label">Key</span>
+                            <select
+                                className="song-meta-select"
+                                aria-label="Root note"
+                                value={rootPitchClass}
+                                onChange={this.handleRootPitchClassChange}
+                            >
+                                {PITCH_CLASS_NAMES.map((name, i) => (
+                                    <option
+                                        key={i}
+                                        value={i}
+                                    >{name}</option>
+                                ))}
+                            </select>
+                        </label>
+                        <NumericMetaField
+                            label="Oct"
+                            value={rootOctave}
+                            min={1}
+                            max={7}
+                            onCommit={this.handleRootOctaveChange}
+                        />
+                        <label className="song-meta-field song-meta-field-select">
+                            <span className="song-meta-label">Scale</span>
+                            <select
+                                className="song-meta-select"
+                                aria-label="Scale type"
+                                value={scaleType}
+                                onChange={this.handleScaleSelectChange}
+                            >
+                                {SCALE_LABELS.map(s => (
+                                    <option
+                                        key={s.value}
+                                        value={s.value}
+                                    >{s.label}</option>
+                                ))}
+                            </select>
+                        </label>
                     </div>
                     <button
                         type="button"
@@ -946,6 +1044,8 @@ class SongEditor extends React.Component {
                             track={track}
                             lengthSteps={song.lengthSteps || 32}
                             stepsPerBeat={song.stepsPerBeat || 4}
+                            rootPitch={rootPitch}
+                            scaleType={scaleType}
                             playStep={playStep}
                             cursorStep={cursorStep}
                             isEditing={editingTrackId === track.trackId}

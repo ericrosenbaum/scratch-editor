@@ -31,6 +31,15 @@ class SongPlayback {
         //   _volumeOverrides: Map<trackId, number>               0..1
         this._effectOverrides = new Map();
         this._volumeOverrides = new Map();
+        // Song-wide playback overrides — tempo (bpm), root pitch (MIDI int),
+        // and scale type (name). Stored at the playback level so they
+        // survive scheduler re-creation, then pushed into the scheduler when
+        // it spins up or when they change. null = no override (fall back to
+        // the song's authored value). Cleared alongside the effect maps on
+        // green-flag stop so each run starts fresh.
+        this._tempoOverride = null;
+        this._rootPitchOverride = null;
+        this._scaleTypeOverride = null;
         this._ensureMusicLoaded();
         runtime.on('PROJECT_STOP_ALL', () => this.stop());
     }
@@ -93,6 +102,9 @@ class SongPlayback {
             destination: this._audioDestination(),
             getInstrumentBuffer: (i, n) => this._getInstrumentBuffer(i, n),
             getDrumBuffer: d => this._getDrumBuffer(d),
+            tempoOverride: this._tempoOverride === null ? void 0 : this._tempoOverride,
+            rootPitchOverride: this._rootPitchOverride,
+            scaleTypeOverride: this._scaleTypeOverride,
             onStart: () => this._fire('start', this.runtime.song),
             onStep: (step, time) => this._fire('step', step, time),
             onBeat: (b, t) => {
@@ -176,9 +188,13 @@ class SongPlayback {
         }
         // Drop any block-driven overrides so the next run starts from the
         // editor's authored values. Sliders bound to track.effects/volume now
-        // reflect the audible state again.
+        // reflect the audible state again, and tempo/key/scale revert to the
+        // song's authored values.
         this._effectOverrides.clear();
         this._volumeOverrides.clear();
+        this._tempoOverride = null;
+        this._rootPitchOverride = null;
+        this._scaleTypeOverride = null;
         this._fire('stop');
     }
 
@@ -340,12 +356,43 @@ class SongPlayback {
     }
 
     /**
-     * Tempo override on the running scheduler (preserves playhead).
+     * Tempo override (BPM). Persisted at the playback level so a block run
+     * before the scheduler exists still takes effect on the next start.
+     * Preserves the playhead when a scheduler is already running.
      * @param bpm
      */
     setTempoOverride (bpm) {
+        const v = Number(bpm);
+        this._tempoOverride = Number.isFinite(v) ? v : null;
         if (this._scheduler) {
-            this._scheduler.tempoOverride = bpm;
+            this._scheduler.tempoOverride = this._tempoOverride;
+        }
+    }
+
+    /**
+     * Song-wide root-pitch override (MIDI int). At flatten time the scheduler
+     * transposes pitched notes by (override - song.rootPitch) semitones; drum
+     * tracks pass through. Cleared on green-flag stop.
+     * @param midi
+     */
+    setRootPitchOverride (midi) {
+        const v = parseInt(midi, 10);
+        this._rootPitchOverride = Number.isFinite(v) ? v : null;
+        if (this._scheduler && this._scheduler.setPitchOverrides) {
+            this._scheduler.setPitchOverrides(this._rootPitchOverride, this._scaleTypeOverride);
+        }
+    }
+
+    /**
+     * Song-wide scale-type override. Played pitched notes are snapped to the
+     * named scale (using the effective root) at flatten time. Cleared on
+     * green-flag stop.
+     * @param scaleType
+     */
+    setScaleTypeOverride (scaleType) {
+        this._scaleTypeOverride = scaleType || null;
+        if (this._scheduler && this._scheduler.setPitchOverrides) {
+            this._scheduler.setPitchOverrides(this._rootPitchOverride, this._scaleTypeOverride);
         }
     }
 

@@ -3,6 +3,12 @@ import PropTypes from 'prop-types';
 
 import {fillForPitch, strokeForPitch} from './pitch-colors.js';
 import {LABEL_W, DEFAULT_CELL_W} from './grid-sizing.js';
+import {
+    isInScale,
+    snapToScale,
+    DEFAULT_ROOT_PITCH,
+    DEFAULT_SCALE_TYPE_LEGACY
+} from './scale-utils.js';
 
 // Match the Music extension's piano sample range (C1..C8 = 24..108 MIDI).
 // The grid is taller than the visible area; the outer container scrolls
@@ -61,9 +67,20 @@ class PianoRollGrid extends React.Component {
         // to fit as much of the existing melody as possible. Without this the
         // grid lands at scrollTop=0 (showing the top of the pitch range,
         // typically empty), forcing the user to scroll down before they can
-        // see their notes.
-        this._scrollToMelody();
+        // see their notes. Empty tracks center on the song's root note.
+        const hasNotes = (this.props.notes || []).some(n => typeof n.pitch === 'number');
+        if (hasNotes) {
+            this._scrollToMelody();
+        } else {
+            this._scrollToRoot();
+        }
         this._attachScroller();
+    }
+
+    componentDidUpdate (prevProps) {
+        if (prevProps.rootPitch !== this.props.rootPitch) {
+            this._scrollToRoot();
+        }
     }
 
     componentWillUnmount () {
@@ -148,6 +165,30 @@ class PianoRollGrid extends React.Component {
         const scrollTop = melodyCenter - (viewport / 2);
         const maxScroll = scroller.scrollHeight - viewport;
         scroller.scrollTop = Math.max(0, Math.min(maxScroll, scrollTop));
+    }
+
+    _scrollToRoot () {
+        const svg = this.svgRef.current;
+        if (!svg) return;
+        let scroller = svg.parentElement;
+        while (scroller && scroller !== document.body) {
+            const overflowY = getComputedStyle(scroller).overflowY;
+            if ((overflowY === 'auto' || overflowY === 'scroll') &&
+                scroller.scrollHeight > scroller.clientHeight) {
+                break;
+            }
+            scroller = scroller.parentElement;
+        }
+        if (!scroller || scroller === document.body) return;
+        const rootPitch = (typeof this.props.rootPitch === 'number') ?
+            this.props.rootPitch : DEFAULT_ROOT_PITCH;
+        const row = PITCHES.indexOf(rootPitch);
+        if (row < 0) return;
+        const y = (row * CELL_H) + (CELL_H / 2);
+        const viewport = scroller.clientHeight;
+        const target = y - (viewport / 2);
+        const maxScroll = scroller.scrollHeight - viewport;
+        scroller.scrollTop = Math.max(0, Math.min(maxScroll, target));
     }
 
     _attachWindow () {
@@ -293,9 +334,15 @@ class PianoRollGrid extends React.Component {
         // Empty area: pending click (create note) or drag-rect (selection).
         const {step, row} = this._cellFromCoords(coords);
         if (step < 0 || step >= this.props.lengthSteps || row < 0 || row >= PITCHES.length) return;
+        const rawPitch = PITCHES[row];
+        const rootPitch = (typeof this.props.rootPitch === 'number') ?
+            this.props.rootPitch : DEFAULT_ROOT_PITCH;
+        const scaleType = this.props.scaleType || DEFAULT_SCALE_TYPE_LEGACY;
+        // Hard-constrain new notes to the scale; drag-to-move stays chromatic.
+        const snappedPitch = snapToScale(rawPitch, rootPitch, scaleType);
         this.setState({
             dragMode: 'pending',
-            dragStart: {...coords, step, pitch: PITCHES[row]},
+            dragStart: {...coords, step, pitch: snappedPitch},
             dragCurrent: coords
         });
         this._attachWindow();
@@ -482,15 +529,22 @@ class PianoRollGrid extends React.Component {
             >{pitchName(pitch)}</text>);
         }
 
+        const rootPitch = (typeof this.props.rootPitch === 'number') ?
+            this.props.rootPitch : DEFAULT_ROOT_PITCH;
+        const scaleType = this.props.scaleType || DEFAULT_SCALE_TYPE_LEGACY;
         const cells = [];
         for (let row = 0; row < PITCHES.length; row++) {
             const pitch = PITCHES[row];
             const isBlackKey = [1, 3, 6, 8, 10].indexOf(pitch % 12) >= 0;
+            const isRoot = ((((pitch - rootPitch) % 12) + 12) % 12) === 0;
+            const inScale = isInScale(pitch, rootPitch, scaleType);
             for (let step = 0; step < lengthSteps; step++) {
                 const isBeat = (step % stepsPerBeat) === 0;
                 let cls = 'cell';
                 if (isBlackKey) cls += ' cell-alt';
                 if (isBeat) cls += ' cell-beat';
+                if (!inScale) cls += ' cell-out-of-scale';
+                if (isRoot) cls += ' cell-root';
                 cells.push(<rect
                     key={`c-${row}-${step}`}
                     className={cls}
@@ -622,6 +676,8 @@ PianoRollGrid.propTypes = {
     notes: PropTypes.array.isRequired,
     lengthSteps: PropTypes.number.isRequired,
     stepsPerBeat: PropTypes.number.isRequired,
+    rootPitch: PropTypes.number,
+    scaleType: PropTypes.string,
     cellWidth: PropTypes.number,
     playStep: PropTypes.number,
     cursorStep: PropTypes.number,
