@@ -21,7 +21,7 @@ import {
     MAX_PITCH,
     transposeNotes,
     snapNotesToScale
-} from './scale-utils.js';
+} from '../../lib/scale-utils.js';
 
 import './song-editor.raw.css';
 
@@ -84,6 +84,7 @@ class SongEditor extends React.Component {
         this.handleLoopToggle = this.handleLoopToggle.bind(this);
         this.handleTempoChange = this.handleTempoChange.bind(this);
         this.handleLengthChange = this.handleLengthChange.bind(this);
+        this.handleBarsChange = this.handleBarsChange.bind(this);
         this.handleRootPitchChange = this.handleRootPitchChange.bind(this);
         this.handleScaleTypeChange = this.handleScaleTypeChange.bind(this);
         this.handleRootPitchClassChange = this.handleRootPitchClassChange.bind(this);
@@ -326,6 +327,13 @@ class SongEditor extends React.Component {
         this._commit({lengthSteps: clamped, tracks});
         // Notes may have been culled; clear selection to avoid stale keys.
         this.setState({selectedKeys: new Set()});
+    }
+
+    // Length is presented in the UI as bars (4/4 assumed). Convert the user's
+    // bar count to lengthSteps using the song's stepsPerBeat * 4 beats/bar.
+    handleBarsChange (bars) {
+        const stepsPerBar = (this.props.song.stepsPerBeat || 4) * 4;
+        this.handleLengthChange(parseInt(bars, 10) * stepsPerBar);
     }
 
     handleRootPitchChange (newRootPitch) {
@@ -681,6 +689,8 @@ class SongEditor extends React.Component {
                 tempo: generated.tempo,
                 lengthSteps: generated.lengthSteps,
                 stepsPerBeat: generated.stepsPerBeat || 4,
+                rootPitch: generated.rootPitch,
+                scaleType: generated.scaleType,
                 tracks: generated.tracks
             };
             this._commit(patch);
@@ -967,12 +977,12 @@ class SongEditor extends React.Component {
                             onCommit={this.handleTempoChange}
                         />
                         <NumericMetaField
-                            label="Steps"
-                            value={song.lengthSteps || 32}
-                            min={4}
-                            max={128}
-                            sliderStep={4}
-                            onCommit={this.handleLengthChange}
+                            label="Bars"
+                            value={Math.max(1, Math.round((song.lengthSteps || 32) / ((song.stepsPerBeat || 4) * 4)))}
+                            min={1}
+                            max={8}
+                            sliderStep={1}
+                            onCommit={this.handleBarsChange}
                         />
                         <label className="song-meta-field song-meta-field-select">
                             <span className="song-meta-label">Key</span>

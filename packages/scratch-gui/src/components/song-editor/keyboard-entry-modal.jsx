@@ -57,6 +57,12 @@ class KeyboardEntryModal extends React.Component {
         this._unsubStep = null;
         this._unsubEnd = null;
         this._stoppedByEnd = false;
+        // Timer that stops recording after one full pass (single-take semantics).
+        this._recordStopTimer = null;
+        // Tracks the last step index we played a click on, so the quarter-note
+        // metronome fires at most once per beat even though 'step' events arrive
+        // for every step.
+        this._lastClickedBeat = -1;
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
         this.handleSetModeStep = this.handleSetModeStep.bind(this);
@@ -78,6 +84,22 @@ class KeyboardEntryModal extends React.Component {
         window.addEventListener('keyup', this.handleKeyUp);
         this._unsubStep = this.props.player.on('step', step => {
             this.setState({playStep: step});
+            // Quarter-note metronome click during recording. The transport
+            // emits 'step' for every step, so gate on beat boundaries and
+            // dedupe via _lastClickedBeat (loop wraps reset it to -1 in
+            // _finalizeRecording).
+            if (!this.state.isRecording) return;
+            const stepsPerBeat = this.props.song.stepsPerBeat || 4;
+            if (step % stepsPerBeat !== 0) return;
+            const beat = Math.floor(step / stepsPerBeat);
+            if (beat === this._lastClickedBeat) return;
+            this._lastClickedBeat = beat;
+            this.props.player.previewNote({
+                kind: 'drum',
+                drum: 3, // side stick — quieter than the count-in kick
+                velocity: 40,
+                durationSec: 0.05
+            });
         });
         this._unsubEnd = this.props.player.on('end', () => {
             // Real-time single-pass: when the song completes one play, stop recording.
@@ -94,8 +116,12 @@ class KeyboardEntryModal extends React.Component {
         if (this._unsubStep) this._unsubStep();
         if (this._unsubEnd) this._unsubEnd();
         if (this._countInTimer) {
-            clearTimeout(this._countInTimer);
+            this._countInTimer.clear();
             this._countInTimer = null;
+        }
+        if (this._recordStopTimer) {
+            clearTimeout(this._recordStopTimer);
+            this._recordStopTimer = null;
         }
         // Make sure we leave the transport quiet if the modal closes mid-record.
         if (this.props.player.isPlaying && this.props.player.isPlaying()) {
@@ -339,6 +365,7 @@ class KeyboardEntryModal extends React.Component {
         // Clear recording session state and stop any current playback.
         this._heldKeys.clear();
         this._stoppedByEnd = false;
+        this._lastClickedBeat = -1;
         this.props.player.stop();
         this.setState({
             recordedNotes: [],
@@ -349,7 +376,6 @@ class KeyboardEntryModal extends React.Component {
         const stepsPerBeat = this.props.song.stepsPerBeat || 4;
         const secondsPerBeat = stepsPerBeat * secondsPerStep;
         const barSeconds = BEATS_PER_BAR * secondsPerBeat;
-        const startCtxTime = ctx.currentTime;
         // Schedule four metronome clicks via previewNote (kick on beat 1,
         // side stick on 2/3/4). previewNote starts immediately, so use
         // setTimeout for the subsequent beats.
@@ -372,15 +398,29 @@ class KeyboardEntryModal extends React.Component {
             const t = setTimeout(() => doClick(i), i * secondsPerBeat * 1000);
             timers.push(t);
         }
-        // After the full bar, start playback.
+        // After the full bar, start playback and arm the single-pass stop.
         const startTimer = setTimeout(() => {
             this._playStartCtxTime = (this._audioContext() || ctx).currentTime;
             this.setState({isCountingIn: false, isRecording: true, countInBeat: 0});
-            this.props.player.play(this.props.song, {startStep: this.props.cursorStep || 0});
+            const startStep = this.props.cursorStep || 0;
+            this.props.player.play(this.props.song, {startStep});
+            // The transport always loops, so 'end' won't naturally fire after
+            // one pass. Stop recording manually after the song's worth of audio
+            // (from startStep through the end of the song) has elapsed. A small
+            // tail (one beat) gives held notes room to release at their natural
+            // length before we truncate them in _finalizeRecording.
+            const lengthSteps = this.props.song.lengthSteps || 32;
+            const stepsRemaining = Math.max(1, lengthSteps - startStep);
+            const passSeconds = (stepsRemaining * secondsPerStep) + secondsPerBeat;
+            this._recordStopTimer = setTimeout(() => {
+                this._recordStopTimer = null;
+                if (this.state.isRecording) {
+                    this._finalizeRecording();
+                }
+            }, passSeconds * 1000);
         }, barSeconds * 1000);
         timers.push(startTimer);
         this._countInTimer = {clear: () => timers.forEach(clearTimeout)};
-        void startCtxTime;
     }
 
     _finalizeRecording () {
@@ -390,6 +430,11 @@ class KeyboardEntryModal extends React.Component {
             void key;
         }
         this._heldKeys.clear();
+        if (this._recordStopTimer) {
+            clearTimeout(this._recordStopTimer);
+            this._recordStopTimer = null;
+        }
+        this._lastClickedBeat = -1;
         if (!this._stoppedByEnd) this.props.player.stop();
         this.setState({isRecording: false, isCountingIn: false, countInBeat: 0});
         this._bumpHeld();
@@ -445,6 +490,11 @@ class KeyboardEntryModal extends React.Component {
         }
         if (this.state.isRecording) {
             // Stop transport but discard recorded notes — treat Cancel as discard.
+            if (this._recordStopTimer) {
+                clearTimeout(this._recordStopTimer);
+                this._recordStopTimer = null;
+            }
+            this._lastClickedBeat = -1;
             this.props.player.stop();
             this.setState({isRecording: false, recordedNotes: []});
             this._heldKeys.clear();
@@ -658,7 +708,7 @@ class KeyboardEntryModal extends React.Component {
         const disableDone = this.state.isRecording || this.state.isCountingIn;
         const modeHelp = this.state.mode === 'step' ?
             'Press keys to place notes at the cursor. Hold multiple keys for chords. Backspace removes the last note.' :
-            'Click Record for a 1-bar count-in, then play. Notes are quantized to the step grid.';
+            'Click Record for a 1-bar count-in, then play. A quiet click ticks every beat; recording stops after one pass through the song.';
         return (
             <Modal
                 className="ai-song-modal kbe-modal"

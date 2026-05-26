@@ -550,16 +550,52 @@ class SongScheduler {
      * editor so edits made during one loop iteration are heard in the next.
      * If track set changed (e.g. tracks added/removed), prune stale entries
      * from _activeTracks so the scheduler can decide to idle correctly.
+     *
+     * Fast path: editor slider drags on volume / effects commit a fresh song
+     * reference to Redux on every event, which used to re-flatten the whole
+     * note list 30-60×/sec and starve the main thread (audible hitching on
+     * the filter slider, etc.). Skip the flatten when nothing the flatten
+     * output depends on has actually changed — volume / effects are pushed
+     * straight to the audio chain via setTrackVolume / setTrackEffects.
      * @param song
      */
     updateSong (song) {
         if (!song) return;
+        const prevSong = this.song;
         this.song = song;
         const validIds = new Set((song.tracks || []).map(t => t.trackId));
         for (const id of Array.from(this._activeTracks)) {
             if (!validIds.has(id)) this._activeTracks.delete(id);
         }
+        if (this._flattenInputsUnchanged(prevSong, song)) return;
         this._notes = this._flattenNotes();
+    }
+
+    // True iff every input _flattenNotes reads is reference- or value-equal
+    // between `prev` and `next`. Conservative: any time we're unsure (new
+    // song, different track count, etc.) return false to force a re-flatten.
+    _flattenInputsUnchanged (prev, next) {
+        if (!prev || !next) return false;
+        if (prev === next) return true;
+        if (prev.rootPitch !== next.rootPitch) return false;
+        if (prev.scaleType !== next.scaleType) return false;
+        const pt = prev.tracks || [];
+        const nt = next.tracks || [];
+        if (pt.length !== nt.length) return false;
+        for (let i = 0; i < pt.length; i++) {
+            const a = pt[i];
+            const b = nt[i];
+            if (a === b) continue;
+            if (a.trackId !== b.trackId) return false;
+            if (a.kind !== b.kind) return false;
+            if (a.muted !== b.muted) return false;
+            if (a.solo !== b.solo) return false;
+            if (a.instrument !== b.instrument) return false;
+            if (a.drum !== b.drum) return false;
+            if (a.drumLanes !== b.drumLanes) return false;
+            if (a.notes !== b.notes) return false;
+        }
+        return true;
     }
 
     _onLoopWrap (newIter) {

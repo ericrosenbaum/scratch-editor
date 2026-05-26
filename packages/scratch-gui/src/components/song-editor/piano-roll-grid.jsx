@@ -8,7 +8,7 @@ import {
     snapToScale,
     DEFAULT_ROOT_PITCH,
     DEFAULT_SCALE_TYPE_LEGACY
-} from './scale-utils.js';
+} from '../../lib/scale-utils.js';
 
 // Match the Music extension's piano sample range (C1..C8 = 24..108 MIDI).
 // The grid is taller than the visible area; the outer container scrolls

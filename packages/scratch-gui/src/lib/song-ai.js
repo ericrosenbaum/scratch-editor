@@ -7,6 +7,49 @@ import {
     SYNTH_PRESETS,
     DEFAULT_SYNTH
 } from './song-defaults.js';
+import {
+    SCALE_OFFSETS,
+    PITCH_CLASS_NAMES,
+    DEFAULT_ROOT_PITCH,
+    DEFAULT_SCALE_TYPE_LEGACY,
+    snapNotesToScale
+} from './scale-utils.js';
+
+const SCALE_TYPE_NAMES = Object.keys(SCALE_OFFSETS);
+
+// Friendly labels for the system prompt — the model sees both the value it
+// must emit and a human-readable name with its semitone offsets.
+const SCALE_PROMPT_LABELS = {
+    major: 'Major (1 2 3 4 5 6 7)',
+    minor: 'Natural Minor (1 2 b3 4 5 b6 b7)',
+    pentatonicMajor: 'Major Pentatonic (1 2 3 5 6)',
+    pentatonicMinor: 'Minor Pentatonic (1 b3 4 5 b7)',
+    chromatic: 'Chromatic (all 12 semitones)'
+};
+
+const buildScaleList = () => SCALE_TYPE_NAMES
+    .map(s => `${s} — ${SCALE_PROMPT_LABELS[s] || s}`)
+    .join('; ');
+
+// Convert pitch-class name (case-insensitive) to 0..11. Returns null if
+// unrecognized so the caller can fall back to a default.
+const pitchClassNameToIndex = name => {
+    if (typeof name !== 'string') return null;
+    const key = name
+        .trim()
+        .toUpperCase()
+        .replace('♯', '#')
+        .replace('♭', 'b');
+    // Accept flat spellings by mapping to their enharmonic sharp equivalents.
+    const flatToSharp = {Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#'};
+    const normalized = flatToSharp[key] || key;
+    const idx = PITCH_CLASS_NAMES.indexOf(normalized);
+    return idx >= 0 ? idx : null;
+};
+
+// MIDI pitch from (pitchClassIndex 0..11, octave 1..7). Octave numbering
+// matches the editor's UI: C4 = MIDI 60, so MIDI = (octave + 1) * 12 + pc.
+const pitchFromKeyOctave = (pcIndex, octave) => ((octave + 1) * 12) + pcIndex;
 
 // Preset names the AI can pick from for synth tracks. We expose the list to
 // the model and snap whatever it returns to a known preset in sanitizeTrack.
@@ -270,6 +313,39 @@ const SONG_TOOL = {
                 maximum: LENGTH_MAX,
                 description: 'Total length in steps (4 steps = 1 beat).'
             },
+            key: {
+                type: 'string',
+                enum: PITCH_CLASS_NAMES,
+                description:
+                    'The pitch class of the song\'s tonic (key center). ' +
+                    'Pick one that fits the mood: e.g. C / G / D for bright, ' +
+                    'A / E / D for minor moods, F / Bb for warm. Combined ' +
+                    'with octave + scale, this determines the rootPitch the ' +
+                    'piano roll snaps to.'
+            },
+            octave: {
+                type: 'integer',
+                minimum: 1,
+                maximum: 7,
+                description:
+                    'Octave of the song\'s tonic (using the editor convention ' +
+                    'C4 = MIDI 60). Default 4 unless the piece is bass-heavy ' +
+                    '(use 3) or sparkly/high (use 5). Notes can still span ' +
+                    'multiple octaves around this tonic.'
+            },
+            scale: {
+                type: 'string',
+                enum: SCALE_TYPE_NAMES,
+                description:
+                    'Scale / mode for the song. Every pitched note in the ' +
+                    'song MUST be a member of this scale built on `key`. ' +
+                    'Pick to fit the mood: major (bright/happy), minor ' +
+                    '(sad/spooky/serious), pentatonicMajor (folk/upbeat/ ' +
+                    'asian-flavored), pentatonicMinor (blues/rock/lo-fi), ' +
+                    'chromatic (atonal or fully chromatic only — avoid by ' +
+                    'default since the editor visually emphasizes in-scale ' +
+                    'rows).'
+            },
             tracks: {
                 type: 'array',
                 minItems: 1,
@@ -277,7 +353,7 @@ const SONG_TOOL = {
                 items: TRACK_SCHEMA
             }
         },
-        required: ['name', 'tempo', 'lengthSteps', 'tracks']
+        required: ['name', 'tempo', 'lengthSteps', 'key', 'octave', 'scale', 'tracks']
     }
 };
 
@@ -346,11 +422,38 @@ const buildSystemPrompt = () => [
     '  If a track is labelled or sounds like "bass" (e.g., name contains "bass",',
     '  or it\'s the lowest part of a multi-track song), its pitches MUST stay',
     '  at or below MIDI 48 except for occasional walking-bass passing tones.',
-    '- Stay in a coherent key',
-    '  (e.g., C major: 60,62,64,65,67,69,71,72; A minor: 57,59,60,62,64,65,67,69).',
     '- If the user asks for a single instrument or melody, emit ONE track.',
     '  If they ask for a "song", "groove", "beat", or describe multiple instruments,',
     '  emit MULTIPLE tracks (often: lead + bass + drums).',
+    '',
+    'Key & scale — pick FIRST, then write notes that conform:',
+    `- Choose \`key\` (one of: ${PITCH_CLASS_NAMES.join(', ')}), \`octave\` (1-7,`,
+    '  using C4 = MIDI 60; default 4), and `scale` based on the prompt\'s mood',
+    '  BEFORE writing any notes. Treat the chosen (key, scale) as a hard',
+    '  constraint for every pitched note in every track.',
+    `- Available scales: ${buildScaleList()}.`,
+    '- Mood → scale cheat sheet:',
+    '    * happy / bright / upbeat / triumphant / pop → major',
+    '    * sad / dark / spooky / mysterious / serious / cinematic → minor',
+    '    * folk / open / asian-flavored / kid-friendly / wholesome → pentatonicMajor',
+    '    * bluesy / rock / hip-hop / lo-fi / soulful / gritty → pentatonicMinor',
+    '    * dissonant / atonal / 12-tone / horror sting → chromatic (use sparingly)',
+    '- If the user names a key explicitly ("in F# minor", "G major", "blues',
+    '  in A"), HONOR it exactly. Otherwise pick a key that suits the mood',
+    '  and the typical singing/playing range of the instruments you chose.',
+    '- A note is IN-SCALE when (pitch - rootPitch) mod 12 is one of the scale',
+    '  offsets. rootPitch = (octave + 1) * 12 + pitch-class index, where C=0,',
+    '  C#=1, D=2 ... B=11. Example: key=A, octave=3, scale=minor →',
+    '  rootPitch = 57, in-scale pitches per octave start at 57, 59, 60, 62,',
+    '  64, 65, 67, then 69, 71, 72, ... .',
+    '- Every pitched note (instrument and synth tracks) MUST be a member of the',
+    '  scale you chose. Drum notes are unaffected. Out-of-scale pitches will',
+    '  be auto-snapped to the nearest scale tone, which can produce parallel',
+    '  fifths, mis-voiced chords, or wrong-sounding leaps — so get them right',
+    '  the first time rather than relying on the snap.',
+    '- Bass notes still need to land on the bass register (MIDI <= 48), but',
+    '  they must also stay in scale. Walk through scale degrees, not chromatic',
+    '  passing tones, unless you picked chromatic.',
     '',
     'Polyphony within a single track:',
     '- Polyphonic-friendly instruments — STACK notes (overlap their step ranges) to form',
@@ -418,10 +521,14 @@ const buildSystemPrompt = () => [
     '  ornamented, inverted, or sequenced one step up/down. Pure repetition is boring;',
     '  pure novelty is forgettable; varied repetition is the sweet spot.',
     '',
-    'Harmony — borrow from many traditions:',
+    'Harmony — borrow from many traditions, BUT stay in the chosen scale:',
+    '- Build chords from scale degrees of the song\'s key+scale (I, IV, V in major;',
+    '  i, iv, v or i, VI, VII in minor; for pentatonic, voice triads on degrees 1/4/5',
+    '  with 4ths and 5ths instead of 3rds when 3rds aren\'t in the scale).',
     '- Land melody notes on CHORD TONES on strong beats; use non-chord tones (passing',
-    '  tones, neighbor tones, suspensions, appoggiaturas) on weak beats. This is the',
-    '  glue between melody and harmony in every Western style.',
+    '  tones, neighbor tones, suspensions, appoggiaturas) on weak beats — but the',
+    '  passing/neighbor tones MUST also be in the song\'s scale (no chromatic',
+    '  approach tones unless you chose `scale=chromatic`).',
     '- Classical: functional progressions (I-IV-V-I, ii-V-I, vi-IV-I-V), clear',
     '  cadences, suspensions that resolve down by step, smooth voice-leading between',
     '  chords (hold common tones, move other voices by step where possible).',
@@ -632,6 +739,21 @@ const sanitizeSong = (raw, fallbackName) => {
     );
     song.stepsPerBeat = 4;
 
+    // Key / scale: the model picks a tonic (pitch class + octave) and a
+    // scale type. Convert to the rootPitch (MIDI) the editor uses, and snap
+    // pitched notes to scale as a safety net so the output truly conforms.
+    const pcIdx = pitchClassNameToIndex(raw?.key);
+    const rawOct = Math.round(Number(raw?.octave));
+    const octave = Number.isFinite(rawOct) ? clamp(rawOct, 1, 7) : 4;
+    if (pcIdx !== null) {
+        song.rootPitch = clamp(pitchFromKeyOctave(pcIdx, octave), PITCH_MIN, PITCH_MAX);
+    } else {
+        song.rootPitch = DEFAULT_ROOT_PITCH;
+    }
+    song.scaleType = SCALE_TYPE_NAMES.indexOf(raw?.scale) >= 0 ?
+        raw.scale :
+        'major';
+
     const rawTracks = Array.isArray(raw?.tracks) ? raw.tracks.slice(0, MAX_TRACKS) : [];
     for (const rt of rawTracks) {
         song.tracks.push(sanitizeTrack(rt, song.lengthSteps));
@@ -640,6 +762,12 @@ const sanitizeSong = (raw, fallbackName) => {
     if (song.tracks.length === 0) {
         song.tracks = [createBlankTrack('instrument')];
     }
+
+    // Snap any out-of-scale notes the model emitted to the chosen scale.
+    // This is a belt-and-suspenders safety net; the system prompt already
+    // tells the model to stay in scale, but enforcing it here keeps the
+    // piano-roll display (which dims out-of-scale rows) honest.
+    song.tracks = snapNotesToScale(song.tracks, song.rootPitch, song.scaleType);
 
     // Always regenerate IDs so we never inherit anything from the model.
     song.songId = newId('song');
@@ -772,6 +900,11 @@ const buildEditSystemPrompt = () => [
     '- Keep the music coherent with the rest of the song: same key, compatible rhythm,',
     '  and tempo. If the user asks for something that would clash (e.g. "make it atonal"),',
     '  honor the request anyway — they\'re the boss.',
+    '- The song JSON includes top-level `key`, `octave`, and `scale` fields',
+    '  identifying the song\'s tonic and scale. Every pitched note you emit',
+    '  MUST be in that scale (offset from rootPitch = (octave+1)*12 + pitch-',
+    '  class-index, where C=0 ... B=11). Out-of-scale pitches will be',
+    `  auto-snapped, which can muddy your phrasing. Available scales: ${buildScaleList()}.`,
     '- All note steps must be < lengthSteps. Use the song\'s existing lengthSteps; do not',
     '  invent new song-level values.',
     '',
@@ -877,10 +1010,21 @@ const effectsForModel = track => {
 
 const stripIdsFromSong = song => {
     // Strip the runtime-only ids so we send a clean musical description.
+    const rootPitch = (typeof song.rootPitch === 'number') ?
+        song.rootPitch :
+        DEFAULT_ROOT_PITCH;
+    const scaleType = SCALE_TYPE_NAMES.indexOf(song.scaleType) >= 0 ?
+        song.scaleType :
+        DEFAULT_SCALE_TYPE_LEGACY;
+    const keyPc = ((rootPitch % 12) + 12) % 12;
+    const keyOctave = Math.floor(rootPitch / 12) - 1;
     const out = {
         tempo: song.tempo,
         lengthSteps: song.lengthSteps,
         stepsPerBeat: song.stepsPerBeat || 4,
+        key: PITCH_CLASS_NAMES[keyPc],
+        octave: keyOctave,
+        scale: scaleType,
         tracks: (song.tracks || []).map(t => {
             const isDrum = t.kind === 'drum';
             const isSynth = t.kind === 'synth';
@@ -1068,6 +1212,16 @@ const editTrackWithPrompt = async ({prompt, song, trackIndex, signal} = {}) => {
     // baseEffects argument above.
     sanitized.trackId = originalTrack.trackId;
     sanitized.muted = !!originalTrack.muted;
+    // Safety net: snap the edited track's notes to the song's current scale
+    // so the result stays consistent with the rest of the song even if the
+    // model emitted a few stray accidentals.
+    const editRoot = (typeof song.rootPitch === 'number') ?
+        song.rootPitch :
+        DEFAULT_ROOT_PITCH;
+    const editScale = SCALE_TYPE_NAMES.indexOf(song.scaleType) >= 0 ?
+        song.scaleType :
+        DEFAULT_SCALE_TYPE_LEGACY;
+    sanitized.notes = snapNotesToScale([sanitized], editRoot, editScale)[0].notes;
     logAiEditResponse({prompt: text, payload, toolInput, sanitized});
 
     if (payload && payload.stop_reason === 'max_tokens') {
@@ -1101,6 +1255,11 @@ const buildGenerateTrackSystemPrompt = kind => [
     '  compatible tempo. The new track should fill a role the existing tracks DO NOT —',
     '  if there\'s already a lead, write a bass or pad; if there\'s a bass and drums,',
     '  write a lead. Listen for what is missing.',
+    '- The song JSON includes top-level `key`, `octave`, and `scale` fields',
+    '  identifying the song\'s tonic and scale. Every pitched note in this',
+    '  new track MUST be in that scale (offset from rootPitch = (octave+1)*12',
+    '  + pitch-class-index, where C=0 ... B=11). Out-of-scale pitches will be',
+    `  auto-snapped. Available scales: ${buildScaleList()}.`,
     '- Leave space for the existing parts. Do not double their rhythms unless the prompt',
     '  explicitly asks for that. Rest while other parts play their signature moments.',
     '- All note steps must be < lengthSteps. Use the song\'s existing lengthSteps; do not',
@@ -1298,6 +1457,15 @@ const generateTrackWithPrompt = async ({prompt, song, kind, signal} = {}) => {
         toolInput.kind = kind;
     }
     const sanitized = sanitizeTrack(toolInput, song.lengthSteps);
+    // Safety net: snap pitches to the song's scale so the new track stays
+    // consistent with the existing tracks even if the model drifted out of key.
+    const genRoot = (typeof song.rootPitch === 'number') ?
+        song.rootPitch :
+        DEFAULT_ROOT_PITCH;
+    const genScale = SCALE_TYPE_NAMES.indexOf(song.scaleType) >= 0 ?
+        song.scaleType :
+        DEFAULT_SCALE_TYPE_LEGACY;
+    sanitized.notes = snapNotesToScale([sanitized], genRoot, genScale)[0].notes;
     logAiEditResponse({prompt: text, payload, toolInput, sanitized});
 
     if (payload && payload.stop_reason === 'max_tokens') {

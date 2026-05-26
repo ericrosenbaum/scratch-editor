@@ -27,8 +27,8 @@ const SYNTH_PRESETS = [
     {name: 'Warm Pad',
         osc1Wave: 'sawtooth', osc2Wave: 'sawtooth', osc2Detune: 9, oscMix: 0.5,
         filterCutoff: 0.45, filterResonance: 0.15, filterEnvAmount: 0.25,
-        ampAttack: 0.6, ampDecay: 0.30, ampSustain: 0.85, ampRelease: 1.20,
-        filterAttack: 0.8, filterDecay: 0.60, filterSustain: 0.70, filterRelease: 1.00,
+        ampAttack: 0.03, ampDecay: 0.30, ampSustain: 0.85, ampRelease: 1.20,
+        filterAttack: 0.05, filterDecay: 0.60, filterSustain: 0.70, filterRelease: 1.00,
         lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
         glideTime: 0.0},
     {name: 'Soft Strings',
@@ -76,6 +76,14 @@ const SYNTH_PRESETS = [
         filterAttack: 0.005, filterDecay: 0.25, filterSustain: 0.70, filterRelease: 0.20,
         lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
         glideTime: 0.12},
+    {name: 'Acid Bass',
+        osc1Wave: 'sawtooth', osc2Wave: 'square', osc2Detune: 0, oscMix: 0.15,
+        // High resonance + big filter env sweep is the 303 fingerprint.
+        filterCutoff: 0.28, filterResonance: 0.80, filterEnvAmount: 0.85,
+        ampAttack: 0.002, ampDecay: 0.25, ampSustain: 0.40, ampRelease: 0.12,
+        filterAttack: 0.002, filterDecay: 0.30, filterSustain: 0.10, filterRelease: 0.18,
+        lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
+        glideTime: 0.06},
     {name: 'Bell',
         osc1Wave: 'sine', osc2Wave: 'sine', osc2Detune: 24, oscMix: 0.35,
         filterCutoff: 0.85, filterResonance: 0.10, filterEnvAmount: 0.00,
@@ -112,6 +120,15 @@ const SYNTH_PRESETS = [
         filterCutoff: 0.55, filterResonance: 0.45, filterEnvAmount: 0.80,
         ampAttack: 0.001, ampDecay: 0.10, ampSustain: 0.00, ampRelease: 0.05,
         filterAttack: 0.001, filterDecay: 0.08, filterSustain: 0.00, filterRelease: 0.05,
+        lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
+        glideTime: 0.0},
+    {name: 'Synth Drum',
+        // Sine body + a touch of square gives both thump and click; the
+        // resonant filter snap on top is what reads as "percussive".
+        osc1Wave: 'sine', osc2Wave: 'square', osc2Detune: 0, oscMix: 0.18,
+        filterCutoff: 0.30, filterResonance: 0.70, filterEnvAmount: 0.80,
+        ampAttack: 0.001, ampDecay: 0.12, ampSustain: 0.00, ampRelease: 0.04,
+        filterAttack: 0.001, filterDecay: 0.06, filterSustain: 0.00, filterRelease: 0.04,
         lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
         glideTime: 0.0}
 ];
