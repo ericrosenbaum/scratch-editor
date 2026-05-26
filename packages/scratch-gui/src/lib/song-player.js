@@ -67,6 +67,28 @@ class SongPlayer {
         if (pb) pb.setTrackEffects(trackId, effects);
     }
 
+    // Animates the per-track volume gain node directly — no song-state round
+    // trip, no scheduler re-flatten, no React props churn. Pair with the
+    // Redux commit (which persists the value) so slider drags stay smooth.
+    setTrackVolume (trackId, volume) {
+        const pb = this._playback();
+        if (pb && pb.setTrackVolume) pb.setTrackVolume(trackId, volume);
+    }
+
+    // When the user moves an editor slider for a param that a block has
+    // overridden, the editor should "win back" control. The editor calls
+    // these to drop the corresponding block override so its value takes
+    // effect immediately.
+    clearTrackEffectOverride (trackId, param) {
+        const pb = this._playback();
+        if (pb && pb.clearTrackEffectOverride) pb.clearTrackEffectOverride(trackId, param);
+    }
+
+    clearTrackVolumeOverride (trackId) {
+        const pb = this._playback();
+        if (pb && pb.clearTrackVolumeOverride) pb.clearTrackVolumeOverride(trackId);
+    }
+
     // Used by the editor when a track is added mid-playback (e.g. an AI
     // generate-track finishing while the preview is looping). The scheduler
     // only flattens notes for tracks in its active set, so without this the

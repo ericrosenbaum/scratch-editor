@@ -40,6 +40,7 @@ class TrackRow extends React.Component {
         this.handleSynthParamsToggle = this.handleSynthParamsToggle.bind(this);
 
         this.handleAddNote = this.handleAddNote.bind(this);
+        this.handleRemoveNote = this.handleRemoveNote.bind(this);
         this.handleResizeNote = this.handleResizeNote.bind(this);
         this.handleSelectionChange = this.handleSelectionChange.bind(this);
         this.handleUpdateVelocity = this.handleUpdateVelocity.bind(this);
@@ -367,6 +368,13 @@ class TrackRow extends React.Component {
                 velocity: DEFAULT_VELOCITY
             });
         }
+    }
+
+    handleRemoveNote (noteIdx) {
+        const notes = (this.props.track.notes || []).slice();
+        if (!notes[noteIdx]) return;
+        notes.splice(noteIdx, 1);
+        this._updateTrack({notes});
     }
 
     handleResizeNote (noteIdx, newDurationSteps) {
@@ -1277,6 +1285,7 @@ class TrackRow extends React.Component {
                                     cursorStep={this.props.cursorStep}
                                     selectedKeys={selectedKeys || new Set()}
                                     onAddNote={this.handleAddNote}
+                                    onRemoveNote={this.handleRemoveNote}
                                     onResizeNote={this.handleResizeNote}
                                     onSelectionChange={this.handleSelectionChange}
                                     onSetCursor={this.props.onSetCursor}

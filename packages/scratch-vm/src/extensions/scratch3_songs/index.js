@@ -258,55 +258,47 @@ class Scratch3SongsBlocks {
         }
     }
 
-    _writeParam (track, param, value) {
-        // Volume lives directly on the track (0..100). Effects live in the
-        // effects bag with engine-native ranges (0..1, pan -1..1). Convert
-        // from the block's user-facing range before writing.
+    // Block writes never mutate runtime.song — they go through the playback's
+    // override layer instead. Overrides are temporary (cleared on green-flag
+    // stop) and do not leak into the editor sliders or the saved project.
+    // Reads come back from the same override layer so `change … by` composes
+    // against the currently-audible value.
+
+    _writeParam (trackId, param, value) {
+        const pb = this.runtime.songPlayback;
+        if (!pb) return;
         if (param === 'volume') {
-            track.volume = Math.max(0, Math.min(100, value));
+            pb.setTrackVolumeOverride(trackId, Math.max(0, Math.min(100, value)));
             return;
         }
-        if (!track.effects) track.effects = {};
         if (param === 'pan') {
-            track.effects.pan = Math.max(-1, Math.min(1, value / 100));
+            pb.setTrackEffectOverride(trackId, 'pan', Math.max(-1, Math.min(1, value / 100)));
             return;
         }
-        track.effects[param] = Math.max(0, Math.min(1, value / 100));
+        pb.setTrackEffectOverride(trackId, param, Math.max(0, Math.min(1, value / 100)));
     }
 
-    _readParam (track, param) {
-        // Read back in user-facing units so `change … by` composes correctly.
-        if (param === 'volume') return typeof track.volume === 'number' ? track.volume : 80;
-        const fx = track.effects || {};
-        if (param === 'pan') return (typeof fx.pan === 'number' ? fx.pan : 0) * 100;
-        // filter defaults to 1 (open) so a fresh track maps to "100".
-        const def = param === 'filter' ? 1 : 0;
-        return (typeof fx[param] === 'number' ? fx[param] : def) * 100;
-    }
-
-    _commitTrackChange (track, param) {
-        // Notify the playback layer so the change is heard live. Effect
-        // changes go through setTrackEffects (zero-restart, smoothed). Volume
-        // is read at note-schedule time, so we push the new song reference
-        // through updateSong to refresh the next loop's note list.
-        if (param === 'volume') {
-            if (this.runtime.songPlayback && this.runtime.songPlayback.updateSong) {
-                this.runtime.songPlayback.updateSong(this.runtime.song);
-            }
-        } else {
-            this.runtime.songPlayback.setTrackEffects(track.trackId, track.effects);
+    _readParam (trackId, param) {
+        const pb = this.runtime.songPlayback;
+        if (!pb) {
+            // Pre-playback fallback: read the baseline directly so a sole
+            // `change … by` (with no playback yet) still composes sensibly.
+            const track = this._trackById(trackId);
+            if (param === 'volume') return typeof (track && track.volume) === 'number' ? track.volume : 80;
+            const fx = (track && track.effects) || {};
+            if (param === 'pan') return (typeof fx.pan === 'number' ? fx.pan : 0) * 100;
+            const def = param === 'filter' ? 1 : 0;
+            return (typeof fx[param] === 'number' ? fx[param] : def) * 100;
         }
+        return param === 'volume' ? pb.getTrackVolume(trackId) : pb.getTrackEffect(trackId, param);
     }
 
     changeTrackParam (args) {
         const param = Cast.toString(args.PARAM);
         const delta = Cast.toNumber(args.VALUE);
         for (const id of this._resolveTrackIds(args.TRACK)) {
-            const track = this._trackById(id);
-            if (!track) continue;
-            const current = this._readParam(track, param);
-            this._writeParam(track, param, current + delta);
-            this._commitTrackChange(track, param);
+            const current = this._readParam(id, param);
+            this._writeParam(id, param, current + delta);
         }
     }
 
@@ -314,10 +306,7 @@ class Scratch3SongsBlocks {
         const param = Cast.toString(args.PARAM);
         const value = Cast.toNumber(args.VALUE);
         for (const id of this._resolveTrackIds(args.TRACK)) {
-            const track = this._trackById(id);
-            if (!track) continue;
-            this._writeParam(track, param, value);
-            this._commitTrackChange(track, param);
+            this._writeParam(id, param, value);
         }
     }
 

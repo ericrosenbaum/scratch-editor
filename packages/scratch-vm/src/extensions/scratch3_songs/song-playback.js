@@ -22,6 +22,15 @@ class SongPlayback {
         // scheduler is constructed lazily, so we apply these whenever a new
         // scheduler comes online.
         this._hatCallbacks = {};
+        // Block-driven overrides for per-track effects and volume. Editor
+        // sliders write to `track.effects` / `track.volume` on the song;
+        // blocks write here instead so their changes are temporary, audible,
+        // and don't bleed into the editor state or the saved project. Cleared
+        // on stop (green-flag stop), so each green-flag run starts fresh.
+        //   _effectOverrides: Map<trackId, { [param]: value }>   engine-native ranges
+        //   _volumeOverrides: Map<trackId, number>               0..1
+        this._effectOverrides = new Map();
+        this._volumeOverrides = new Map();
         this._ensureMusicLoaded();
         runtime.on('PROJECT_STOP_ALL', () => this.stop());
     }
@@ -99,6 +108,15 @@ class SongPlayback {
                 this._fire('end', endedSong);
             }
         });
+        // If a block already set overrides before the scheduler existed
+        // (e.g. setTrackParam before playTrack), push them now so the first
+        // chain build sees them.
+        for (const trackId of this._effectOverrides.keys()) {
+            this._scheduler.setTrackEffects(trackId, this._resolveEffects(trackId, null));
+        }
+        for (const [trackId, value] of this._volumeOverrides) {
+            this._scheduler.setTrackVolume(trackId, value / 100);
+        }
         return this._scheduler;
     }
 
@@ -156,6 +174,11 @@ class SongPlayback {
         if (this._scheduler) {
             this._scheduler.stop();
         }
+        // Drop any block-driven overrides so the next run starts from the
+        // editor's authored values. Sliders bound to track.effects/volume now
+        // reflect the audible state again.
+        this._effectOverrides.clear();
+        this._volumeOverrides.clear();
         this._fire('stop');
     }
 
@@ -170,10 +193,150 @@ class SongPlayback {
         }
     }
 
+    /**
+     * Editor-side write: replace the baseline effects for a track. Composes
+     * with any active block override (override wins per param) and pushes the
+     * effective values to the scheduler chain.
+     * @param trackId
+     * @param effects
+     */
     setTrackEffects (trackId, effects) {
-        if (this._scheduler && this._scheduler.setTrackEffects) {
-            this._scheduler.setTrackEffects(trackId, effects);
+        const sched = this._scheduler;
+        if (!sched || !sched.setTrackEffects) return;
+        sched.setTrackEffects(trackId, this._resolveEffects(trackId, effects));
+    }
+
+    /**
+     * Editor-side write: set the baseline track volume (0..100). Composes
+     * with any active block override. The scheduler animates a per-track
+     * gain node, so this is a single setTargetAtTime — no song re-flatten,
+     * no React round-trip required for the audio to respond.
+     * @param trackId
+     * @param volume - 0..100 (matches the slider's range)
+     */
+    setTrackVolume (trackId, volume) {
+        const sched = this._scheduler;
+        if (!sched || !sched.setTrackVolume) return;
+        sched.setTrackVolume(trackId, this._resolveVolume(trackId, volume) / 100);
+    }
+
+    /**
+     * Block-side write: temporary per-param effect override. Lasts until the
+     * next green-flag stop (or until the editor clears it). Does NOT mutate
+     * runtime.song, so the editor sliders and project file are untouched.
+     * @param trackId
+     * @param param - one of reverb / delay / filter / pan / distortion
+     * @param value - engine-native range (0..1, pan -1..1)
+     */
+    setTrackEffectOverride (trackId, param, value) {
+        if (!trackId || !param) return;
+        let bag = this._effectOverrides.get(trackId);
+        if (!bag) {
+            bag = {};
+            this._effectOverrides.set(trackId, bag);
         }
+        bag[param] = value;
+        const sched = this._scheduler;
+        if (sched && sched.setTrackEffects) {
+            sched.setTrackEffects(trackId, this._resolveEffects(trackId, null));
+        }
+    }
+
+    /**
+     * Block-side write: temporary track-volume override. Same semantics as
+     * setTrackEffectOverride. Value is in 0..100 (matches the block's
+     * user-facing range).
+     * @param trackId
+     * @param value - 0..100
+     */
+    setTrackVolumeOverride (trackId, value) {
+        if (!trackId) return;
+        const clamped = Math.max(0, Math.min(100, Number(value) || 0));
+        this._volumeOverrides.set(trackId, clamped);
+        const sched = this._scheduler;
+        if (sched && sched.setTrackVolume) {
+            sched.setTrackVolume(trackId, clamped / 100);
+        }
+    }
+
+    /**
+     * Clear a single param's override, e.g. when the user moves an editor
+     * slider for that param so the editor "wins back" control. Re-applies
+     * the resolved value so audio matches.
+     * @param trackId
+     * @param param
+     */
+    clearTrackEffectOverride (trackId, param) {
+        const bag = this._effectOverrides.get(trackId);
+        if (!bag || !(param in bag)) return;
+        delete bag[param];
+        if (Object.keys(bag).length === 0) this._effectOverrides.delete(trackId);
+        const sched = this._scheduler;
+        if (sched && sched.setTrackEffects) {
+            sched.setTrackEffects(trackId, this._resolveEffects(trackId, null));
+        }
+    }
+
+    /** @param trackId */
+    clearTrackVolumeOverride (trackId) {
+        if (!this._volumeOverrides.has(trackId)) return;
+        this._volumeOverrides.delete(trackId);
+        const sched = this._scheduler;
+        if (sched && sched.setTrackVolume) {
+            sched.setTrackVolume(trackId, this._resolveVolume(trackId, null) / 100);
+        }
+    }
+
+    /**
+     * Read the current effective effect value (in user-facing 0..100 range,
+     * or -100..100 for pan) for `change … by` composition in blocks. Falls
+     * back to the track's baseline if no override is set.
+     * @param trackId
+     * @param param
+     */
+    getTrackEffect (trackId, param) {
+        const bag = this._effectOverrides.get(trackId);
+        if (bag && param in bag) {
+            return param === 'pan' ? bag[param] * 100 : bag[param] * 100;
+        }
+        const track = this._trackById(trackId);
+        const fx = (track && track.effects) || {};
+        if (param === 'pan') return (typeof fx.pan === 'number' ? fx.pan : 0) * 100;
+        const def = param === 'filter' ? 1 : 0;
+        return (typeof fx[param] === 'number' ? fx[param] : def) * 100;
+    }
+
+    /** @param trackId */
+    getTrackVolume (trackId) {
+        if (this._volumeOverrides.has(trackId)) return this._volumeOverrides.get(trackId);
+        const track = this._trackById(trackId);
+        return typeof (track && track.volume) === 'number' ? track.volume : 80;
+    }
+
+    _trackById (trackId) {
+        for (const t of ((this.runtime.song && this.runtime.song.tracks) || [])) {
+            if (t.trackId === trackId) return t;
+        }
+        return null;
+    }
+
+    /**
+     * Compose the effective effects for a track: baseline (from `nextBase`
+     * if supplied, else `track.effects`) overlaid with any block override.
+     */
+    _resolveEffects (trackId, nextBase) {
+        const track = this._trackById(trackId);
+        const base = nextBase || (track && track.effects) || {};
+        const override = this._effectOverrides.get(trackId);
+        if (!override) return base;
+        return Object.assign({}, base, override);
+    }
+
+    _resolveVolume (trackId, nextBase) {
+        if (this._volumeOverrides.has(trackId)) return this._volumeOverrides.get(trackId);
+        if (typeof nextBase === 'number') return nextBase;
+        const track = this._trackById(trackId);
+        return typeof (track && track.volume) === 'number' ? track.volume : 80;
     }
 
     /**

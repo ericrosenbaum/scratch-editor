@@ -18,6 +18,16 @@ import './song-editor.raw.css';
 const keyOfNote = (track, note) =>
     (track.kind === 'drum' ? drumNoteKey(note) : noteKey(note));
 
+// Synth and instrument tracks both store pitched notes ({step, pitch, ...}),
+// so the clipboard travels freely between them. Drum tracks use a (drum, step)
+// addressing scheme with no pitch, so paste only flows within drum or within
+// pitched.
+const clipboardCompatible = (clipKind, trackKind) => {
+    if (clipKind === trackKind) return true;
+    const pitched = k => k === 'synth' || k === 'instrument';
+    return pitched(clipKind) && pitched(trackKind);
+};
+
 class SongEditor extends React.Component {
     constructor (props) {
         super(props);
@@ -194,6 +204,12 @@ class SongEditor extends React.Component {
         const root = this._rootEl;
         if (!root || !root.isConnected) return;
         const meta = e.metaKey || e.ctrlKey;
+        if (!meta && (e.key === 'Backspace' || e.key === 'Delete')) {
+            if (this.state.selectedKeys.size === 0) return;
+            e.preventDefault();
+            this.handleSelectionDelete();
+            return;
+        }
         if (!meta) return;
         const key = e.key.toLowerCase();
         if (key === 'z' && !e.shiftKey) {
@@ -344,12 +360,23 @@ class SongEditor extends React.Component {
         const tracks = (this.props.song.tracks || []).slice();
         tracks[trackIdx] = updatedTrack;
         this._commit({tracks});
-        // When only the track's effect values changed, push them to the live
-        // audio chain so a slider drag during playback is audible immediately
-        // (no scheduler restart, no audio glitch).
-        if (prev && prev.trackId === updatedTrack.trackId &&
-            prev.effects !== updatedTrack.effects) {
-            this.player.setTrackEffects(updatedTrack.trackId, updatedTrack.effects || {});
+        if (!prev || prev.trackId !== updatedTrack.trackId) return;
+        // Editor "wins back" any block override for the param being edited,
+        // then animates the audio node directly so the change is heard during
+        // the slider drag without waiting for the next scheduler tick.
+        if (prev.effects !== updatedTrack.effects) {
+            const prevFx = prev.effects || {};
+            const nextFx = updatedTrack.effects || {};
+            for (const param of ['reverb', 'delay', 'filter', 'pan', 'distortion']) {
+                if (prevFx[param] !== nextFx[param]) {
+                    this.player.clearTrackEffectOverride(updatedTrack.trackId, param);
+                }
+            }
+            this.player.setTrackEffects(updatedTrack.trackId, nextFx);
+        }
+        if (prev.volume !== updatedTrack.volume) {
+            this.player.clearTrackVolumeOverride(updatedTrack.trackId);
+            this.player.setTrackVolume(updatedTrack.trackId, updatedTrack.volume);
         }
     }
 
@@ -420,7 +447,7 @@ class SongEditor extends React.Component {
         const idx = this._editingTrackIdx();
         const track = this._editingTrack();
         if (!track) return;
-        if (clipboard.kind !== track.kind) return;
+        if (!clipboardCompatible(clipboard.kind, track.kind)) return;
 
         const lengthSteps = this.props.song.lengthSteps || 32;
         const existingNotes = (track.notes || []).slice();
@@ -631,7 +658,8 @@ class SongEditor extends React.Component {
         const hasSelection = this.state.selectedKeys.size > 0;
         const hasClipboard = !!(this.state.clipboard && this.state.clipboard.notes && this.state.clipboard.notes.length > 0);
         const track = this._editingTrack();
-        const pasteAllowed = hasClipboard && track && this.state.clipboard.kind === track.kind;
+        const pasteAllowed = hasClipboard && track &&
+            clipboardCompatible(this.state.clipboard.kind, track.kind);
         return (
             <div className="selection-toolbar">
                 <button
@@ -660,7 +688,7 @@ class SongEditor extends React.Component {
                     className="selection-delete"
                     onClick={this.handleSelectionDelete}
                     disabled={!hasSelection}
-                    title="Delete selected notes"
+                    title="Delete selected notes (Delete or Backspace)"
                     aria-label="Delete selected notes"
                 >Delete</button>
             </div>

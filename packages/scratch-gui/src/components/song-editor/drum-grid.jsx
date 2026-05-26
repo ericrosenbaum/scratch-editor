@@ -193,10 +193,11 @@ class DrumGrid extends React.Component {
                 e.preventDefault();
                 return;
             }
-            const k = drumNoteKey(hit.note);
-            if (!this.props.selectedKeys.has(k)) {
-                this.props.onSelectionChange(new Set([k]));
+            // Drum-machine style: clicking an existing hit toggles it off.
+            if (this.props.selectedKeys.size > 0) {
+                this.props.onSelectionChange(new Set());
             }
+            this.props.onRemoveNote(hit.idx);
             e.preventDefault();
             return;
         }
@@ -437,6 +438,7 @@ DrumGrid.propTypes = {
     cursorStep: PropTypes.number,
     selectedKeys: PropTypes.instanceOf(Set).isRequired,
     onAddNote: PropTypes.func.isRequired,
+    onRemoveNote: PropTypes.func.isRequired,
     onResizeNote: PropTypes.func.isRequired,
     onSelectionChange: PropTypes.func.isRequired,
     onSetCursor: PropTypes.func

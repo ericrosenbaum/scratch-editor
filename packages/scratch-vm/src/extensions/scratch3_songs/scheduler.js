@@ -78,7 +78,14 @@ class SongScheduler {
         // a track so empty / muted tracks cost nothing.
         this._trackChains = {};
         // Latest effect values pushed via setTrackEffects, keyed by trackId.
+        // Used to initialize the chain when it's built (since setTrackEffects
+        // may arrive before the first note plays).
         this._effectsCache = {};
+        // Latest track volume pushed via setTrackVolume (0..1), keyed by
+        // trackId. Same role as _effectsCache: lets a volume slider drag take
+        // effect before the chain exists, and seeds chain.volume.gain when
+        // the chain is built.
+        this._volumeCache = {};
         // Shared synthesized impulse response for all per-track reverbs.
         this._reverbBuffer = null;
         // Most-recently-scheduled pitch per synth track, used to apply
@@ -171,8 +178,22 @@ class SongScheduler {
     _getTrackChain (trackId) {
         if (this._trackChains[trackId]) return this._trackChains[trackId];
         const ctx = this.audioContext;
+        // `input` is the per-voice mixer at the head of the chain. Per-track
+        // fades animate this node directly, so we keep volume on a separate
+        // gain so the two automations compose multiplicatively.
         const input = ctx.createGain();
         input.gain.value = 1;
+
+        // Per-track volume node — the single source of truth for track level.
+        // Editor slider drags and block volume overrides both animate
+        // `volume.gain` via setTargetAtTime so changes are instantaneous and
+        // smooth, without re-flattening notes or rebuilding the chain.
+        const volume = ctx.createGain();
+        const cachedVol = this._volumeCache[trackId];
+        const track = this._trackById(trackId);
+        const baseVol = typeof cachedVol === 'number' ? cachedVol :
+            ((typeof (track && track.volume) === 'number' ? track.volume : 80) / 100);
+        volume.gain.value = baseVol;
 
         // Distortion sits at the head of the chain so subsequent EQ (filter)
         // and spatial fx (panner / reverb / delay) shape and place the
@@ -211,7 +232,8 @@ class SongScheduler {
         const delaySend = ctx.createGain();
         delaySend.gain.value = 0;
 
-        input.connect(distortion);
+        input.connect(volume);
+        volume.connect(distortion);
         distortion.connect(filter);
         filter.connect(panner);
         panner.connect(dry);
@@ -229,6 +251,7 @@ class SongScheduler {
 
         const chain = {
             input,
+            volume,
             distortion,
             filter,
             panner,
@@ -244,7 +267,6 @@ class SongScheduler {
         };
         this._trackChains[trackId] = chain;
         const cached = this._effectsCache[trackId];
-        const track = this._trackById(trackId);
         const effects = cached || this._normalizeEffects(track && track.effects);
         this._applyEffectsToChain(chain, effects);
         return chain;
@@ -287,6 +309,26 @@ class SongScheduler {
         this._applyEffectsToChain(chain, normalized);
     }
 
+    /**
+     * Set a track's volume by animating its `volume` gain node. Volume is in
+     * the 0..1 domain (multiply 0..100 sliders by 0.01 before calling). Smooth
+     * via setTargetAtTime so slider drags don't click; tau=0.02 matches the
+     * effect-change smoothing.
+     *
+     * If the chain hasn't been built yet (track hasn't played its first note),
+     * the value is cached and applied when the chain is constructed.
+     * @param {string} trackId
+     * @param {number} volume - 0..1
+     */
+    setTrackVolume (trackId, volume) {
+        const v = Math.max(0, Math.min(1, Number(volume) || 0));
+        this._volumeCache[trackId] = v;
+        const chain = this._trackChains[trackId];
+        if (!chain || !chain.volume) return;
+        const now = this.audioContext.currentTime;
+        chain.volume.gain.setTargetAtTime(v, now, 0.02);
+    }
+
     _flattenNotes () {
         const notes = [];
         const tracks = (this.song && this.song.tracks) || [];
@@ -304,7 +346,6 @@ class SongScheduler {
                     kind: track.kind,
                     instrument: (track.instrument || 1) - 1,
                     drum: drumIdx,
-                    volume: typeof track.volume === 'number' ? track.volume : 80,
                     velocity: typeof note.velocity === 'number' ? note.velocity : 80,
                     step: note.step,
                     durationSteps: note.durationSteps || 1,
@@ -525,6 +566,7 @@ class SongScheduler {
         }
         this._trackChains = {};
         this._effectsCache = {};
+        this._volumeCache = {};
         this._activeTracks.clear();
         this._pendingTrackChanges.clear();
         this._pendingDeactivations.clear();
@@ -652,15 +694,15 @@ class SongScheduler {
         source.playbackRate.value = playbackRate;
 
         const volumeGain = ctx.createGain();
-        const trackVol = (typeof note.volume === 'number' ? note.volume : 80) / 100;
         const velocity = typeof note.velocity === 'number' ? note.velocity : 80;
         const vNorm = Math.max(0, Math.min(1, velocity / 127));
         // Cubed velocity curve so 80 vs 110 is plainly audible (the music
-        // samples are already loudness-normalized).
+        // samples are already loudness-normalized). Track-level volume lives
+        // on chain.volume — see setTrackVolume — so this gain is per-voice
+        // velocity only.
         const velocityGain = Math.max(0.002, vNorm * vNorm * vNorm);
-        const finalGain = trackVol * velocityGain;
-        volumeGain.gain.setValueAtTime(finalGain, when);
-        volumeGain.gain.value = finalGain;
+        volumeGain.gain.setValueAtTime(velocityGain, when);
+        volumeGain.gain.value = velocityGain;
 
         const releaseGain = ctx.createGain();
         releaseGain.gain.setValueAtTime(1, when);
@@ -779,13 +821,13 @@ class SongScheduler {
         const amp = ctx.createGain();
         amp.gain.value = 0;
 
-        // Velocity → final peak gain. 0.35 headroom keeps two oscs at full
-        // mix from clipping into the per-track chain.
-        const trackVol = (typeof note.volume === 'number' ? note.volume : 80) / 100;
+        // Velocity → per-voice peak gain. 0.35 headroom keeps two oscs at full
+        // mix from clipping into the per-track chain. Track-level volume is
+        // applied downstream on chain.volume — see setTrackVolume.
         const velocity = typeof note.velocity === 'number' ? note.velocity : 80;
         const vNorm = Math.max(0, Math.min(1, velocity / 127));
         const velocityGain = Math.max(0.002, vNorm * vNorm * vNorm);
-        const peak = trackVol * velocityGain * 0.35;
+        const peak = velocityGain * 0.35;
 
         // Amp ADSR. Clamp times so setValueAtTime / linearRamp pairs always
         // have a strictly increasing time argument.
