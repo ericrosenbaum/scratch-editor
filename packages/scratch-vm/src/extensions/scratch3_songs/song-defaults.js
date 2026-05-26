@@ -1,3 +1,5 @@
+const {DEFAULT_SYNTH} = require('./synth-defaults');
+
 const newId = prefix => `${prefix}-${Math.random().toString(36)
     .slice(2, 10)}`;
 
@@ -42,6 +44,9 @@ const createBlankTrack = (kind = 'instrument') => {
     if (kind === 'drum') {
         t.drumLanes = DEFAULT_DRUM_LANES.slice();
     }
+    if (kind === 'synth') {
+        t.synth = {...DEFAULT_SYNTH};
+    }
     return t;
 };
 
@@ -57,6 +62,7 @@ const createBlankSong = (name = 'Song') => ({
 const displayNameForTrack = track => {
     if (!track) return '';
     if (track.kind === 'drum') return 'Drums';
+    if (track.kind === 'synth') return 'Synth';
     const idx = (track.instrument || 1) - 1;
     return INSTRUMENT_NAMES[idx] || 'Track';
 };

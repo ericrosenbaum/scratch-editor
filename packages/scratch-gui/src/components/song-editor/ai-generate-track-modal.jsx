@@ -1,10 +1,13 @@
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {defineMessages, FormattedMessage, injectIntl} from 'react-intl';
 
 import Modal from '../../containers/modal.jsx';
 import intlShape from '../../lib/intlShape.js';
+import {isSupported as isVoiceSupported, listen as voiceListen} from '../../lib/voice-input.js';
 
+import micIcon from './icon--mic.svg';
 import './ai-song-modal.raw.css';
 
 const messages = defineMessages({
@@ -17,6 +20,11 @@ const messages = defineMessages({
         defaultMessage: 'Generate Drum Track',
         description: 'Title of the AI new-drum-track modal',
         id: 'gui.songTab.aiGenerateDrumTitle'
+    },
+    titleSynth: {
+        defaultMessage: 'Generate Synth Track',
+        description: 'Title of the AI new-synth-track modal',
+        id: 'gui.songTab.aiGenerateSynthTitle'
     },
     promptLabel: {
         defaultMessage: 'Describe the new track:',
@@ -32,6 +40,11 @@ const messages = defineMessages({
         defaultMessage: 'e.g. a half-time hip-hop groove with hi-hats',
         description: 'Placeholder text for the AI generate-drum-track prompt',
         id: 'gui.songTab.aiGenerateDrumPlaceholder'
+    },
+    placeholderSynth: {
+        defaultMessage: 'e.g. a warm pad that floats above the song',
+        description: 'Placeholder text for the AI generate-synth-track prompt',
+        id: 'gui.songTab.aiGenerateSynthPlaceholder'
     },
     tryLabel: {
         defaultMessage: 'Try:',
@@ -54,17 +67,40 @@ const EXAMPLE_PROMPTS_FOR_KIND = {
         'a busy funk pattern with off-beat hi-hats',
         'a simple kick + snare backbeat',
         'a Latin / samba feel'
+    ],
+    synth: [
+        'a warm pad that holds long chords under the melody',
+        'a bright pluck lead with bouncing 8th notes',
+        'a fat sub bass that locks in with the kick',
+        'a glassy bell-like counter-melody up high',
+        'a wobbly synth riff with attitude'
     ]
 };
 
 class AiGenerateTrackModal extends React.Component {
     constructor (props) {
         super(props);
-        this.state = {prompt: ''};
+        this.state = {prompt: '', listening: false, interimTranscript: ''};
         this.handleChange = this.handleChange.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.handleExampleClick = this.handleExampleClick.bind(this);
+        this.handleVoiceClick = this.handleVoiceClick.bind(this);
+    }
+
+    handleVoiceClick () {
+        if (this.state.listening) return;
+        this.setState({listening: true, interimTranscript: ''});
+        voiceListen({
+            onInterim: text => this.setState({interimTranscript: text}),
+            onEnd: () => this.setState({listening: false, interimTranscript: ''})
+        })
+            .then(transcript => {
+                this.setState({prompt: transcript, interimTranscript: ''});
+            })
+            .catch(() => {
+                this.setState({listening: false, interimTranscript: ''});
+            });
     }
 
     handleChange (e) {
@@ -93,10 +129,10 @@ class AiGenerateTrackModal extends React.Component {
         const {busy, error, intl, onCancel, kind} = this.props;
         const canSubmit = this.state.prompt.trim().length > 0 && !busy;
         const examples = EXAMPLE_PROMPTS_FOR_KIND[kind] || EXAMPLE_PROMPTS_FOR_KIND.instrument;
-        const titleMessage = kind === 'drum' ? messages.titleDrum : messages.titleInstrument;
-        const placeholderMessage = kind === 'drum' ?
-            messages.placeholderDrum :
-            messages.placeholderInstrument;
+        const titleMessage = kind === 'drum' ? messages.titleDrum :
+            (kind === 'synth' ? messages.titleSynth : messages.titleInstrument);
+        const placeholderMessage = kind === 'drum' ? messages.placeholderDrum :
+            (kind === 'synth' ? messages.placeholderSynth : messages.placeholderInstrument);
         return (
             <Modal
                 className="ai-song-modal"
@@ -114,17 +150,39 @@ class AiGenerateTrackModal extends React.Component {
                     >
                         <FormattedMessage {...messages.promptLabel} />
                     </label>
-                    <textarea
-                        autoFocus
-                        className="ai-song-modal-textarea"
-                        disabled={busy}
-                        id="aiGenerateTrackPrompt"
-                        placeholder={intl.formatMessage(placeholderMessage)}
-                        rows={3}
-                        value={this.state.prompt}
-                        onChange={this.handleChange}
-                        onKeyDown={this.handleKeyDown}
-                    />
+                    <div className="ai-song-modal-textarea-wrap">
+                        <textarea
+                            autoFocus
+                            className="ai-song-modal-textarea"
+                            disabled={busy}
+                            id="aiGenerateTrackPrompt"
+                            placeholder={intl.formatMessage(placeholderMessage)}
+                            readOnly={this.state.listening}
+                            rows={3}
+                            value={this.state.listening && this.state.interimTranscript ?
+                                this.state.interimTranscript :
+                                this.state.prompt}
+                            onChange={this.handleChange}
+                            onKeyDown={this.handleKeyDown}
+                        />
+                        {isVoiceSupported() ? (
+                            <button
+                                className={classNames(
+                                    'ai-song-modal-mic-button',
+                                    {'ai-song-modal-mic-button-active': this.state.listening}
+                                )}
+                                disabled={busy || this.state.listening}
+                                title="Speak your prompt"
+                                type="button"
+                                onClick={this.handleVoiceClick}
+                            >
+                                <img
+                                    className="ai-song-modal-mic-icon"
+                                    src={micIcon}
+                                />
+                            </button>
+                        ) : null}
+                    </div>
                     <div className="ai-song-modal-examples">
                         <span className="ai-song-modal-examples-label">
                             <FormattedMessage {...messages.tryLabel} />
@@ -197,7 +255,7 @@ AiGenerateTrackModal.propTypes = {
     busy: PropTypes.bool,
     error: PropTypes.string,
     intl: intlShape.isRequired,
-    kind: PropTypes.oneOf(['instrument', 'drum']).isRequired,
+    kind: PropTypes.oneOf(['instrument', 'drum', 'synth']).isRequired,
     onCancel: PropTypes.func.isRequired,
     onApply: PropTypes.func.isRequired
 };

@@ -71,6 +71,67 @@
     background: hsl(220, 15%, 96%);
 }
 
+/* Wrapper that lets the mic button sit inside the textarea. */
+.ai-song-modal-textarea-wrap {
+    position: relative;
+    width: 100%;
+}
+
+/* Reserve space inside the textarea so typed text doesn't run under the mic. */
+.ai-song-modal-textarea-wrap .ai-song-modal-textarea {
+    padding-right: 2.5rem;
+}
+
+.ai-song-modal-mic-button {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 4px;
+    opacity: 0.6;
+    transition: background-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+
+.ai-song-modal-mic-button:hover:not(:disabled) {
+    background: hsla(260, 60%, 60%, 0.1);
+    transform: scale(1.08);
+    opacity: 1;
+}
+
+.ai-song-modal-mic-button:disabled {
+    cursor: not-allowed;
+}
+
+.ai-song-modal-mic-icon {
+    width: 100%;
+    height: 100%;
+}
+
+.ai-song-modal-mic-button-active {
+    background: hsla(0, 80%, 60%, 0.15);
+    opacity: 1;
+    animation: ai-song-modal-mic-pulse 1s infinite;
+}
+
+/* Recolor the purple mic to Scratch pink while recording. */
+.ai-song-modal-mic-button-active .ai-song-modal-mic-icon {
+    filter: brightness(0) saturate(100%) invert(52%) sepia(67%) saturate(2476%) hue-rotate(314deg) brightness(101%) contrast(101%);
+}
+
+@keyframes ai-song-modal-mic-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
 .ai-song-modal-examples {
     display: flex;
     flex-wrap: wrap;

@@ -1,10 +1,13 @@
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {defineMessages, FormattedMessage, injectIntl} from 'react-intl';
 
 import Modal from '../../containers/modal.jsx';
 import intlShape from '../../lib/intlShape.js';
+import {isSupported as isVoiceSupported, listen as voiceListen} from '../../lib/voice-input.js';
 
+import micIcon from './icon--mic.svg';
 import './ai-song-modal.raw.css';
 
 const messages = defineMessages({
@@ -43,17 +46,39 @@ const EXAMPLE_PROMPTS_FOR_KIND = {
         'add busy hi-hat fills before downbeats',
         'simplify to just kick + snare backbeat',
         'double the speed'
+    ],
+    synth: [
+        'turn this into a long-held pad with whole-note chords',
+        'rewrite as a bouncy 16th-note arpeggio',
+        'simplify to a single sustained drone',
+        'add a counter-melody an octave higher'
     ]
 };
 
 class AiEditTrackModal extends React.Component {
     constructor (props) {
         super(props);
-        this.state = {prompt: ''};
+        this.state = {prompt: '', listening: false, interimTranscript: ''};
         this.handleChange = this.handleChange.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.handleExampleClick = this.handleExampleClick.bind(this);
+        this.handleVoiceClick = this.handleVoiceClick.bind(this);
+    }
+
+    handleVoiceClick () {
+        if (this.state.listening) return;
+        this.setState({listening: true, interimTranscript: ''});
+        voiceListen({
+            onInterim: text => this.setState({interimTranscript: text}),
+            onEnd: () => this.setState({listening: false, interimTranscript: ''})
+        })
+            .then(transcript => {
+                this.setState({prompt: transcript, interimTranscript: ''});
+            })
+            .catch(() => {
+                this.setState({listening: false, interimTranscript: ''});
+            });
     }
 
     handleChange (e) {
@@ -102,17 +127,39 @@ class AiEditTrackModal extends React.Component {
                     >
                         <FormattedMessage {...messages.promptLabel} />
                     </label>
-                    <textarea
-                        autoFocus
-                        className="ai-song-modal-textarea"
-                        disabled={busy}
-                        id="aiEditTrackPrompt"
-                        placeholder={intl.formatMessage(messages.placeholder)}
-                        rows={3}
-                        value={this.state.prompt}
-                        onChange={this.handleChange}
-                        onKeyDown={this.handleKeyDown}
-                    />
+                    <div className="ai-song-modal-textarea-wrap">
+                        <textarea
+                            autoFocus
+                            className="ai-song-modal-textarea"
+                            disabled={busy}
+                            id="aiEditTrackPrompt"
+                            placeholder={intl.formatMessage(messages.placeholder)}
+                            readOnly={this.state.listening}
+                            rows={3}
+                            value={this.state.listening && this.state.interimTranscript ?
+                                this.state.interimTranscript :
+                                this.state.prompt}
+                            onChange={this.handleChange}
+                            onKeyDown={this.handleKeyDown}
+                        />
+                        {isVoiceSupported() ? (
+                            <button
+                                className={classNames(
+                                    'ai-song-modal-mic-button',
+                                    {'ai-song-modal-mic-button-active': this.state.listening}
+                                )}
+                                disabled={busy || this.state.listening}
+                                title="Speak your prompt"
+                                type="button"
+                                onClick={this.handleVoiceClick}
+                            >
+                                <img
+                                    className="ai-song-modal-mic-icon"
+                                    src={micIcon}
+                                />
+                            </button>
+                        ) : null}
+                    </div>
                     <div className="ai-song-modal-examples">
                         <span className="ai-song-modal-examples-label">
                             <FormattedMessage {...messages.tryLabel} />
@@ -186,7 +233,7 @@ AiEditTrackModal.propTypes = {
     error: PropTypes.string,
     intl: intlShape.isRequired,
     trackName: PropTypes.string,
-    trackKind: PropTypes.oneOf(['instrument', 'drum']),
+    trackKind: PropTypes.oneOf(['instrument', 'drum', 'synth']),
     onCancel: PropTypes.func.isRequired,
     onApply: PropTypes.func.isRequired
 };

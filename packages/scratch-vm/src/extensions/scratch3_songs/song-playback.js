@@ -1,4 +1,6 @@
 const SongScheduler = require('./scheduler');
+const {getTrackSynth} = require('./synth-defaults');
+const {midiToFreq} = require('./scheduler');
 
 /**
  * Project-wide song playback singleton owned by the runtime. Holds at most
@@ -242,7 +244,12 @@ class SongPlayback {
             ctx.resume().catch(() => {});
         }
         this._ensureMusicLoaded();
-        const {kind, instrument, drum, pitch, velocity = 90, durationSec = 0.18} = opts || {};
+        const {kind, instrument, drum, pitch, velocity = 90, durationSec = 0.18, synth} = opts || {};
+        if (kind === 'synth') {
+            const synthDur = opts && opts.durationSec ? opts.durationSec : 0.35;
+            this._previewSynthNote({synth, pitch, velocity, durationSec: synthDur});
+            return;
+        }
         let buffer;
         let playbackRate = 1;
         let releaseTime = 0.05;
@@ -286,6 +293,128 @@ class SongPlayback {
                 source.disconnect();
                 volumeGain.disconnect();
                 releaseGain.disconnect();
+            } catch (e) { /* ignore */ }
+        };
+    }
+
+    // One-shot synth voice for editor previews — same voice graph as
+    // SongScheduler._scheduleSynthNote but standalone (no scheduler, no
+    // per-track FX chain). Routes straight to the playback destination.
+    _previewSynthNote ({synth, pitch, velocity = 90, durationSec = 0.35}) {
+        const ctx = this._audioContext();
+        if (!ctx) return;
+        const params = getTrackSynth({synth});
+        const when = ctx.currentTime;
+        const noteOff = when + durationSec;
+        const freq = midiToFreq(pitch);
+
+        const osc1 = ctx.createOscillator();
+        osc1.type = params.osc1Wave;
+        osc1.frequency.value = freq;
+        const osc2 = ctx.createOscillator();
+        osc2.type = params.osc2Wave;
+        osc2.frequency.value = freq;
+        if (osc2.detune) osc2.detune.value = params.osc2Detune || 0;
+
+        const mix = Math.max(0, Math.min(1, params.oscMix));
+        const mix1 = ctx.createGain();
+        const mix2 = ctx.createGain();
+        mix1.gain.value = 1 - mix;
+        mix2.gain.value = mix;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        const baseCutoff = 80 * Math.pow(150, Math.max(0, Math.min(1, params.filterCutoff)));
+        filter.Q.value = 0.7 + (Math.max(0, Math.min(1, params.filterResonance)) * 17.3);
+
+        const amp = ctx.createGain();
+        amp.gain.value = 0;
+
+        const vNorm = Math.max(0, Math.min(1, velocity / 127));
+        const velocityGain = Math.max(0.002, vNorm * vNorm * vNorm);
+        const peak = velocityGain * 0.35;
+
+        const a = Math.max(0.001, params.ampAttack);
+        const d = Math.max(0.001, params.ampDecay);
+        const s = Math.max(0, Math.min(1, params.ampSustain));
+        const r = Math.max(0.001, params.ampRelease);
+        amp.gain.setValueAtTime(0, when);
+        amp.gain.linearRampToValueAtTime(peak, when + a);
+        amp.gain.linearRampToValueAtTime(peak * s, when + a + d);
+        amp.gain.setValueAtTime(peak * s, noteOff);
+        amp.gain.linearRampToValueAtTime(0.0001, noteOff + r);
+
+        const envCents = Math.max(0, Math.min(1, params.filterEnvAmount)) * 4800;
+        const ratio = Math.pow(2, envCents / 1200);
+        const peakHz = Math.min(20000, baseCutoff * ratio);
+        const sustainHz = baseCutoff + ((peakHz - baseCutoff) * Math.max(0, Math.min(1, params.filterSustain)));
+        const fa = Math.max(0.001, params.filterAttack);
+        const fd = Math.max(0.001, params.filterDecay);
+        const fr = Math.max(0.001, params.filterRelease);
+        filter.frequency.setValueAtTime(baseCutoff, when);
+        filter.frequency.linearRampToValueAtTime(peakHz, when + fa);
+        filter.frequency.linearRampToValueAtTime(sustainHz, when + fa + fd);
+        filter.frequency.setValueAtTime(sustainHz, noteOff);
+        filter.frequency.linearRampToValueAtTime(baseCutoff, noteOff + fr);
+
+        osc1.connect(mix1);
+        osc2.connect(mix2);
+        mix1.connect(filter);
+        mix2.connect(filter);
+        filter.connect(amp);
+        amp.connect(this._audioDestination());
+
+        const stopAt = noteOff + r + 0.02;
+
+        // LFO for preview — same routing as the scheduler. No glide in
+        // preview because previews are one-shot (no previous-note context).
+        const lfoDest = params.lfoDest || 'none';
+        const lfoDepth = Math.max(0, Math.min(1, params.lfoDepth || 0));
+        let lfo = null;
+        let lfoGain = null;
+        if (lfoDest !== 'none' && lfoDepth > 0.001) {
+            lfo = ctx.createOscillator();
+            lfo.type = params.lfoWave || 'sine';
+            lfo.frequency.value = Math.max(0.05, Math.min(20, params.lfoRate || 5));
+            lfoGain = ctx.createGain();
+            if (lfoDest === 'pitch') {
+                lfoGain.gain.value = lfoDepth * 200;
+                lfo.connect(lfoGain);
+                if (osc1.detune) lfoGain.connect(osc1.detune);
+                if (osc2.detune) lfoGain.connect(osc2.detune);
+            } else if (lfoDest === 'filter') {
+                lfoGain.gain.value = lfoDepth * 2400;
+                lfo.connect(lfoGain);
+                if (filter.detune) {
+                    lfoGain.connect(filter.detune);
+                }
+            } else if (lfoDest === 'amp') {
+                lfoGain.gain.value = lfoDepth * 0.5 * peak;
+                lfo.connect(lfoGain);
+                lfoGain.connect(amp.gain);
+            }
+            try {
+                lfo.start(when);
+                lfo.stop(stopAt);
+            } catch (e) { /* ignore */ }
+        }
+
+        try {
+            osc1.start(when);
+            osc2.start(when);
+            osc1.stop(stopAt);
+            osc2.stop(stopAt);
+        } catch (e) { /* ignore */ }
+        osc2.onended = () => {
+            try {
+                osc1.disconnect();
+                osc2.disconnect();
+                mix1.disconnect();
+                mix2.disconnect();
+                filter.disconnect();
+                amp.disconnect();
+                if (lfo) lfo.disconnect();
+                if (lfoGain) lfoGain.disconnect();
             } catch (e) { /* ignore */ }
         };
     }

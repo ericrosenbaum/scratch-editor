@@ -470,6 +470,34 @@
     text-overflow: ellipsis;
 }
 
+/* Rename input: looks like the static name label until the user clicks
+   into it, at which point it gets a subtle outline. Inherits sizing from
+   .track-name above. */
+.track-name-input {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 2px 5px;
+    margin: 0;
+    font-family: inherit;
+    line-height: 1.2;
+    cursor: text;
+    transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.track-name-input:hover {
+    background: #f4f5f8;
+    border-color: #e0e3eb;
+}
+
+.track-name-input:focus {
+    outline: none;
+    background: #fff;
+    border-color: #4C97FF;
+    box-shadow: 0 0 0 3px rgba(76, 151, 255, 0.15);
+    text-overflow: clip;
+}
+
 .track-row-controls select {
     width: 100%;
     border: 1px solid #e0e3eb;
@@ -585,6 +613,46 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     margin-bottom: 2px;
+}
+
+/* Synth panel "Synth" title doubles as a disclosure toggle for the rest of
+   the params. Looks like the static title but is keyboard-focusable. */
+.track-effects-title.synth-disclosure {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    margin: 0 0 2px;
+    border: none;
+    background: transparent;
+    color: #7C5CFF;
+    font: inherit;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    align-self: flex-start;
+}
+
+.track-effects-title.synth-disclosure:hover {
+    color: #5C3CDF;
+}
+
+.synth-disclosure-arrow {
+    transition: transform 120ms ease;
+    flex: 0 0 auto;
+}
+
+.synth-disclosure.is-open .synth-disclosure-arrow {
+    transform: rotate(90deg);
+}
+
+.synth-params-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 4px;
 }
 
 .effect-row {
@@ -1043,6 +1111,37 @@
     cursor: default;
 }
 
+.generate-song {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    background: linear-gradient(135deg, #B377FF 0%, #7C5CFF 100%);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(124, 92, 255, 0.3);
+    flex-shrink: 0;
+}
+
+.generate-song:hover:not(:disabled) {
+    background: linear-gradient(135deg, #9C5CFF 0%, #6A4ADB 100%);
+}
+
+.generate-song:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.generate-song-label {
+    white-space: nowrap;
+}
+
 /* Piano-roll wrapper stacks two SVGs in the same grid cell: the cells SVG
    underneath (scrolls with horizontal scroll) and a labels SVG on top that
    stays pinned to the left edge via position:sticky. */
@@ -1288,3 +1387,266 @@
     min-width: 0;
     overflow: hidden;
 }
+
+/* ===== Keyboard Entry Modal =====
+   Launched per-track. Owns a virtual piano or drum pad grid plus step/realtime
+   recording. Built on top of the .ai-song-modal frame for visual consistency. */
+.kbe-modal {
+    width: 44rem;
+    max-width: calc(100vw - 2rem);
+}
+.kbe-body {
+    gap: 0.75rem;
+}
+.kbe-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.kbe-help {
+    font-size: 0.78rem;
+    color: hsl(220, 12%, 45%);
+    line-height: 1.35;
+}
+.kbe-mode-toggle {
+    display: inline-flex;
+    border: 1px solid hsl(220, 15%, 86%);
+    border-radius: 0.45rem;
+    overflow: hidden;
+    background: hsl(220, 25%, 98%);
+}
+.kbe-mode-btn {
+    border: none;
+    background: transparent;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: hsl(220, 12%, 35%);
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+.kbe-mode-btn:hover:not(:disabled) {
+    background: hsl(220, 25%, 94%);
+}
+.kbe-mode-btn.is-active {
+    background: #4C97FF;
+    color: #fff;
+}
+.kbe-mode-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.kbe-octave-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+}
+.kbe-octave-btn {
+    border: 1px solid hsl(220, 15%, 86%);
+    background: hsl(220, 25%, 98%);
+    color: hsl(220, 12%, 30%);
+    border-radius: 0.4rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.kbe-octave-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.kbe-octave-label {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: hsl(220, 12%, 25%);
+    min-width: 4.5rem;
+    text-align: center;
+}
+.kbe-record-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.kbe-record-btn {
+    border: none;
+    background: #ff4757;
+    color: #fff;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(255, 71, 87, 0.35);
+}
+.kbe-record-btn:hover {
+    background: #ff5e6c;
+}
+.kbe-record-btn.recording {
+    background: #2c2c2c;
+    box-shadow: none;
+}
+.kbe-record-status {
+    color: #ff4757;
+    font-size: 0.8rem;
+    font-weight: 600;
+    animation: kbe-blink 1s steps(2, end) infinite;
+}
+.kbe-count-in-overlay {
+    color: hsl(220, 12%, 30%);
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+@keyframes kbe-blink {
+    50% { opacity: 0.4; }
+}
+.kbe-mini-timeline {
+    position: relative;
+    width: 100%;
+    height: 32px;
+    background: hsl(220, 25%, 96%);
+    border: 1px solid hsl(220, 15%, 86%);
+    border-radius: 0.4rem;
+    overflow: hidden;
+}
+.kbe-tick {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: hsl(220, 15%, 88%);
+    pointer-events: none;
+}
+.kbe-tick.accent {
+    background: hsl(220, 15%, 70%);
+}
+.kbe-dot {
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    margin-top: -4px;
+    border-radius: 50%;
+    pointer-events: none;
+}
+.kbe-cursor {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    margin-left: -1px;
+    background: #4C97FF;
+    pointer-events: none;
+}
+/* Piano */
+.kbe-piano {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    user-select: none;
+}
+.kbe-piano-key {
+    position: absolute;
+    top: 0;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 6px;
+    transition: background-color 80ms ease;
+}
+.kbe-piano-key.white {
+    height: 100%;
+    background: #fff;
+    border: 1px solid hsl(220, 15%, 78%);
+    border-bottom-width: 5px;
+    border-radius: 0 0 4px 4px;
+    color: hsl(220, 12%, 30%);
+    z-index: 1;
+}
+.kbe-piano-key.white.held {
+    color: #fff;
+}
+.kbe-piano-key.black {
+    height: 62%;
+    background: #2c2c2c;
+    border-radius: 0 0 3px 3px;
+    color: #fff;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+.kbe-piano-key.black.held {
+    background: #4C97FF;
+}
+.kbe-piano-key-note {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.kbe-piano-key-char {
+    font-family: 'Menlo', 'Monaco', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    opacity: 0.7;
+    margin-top: 2px;
+}
+.kbe-piano-key.black .kbe-piano-key-char {
+    opacity: 0.85;
+}
+/* Drum pad */
+.kbe-pad-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+    user-select: none;
+}
+.kbe-pad {
+    aspect-ratio: 1.4 / 1;
+    background: hsl(220, 25%, 95%);
+    border: 1px solid hsl(220, 15%, 82%);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem;
+    box-sizing: border-box;
+    transition: background-color 80ms ease, transform 80ms ease, border-color 80ms ease;
+    text-align: center;
+}
+.kbe-pad:hover {
+    background: hsl(220, 25%, 92%);
+}
+.kbe-pad.held {
+    background: #4C97FF;
+    border-color: #4C97FF;
+    color: #fff;
+    transform: scale(0.97);
+}
+.kbe-pad-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: inherit;
+}
+.kbe-pad-char {
+    font-family: 'Menlo', 'Monaco', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    opacity: 0.6;
+    margin-top: 0.25rem;
+}
+.kbe-pad.held .kbe-pad-char {
+    opacity: 0.95;
+}
+.kbe-buttons {
+    justify-content: flex-end;
+}
+/* The Keyboard track button is icon-only; inherits .icon-btn styling. */

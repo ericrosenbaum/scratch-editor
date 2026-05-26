@@ -258,7 +258,7 @@ VelocityStrip.propTypes = {
     lengthSteps: PropTypes.number.isRequired,
     stepsPerBeat: PropTypes.number.isRequired,
     cellWidth: PropTypes.number,
-    kind: PropTypes.oneOf(['instrument', 'drum']).isRequired,
+    kind: PropTypes.oneOf(['instrument', 'drum', 'synth']).isRequired,
     onUpdateVelocity: PropTypes.func.isRequired
 };
 

@@ -67,6 +67,21 @@ class SongPlayer {
         if (pb) pb.setTrackEffects(trackId, effects);
     }
 
+    // Used by the editor when a track is added mid-playback (e.g. an AI
+    // generate-track finishing while the preview is looping). The scheduler
+    // only flattens notes for tracks in its active set, so without this the
+    // freshly-committed notes would be silent until the user stopped and
+    // restarted.
+    activateTrack (trackId) {
+        const pb = this._playback();
+        if (pb && pb.setTrackActive) pb.setTrackActive(trackId, true, 'now');
+    }
+
+    deactivateTrack (trackId) {
+        const pb = this._playback();
+        if (pb && pb.setTrackActive) pb.setTrackActive(trackId, false, 'now');
+    }
+
     isPlaying () {
         const pb = this._playback();
         return !!(pb && pb.isPlaying() && this._isMyPlayback);

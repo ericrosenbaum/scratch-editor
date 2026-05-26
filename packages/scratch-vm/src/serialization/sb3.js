@@ -496,6 +496,10 @@ const serializeSong = function (song) {
                 [track.drum || 1];
             t.drumLanes = lanes;
             t.drum = lanes[0];
+        } else if (track.kind === 'synth') {
+            // Persist the full subtractive-synth param bag. Shallow copy is
+            // enough — values are primitives.
+            if (track.synth) t.synth = Object.assign({}, track.synth);
         } else {
             t.instrument = track.instrument;
         }

@@ -6,7 +6,7 @@ import DrumGrid, {drumNoteKey} from './drum-grid.jsx';
 import MiniGrid from './mini-grid.jsx';
 import VelocityStrip from './velocity-strip.jsx';
 import {computeCellWidth, DEFAULT_CELL_W} from './grid-sizing.js';
-import {INSTRUMENT_NAMES, DRUM_NAMES, DEFAULT_VELOCITY, getTrackEffects, displayNameForTrack} from '../../lib/song-defaults.js';
+import {INSTRUMENT_NAMES, DRUM_NAMES, DEFAULT_VELOCITY, getTrackEffects, displayNameForTrack, SYNTH_PRESETS, DEFAULT_SYNTH, getTrackSynth} from '../../lib/song-defaults.js';
 
 class TrackRow extends React.Component {
     constructor (props) {
@@ -18,7 +18,12 @@ class TrackRow extends React.Component {
             cellWidth: DEFAULT_CELL_W,
             // Height of the visible grid in compact mode, so the mini-grid
             // preview can fill the full row instead of leaving whitespace.
-            canvasHeight: 80
+            canvasHeight: 80,
+            // Synth tracks: expose only the preset menu by default — the rest
+            // of the synth params (oscillators, ADSR, LFO…) are advanced
+            // controls that most users won't reach for, so keep them tucked
+            // behind a disclosure toggle.
+            synthParamsExpanded: false
         };
         this.handleInstrumentChange = this.handleInstrumentChange.bind(this);
         this.handleDrumChange = this.handleDrumChange.bind(this);
@@ -29,6 +34,10 @@ class TrackRow extends React.Component {
         this.handleEditToggle = this.handleEditToggle.bind(this);
 
         this.handleEffectChange = this.handleEffectChange.bind(this);
+        this.handleSynthPresetChange = this.handleSynthPresetChange.bind(this);
+        this.handleSynthParamChange = this.handleSynthParamChange.bind(this);
+        this.handleSynthWaveChange = this.handleSynthWaveChange.bind(this);
+        this.handleSynthParamsToggle = this.handleSynthParamsToggle.bind(this);
 
         this.handleAddNote = this.handleAddNote.bind(this);
         this.handleResizeNote = this.handleResizeNote.bind(this);
@@ -251,6 +260,29 @@ class TrackRow extends React.Component {
         this._updateTrack({effects: next});
     }
 
+    handleSynthPresetChange (e) {
+        const name = e.target.value;
+        const preset = SYNTH_PRESETS.find(p => p.name === name);
+        if (!preset) return;
+        // Overwrite the whole synth bag with the preset's params. The `name`
+        // field is a UI label only — tweaking sliders later does not clear it.
+        const {name: presetName, ...params} = preset;
+        this._updateTrack({synth: {preset: presetName, ...params}});
+    }
+
+    handleSynthParamChange (key, value) {
+        const current = getTrackSynth(this.props.track);
+        this._updateTrack({synth: {...current, [key]: value}});
+    }
+
+    handleSynthWaveChange (which, e) {
+        this.handleSynthParamChange(which, e.target.value);
+    }
+
+    handleSynthParamsToggle () {
+        this.setState(state => ({synthParamsExpanded: !state.synthParamsExpanded}));
+    }
+
     handleMuteToggle () {
         this._updateTrack({muted: !this.props.track.muted});
     }
@@ -318,6 +350,13 @@ class TrackRow extends React.Component {
                 // fall back to the track-level legacy drum for single-lane
                 // drum tracks.
                 drum: drum || track.drum || 1,
+                velocity: DEFAULT_VELOCITY
+            });
+        } else if (track.kind === 'synth') {
+            this.props.onPreviewNote({
+                kind: 'synth',
+                synth: track.synth || DEFAULT_SYNTH,
+                pitch,
                 velocity: DEFAULT_VELOCITY
             });
         } else {
@@ -587,6 +626,9 @@ class TrackRow extends React.Component {
             {name: 'filter', label: 'Filter', min: 0, max: 100,
                 uiValue: Math.round(effects.filter * 100), centered: false,
                 fromUi: v => v / 100},
+            {name: 'distortion', label: 'Distort', min: 0, max: 100,
+                uiValue: Math.round((effects.distortion || 0) * 100), centered: false,
+                fromUi: v => v / 100},
             {name: 'pan', label: 'Pan', min: -50, max: 50,
                 uiValue: Math.round(effects.pan * 50), centered: true,
                 fromUi: v => v / 50}
@@ -641,15 +683,219 @@ class TrackRow extends React.Component {
         );
     }
 
+    renderSynthControls () {
+        const params = getTrackSynth(this.props.track);
+        const presetName = (this.props.track.synth && this.props.track.synth.preset) || DEFAULT_SYNTH.preset;
+        // Exponential mapping for ADSR-time sliders so the 0–100 UI scale has
+        // fine control at short values (most musical territory) and still
+        // reaches ~3 s (amp/filter A/D/R) or ~4 s (release) at the top end.
+        const secToUi = (s, max = 3) => Math.round(100 * Math.pow(Math.max(0, Math.min(s, max)) / max, 1 / 2.5));
+        const uiToSec = (u, max = 3) => max * Math.pow(Math.max(0, Math.min(100, u)) / 100, 2.5);
+        const WAVES = ['sine', 'square', 'sawtooth', 'triangle'];
+        const LFO_DESTS = ['none', 'pitch', 'filter', 'amp'];
+        // LFO rate 0..100 -> 0.1..20 Hz, log-scaled so 1-8 Hz lives in the
+        // middle of the slider.
+        const rateToUi = hz => Math.round(100 * Math.log10(Math.max(0.1, Math.min(20, hz)) / 0.1) / Math.log10(200));
+        const uiToRate = u => 0.1 * Math.pow(200, Math.max(0, Math.min(100, u)) / 100);
+
+        const normRows = [
+            {key: 'oscMix', label: 'Mix',
+                uiValue: Math.round(params.oscMix * 100), fromUi: v => v / 100},
+            {key: 'filterCutoff', label: 'Cutoff',
+                uiValue: Math.round(params.filterCutoff * 100), fromUi: v => v / 100},
+            {key: 'filterResonance', label: 'Reso',
+                uiValue: Math.round(params.filterResonance * 100), fromUi: v => v / 100},
+            {key: 'filterEnvAmount', label: 'F.Env',
+                uiValue: Math.round(params.filterEnvAmount * 100), fromUi: v => v / 100}
+        ];
+        const adsrRows = [
+            {key: 'ampAttack', label: 'A.Atk',
+                uiValue: secToUi(params.ampAttack, 3), fromUi: v => uiToSec(v, 3)},
+            {key: 'ampDecay', label: 'A.Dec',
+                uiValue: secToUi(params.ampDecay, 3), fromUi: v => uiToSec(v, 3)},
+            {key: 'ampSustain', label: 'A.Sus',
+                uiValue: Math.round(params.ampSustain * 100), fromUi: v => v / 100},
+            {key: 'ampRelease', label: 'A.Rel',
+                uiValue: secToUi(params.ampRelease, 4), fromUi: v => uiToSec(v, 4)},
+            {key: 'filterAttack', label: 'F.Atk',
+                uiValue: secToUi(params.filterAttack, 3), fromUi: v => uiToSec(v, 3)},
+            {key: 'filterDecay', label: 'F.Dec',
+                uiValue: secToUi(params.filterDecay, 3), fromUi: v => uiToSec(v, 3)},
+            {key: 'filterSustain', label: 'F.Sus',
+                uiValue: Math.round(params.filterSustain * 100), fromUi: v => v / 100},
+            {key: 'filterRelease', label: 'F.Rel',
+                uiValue: secToUi(params.filterRelease, 4), fromUi: v => uiToSec(v, 4)}
+        ];
+        const lfoGlideRows = [
+            {key: 'lfoRate', label: 'LFO Rate',
+                uiValue: rateToUi(params.lfoRate || 5), fromUi: v => uiToRate(v)},
+            {key: 'lfoDepth', label: 'LFO Depth',
+                uiValue: Math.round((params.lfoDepth || 0) * 100), fromUi: v => v / 100},
+            {key: 'glideTime', label: 'Glide',
+                uiValue: secToUi(params.glideTime || 0, 2), fromUi: v => uiToSec(v, 2)}
+        ];
+        const detuneUi = Math.max(-50, Math.min(50, Math.round(params.osc2Detune || 0)));
+
+        const renderRow = row => {
+            const fillPct = Math.max(0, Math.min(100, row.uiValue));
+            return (
+                <div
+                    className="effect-row"
+                    key={row.key}
+                >
+                    <span className="effect-label">{row.label}</span>
+                    <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={row.uiValue}
+                        onChange={e => this.handleSynthParamChange(row.key, row.fromUi(parseInt(e.target.value, 10)))}
+                        aria-label={`${row.label} amount`}
+                        style={{'--fx-pct': `${fillPct}%`}}
+                    />
+                    <span className="effect-value">{row.uiValue}</span>
+                </div>
+            );
+        };
+
+        const expanded = !!this.state.synthParamsExpanded;
+        return (
+            <div className="track-effects synth-controls">
+                <button
+                    type="button"
+                    className={`track-effects-title synth-disclosure ${expanded ? 'is-open' : ''}`}
+                    onClick={this.handleSynthParamsToggle}
+                    aria-expanded={expanded}
+                    aria-controls="synth-params-panel"
+                    title={expanded ? 'Hide synth params' : 'Show synth params'}
+                >
+                    <svg
+                        className="synth-disclosure-arrow"
+                        viewBox="0 0 10 10"
+                        width="10"
+                        height="10"
+                        aria-hidden="true"
+                    ><path
+                            d="M3 2.5l3 2.5-3 2.5z"
+                            fill="currentColor"
+                        /></svg>
+                    <span>Synth</span>
+                </button>
+                <select
+                    value={presetName}
+                    onChange={this.handleSynthPresetChange}
+                    aria-label="Synth preset"
+                >
+                    {SYNTH_PRESETS.map(p => (
+                        <option
+                            key={p.name}
+                            value={p.name}
+                        >{p.name}</option>
+                    ))}
+                </select>
+                {expanded ? (
+                    <div
+                        className="synth-params-panel"
+                        id="synth-params-panel"
+                    >
+                        <div className="synth-wave-row">
+                            <label className="synth-wave-label">
+                                <span>Osc 1</span>
+                                <select
+                                    value={params.osc1Wave}
+                                    onChange={e => this.handleSynthWaveChange('osc1Wave', e)}
+                                    aria-label="Oscillator 1 waveform"
+                                >
+                                    {WAVES.map(w => (<option
+                                        key={w}
+                                        value={w}
+                                    >{w}</option>))}
+                                </select>
+                            </label>
+                            <label className="synth-wave-label">
+                                <span>Osc 2</span>
+                                <select
+                                    value={params.osc2Wave}
+                                    onChange={e => this.handleSynthWaveChange('osc2Wave', e)}
+                                    aria-label="Oscillator 2 waveform"
+                                >
+                                    {WAVES.map(w => (<option
+                                        key={w}
+                                        value={w}
+                                    >{w}</option>))}
+                                </select>
+                            </label>
+                        </div>
+                        <div
+                            className="effect-row centered"
+                            key="osc2Detune"
+                        >
+                            <span className="effect-label">Detune</span>
+                            <input
+                                type="range"
+                                min={-50}
+                                max={50}
+                                step={1}
+                                value={detuneUi}
+                                onChange={e => this.handleSynthParamChange('osc2Detune', parseInt(e.target.value, 10))}
+                                aria-label="Oscillator 2 detune"
+                                style={{
+                                    '--fx-left': `${Math.min(50, 50 + (detuneUi / 50) * 50)}%`,
+                                    '--fx-right': `${Math.max(50, 50 + (detuneUi / 50) * 50)}%`
+                                }}
+                            />
+                            <span className="effect-value">{detuneUi}</span>
+                        </div>
+                        {normRows.map(renderRow)}
+                        {adsrRows.map(renderRow)}
+                        <div className="synth-wave-row">
+                            <label className="synth-wave-label">
+                                <span>LFO dest</span>
+                                <select
+                                    value={params.lfoDest || 'none'}
+                                    onChange={e => this.handleSynthParamChange('lfoDest', e.target.value)}
+                                    aria-label="LFO destination"
+                                >
+                                    {LFO_DESTS.map(d => (<option
+                                        key={d}
+                                        value={d}
+                                    >{d}</option>))}
+                                </select>
+                            </label>
+                            <label className="synth-wave-label">
+                                <span>LFO wave</span>
+                                <select
+                                    value={params.lfoWave || 'sine'}
+                                    onChange={e => this.handleSynthParamChange('lfoWave', e.target.value)}
+                                    aria-label="LFO waveform"
+                                >
+                                    {WAVES.map(w => (<option
+                                        key={w}
+                                        value={w}
+                                    >{w}</option>))}
+                                </select>
+                            </label>
+                        </div>
+                        {lfoGlideRows.map(renderRow)}
+                    </div>
+                ) : null}
+            </div>
+        );
+    }
+
     renderNameRow () {
         const {track} = this.props;
         const isDrum = track.kind === 'drum';
+        const isSynth = track.kind === 'synth';
+        const badgeClass = isDrum ? 'drum' : (isSynth ? 'synth' : 'instrument');
+        const badgeTitle = isDrum ? 'Drum track' : (isSynth ? 'Synth track' : 'Instrument track');
         return (
             <div className="track-name-row">
                 <span
-                    className={`track-kind-badge ${isDrum ? 'drum' : 'instrument'}`}
+                    className={`track-kind-badge ${badgeClass}`}
                     aria-hidden="true"
-                    title={isDrum ? 'Drum track' : 'Instrument track'}
+                    title={badgeTitle}
                 >{isDrum ? (
                         <svg
                             viewBox="0 0 16 16"
@@ -668,6 +914,19 @@ class TrackRow extends React.Component {
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="1.4"
+                        /></svg>
+                    ) : isSynth ? (
+                        <svg
+                            viewBox="0 0 16 16"
+                            width="12"
+                            height="12"
+                        ><path
+                            d="M1.5 8 Q 3 3.5 4.5 8 T 7.5 8 T 10.5 8 T 13.5 8 T 16 8"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                         /></svg>
                     ) : (
                         <svg
@@ -691,15 +950,20 @@ class TrackRow extends React.Component {
     renderControls () {
         const {track, isFirst, isLast, onMoveUp, onMoveDown, onMoveTop, onMoveBottom} = this.props;
         const isDrum = track.kind === 'drum';
+        const isSynth = track.kind === 'synth';
         const volume = typeof track.volume === 'number' ? track.volume : 80;
         return (
-            <div className={`track-row-controls ${isDrum ? 'drum-track' : ''}`}>
+            <div className={`track-row-controls ${isDrum ? 'drum-track' : ''} ${isSynth ? 'synth-track' : ''}`}>
                 {isDrum ? (
                     // Drum tracks put the lane picker at the very top of the
                     // panel so its rows are vertically aligned with the grid's
                     // rows on the right. The track name + edit toggle live in
                     // a full-width header bar above the controls panel.
                     this.renderLanePicker()
+                ) : isSynth ? (
+                    // Synth tracks: just the name row at the top; the preset
+                    // dropdown + synth params render below (via renderSynthControls).
+                    this.renderNameRow()
                 ) : (
                     <React.Fragment>
                         {this.renderNameRow()}
@@ -772,8 +1036,60 @@ class TrackRow extends React.Component {
                     />
                     <span className="volume-value">{volume}</span>
                 </div>
+                {isSynth ? this.renderSynthControls() : null}
                 {this.renderEffects()}
                 <div className="actions-row bottom-actions">
+                    <button
+                        type="button"
+                        className="icon-btn track-btn-kb"
+                        onClick={this.props.onKeyboardEntry}
+                        aria-label="Keyboard Entry"
+                        title="Play notes into this track with the keyboard"
+                    >
+                        <svg
+                            viewBox="0 0 16 16"
+                            width="14"
+                            height="14"
+                            aria-hidden="true"
+                        ><rect
+                            x="1.5"
+                            y="4"
+                            width="13"
+                            height="8"
+                            rx="1"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                        /><path
+                            d="M4 4v5M6.5 4v5M9 4v5M11.5 4v5"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                        /><rect
+                            x="3"
+                            y="4"
+                            width="1.6"
+                            height="3.5"
+                            fill="currentColor"
+                        /><rect
+                            x="5.5"
+                            y="4"
+                            width="1.6"
+                            height="3.5"
+                            fill="currentColor"
+                        /><rect
+                            x="8.5"
+                            y="4"
+                            width="1.6"
+                            height="3.5"
+                            fill="currentColor"
+                        /><rect
+                            x="10.8"
+                            y="4"
+                            width="1.6"
+                            height="3.5"
+                            fill="currentColor"
+                        /></svg>
+                    </button>
                     <button
                         type="button"
                         className="icon-btn ai-btn track-btn-ai"
@@ -1046,7 +1362,8 @@ TrackRow.propTypes = {
     onMoveDown: PropTypes.func.isRequired,
     onMoveTop: PropTypes.func.isRequired,
     onMoveBottom: PropTypes.func.isRequired,
-    onAiEdit: PropTypes.func.isRequired
+    onAiEdit: PropTypes.func.isRequired,
+    onKeyboardEntry: PropTypes.func.isRequired
 };
 
 export default TrackRow;

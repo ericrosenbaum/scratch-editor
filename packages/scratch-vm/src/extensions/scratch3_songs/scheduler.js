@@ -8,7 +8,11 @@
  * track's FX chain so they compose with per-note velocity gain.
  */
 
+const {getTrackSynth} = require('./synth-defaults');
+
 const ratioForPitchInterval = interval => Math.pow(2, interval / 12);
+
+const midiToFreq = midi => 440 * Math.pow(2, (midi - 69) / 12);
 
 const selectSampleIndexForNote = (note, samples) => {
     for (let i = samples.length - 1; i >= 0; i--) {
@@ -77,6 +81,9 @@ class SongScheduler {
         this._effectsCache = {};
         // Shared synthesized impulse response for all per-track reverbs.
         this._reverbBuffer = null;
+        // Most-recently-scheduled pitch per synth track, used to apply
+        // glide/portamento on the next note. Map<trackId, {pitch, when}>.
+        this._lastPitchByTrack = new Map();
     }
 
     get tempo () {
@@ -114,8 +121,33 @@ class SongScheduler {
             reverb: typeof e.reverb === 'number' ? e.reverb : 0,
             delay: typeof e.delay === 'number' ? e.delay : 0,
             filter: typeof e.filter === 'number' ? e.filter : 1,
-            pan: typeof e.pan === 'number' ? e.pan : 0
+            pan: typeof e.pan === 'number' ? e.pan : 0,
+            distortion: typeof e.distortion === 'number' ? e.distortion : 0
         };
+    }
+
+    // Build a waveshaper curve for a given distortion amount (0..1). At 0 the
+    // curve is the identity (passthrough); as amount climbs we drive a tanh
+    // saturator harder, normalized so the output still peaks near ±1. Curve
+    // is rebuilt each time the slider value changes — 2048 samples is a small
+    // allocation and the typed-array writes are cheap.
+    _makeDistortionCurve (amount) {
+        const samples = 2048;
+        const curve = new Float32Array(samples);
+        const a = Math.max(0, Math.min(1, amount));
+        if (a <= 0.001) {
+            for (let i = 0; i < samples; i++) {
+                curve[i] = ((i * 2) / samples) - 1;
+            }
+            return curve;
+        }
+        const drive = 1 + (a * 40);
+        const norm = Math.tanh(drive);
+        for (let i = 0; i < samples; i++) {
+            const x = ((i * 2) / samples) - 1;
+            curve[i] = Math.tanh(x * drive) / norm;
+        }
+        return curve;
     }
 
     _getReverbBuffer () {
@@ -141,6 +173,17 @@ class SongScheduler {
         const ctx = this.audioContext;
         const input = ctx.createGain();
         input.gain.value = 1;
+
+        // Distortion sits at the head of the chain so subsequent EQ (filter)
+        // and spatial fx (panner / reverb / delay) shape and place the
+        // already-distorted signal — the more natural ordering for a guitar /
+        // synth tone.
+        const distortion = typeof ctx.createWaveShaper === 'function' ?
+            ctx.createWaveShaper() : ctx.createGain();
+        if (typeof ctx.createWaveShaper === 'function') {
+            distortion.curve = this._makeDistortionCurve(0);
+            distortion.oversample = '2x';
+        }
 
         const filter = ctx.createBiquadFilter();
         filter.type = 'lowpass';
@@ -168,7 +211,8 @@ class SongScheduler {
         const delaySend = ctx.createGain();
         delaySend.gain.value = 0;
 
-        input.connect(filter);
+        input.connect(distortion);
+        distortion.connect(filter);
         filter.connect(panner);
         panner.connect(dry);
         dry.connect(this.destination);
@@ -183,7 +227,21 @@ class SongScheduler {
         feedback.connect(delay);
         delay.connect(this.destination);
 
-        const chain = {input, filter, panner, dry, reverb, reverbSend, delay, delaySend, feedback};
+        const chain = {
+            input,
+            distortion,
+            filter,
+            panner,
+            dry,
+            reverb,
+            reverbSend,
+            delay,
+            delaySend,
+            feedback,
+            // Cache the last applied distortion amount so we only rebuild the
+            // curve when it actually changes (slider drags are rapid).
+            _distortionAmount: 0
+        };
         this._trackChains[trackId] = chain;
         const cached = this._effectsCache[trackId];
         const track = this._trackById(trackId);
@@ -206,6 +264,12 @@ class SongScheduler {
         }
         chain.reverbSend.gain.setTargetAtTime(clamp01(effects.reverb) * 0.6, now, tau);
         chain.delaySend.gain.setTargetAtTime(clamp01(effects.delay) * 0.55, now, tau);
+        const dist = clamp01(effects.distortion);
+        if (chain.distortion && 'curve' in chain.distortion &&
+            Math.abs((chain._distortionAmount || 0) - dist) > 0.001) {
+            chain.distortion.curve = this._makeDistortionCurve(dist);
+            chain._distortionAmount = dist;
+        }
     }
 
     /**
@@ -226,9 +290,13 @@ class SongScheduler {
     _flattenNotes () {
         const notes = [];
         const tracks = (this.song && this.song.tracks) || [];
+        // Solo overrides mute: if any track is soloed, only soloed (and
+        // unmuted) tracks are audible. Otherwise honor mute as before.
+        const anySolo = tracks.some(t => t && t.solo);
         for (const track of tracks) {
             if (!this._activeTracks.has(track.trackId)) continue;
             if (track.muted) continue;
+            if (anySolo && !track.solo) continue;
             for (const note of (track.notes || [])) {
                 const drumIdx = (typeof note.drum === 'number' ? note.drum : (track.drum || 1)) - 1;
                 notes.push({
@@ -318,6 +386,9 @@ class SongScheduler {
             // Cancel any not-yet-started scheduled sources for this track so
             // we don't hear notes from a track the user just stopped.
             this._cancelScheduledForTrack(trackId);
+            // Drop glide history so re-activating doesn't slide from a stale
+            // pitch scheduled long ago.
+            this._lastPitchByTrack.delete(trackId);
         }
     }
 
@@ -445,6 +516,8 @@ class SongScheduler {
         for (const trackId of Object.keys(this._trackChains)) {
             const chain = this._trackChains[trackId];
             for (const key of Object.keys(chain)) {
+                // Skip non-node bookkeeping fields like _distortionAmount.
+                if (key.charAt(0) === '_') continue;
                 try {
                     chain[key].disconnect();
                 } catch (e) { /* ignore */ }
@@ -455,6 +528,7 @@ class SongScheduler {
         this._activeTracks.clear();
         this._pendingTrackChanges.clear();
         this._pendingDeactivations.clear();
+        this._lastPitchByTrack.clear();
         if (!this._ended) {
             this._ended = true;
             this.onEnd();
@@ -551,6 +625,10 @@ class SongScheduler {
     }
 
     _scheduleNote (note, when) {
+        if (note.kind === 'synth') {
+            this._scheduleSynthNote(note, when);
+            return;
+        }
         const ctx = this.audioContext;
         const sps = this.secondsPerStep;
         const noteDuration = (note.durationSteps || 1) * sps;
@@ -615,8 +693,235 @@ class SongScheduler {
 
         this.onNote(note, when);
     }
+
+    // Map a normalized 0..1 value to a musically-spaced filter cutoff in Hz.
+    // 0 → ~80 Hz, 1 → ~12 kHz, exponential so slider feels uniform.
+    _mapCutoffHz (norm) {
+        const x = Math.max(0, Math.min(1, norm));
+        return 80 * Math.pow(150, x);
+    }
+
+    // Resonance 0..1 → Biquad Q 0.7..18. Above ~15 starts to ring; the cap
+    // keeps things musical without self-oscillating into clipping.
+    _mapQ (norm) {
+        const x = Math.max(0, Math.min(1, norm));
+        return 0.7 + (x * 17.3);
+    }
+
+    // Filter envelope amount 0..1 → 0..4 octaves of upward sweep, expressed
+    // in cents so we can ratio the base cutoff.
+    _mapEnvCents (norm) {
+        return Math.max(0, Math.min(1, norm)) * 4800;
+    }
+
+    _scheduleSynthNote (note, when) {
+        const ctx = this.audioContext;
+        const sps = this.secondsPerStep;
+        // Resolve fresh params from the live track so slider tweaks during
+        // playback take effect on the next note (no waiting for re-flatten).
+        const track = note.trackId ? this._trackById(note.trackId) : null;
+        const params = getTrackSynth(track || {});
+        const noteDuration = (note.durationSteps || 1) * sps;
+        const freq = midiToFreq(note.pitch);
+        const noteOff = when + noteDuration;
+
+        // Glide / portamento: if the track has a non-zero glideTime and we
+        // scheduled an earlier note on the same track, start at the previous
+        // pitch and linear-ramp to the target. The check `prev.when < when`
+        // means notes that start at the exact same step (chord-stacked) do
+        // NOT glide off each other — only sequential notes do.
+        const glideTime = Math.max(0, Math.min(2, params.glideTime || 0));
+        let startFreq = freq;
+        if (glideTime > 0.001 && note.trackId) {
+            const prev = this._lastPitchByTrack.get(note.trackId);
+            if (prev && prev.when < when) {
+                startFreq = midiToFreq(prev.pitch);
+            }
+        }
+
+        const osc1 = ctx.createOscillator();
+        osc1.type = params.osc1Wave;
+        osc1.frequency.cancelScheduledValues(when);
+        osc1.frequency.setValueAtTime(startFreq, when);
+        if (startFreq !== freq) {
+            osc1.frequency.linearRampToValueAtTime(freq, when + glideTime);
+        }
+
+        const osc2 = ctx.createOscillator();
+        osc2.type = params.osc2Wave;
+        osc2.frequency.cancelScheduledValues(when);
+        osc2.frequency.setValueAtTime(startFreq, when);
+        if (startFreq !== freq) {
+            osc2.frequency.linearRampToValueAtTime(freq, when + glideTime);
+        }
+        // osc2Detune stored as cents (range -50..50), assignable directly to
+        // OscillatorNode.detune which is in cents.
+        if (osc2.detune) osc2.detune.value = params.osc2Detune || 0;
+
+        // Record this note's pitch so the next scheduled note on this track
+        // can glide from here. We do this regardless of whether THIS note
+        // glided so that the next one always has a reference.
+        if (note.trackId) {
+            this._lastPitchByTrack.set(note.trackId, {pitch: note.pitch, when});
+        }
+
+        const mix = Math.max(0, Math.min(1, params.oscMix));
+        const mix1 = ctx.createGain();
+        const mix2 = ctx.createGain();
+        mix1.gain.value = 1 - mix;
+        mix2.gain.value = mix;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        const baseCutoff = this._mapCutoffHz(params.filterCutoff);
+        filter.Q.value = this._mapQ(params.filterResonance);
+
+        const amp = ctx.createGain();
+        amp.gain.value = 0;
+
+        // Velocity → final peak gain. 0.35 headroom keeps two oscs at full
+        // mix from clipping into the per-track chain.
+        const trackVol = (typeof note.volume === 'number' ? note.volume : 80) / 100;
+        const velocity = typeof note.velocity === 'number' ? note.velocity : 80;
+        const vNorm = Math.max(0, Math.min(1, velocity / 127));
+        const velocityGain = Math.max(0.002, vNorm * vNorm * vNorm);
+        const peak = trackVol * velocityGain * 0.35;
+
+        // Amp ADSR. Clamp times so setValueAtTime / linearRamp pairs always
+        // have a strictly increasing time argument.
+        const a = Math.max(0.001, params.ampAttack);
+        const d = Math.max(0.001, params.ampDecay);
+        const s = Math.max(0, Math.min(1, params.ampSustain));
+        const r = Math.max(0.001, params.ampRelease);
+        amp.gain.cancelScheduledValues(when);
+        amp.gain.setValueAtTime(0, when);
+        amp.gain.linearRampToValueAtTime(peak, when + a);
+        amp.gain.linearRampToValueAtTime(peak * s, when + a + d);
+        amp.gain.setValueAtTime(peak * s, noteOff);
+        amp.gain.linearRampToValueAtTime(0.0001, noteOff + r);
+
+        // Filter ADSR — additive cents above the base cutoff. Ratio domain
+        // (multiplicative) means a fixed envelope amount sweeps the same
+        // octaves regardless of base cutoff.
+        const envCents = this._mapEnvCents(params.filterEnvAmount);
+        const ratio = Math.pow(2, envCents / 1200);
+        const peakHz = Math.min(20000, baseCutoff * ratio);
+        const sustainHz = baseCutoff + ((peakHz - baseCutoff) * Math.max(0, Math.min(1, params.filterSustain)));
+        const fa = Math.max(0.001, params.filterAttack);
+        const fd = Math.max(0.001, params.filterDecay);
+        const fr = Math.max(0.001, params.filterRelease);
+        filter.frequency.cancelScheduledValues(when);
+        filter.frequency.setValueAtTime(baseCutoff, when);
+        filter.frequency.linearRampToValueAtTime(peakHz, when + fa);
+        filter.frequency.linearRampToValueAtTime(sustainHz, when + fa + fd);
+        filter.frequency.setValueAtTime(sustainHz, noteOff);
+        filter.frequency.linearRampToValueAtTime(baseCutoff, noteOff + fr);
+
+        osc1.connect(mix1);
+        osc2.connect(mix2);
+        mix1.connect(filter);
+        mix2.connect(filter);
+        filter.connect(amp);
+        const chain = note.trackId ? this._getTrackChain(note.trackId) : null;
+        amp.connect(chain ? chain.input : this.destination);
+
+        const stopAt = noteOff + r + 0.02;
+
+        // LFO — built per voice. We could share one LFO across all voices on
+        // a track, but per-voice keeps lifecycle simple (LFO stops when the
+        // voice stops) and the polyphony cost is trivial. Skip entirely when
+        // depth is 0 or destination is 'none' so unused presets are free.
+        const lfoDest = params.lfoDest || 'none';
+        const lfoDepth = Math.max(0, Math.min(1, params.lfoDepth || 0));
+        let lfo = null;
+        let lfoGain = null;
+        if (lfoDest !== 'none' && lfoDepth > 0.001) {
+            lfo = ctx.createOscillator();
+            lfo.type = params.lfoWave || 'sine';
+            lfo.frequency.value = Math.max(0.05, Math.min(20, params.lfoRate || 5));
+            lfoGain = ctx.createGain();
+            if (lfoDest === 'pitch') {
+                // ±200 cents (2 semitones) at full depth — generous for
+                // vibrato, restrained enough that depth ~0.05 is still subtle.
+                lfoGain.gain.value = lfoDepth * 200;
+                lfo.connect(lfoGain);
+                if (osc1.detune) lfoGain.connect(osc1.detune);
+                if (osc2.detune) lfoGain.connect(osc2.detune);
+            } else if (lfoDest === 'filter') {
+                // ±2400 cents = ±2 octaves at full depth. Hits filter.detune
+                // so it stacks additively with the filter envelope.
+                lfoGain.gain.value = lfoDepth * 2400;
+                lfo.connect(lfoGain);
+                if (filter.detune) {
+                    lfoGain.connect(filter.detune);
+                }
+            } else if (lfoDest === 'amp') {
+                // ±0.5 of peak gain at full depth — tremolo without going
+                // fully silent on each swing.
+                lfoGain.gain.value = lfoDepth * 0.5 * peak;
+                lfo.connect(lfoGain);
+                lfoGain.connect(amp.gain);
+            }
+            try {
+                lfo.start(when);
+                lfo.stop(stopAt);
+            } catch (e) { /* ignore */ }
+        }
+
+        try {
+            osc1.start(when);
+            osc2.start(when);
+            osc1.stop(stopAt);
+            osc2.stop(stopAt);
+        } catch (e) { /* ignore */ }
+
+        // Voice wrapper exposing the same surface _activeSources consumers
+        // already use: _scheduledStart, _trackId, stop(t), disconnect().
+        // stop() with no args stops immediately (matches BufferSource); with
+        // a time argument schedules the stop.
+        const voice = {
+            _scheduledStart: when,
+            _trackId: note.trackId,
+            stop (t) {
+                try {
+                    osc1.stop(t);
+                } catch (e) { /* ignore */ }
+                try {
+                    osc2.stop(t);
+                } catch (e) { /* ignore */ }
+                if (lfo) {
+                    try {
+                        lfo.stop(t);
+                    } catch (e) { /* ignore */ }
+                }
+            },
+            disconnect () {
+                try {
+                    osc1.disconnect();
+                    osc2.disconnect();
+                    mix1.disconnect();
+                    mix2.disconnect();
+                    filter.disconnect();
+                    amp.disconnect();
+                    if (lfo) lfo.disconnect();
+                    if (lfoGain) lfoGain.disconnect();
+                } catch (e) { /* ignore */ }
+            }
+        };
+        this._activeSources.push(voice);
+        // Pick a single oscillator to drive cleanup — both stop at the same
+        // time so either would do; osc2 is arbitrary.
+        osc2.onended = () => {
+            const idx = this._activeSources.indexOf(voice);
+            if (idx >= 0) this._activeSources.splice(idx, 1);
+            voice.disconnect();
+        };
+
+        this.onNote(note, when);
+    }
 }
 
 module.exports = SongScheduler;
 module.exports.ratioForPitchInterval = ratioForPitchInterval;
+module.exports.midiToFreq = midiToFreq;
 module.exports.selectSampleIndexForNote = selectSampleIndexForNote;

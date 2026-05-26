@@ -7,9 +7,11 @@ import {noteKey} from './piano-roll-grid.jsx';
 import {drumNoteKey} from './drum-grid.jsx';
 import AiEditTrackModal from './ai-edit-track-modal.jsx';
 import AiGenerateTrackModal from './ai-generate-track-modal.jsx';
+import AiSongModal from './ai-song-modal.jsx';
+import KeyboardEntryModal from './keyboard-entry-modal.jsx';
 import SongPlayer from '../../lib/song-player.js';
-import {createBlankTrack} from '../../lib/song-defaults.js';
-import {editTrackWithPrompt, generateTrackWithPrompt, SongAiError} from '../../lib/song-ai.js';
+import {createBlankTrack, displayNameForTrack, unusedTrackName} from '../../lib/song-defaults.js';
+import {editTrackWithPrompt, generateSongFromPrompt, generateTrackWithPrompt, SongAiError} from '../../lib/song-ai.js';
 
 import './song-editor.raw.css';
 
@@ -41,7 +43,13 @@ class SongEditor extends React.Component {
             // AI generate-track modal state. aiGenerateKind === null means closed.
             aiGenerateKind: null,
             aiGenerateBusy: false,
-            aiGenerateError: null
+            aiGenerateError: null,
+            // AI generate-whole-song modal state.
+            aiSongOpen: false,
+            aiSongBusy: false,
+            aiSongError: null,
+            // Keyboard-entry modal: index of the track being edited, or null.
+            keyEntryTrackIdx: null
         };
         // Undo/redo history stack of song snapshots. The current song is held
         // in props (owned by the parent), so we record snapshots *before* each
@@ -58,6 +66,7 @@ class SongEditor extends React.Component {
         this.handleLengthChange = this.handleLengthChange.bind(this);
         this.handleAddInstrumentTrack = this.handleAddInstrumentTrack.bind(this);
         this.handleAddDrumTrack = this.handleAddDrumTrack.bind(this);
+        this.handleAddSynthTrack = this.handleAddSynthTrack.bind(this);
         this.handleSelectionDelete = this.handleSelectionDelete.bind(this);
         this.handleSelectionCopy = this.handleSelectionCopy.bind(this);
         this.handleSelectionCut = this.handleSelectionCut.bind(this);
@@ -65,10 +74,17 @@ class SongEditor extends React.Component {
         this.handleOpenAiEdit = this.handleOpenAiEdit.bind(this);
         this.handleCloseAiEdit = this.handleCloseAiEdit.bind(this);
         this.handleApplyAiEdit = this.handleApplyAiEdit.bind(this);
+        this.handleOpenKeyboardEntry = this.handleOpenKeyboardEntry.bind(this);
+        this.handleCloseKeyboardEntry = this.handleCloseKeyboardEntry.bind(this);
+        this.handleCommitKeyboardEntry = this.handleCommitKeyboardEntry.bind(this);
         this.handleOpenAiGenerateInstrument = this.handleOpenAiGenerateInstrument.bind(this);
         this.handleOpenAiGenerateDrum = this.handleOpenAiGenerateDrum.bind(this);
+        this.handleOpenAiGenerateSynth = this.handleOpenAiGenerateSynth.bind(this);
         this.handleCloseAiGenerate = this.handleCloseAiGenerate.bind(this);
         this.handleApplyAiGenerate = this.handleApplyAiGenerate.bind(this);
+        this.handleOpenAiSong = this.handleOpenAiSong.bind(this);
+        this.handleCloseAiSong = this.handleCloseAiSong.bind(this);
+        this.handleApplyAiSong = this.handleApplyAiSong.bind(this);
         this.handleUndo = this.handleUndo.bind(this);
         this.handleRedo = this.handleRedo.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -281,18 +297,46 @@ class SongEditor extends React.Component {
         this.setState({selectedKeys: new Set()});
     }
 
+    _existingTrackNames () {
+        return (this.props.song.tracks || []).map(t => displayNameForTrack(t));
+    }
+
     handleAddInstrumentTrack () {
-        // Track display name is derived from the instrument selection now,
-        // so we just append a blank track and let the UI label it.
-        const track = createBlankTrack('instrument');
-        this._commit({tracks: [...(this.props.song.tracks || []), track]});
-        this.setState({editingTrackId: track.trackId, selectedKeys: new Set()});
+        const blank = createBlankTrack('instrument');
+        const base = displayNameForTrack(blank);
+        blank.name = unusedTrackName(base, this._existingTrackNames());
+        this._commit({tracks: [...(this.props.song.tracks || []), blank]});
+        this.setState({editingTrackId: blank.trackId, selectedKeys: new Set()});
     }
 
     handleAddDrumTrack () {
-        const track = createBlankTrack('drum');
-        this._commit({tracks: [...(this.props.song.tracks || []), track]});
-        this.setState({editingTrackId: track.trackId, selectedKeys: new Set()});
+        const blank = createBlankTrack('drum');
+        const base = displayNameForTrack(blank);
+        blank.name = unusedTrackName(base, this._existingTrackNames());
+        this._commit({tracks: [...(this.props.song.tracks || []), blank]});
+        this.setState({editingTrackId: blank.trackId, selectedKeys: new Set()});
+    }
+
+    handleAddSynthTrack () {
+        const blank = createBlankTrack('synth');
+        const base = displayNameForTrack(blank);
+        blank.name = unusedTrackName(base, this._existingTrackNames());
+        this._commit({tracks: [...(this.props.song.tracks || []), blank]});
+        this.setState({editingTrackId: blank.trackId, selectedKeys: new Set()});
+    }
+
+    renameTrack (trackIdx, newName) {
+        const tracks = this.props.song.tracks || [];
+        const target = tracks[trackIdx];
+        if (!target) return;
+        const trimmed = (newName || '').trim();
+        if (!trimmed) return;
+        const used = tracks
+            .filter((_, i) => i !== trackIdx)
+            .map(t => displayNameForTrack(t));
+        const unique = unusedTrackName(trimmed, used);
+        if (unique === displayNameForTrack(target)) return;
+        this.updateTrack(trackIdx, {...target, name: unique});
     }
 
     updateTrack (trackIdx, updatedTrack) {
@@ -452,12 +496,36 @@ class SongEditor extends React.Component {
         }
     }
 
+    handleOpenKeyboardEntry (trackIdx) {
+        // Stop any active playback so the modal owns the transport during recording.
+        this.player.stop();
+        this.setState({keyEntryTrackIdx: trackIdx});
+    }
+
+    handleCloseKeyboardEntry () {
+        this.setState({keyEntryTrackIdx: null});
+    }
+
+    handleCommitKeyboardEntry (mergedNotes) {
+        const idx = this.state.keyEntryTrackIdx;
+        const tracks = this.props.song.tracks || [];
+        const track = idx !== null ? tracks[idx] : null;
+        if (track) {
+            this.updateTrack(idx, {...track, notes: mergedNotes});
+        }
+        this.setState({keyEntryTrackIdx: null, selectedKeys: new Set()});
+    }
+
     handleOpenAiGenerateInstrument () {
         this.setState({aiGenerateKind: 'instrument', aiGenerateBusy: false, aiGenerateError: null});
     }
 
     handleOpenAiGenerateDrum () {
         this.setState({aiGenerateKind: 'drum', aiGenerateBusy: false, aiGenerateError: null});
+    }
+
+    handleOpenAiGenerateSynth () {
+        this.setState({aiGenerateKind: 'synth', aiGenerateBusy: false, aiGenerateError: null});
     }
 
     handleCloseAiGenerate () {
@@ -478,8 +546,21 @@ class SongEditor extends React.Component {
             // Append the new track to the current song. We re-read props.song
             // here because the user may have made other edits while waiting.
             const current = this.props.song;
-            const tracks = [...((current && current.tracks) || []), newTrack];
+            const existing = (current && current.tracks) || [];
+            const base = displayNameForTrack(newTrack);
+            const named = {
+                ...newTrack,
+                name: unusedTrackName(base, existing.map(t => displayNameForTrack(t)))
+            };
+            const tracks = [...existing, named];
             this._commit({tracks});
+            // If the editor preview is running, the scheduler only flattens
+            // notes from tracks it considers active. New trackIds aren't in
+            // that set, so without this the new notes would be silent until
+            // the user stopped and started again.
+            if (this.state.playing) {
+                this.player.activateTrack(named.trackId);
+            }
             this.setState({
                 aiGenerateKind: null,
                 aiGenerateBusy: false,
@@ -492,6 +573,57 @@ class SongEditor extends React.Component {
                 err.message :
                 (err && err.message) || 'Something went wrong generating the track.';
             this.setState({aiGenerateBusy: false, aiGenerateError: message});
+        }
+    }
+
+    handleOpenAiSong () {
+        this.setState({aiSongOpen: true, aiSongBusy: false, aiSongError: null});
+    }
+
+    handleCloseAiSong () {
+        if (this.state.aiSongBusy) return;
+        this.setState({aiSongOpen: false, aiSongBusy: false, aiSongError: null});
+    }
+
+    async handleApplyAiSong (prompt) {
+        this.setState({aiSongBusy: true, aiSongError: null});
+        try {
+            const generated = await generateSongFromPrompt({
+                prompt,
+                fallbackName: 'AI Song'
+            });
+            // Replace the current song's musical content but keep its
+            // songId so undo can step back to the prior song.
+            const patch = {
+                name: generated.name,
+                tempo: generated.tempo,
+                lengthSteps: generated.lengthSteps,
+                stepsPerBeat: generated.stepsPerBeat || 4,
+                tracks: generated.tracks
+            };
+            this._commit(patch);
+            const firstTrack = generated.tracks[0];
+            // Mid-playback, every new trackId is unknown to the scheduler's
+            // active set; activate them all so the AI song plays right away.
+            // (updateSong already prunes the old trackIds since they're no
+            // longer in the song.)
+            if (this.state.playing) {
+                for (const t of generated.tracks) {
+                    this.player.activateTrack(t.trackId);
+                }
+            }
+            this.setState({
+                aiSongOpen: false,
+                aiSongBusy: false,
+                aiSongError: null,
+                editingTrackId: firstTrack ? firstTrack.trackId : null,
+                selectedKeys: new Set()
+            });
+        } catch (err) {
+            const message = err instanceof SongAiError ?
+                err.message :
+                (err && err.message) || 'Something went wrong generating the song.';
+            this.setState({aiSongBusy: false, aiSongError: message});
         }
     }
 
@@ -537,9 +669,13 @@ class SongEditor extends React.Component {
 
     render () {
         const {song} = this.props;
-        const {playStep, playing, loop, cursorStep, editingTrackId, selectedKeys, aiEditTrackIdx} = this.state;
+        const {
+            playStep, playing, loop, cursorStep, editingTrackId, selectedKeys,
+            aiEditTrackIdx, keyEntryTrackIdx
+        } = this.state;
         const tracks = song.tracks || [];
         const aiEditTrack = aiEditTrackIdx !== null ? tracks[aiEditTrackIdx] : null;
+        const keyEntryTrack = keyEntryTrackIdx !== null ? tracks[keyEntryTrackIdx] : null;
         const canUndo = this._undoStack.length > 0;
         const canRedo = this._redoStack.length > 0;
 
@@ -752,6 +888,27 @@ class SongEditor extends React.Component {
                             onCommit={this.handleLengthChange}
                         />
                     </div>
+                    <button
+                        type="button"
+                        className="generate-song"
+                        onClick={this.handleOpenAiSong}
+                        title="Generate a whole song with AI (replaces current song)"
+                        aria-label="Generate a whole song with AI"
+                    >
+                        <svg
+                            viewBox="0 0 16 16"
+                            width="13"
+                            height="13"
+                            aria-hidden="true"
+                        ><path
+                                d="M8 1.5l1.4 3.6L13 6.5l-3.6 1.4L8 11.5 6.6 7.9 3 6.5l3.6-1.4L8 1.5z"
+                                fill="currentColor"
+                            /><path
+                                d="M12.5 11l.7 1.8L15 13.5l-1.8.7-.7 1.8-.7-1.8L10 13.5l1.8-.7z"
+                                fill="currentColor"
+                            /></svg>
+                        <span className="generate-song-label">Generate Song</span>
+                    </button>
                     {this.renderSelectionToolbar()}
                 </div>
                 <div className="song-editor-tracks">
@@ -768,6 +925,7 @@ class SongEditor extends React.Component {
                             isLast={idx === tracks.length - 1}
                             selectedKeys={editingTrackId === track.trackId ? selectedKeys : new Set()}
                             onUpdate={updated => this.updateTrack(idx, updated)}
+                            onRename={newName => this.renameTrack(idx, newName)}
                             onDelete={() => this.deleteTrack(idx)}
                             onToggleEdit={() => this.toggleEdit(track.trackId)}
                             onSelectionChange={keys => this.handleSelectionChange(keys)}
@@ -776,6 +934,7 @@ class SongEditor extends React.Component {
                             onMoveTop={() => this._moveTrack(idx, 0)}
                             onMoveBottom={() => this._moveTrack(idx, tracks.length - 1)}
                             onAiEdit={() => this.handleOpenAiEdit(idx)}
+                            onKeyboardEntry={() => this.handleOpenKeyboardEntry(idx)}
                             onSetCursor={this.handleSetCursor}
                             onPreviewNote={this.handlePreviewNote}
                         />
@@ -803,9 +962,9 @@ class SongEditor extends React.Component {
                                     d="M8 1.5l1.4 3.6L13 6.5l-3.6 1.4L8 11.5 6.6 7.9 3 6.5l3.6-1.4L8 1.5z"
                                     fill="currentColor"
                                 /><path
-                                    d="M12.5 11l.7 1.8L15 13.5l-1.8.7-.7 1.8-.7-1.8L10 13.5l1.8-.7z"
-                                    fill="currentColor"
-                                /></svg>
+                                        d="M12.5 11l.7 1.8L15 13.5l-1.8.7-.7 1.8-.7-1.8L10 13.5l1.8-.7z"
+                                        fill="currentColor"
+                                    /></svg>
                             </button>
                         </div>
                         <div className="track-row-add-group">
@@ -830,9 +989,36 @@ class SongEditor extends React.Component {
                                     d="M8 1.5l1.4 3.6L13 6.5l-3.6 1.4L8 11.5 6.6 7.9 3 6.5l3.6-1.4L8 1.5z"
                                     fill="currentColor"
                                 /><path
-                                    d="M12.5 11l.7 1.8L15 13.5l-1.8.7-.7 1.8-.7-1.8L10 13.5l1.8-.7z"
+                                        d="M12.5 11l.7 1.8L15 13.5l-1.8.7-.7 1.8-.7-1.8L10 13.5l1.8-.7z"
+                                        fill="currentColor"
+                                    /></svg>
+                            </button>
+                        </div>
+                        <div className="track-row-add-group">
+                            <button
+                                type="button"
+                                className="add-track"
+                                onClick={this.handleAddSynthTrack}
+                            >+ Add Synth Track</button>
+                            <button
+                                type="button"
+                                className="generate-track"
+                                onClick={this.handleOpenAiGenerateSynth}
+                                title="Generate a new synth track with AI"
+                                aria-label="Generate synth track with AI"
+                            >
+                                <svg
+                                    viewBox="0 0 16 16"
+                                    width="13"
+                                    height="13"
+                                    aria-hidden="true"
+                                ><path
+                                    d="M8 1.5l1.4 3.6L13 6.5l-3.6 1.4L8 11.5 6.6 7.9 3 6.5l3.6-1.4L8 1.5z"
                                     fill="currentColor"
-                                /></svg>
+                                /><path
+                                        d="M12.5 11l.7 1.8L15 13.5l-1.8.7-.7 1.8-.7-1.8L10 13.5l1.8-.7z"
+                                        fill="currentColor"
+                                    /></svg>
                             </button>
                         </div>
                     </div>
@@ -854,6 +1040,25 @@ class SongEditor extends React.Component {
                         kind={this.state.aiGenerateKind}
                         onCancel={this.handleCloseAiGenerate}
                         onApply={this.handleApplyAiGenerate}
+                    />
+                ) : null}
+                {this.state.aiSongOpen ? (
+                    <AiSongModal
+                        busy={this.state.aiSongBusy}
+                        error={this.state.aiSongError}
+                        onCancel={this.handleCloseAiSong}
+                        onGenerate={this.handleApplyAiSong}
+                    />
+                ) : null}
+                {keyEntryTrack ? (
+                    <KeyboardEntryModal
+                        song={song}
+                        trackIdx={keyEntryTrackIdx}
+                        cursorStep={cursorStep}
+                        vm={this.props.vm}
+                        player={this.player}
+                        onCommit={this.handleCommitKeyboardEntry}
+                        onCancel={this.handleCloseKeyboardEntry}
                     />
                 ) : null}
             </div>

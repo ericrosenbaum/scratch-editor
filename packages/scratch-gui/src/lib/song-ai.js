@@ -3,8 +3,31 @@ import {
     createBlankTrack,
     newId,
     INSTRUMENT_NAMES,
-    DRUM_NAMES
+    DRUM_NAMES,
+    SYNTH_PRESETS,
+    DEFAULT_SYNTH
 } from './song-defaults.js';
+
+// Preset names the AI can pick from for synth tracks. We expose the list to
+// the model and snap whatever it returns to a known preset in sanitizeTrack.
+const SYNTH_PRESET_NAMES = SYNTH_PRESETS.map(p => p.name);
+
+const buildSynthPresetList = () =>
+    SYNTH_PRESET_NAMES
+        .map((name, idx) => `${idx + 1}=${name}`)
+        .join(', ');
+
+// Resolve a preset name (case-insensitive, trimmed) to its full param bag.
+// Falls back to the default (Warm Pad) for unknown names.
+const synthParamsFromPresetName = name => {
+    const key = (typeof name === 'string' ? name.trim().toLowerCase() : '');
+    const preset = SYNTH_PRESETS.find(p => p.name.toLowerCase() === key);
+    if (!preset) {
+        return {...DEFAULT_SYNTH};
+    }
+    const {name: presetName, ...params} = preset;
+    return {preset: presetName, ...params};
+};
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-haiku-4-5';
@@ -116,6 +139,16 @@ const EFFECTS_SCHEMA = {
                 'Stereo pan, -50 = hard left, 0 = center (default), +50 = hard ' +
                 'right. Pan accompaniment tracks slightly off-center (±15..±25) ' +
                 'to separate them; keep lead/bass/kick near center.'
+        },
+        distortion: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 100,
+            description:
+                'Waveshaper distortion amount, 0 = clean (default), 100 = heavy ' +
+                'fuzz/crunch. Small amounts (10-25) add warmth/grit; larger ' +
+                'amounts (40-70) suit guitars, leads, and gritty bass. Avoid on ' +
+                'soft / acoustic / orchestral parts.'
         }
     }
 };
@@ -123,7 +156,7 @@ const EFFECTS_SCHEMA = {
 const TRACK_SCHEMA = {
     type: 'object',
     properties: {
-        kind: {type: 'string', enum: ['instrument', 'drum']},
+        kind: {type: 'string', enum: ['instrument', 'drum', 'synth']},
         instrument: {
             type: 'integer',
             minimum: 1,
@@ -140,21 +173,51 @@ const TRACK_SCHEMA = {
                 '4-6 lanes: kick (2), snare (1), closed-hi-hat (6), open-hi-hat ' +
                 '(5), crash (4), clap (8).'
         },
+        synthPreset: {
+            type: 'string',
+            enum: SYNTH_PRESET_NAMES,
+            description:
+                'For kind=synth ONLY: the named preset that defines the ' +
+                'subtractive-synth voice for this track. Notes are pitched ' +
+                '(same as instrument tracks). Pick the preset that best fits ' +
+                'the musical role you have in mind.'
+        },
         volume: {type: 'integer', minimum: 0, maximum: 100},
         effects: EFFECTS_SCHEMA,
         notes: {
             type: 'array',
+            description:
+                'Ordered list of entries. Each entry is either a NOTE (a sound ' +
+                'to play) or a REST (a planned silence, rest=true). Rests are ' +
+                'stripped before playback, but you should write them out ' +
+                'explicitly so you can see and shape the silence between ' +
+                'phrases. Cover every step of the track with notes and rests ' +
+                'so the part reads as a continuous musical line.',
             items: {
                 type: 'object',
                 properties: {
                     step: {type: 'integer', minimum: 0},
                     durationSteps: {type: 'integer', minimum: 1},
+                    rest: {
+                        type: 'boolean',
+                        description:
+                            'Set to true to mark this entry as a REST ' +
+                            '(silence) rather than a sounding note. Rest ' +
+                            'entries are stripped before playback, but ' +
+                            'writing them out forces you to consciously plan ' +
+                            'silence rather than leaving accidental gaps. ' +
+                            'When rest=true, pitch / drum / velocity are ' +
+                            'ignored; durationSteps gives the length of the ' +
+                            'silence. Use rests BETWEEN phrases (2-6 steps) ' +
+                            'and WITHIN them (1-2 step breaths).'
+                    },
                     pitch: {
                         type: 'integer',
                         minimum: PITCH_MIN,
                         maximum: PITCH_MAX,
                         description:
-                            'MIDI pitch. Required for instrument tracks, ignored for drum tracks.'
+                            'MIDI pitch. Required for instrument and synth ' +
+                            'notes; ignored for drum tracks and for rests.'
                     },
                     drum: {
                         type: 'integer',
@@ -163,20 +226,22 @@ const TRACK_SCHEMA = {
                         description:
                             'For drum tracks ONLY: which drum sound this hit ' +
                             'plays. Required for every drum note (the track can ' +
-                            'have multiple drum sounds active across notes).'
+                            'have multiple drum sounds active across notes). ' +
+                            'Ignored for rests.'
                     },
                     velocity: {
                         type: 'integer',
                         minimum: VELOCITY_MIN,
                         maximum: VELOCITY_MAX,
                         description:
-                            'MIDI velocity (1-127). REQUIRED for every note. ' +
-                            'Use velocity to shape phrasing: louder downbeats, ' +
-                            'softer pickups, accents on melodic peaks. Typical ' +
+                            'MIDI velocity (1-127). REQUIRED for every ' +
+                            'sounding note; ignored for rests. Use velocity ' +
+                            'to shape phrasing: louder downbeats, softer ' +
+                            'pickups, accents on melodic peaks. Typical ' +
                             'range: 50 (soft) to 110 (strong).'
                     }
                 },
-                required: ['step', 'durationSteps', 'velocity']
+                required: ['step', 'durationSteps']
             }
         }
     },
@@ -248,9 +313,23 @@ const buildSystemPrompt = () => [
     '    Each note has `drum` (1..18) choosing which drum sound it hits;',
     '    pitch is ignored. A typical groove uses 4-6 lanes:',
     '    [2, 1, 6, 5, 4, 8] = kick, snare, closed-hh, open-hh, crash, clap.',
+    `  - kind="synth" — pitched track played by a built-in subtractive synthesizer.`,
+    '    Set `synthPreset` to one of the named voices (full list below). Notes',
+    '    have `pitch` (same MIDI range as instrument tracks). Synth tracks are',
+    '    fully polyphonic — stack notes for pads/chords as needed.',
+    `    Synth presets: ${buildSynthPresetList()}.`,
+    '    Use synth tracks for sounds that the sampled instruments cannot do well:',
+    '    pads, wobbles, sub bass, plucks, leads, bells, etc.',
     '',
-    'Each note has step (0-based position, must be < lengthSteps), durationSteps (>=1),',
-    'pitch (only for instruments), and velocity (1-127, see below).',
+    'Each entry in a track\'s `notes` array is either a NOTE or a REST.',
+    '- A NOTE has step (0-based, < lengthSteps), durationSteps (>=1),',
+    '  velocity (1-127, see below), and either pitch (instrument/synth) or',
+    '  drum (drum tracks).',
+    '- A REST has step, durationSteps, and rest=true (no pitch/drum/velocity',
+    '  required). Rests are stripped before playback — they exist so you can',
+    '  WRITE OUT the silence in your part instead of leaving it implicit.',
+    '  Writing rests explicitly forces you to consciously plan phrasing,',
+    '  pickups, and the space between musical ideas.',
     '',
     'Compose musically:',
     `- Pick a tempo that fits the vibe (slow=${TEMPO_MIN}-90, medium=90-130, fast=130-${TEMPO_MAX}).`,
@@ -288,12 +367,19 @@ const buildSystemPrompt = () => [
     '- Think in phrases: 2- to 4-beat musical sentences with a clear arc — a beginning,',
     '  a peak, and a place to land. A 32-step song typically holds 2-4 phrases, not one',
     '  continuous run of notes.',
+    '- WRITE RESTS EXPLICITLY. For every gap of silence in a part — between phrases,',
+    '  before a downbeat entry, mid-phrase breath, or a whole bar where the part drops',
+    '  out — emit an entry with rest=true and durationSteps covering the silence.',
+    '  Doing this forces you to compose the silence on purpose. A track\'s entries',
+    '  (notes + rests, in step order) should account for every step the part occupies;',
+    '  do not leave undeclared gaps and hope they sound like rests.',
     '- Leave generous rests BETWEEN phrases (2-6 steps of silence) so the melody can',
     '  breathe and so the other parts have room to be heard. A melody that fills every',
     '  step smothers the rest of the arrangement.',
     '- In multi-track songs, the lead does NOT need to play through the whole song.',
-    '  Drop out for a bar or two; let the bass and drums carry; re-enter with a fresh',
-    '  idea. Trading space between parts is one of the most powerful tools you have.',
+    '  Drop out for a bar or two (emit a long rest); let the bass and drums carry;',
+    '  re-enter with a fresh idea. Trading space between parts is one of the most',
+    '  powerful tools you have.',
     '- Use shorter rests (1-2 steps) WITHIN a phrase to articulate it — like commas',
     '  inside a sentence. Longer rests (4-8+ steps) act as full stops between phrases.',
     '',
@@ -350,7 +436,7 @@ const buildSystemPrompt = () => [
     '  near the bottom and inner voices that move SMOOTHLY between chords (small',
     '  intervals, common tones held) rather than parallel jumps.',
     '',
-    'Velocity (REQUIRED on every note):',
+    'Velocity (REQUIRED on every sounding note; ignored on rests):',
     '- Use velocity to shape phrasing and make the piece feel human.',
     '- Stronger beats (1 and 3 of a bar) tend to have higher velocity than upbeats.',
     '- Accent melodic peaks (~100-120). Soften pickup/passing notes (~50-75).',
@@ -406,7 +492,8 @@ const resolveApiKey = () => {
  * @returns {object} a track shaped like `createBlankTrack(...)` output
  */
 const sanitizeTrack = (rt, lengthSteps, baseEffects) => {
-    const kind = rt?.kind === 'drum' ? 'drum' : 'instrument';
+    const rawKind = rt?.kind;
+    const kind = rawKind === 'drum' ? 'drum' : (rawKind === 'synth' ? 'synth' : 'instrument');
     const track = createBlankTrack(kind);
     if (kind === 'instrument') {
         track.instrument = clamp(
@@ -414,6 +501,16 @@ const sanitizeTrack = (rt, lengthSteps, baseEffects) => {
             1,
             INSTRUMENT_NAMES.length
         );
+        delete track.drum;
+        delete track.drumLanes;
+        delete track.synth;
+    } else if (kind === 'synth') {
+        // Snap to a known preset by name; unknown names fall back to the
+        // default. The full param bag is derived from the preset — the model
+        // doesn't get to invent envelope/filter values per request, just
+        // picks a voice that fits.
+        track.synth = synthParamsFromPresetName(rt?.synthPreset);
+        delete track.instrument;
         delete track.drum;
         delete track.drumLanes;
     } else {
@@ -432,6 +529,7 @@ const sanitizeTrack = (rt, lengthSteps, baseEffects) => {
         track.drumLanes = lanes;
         delete track.instrument;
         delete track.drum;
+        delete track.synth;
     }
     const rawVolume = Number(rt?.volume);
     track.volume = clamp(
@@ -464,12 +562,19 @@ const sanitizeTrack = (rt, lengthSteps, baseEffects) => {
         if (Number.isFinite(Number(fx.pan))) {
             out.pan = clamp(Number(fx.pan), -50, 50) / 50;
         }
+        if (Number.isFinite(Number(fx.distortion))) {
+            out.distortion = clamp(Number(fx.distortion), 0, 100) / 100;
+        }
         track.effects = out;
     }
 
     const rawNotes = Array.isArray(rt?.notes) ? rt.notes : [];
     track.notes = [];
     for (const rn of rawNotes) {
+        // Rests are a prompting device — we ask the model to write planned
+        // silences as explicit entries so it consciously shapes phrasing,
+        // then drop them here before storage.
+        if (rn && rn.rest === true) continue;
         const step = Math.round(Number(rn?.step));
         if (!Number.isFinite(step) || step < 0 || step >= lengthSteps) continue;
         const durationSteps = Math.max(1, Math.round(Number(rn?.durationSteps) || 1));
@@ -480,7 +585,7 @@ const sanitizeTrack = (rt, lengthSteps, baseEffects) => {
             VELOCITY_MAX
         );
         const note = {step, durationSteps, velocity};
-        if (kind === 'instrument') {
+        if (kind === 'instrument' || kind === 'synth') {
             const pitch = Math.round(Number(rn?.pitch));
             if (!Number.isFinite(pitch)) continue;
             note.pitch = clamp(pitch, 0, 127);
@@ -657,12 +762,13 @@ const buildEditSystemPrompt = () => [
     'Your job: return ONE updated track via the edit_track tool.',
     '- Output only the new contents of the chosen track. You cannot modify other tracks,',
     '  the tempo, lengthSteps, or any song-level field.',
-    '- Keep the same kind (instrument vs drum) as the original — do not switch a piano',
-    '  track into a drum track or vice versa.',
-    '- Do NOT change the instrument index. The user chose the sound; your job is to write',
-    '  notes that fit it. (If kind=instrument, emit the exact same `instrument` value as',
-    '  the original. If kind=drum, emit the same `drumLanes`; only the per-note `drum`',
-    '  field can vary, and it must be one of those lane indices.)',
+    '- Keep the same kind (instrument vs drum vs synth) as the original — do not switch a',
+    '  piano track into a drum track or vice versa.',
+    '- Do NOT change the instrument index, synth preset, or drum kit. The user chose the',
+    '  sound; your job is to write notes that fit it. (If kind=instrument, emit the exact',
+    '  same `instrument` value as the original. If kind=synth, emit the exact same',
+    '  `synthPreset` as the original. If kind=drum, emit the same `drumLanes`; only the',
+    '  per-note `drum` field can vary, and it must be one of those lane indices.)',
     '- Keep the music coherent with the rest of the song: same key, compatible rhythm,',
     '  and tempo. If the user asks for something that would clash (e.g. "make it atonal"),',
     '  honor the request anyway — they\'re the boss.',
@@ -679,9 +785,16 @@ const buildEditSystemPrompt = () => [
     `    drum sounds it uses (e.g. [2,1,6,5,4,8] = kick, snare, closed-hh,`,
     `    open-hh, crash, clap). Each note has its own \`drum\` (1..18) field`,
     `    choosing which drum sound it hits. Available sounds: ${buildDrumList()}.`,
+    `  - kind="synth" — pitched subtractive-synth track. \`synthPreset\` names the voice.`,
+    `    Notes have pitch like instrument tracks. Presets: ${buildSynthPresetList()}.`,
     '',
-    'Each note has step (0-based, < lengthSteps), durationSteps (>=1),',
-    'pitch (only for instruments), drum (only for drum tracks), and velocity (1-127).',
+    'Each entry in a track\'s `notes` array is either a NOTE or a REST.',
+    '- A NOTE has step (0-based, < lengthSteps), durationSteps (>=1),',
+    '  velocity (1-127), and either pitch (instrument/synth) or drum (drum).',
+    '- A REST has step, durationSteps, and rest=true. Rests are stripped',
+    '  before playback — they exist so you can WRITE OUT the silences in',
+    '  this part instead of leaving them implicit. Writing rests explicitly',
+    '  forces you to plan phrasing and the space between musical ideas.',
     '',
     'Register: place pitches in the right octave for the track\'s role.',
     '  Bass tracks (name contains "bass", or the lowest part of the song):',
@@ -701,9 +814,14 @@ const buildEditSystemPrompt = () => [
     '- Think in 2- to 4-beat phrases with a clear arc and a place to land. Leave',
     '  generous rests (2-6 steps) BETWEEN phrases, and shorter rests (1-2 steps)',
     '  within them, so the part has room and the other tracks can be heard.',
+    '- WRITE RESTS EXPLICITLY. For every gap of silence in this part — between',
+    '  phrases, before a re-entry, mid-phrase breath, or a whole bar where the',
+    '  part drops out — emit an entry with rest=true and durationSteps covering',
+    '  the silence. The notes + rests together should account for every step the',
+    '  part occupies; do not leave undeclared gaps and hope they sound like rests.',
     '- A lead does not need to play through the whole song. Dropping out for a',
-    '  bar and re-entering with a fresh idea is usually better than wall-to-wall',
-    '  notes.',
+    '  bar (a long rest) and re-entering with a fresh idea is usually better',
+    '  than wall-to-wall notes.',
     '',
     'Rhythmic variety — shape each phrase with motion:',
     '- Mix long sustained notes (4-8+ steps) with short pickups (1-2 steps),',
@@ -727,8 +845,9 @@ const buildEditSystemPrompt = () => [
     '  and popular music (modal/pentatonic licks, pedal tones, blue notes)',
     '  as long as the result coheres with the other tracks.',
     '',
-    'Velocity (REQUIRED on every note): vary velocity for phrasing (loud downbeats, soft',
-    'pickups, accented peaks). Avoid setting every note to the same velocity.',
+    'Velocity (REQUIRED on every sounding note; ignored on rests): vary velocity',
+    'for phrasing (loud downbeats, soft pickups, accented peaks). Avoid setting',
+    'every note to the same velocity.',
     '',
     'Effects (OPTIONAL — reverb, delay, filter, pan):',
     '- The track\'s current effects values are visible in the song JSON. By',
@@ -764,6 +883,7 @@ const stripIdsFromSong = song => {
         stepsPerBeat: song.stepsPerBeat || 4,
         tracks: (song.tracks || []).map(t => {
             const isDrum = t.kind === 'drum';
+            const isSynth = t.kind === 'synth';
             const ot = {
                 kind: t.kind,
                 volume: t.volume,
@@ -789,6 +909,10 @@ const stripIdsFromSong = song => {
                 ot.drumLanes = Array.isArray(t.drumLanes) && t.drumLanes.length > 0 ?
                     t.drumLanes.slice() :
                     [t.drum || 1];
+            } else if (isSynth) {
+                // Surface only the preset label — the full param bag would be
+                // noise for the model and isn't editable through the AI flow.
+                ot.synthPreset = (t.synth && t.synth.preset) || DEFAULT_SYNTH.preset;
             } else {
                 ot.instrument = t.instrument;
             }
@@ -821,16 +945,23 @@ const editTrackWithPrompt = async ({prompt, song, trackIndex, signal} = {}) => {
 
     const originalTrack = song.tracks[trackIndex];
     const cleanSong = stripIdsFromSong(song);
-    // Surface the locked fields (kind + instrument or drum kit) prominently
-    // in the user message so the model knows it must NOT change them.
-    const lockedFields = originalTrack.kind === 'instrument' ?
-        `instrument index: ${originalTrack.instrument} ` +
-            `(${INSTRUMENT_NAMES[(originalTrack.instrument || 1) - 1]})` :
-        `drum kit lanes: ${JSON.stringify(
+    // Surface the locked fields (kind + instrument / drum kit / synth preset)
+    // prominently in the user message so the model knows it must NOT change
+    // them. The model can only rewrite notes.
+    let lockedFields;
+    if (originalTrack.kind === 'instrument') {
+        lockedFields = `instrument index: ${originalTrack.instrument} ` +
+            `(${INSTRUMENT_NAMES[(originalTrack.instrument || 1) - 1]})`;
+    } else if (originalTrack.kind === 'synth') {
+        const presetName = (originalTrack.synth && originalTrack.synth.preset) || DEFAULT_SYNTH.preset;
+        lockedFields = `synth preset: "${presetName}"`;
+    } else {
+        lockedFields = `drum kit lanes: ${JSON.stringify(
             Array.isArray(originalTrack.drumLanes) && originalTrack.drumLanes.length > 0 ?
                 originalTrack.drumLanes :
                 [originalTrack.drum || 1]
         )}`;
+    }
     const userMessage = [
         `trackIndex to edit: ${trackIndex}`,
         `original track kind: ${originalTrack.kind} (DO NOT CHANGE)`,
@@ -906,11 +1037,18 @@ const editTrackWithPrompt = async ({prompt, song, trackIndex, signal} = {}) => {
         toolInput.kind = originalTrack.kind;
     }
     const sanitized = sanitizeTrack(toolInput, song.lengthSteps, originalTrack.effects);
-    // Lock the instrument / drum kit so AI edits can't quietly swap the
-    // sound out from under the user. They asked the model to change *what
-    // this track plays*, not *what instrument plays it*.
+    // Lock the instrument / synth preset / drum kit so AI edits can't quietly
+    // swap the sound out from under the user. They asked the model to change
+    // *what this track plays*, not *what voice plays it*.
     if (originalTrack.kind === 'instrument') {
         sanitized.instrument = originalTrack.instrument;
+    } else if (originalTrack.kind === 'synth') {
+        // Restore the user's preset + params. The sanitizer already populated
+        // sanitized.synth from whatever the model emitted; overwrite it with
+        // the original so any drift is silently undone.
+        sanitized.synth = originalTrack.synth ?
+            {...originalTrack.synth} :
+            {...DEFAULT_SYNTH};
     } else {
         // Restore the original drum kit lanes. Any per-note `drum` field the
         // model emitted gets re-snapped into the original kit.
@@ -954,9 +1092,11 @@ const buildGenerateTrackSystemPrompt = kind => [
     'sit alongside the existing tracks.',
     kind === 'instrument' ?
         '- You DO choose the `instrument` index — pick whatever fits the prompt and the' :
-        '- You DO choose the `drumLanes` — pick the kit pieces that fit the prompt and the',
-    '  existing arrangement. The user picked the KIND (instrument vs drum); the specific',
-    '  sound is yours to pick.',
+        kind === 'synth' ?
+            '- You DO choose the `synthPreset` — pick whichever preset best fits the prompt' :
+            '- You DO choose the `drumLanes` — pick the kit pieces that fit the prompt and the',
+    '  existing arrangement. The user picked the KIND (instrument vs drum vs synth); the',
+    '  specific sound is yours to pick.',
     '- Keep the music coherent with the existing tracks: same key, complementary rhythm,',
     '  compatible tempo. The new track should fill a role the existing tracks DO NOT —',
     '  if there\'s already a lead, write a bass or pad; if there\'s a bass and drums,',
@@ -973,15 +1113,28 @@ const buildGenerateTrackSystemPrompt = kind => [
     'A song uses 4 steps per beat, so 4 steps = 1 beat and lengthSteps=32 is 8 beats (4/4).',
     kind === 'instrument' ?
         `Instrument indices (1..${INSTRUMENT_NAMES.length}): ${buildInstrumentList()}.` :
-        `Drum sounds (1..${DRUM_NAMES.length}): ${buildDrumList()}.`,
-    kind === 'instrument' ?
-        'Notes have pitch (MIDI: C1=24, C2=36, C3=48, C4=60, C5=72, C6=84, C7=96, C8=108).' :
+        kind === 'synth' ?
+            `Synth presets: ${buildSynthPresetList()}.` :
+            `Drum sounds (1..${DRUM_NAMES.length}): ${buildDrumList()}.`,
+    kind === 'drum' ?
         'drumLanes lists the drum sounds the track uses (e.g. [2,1,6,5,4,8] = kick, snare,' +
             ' closed-hh, open-hh, crash, clap). Each note has its own `drum` (1..18) field' +
-            ' choosing which drum sound it hits.',
+            ' choosing which drum sound it hits.' :
+        'Notes have pitch (MIDI: C1=24, C2=36, C3=48, C4=60, C5=72, C6=84, C7=96, C8=108).',
+    kind === 'synth' ?
+        'Synth tracks are FULLY POLYPHONIC — stack notes (overlap step ranges) wherever the ' +
+            'preset suggests it (pads, chords, plucks with sustain). Plucks/leads/basses can ' +
+            'stay mostly monophonic. Match polyphony density to the preset character.' :
+        '',
     '',
-    'Each note has step (0-based, < lengthSteps), durationSteps (>=1),',
-    `${kind === 'instrument' ? 'pitch (required)' : 'drum (required)'}, and velocity (1-127).`,
+    'Each entry in `notes` is either a NOTE or a REST.',
+    '- A NOTE has step (0-based, < lengthSteps), durationSteps (>=1),',
+    `  velocity (1-127), and ${kind === 'drum' ? 'drum (1..18)' : 'pitch (MIDI)'}.`,
+    '- A REST has step, durationSteps, and rest=true. Rests are stripped',
+    '  before playback — they exist so you can WRITE OUT the silences in',
+    '  this new part instead of leaving them implicit. Writing rests',
+    '  explicitly forces you to plan when the new track plays vs. when it',
+    '  gets out of the way of the existing tracks.',
     '',
     'Register: place pitches in the right octave for the track\'s role.',
     '  Bass role: MIDI 28-48 (E1-C3). Lead/solo: C4-C6 (60-84). Pad/accompaniment:',
@@ -1000,9 +1153,14 @@ const buildGenerateTrackSystemPrompt = kind => [
     '- Think in 2- to 4-beat phrases with a clear arc and a place to land. Leave',
     '  generous rests (2-6 steps) BETWEEN phrases, and shorter rests (1-2 steps)',
     '  within them, so the part has room and the existing tracks can be heard.',
+    '- WRITE RESTS EXPLICITLY. For every gap of silence in this new part — between',
+    '  phrases, before an entry, mid-phrase breath, or a whole bar where the new',
+    '  track sits out so the existing tracks shine — emit an entry with rest=true',
+    '  and durationSteps covering the silence. The notes + rests together should',
+    '  account for every step the part occupies; do not leave undeclared gaps.',
     '- A new part does not need to play through the whole song. Dropping out for a',
-    '  bar and re-entering with a fresh idea is usually better than wall-to-wall',
-    '  notes.',
+    '  bar (a long rest) and re-entering with a fresh idea is usually better than',
+    '  wall-to-wall notes.',
     '',
     'Rhythmic variety — shape each phrase with motion:',
     '- Mix long sustained notes (4-8+ steps) with short pickups (1-2 steps),',
@@ -1026,8 +1184,9 @@ const buildGenerateTrackSystemPrompt = kind => [
     '  and popular music (modal/pentatonic licks, pedal tones, blue notes)',
     '  as long as the result coheres with the existing tracks.',
     '',
-    'Velocity (REQUIRED on every note): vary velocity for phrasing (loud downbeats, soft',
-    'pickups, accented peaks). Avoid setting every note to the same velocity.',
+    'Velocity (REQUIRED on every sounding note; ignored on rests): vary velocity',
+    'for phrasing (loud downbeats, soft pickups, accented peaks). Avoid setting',
+    'every note to the same velocity.',
     '',
     'Effects (OPTIONAL — reverb, delay, filter, pan):',
     '- Set per-track effects to match the vibe and to make the new track sit',
@@ -1052,7 +1211,7 @@ const generateTrackWithPrompt = async ({prompt, song, kind, signal} = {}) => {
     if (!song || !Array.isArray(song.tracks)) {
         throw new SongAiError('No song to add to.', 'NO_SONG');
     }
-    if (kind !== 'instrument' && kind !== 'drum') {
+    if (kind !== 'instrument' && kind !== 'drum' && kind !== 'synth') {
         throw new SongAiError('Invalid track kind.', 'BAD_KIND');
     }
 
