@@ -44,6 +44,11 @@ export default appTarget => {
     const backpackHostMatches = window.location.href.match(/[?&]backpack_host=([^&]*)&?/);
     const backpackHost = backpackHostMatches ? backpackHostMatches[1] : null;
 
+    // Allow asset host to be overridden via URL param for third-party deployments
+    // (e.g. GitHub Pages) where assets.scratch.mit.edu may block cross-origin requests
+    const assetHostMatches = window.location.href.match(/[?&]asset_host=([^&]*)&?/);
+    const assetHost = assetHostMatches ? decodeURIComponent(assetHostMatches[1]) : null;
+
     const scratchDesktopMatches = window.location.href.match(/[?&]isScratchDesktop=([^&]+)/);
     let simulateScratchDesktop;
     if (scratchDesktopMatches) {
@@ -83,6 +88,7 @@ export default appTarget => {
                 backpackHost={backpackHost}
                 canSave={false}
                 onClickLogo={onClickLogo}
+                {...(assetHost ? {assetHost} : {})}
             />
     );
 };
