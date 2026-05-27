@@ -30,7 +30,7 @@ import {
 import {connect} from 'react-redux';
 import {updateToolbox} from '../reducers/toolbox';
 import {activateColorPicker} from '../reducers/color-picker';
-import {closeExtensionLibrary, openSoundRecorder, openConnectionModal} from '../reducers/modals';
+import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openQnaEditor} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {updateMetrics} from '../reducers/workspace-metrics';
@@ -67,6 +67,8 @@ class Blocks extends React.Component {
             'handleDrop',
             'handleStatusButtonUpdate',
             'handleOpenSoundRecorder',
+            'handleOpenQnaEditor',
+            'handleQnaMenuChange',
             'handlePromptStart',
             'handlePromptCallback',
             'handlePromptClose',
@@ -165,6 +167,9 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('MAKE_A_VARIABLE', varListButtonCallback(''));
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
+        toolboxWorkspace.registerButtonCallback('EDIT_QA_DATA', this.handleOpenQnaEditor);
+        this.workspace.registerButtonCallback('EDIT_QA_DATA', this.handleOpenQnaEditor);
+        this.workspace.addChangeListener(this.handleQnaMenuChange);
 
         // Store the xml of the toolbox that is actually rendered.
         // This is used in componentDidUpdate instead of prevProps, because
@@ -637,6 +642,27 @@ class Blocks extends React.Component {
     handleOpenSoundRecorder () {
         this.props.onOpenSoundRecorder();
     }
+    handleOpenQnaEditor () {
+        this.props.onOpenQnaEditor();
+    }
+    handleQnaMenuChange (event) {
+        // When the user picks the "edit QA data..." sentinel from the
+        // qaDatasetMenu dropdown, open the editor and revert the field so
+        // the sentinel doesn't stick as the selected value.
+        try {
+            const SB = this.ScratchBlocks;
+            if (!event || event.type !== SB.Events.CHANGE || event.element !== 'field') return;
+            if (event.name !== 'qaDatasetMenu' || event.newValue !== 'EDIT_QA_DATA') return;
+            const block = this.workspace.getBlockById(event.blockId);
+            if (block) {
+                const field = block.getField(event.name);
+                if (field) field.setValue(event.oldValue || '');
+            }
+            this.handleOpenQnaEditor();
+        } catch (e) {
+            log.warn('qaDatasetMenu intercept error', e);
+        }
+    }
 
     /*
      * Pass along information about proposed name and variable options (scope and isCloud)
@@ -682,6 +708,7 @@ class Blocks extends React.Component {
             onActivateColorPicker,
             onOpenConnectionModal,
             onOpenSoundRecorder,
+            onOpenQnaEditor,
             updateToolboxState,
             onActivateCustomProcedures,
             onRequestCloseExtensionLibrary,
@@ -749,6 +776,7 @@ Blocks.propTypes = {
     onActivateCustomProcedures: PropTypes.func,
     onOpenConnectionModal: PropTypes.func,
     onOpenSoundRecorder: PropTypes.func,
+    onOpenQnaEditor: PropTypes.func,
     onRequestCloseCustomProcedures: PropTypes.func,
     onRequestCloseExtensionLibrary: PropTypes.func,
     options: PropTypes.shape({
@@ -826,6 +854,9 @@ const mapDispatchToProps = dispatch => ({
     onOpenSoundRecorder: () => {
         dispatch(activateTab(SOUNDS_TAB_INDEX));
         dispatch(openSoundRecorder());
+    },
+    onOpenQnaEditor: () => {
+        dispatch(openQnaEditor());
     },
     onRequestCloseExtensionLibrary: () => {
         dispatch(closeExtensionLibrary());

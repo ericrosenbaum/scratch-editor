@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --workspace @scratch/scratch-gui run lint)",
+      "Bash(npm --workspace @scratch/scratch-gui run)",
+      "Bash(python3 -c \"import json,sys; print\\('\\\\n'.join\\(json.load\\(sys.stdin\\).get\\('scripts',{}\\).keys\\(\\)\\)\\)\")",
+      "Bash(npm --workspace @scratch/scratch-gui run test:lint)",
+      "Bash(npm --workspace @scratch/scratch-vm run test:unit)",
+      "Bash(npm --workspace @scratch/scratch-vm run tap:unit)"
+    ]
+  }
+}

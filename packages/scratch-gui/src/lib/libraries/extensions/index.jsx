@@ -49,6 +49,9 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
+import qnaIconURL from './qna/qna.png';
+import qnaInsetIconURL from './qna/qna-small.svg';
+
 export default [
     {
         name: (
@@ -169,6 +172,27 @@ export default [
                 defaultMessage="Translate text into many languages."
                 description="Description for the Translate extension"
                 id="gui.extension.translate.description"
+            />
+        ),
+        featured: true,
+        internetConnectionRequired: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Q&A"
+                description="Name for the Q&A extension"
+                id="gui.extension.qna.name"
+            />
+        ),
+        extensionId: 'qna',
+        iconURL: qnaIconURL,
+        insetIconURL: qnaInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Answer questions using your own Q&A datasets."
+                description="Description for the Q&A extension"
+                id="gui.extension.qna.description"
             />
         ),
         featured: true,

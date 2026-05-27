@@ -1,0 +1,324 @@
+@import "../../css/units.css";
+@import "../../css/colors.css";
+
+.modal-content {
+    width: 90vw;
+    max-width: 900px;
+    height: 80vh;
+    max-height: 650px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Force the Modal's wrapper Box (its only direct child) to behave as a
+   flex container so our body's flex-grow can resolve. Box.css ships empty
+   so Box renders as a plain block by default. */
+.modal-content > * {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+    background: $ui-primary;
+    overflow: hidden;
+}
+
+/* Two-panel layout */
+.panels {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Left panel: dataset list */
+.dataset-panel {
+    width: 200px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-right: 1px solid $ui-black-transparent;
+    background: #f5f5f5;
+    overflow: hidden;
+}
+
+.dataset-panel-header {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: $text-primary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #ebebeb;
+    border-bottom: 1px solid $ui-black-transparent;
+    flex-shrink: 0;
+}
+
+.dataset-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
+.dataset-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 8px 6px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dataset-item:hover {
+    background: #e8e8e8;
+}
+
+.dataset-item-selected {
+    background: #FC662C;
+}
+
+.dataset-item-selected:hover {
+    background: #e55a24;
+}
+
+.dataset-name-input {
+    flex-grow: 1;
+    font-size: 0.875rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: $text-primary;
+    cursor: pointer;
+    padding: 0;
+    min-width: 0;
+}
+
+.dataset-item-selected .dataset-name-input {
+    color: white;
+    cursor: text;
+}
+
+.dataset-name-input:focus {
+    cursor: text;
+}
+
+.dataset-item-selected .dataset-name-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.dataset-delete-button {
+    cursor: pointer;
+    padding: 2px 6px;
+    background: transparent;
+    border: none;
+    color: #999;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    opacity: 0;
+}
+
+.dataset-item:hover .dataset-delete-button,
+.dataset-item-selected .dataset-delete-button {
+    opacity: 1;
+}
+
+.dataset-item-selected .dataset-delete-button {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.dataset-delete-button:hover {
+    color: #e00 !important;
+}
+
+.dataset-item-selected .dataset-delete-button:hover {
+    color: white !important;
+}
+
+.add-dataset-button {
+    cursor: pointer;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-top: 1px solid $ui-black-transparent;
+    color: #FC662C;
+    font-size: 0.875rem;
+    font-weight: bold;
+    text-align: left;
+    flex-shrink: 0;
+}
+
+.add-dataset-button:hover {
+    background: #f0f0f0;
+}
+
+/* Right panel: Q&A pairs */
+.pairs-panel {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.pairs-panel-header {
+    display: flex;
+    flex-direction: row;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: $text-primary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #ebebeb;
+    border-bottom: 1px solid $ui-black-transparent;
+    flex-shrink: 0;
+}
+
+.pairs-panel-header-question {
+    flex: 1;
+    padding-right: 8px;
+}
+
+.pairs-panel-header-answer {
+    flex: 1;
+    padding-left: 8px;
+}
+
+.pairs-panel-header-action {
+    width: 32px;
+    flex-shrink: 0;
+}
+
+.pairs-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.pair-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    gap: 8px;
+}
+
+.pair-input-wrap {
+    flex: 1;
+    background: #FC662C;
+    border-radius: 4px;
+    border: 1px solid $ui-black-transparent;
+}
+
+.pair-input-wrap:focus-within {
+    box-shadow: 0 0 0 2px rgba(252, 102, 44, 0.4);
+}
+
+.pair-textarea {
+    display: block;
+    width: 100%;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: white;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    line-height: 1.4;
+    box-sizing: border-box;
+}
+
+.pair-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.pair-remove-button {
+    cursor: pointer;
+    padding: 6px 8px;
+    background: transparent;
+    color: #aaa;
+    border: none;
+    font-size: 1rem;
+    font-weight: bold;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 4px;
+}
+
+.pair-remove-button:hover {
+    color: #e00;
+}
+
+.empty-message {
+    text-align: center;
+    padding: 40px;
+    color: $text-primary;
+    font-size: 0.875rem;
+}
+
+.no-dataset-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #999;
+    font-size: 0.875rem;
+    padding: 20px;
+    text-align: center;
+}
+
+.footer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: white;
+    border-top: 1px solid $ui-black-transparent;
+    flex-shrink: 0;
+}
+
+.footer-left {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-button {
+    cursor: pointer;
+    padding: 8px 16px;
+    background: #FC662C;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+.add-button:hover {
+    background: #e55a24;
+}
+
+.add-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.pair-count {
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: $text-primary;
+}

@@ -31,6 +31,7 @@ import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
+import QAEditorModal from '../../containers/qa-editor-modal.jsx';
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
 import {resolveStageSize} from '../../lib/screen-utils';
@@ -201,6 +202,7 @@ const GUIComponent = props => {
         colorMode,
         theme,
         tipsLibraryVisible,
+        qnaEditorVisible,
         useExternalPeripheralList,
         username,
         userOwnsProject,
@@ -302,6 +304,9 @@ const GUIComponent = props => {
                             hideTutorialProjects={hideTutorialProjects}
                             onTutorialSelect={onTutorialSelect}
                         />
+                    ) : null}
+                    {qnaEditorVisible ? (
+                        <QAEditorModal />
                     ) : null}
                     {cardsVisible ? (
                         <Cards />
@@ -663,6 +668,7 @@ GUIComponent.propTypes = {
     colorMode: PropTypes.string,
     theme: PropTypes.string,
     tipsLibraryVisible: PropTypes.bool,
+    qnaEditorVisible: PropTypes.bool,
     useExternalPeripheralList: PropTypes.bool, // true for CDM, false for normal Scratch Link
     username: PropTypes.string,
     userOwnsProject: PropTypes.bool,
