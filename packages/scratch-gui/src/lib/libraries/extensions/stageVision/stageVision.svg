@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="372" viewBox="0 0 600 372" fill="none">
+  <rect width="600" height="372" fill="#0FBD8C"/>
+  <rect x="160" y="80" width="280" height="180" rx="14" ry="14" fill="#ffffff" stroke="#0a8a66" stroke-width="6"/>
+  <circle cx="300" cy="170" r="44" fill="#ffffff" stroke="#0a8a66" stroke-width="6"/>
+  <circle cx="300" cy="170" r="18" fill="#0a8a66"/>
+  <path d="M170 305 L185 275 L200 305 M220 305 L235 265 L250 305 M270 305 L285 275 L300 305 M320 305 L335 265 L350 305 M370 305 L385 275 L400 305 M420 305 L430 285 L440 305"
+        stroke="#ffffff" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="300" y="50" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="32" font-weight="700" fill="#ffffff">Stage Vision</text>
+</svg>

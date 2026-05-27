@@ -55,6 +55,9 @@ import qnaInsetIconURL from './qna/qna-small.svg';
 import speech2textIconURL from './speech2text/speech.png';
 import speech2textInsetIconURL from './speech2text/speech2text-small.svg';
 
+import stageVisionIconURL from './stageVision/stageVision.svg';
+import stageVisionInsetIconURL from './stageVision/stageVision-small.svg';
+
 export default [
     {
         name: (
@@ -196,6 +199,27 @@ export default [
                 defaultMessage="Answer questions using your own Q&A datasets."
                 description="Description for the Q&A extension"
                 id="gui.extension.qna.description"
+            />
+        ),
+        featured: true,
+        internetConnectionRequired: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Stage Vision"
+                description="Name for the Stage Vision extension"
+                id="gui.extension.stageVision.name"
+            />
+        ),
+        extensionId: 'stageVision',
+        iconURL: stageVisionIconURL,
+        insetIconURL: stageVisionInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Classify what's on the stage using on-device AI."
+                description="Description for the Stage Vision extension"
+                id="gui.extension.stageVision.description"
             />
         ),
         featured: true,

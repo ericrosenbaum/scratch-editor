@@ -26,7 +26,8 @@ const builtinExtensions = {
     gdxfor: () => require('../extensions/scratch3_gdx_for'),
     faceSensing: () => require('../extensions/scratch3_face_sensing'),
     qna: () => require('../extensions/scratch3_qna'),
-    speech2text: () => require('../extensions/scratch3_speech2text')
+    speech2text: () => require('../extensions/scratch3_speech2text'),
+    stageVision: () => require('../extensions/scratch3_stage_vision')
 };
 
 /**
