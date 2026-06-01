@@ -66,6 +66,32 @@ const FINGER_TIP_PIP = {
 };
 
 /**
+ * Finger choice options for finger angle reporter.
+ * @readonly
+ * @enum {string}
+ */
+const FINGER_CHOICE = {
+    THUMB: 'thumb',
+    INDEX: 'index',
+    MIDDLE: 'middle',
+    RING: 'ring',
+    PINKY: 'pinky'
+};
+
+/**
+ * Keypoint indices for each finger's [near-tip joint, tip] used to compute
+ * finger angle. The near-tip joint is the DIP for fingers and the IP for the thumb.
+ * @readonly
+ */
+const FINGER_NEAR_TIP = {
+    [FINGER_CHOICE.THUMB]: [3, 4],
+    [FINGER_CHOICE.INDEX]: [7, 8],
+    [FINGER_CHOICE.MIDDLE]: [11, 12],
+    [FINGER_CHOICE.RING]: [15, 16],
+    [FINGER_CHOICE.PINKY]: [19, 20]
+};
+
+/**
  * MCP joint indices used to compute palm center.
  */
 const PALM_INDICES = [0, 5, 9, 13, 17];
@@ -294,6 +320,49 @@ class Scratch3HandSensingBlocks {
                 description: 'Option to detect the right hand'
             }),
             value: HAND_CHOICE.RIGHT
+        }];
+    }
+
+    /**
+     * An array of info about the finger menu choices.
+     * @type {object[]}
+     */
+    get FINGER_INFO () {
+        return [{
+            text: formatMessage({
+                id: 'handSensing.thumb',
+                default: 'thumb',
+                description: 'Option for the thumb in finger angle reporter'
+            }),
+            value: FINGER_CHOICE.THUMB
+        }, {
+            text: formatMessage({
+                id: 'handSensing.index',
+                default: 'index finger',
+                description: 'Option for the index finger in finger angle reporter'
+            }),
+            value: FINGER_CHOICE.INDEX
+        }, {
+            text: formatMessage({
+                id: 'handSensing.middle',
+                default: 'middle finger',
+                description: 'Option for the middle finger in finger angle reporter'
+            }),
+            value: FINGER_CHOICE.MIDDLE
+        }, {
+            text: formatMessage({
+                id: 'handSensing.ring',
+                default: 'ring finger',
+                description: 'Option for the ring finger in finger angle reporter'
+            }),
+            value: FINGER_CHOICE.RING
+        }, {
+            text: formatMessage({
+                id: 'handSensing.pinky',
+                default: 'pinky finger',
+                description: 'Option for the pinky finger in finger angle reporter'
+            }),
+            value: FINGER_CHOICE.PINKY
         }];
     }
 
@@ -606,12 +675,61 @@ class Scratch3HandSensingBlocks {
                             defaultValue: GESTURES.OPEN
                         }
                     }
+                },
+                {
+                    opcode: 'spritePinched',
+                    text: formatMessage({
+                        id: 'handSensing.spritePinched',
+                        default: 'sprite is pinched?',
+                        description: 'Boolean that returns whether a hand is pinching at the sprite'
+                    }),
+                    blockType: BlockType.BOOLEAN,
+                    filter: [TargetType.SPRITE]
+                },
+                '---',
+                {
+                    opcode: 'handAngle',
+                    text: formatMessage({
+                        id: 'handSensing.handAngle',
+                        default: 'angle of [HAND] hand',
+                        description: 'Reporter that returns the angle of the hand'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND_LR',
+                            defaultValue: HAND_CHOICE.LEFT
+                        }
+                    }
+                },
+                {
+                    opcode: 'fingerAngle',
+                    text: formatMessage({
+                        id: 'handSensing.fingerAngle',
+                        default: 'angle of [HAND] [FINGER]',
+                        description: 'Reporter that returns the angle of a finger'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND_LR',
+                            defaultValue: HAND_CHOICE.LEFT
+                        },
+                        FINGER: {
+                            type: ArgumentType.STRING,
+                            menu: 'FINGER',
+                            defaultValue: FINGER_CHOICE.INDEX
+                        }
+                    }
                 }
             ],
             menus: {
                 PART: this.PART_INFO,
                 HAND: this.HAND_INFO,
                 HAND_LR: this.HAND_LR_INFO,
+                FINGER: this.FINGER_INFO,
                 GESTURE_HAT: this.GESTURE_HAT_INFO,
                 GESTURE_STATE: this.GESTURE_STATE_INFO
             }
@@ -917,6 +1035,83 @@ class Scratch3HandSensingBlocks {
         if (dist < 0) return this._cachedPinchDistance;
         this._cachedPinchDistance = Math.round(dist);
         return this._cachedPinchDistance;
+    }
+
+    /**
+     * Compute the angle of a vector from point A to point B. Up is 90°, and
+     * rotation is clockwise-positive (matching Scratch's `point in direction`
+     * sense), so up→right→down→left → 90°→180°→-90°→0°. Both points are in
+     * raw (image) coordinates; conversion to Scratch coords happens here.
+     * @param {{x: number, y: number}} a - the starting point in image coords
+     * @param {{x: number, y: number}} b - the ending point in image coords
+     * @returns {number} angle in degrees, normalized to (-180, 180]
+     * @private
+     */
+    _angleBetween (a, b) {
+        const sa = toScratchCoords(a);
+        const sb = toScratchCoords(b);
+        const dx = sb.x - sa.x;
+        const dy = sb.y - sa.y;
+        let deg = (Math.atan2(dx, dy) * 180 / Math.PI) + 90;
+        if (deg > 180) deg -= 360;
+        return Math.round(deg);
+    }
+
+    /**
+     * A scratch boolean block that reports whether a hand is currently pinching
+     * at the location of the calling sprite.
+     * @param {object} args - the block arguments
+     * @param {BlockUtility} util - the block utility
+     * @returns {boolean} true if a pinching hand's pinch point touches the sprite
+     */
+    spritePinched (args, util) {
+        for (const hand of this._allHands) {
+            const dist = this._getThumbIndexDistance(hand);
+            if (dist < 0 || dist >= PINCH_THRESHOLD) continue;
+            const thumbTip = hand.keypoints[4];
+            const indexTip = hand.keypoints[8];
+            if (!thumbTip || !indexTip) continue;
+            const pinchPoint = toScratchCoords({
+                x: (thumbTip.x + indexTip.x) / 2,
+                y: (thumbTip.y + indexTip.y) / 2
+            });
+            if (util.target.isTouchingScratchPoint(pinchPoint.x, pinchPoint.y)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A scratch reporter that returns the angle of the hand,
+     * measured from the wrist toward the middle finger MCP joint.
+     * @param {object} args - the block arguments
+     * @returns {number} angle in degrees (Scratch convention)
+     */
+    handAngle (args) {
+        const hand = this._selectHand(args.HAND);
+        if (!hand || !hand.keypoints) return 0;
+        const wrist = hand.keypoints[0];
+        const middleMcp = hand.keypoints[9];
+        if (!wrist || !middleMcp) return 0;
+        return this._angleBetween(wrist, middleMcp);
+    }
+
+    /**
+     * A scratch reporter that returns the angle of a finger,
+     * measured from the joint nearest the tip (DIP, or IP for the thumb) toward the tip.
+     * @param {object} args - the block arguments
+     * @returns {number} angle in degrees (Scratch convention)
+     */
+    fingerAngle (args) {
+        const hand = this._selectHand(args.HAND);
+        if (!hand || !hand.keypoints) return 0;
+        const indices = FINGER_NEAR_TIP[args.FINGER];
+        if (!indices) return 0;
+        const nearTip = hand.keypoints[indices[0]];
+        const tip = hand.keypoints[indices[1]];
+        if (!nearTip || !tip) return 0;
+        return this._angleBetween(nearTip, tip);
     }
 
 }
