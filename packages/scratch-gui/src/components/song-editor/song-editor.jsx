@@ -553,13 +553,13 @@ class SongEditor extends React.Component {
         this.setState({aiEditTrackIdx: null, aiEditError: null, aiEditBusy: false});
     }
 
-    async handleApplyAiEdit (prompt) {
+    async handleApplyAiEdit (prompt, providerId, editParams) {
         const idx = this.state.aiEditTrackIdx;
         const song = this.props.song;
         if (idx === null || !song || !song.tracks || !song.tracks[idx]) return;
         this.setState({aiEditBusy: true, aiEditError: null});
         try {
-            const newTrack = await editTrackWithPrompt({prompt, song, trackIndex: idx});
+            const newTrack = await editTrackWithPrompt({prompt, editParams, song, trackIndex: idx, providerId});
             // Re-check the index still maps to a track of the same kind in case
             // the song was reordered while the request was in flight.
             const current = this.props.song;
@@ -623,7 +623,7 @@ class SongEditor extends React.Component {
         this.setState({aiGenerateKind: null, aiGenerateBusy: false, aiGenerateError: null});
     }
 
-    async handleApplyAiGenerate (prompt) {
+    async handleApplyAiGenerate (prompt, providerId) {
         const kind = this.state.aiGenerateKind;
         if (!kind) return;
         this.setState({aiGenerateBusy: true, aiGenerateError: null});
@@ -631,7 +631,8 @@ class SongEditor extends React.Component {
             const newTrack = await generateTrackWithPrompt({
                 prompt,
                 song: this.props.song,
-                kind
+                kind,
+                providerId
             });
             // Append the new track to the current song. We re-read props.song
             // here because the user may have made other edits while waiting.
@@ -675,11 +676,12 @@ class SongEditor extends React.Component {
         this.setState({aiSongOpen: false, aiSongBusy: false, aiSongError: null});
     }
 
-    async handleApplyAiSong (prompt) {
+    async handleApplyAiSong (prompt, providerId) {
         this.setState({aiSongBusy: true, aiSongError: null});
         try {
             const generated = await generateSongFromPrompt({
                 prompt,
+                providerId,
                 fallbackName: 'AI Song'
             });
             // Replace the current song's musical content but keep its
@@ -1043,7 +1045,6 @@ class SongEditor extends React.Component {
                                 d="M12.5 11l.7 1.8L15 13.5l-1.8.7-.7 1.8-.7-1.8L10 13.5l1.8-.7z"
                                 fill="currentColor"
                             /></svg>
-                        <span className="generate-song-label">Generate Song</span>
                     </button>
                     {this.renderSelectionToolbar()}
                 </div>

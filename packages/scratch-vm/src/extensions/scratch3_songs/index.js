@@ -297,21 +297,19 @@ class Scratch3SongsBlocks {
 
     playTrack (args) {
         const when = Cast.toString(args.WHEN) === 'loop' ? 'loop' : 'now';
-        for (const id of this._resolveTrackIds(args.TRACK)) {
-            this.runtime.songPlayback.setTrackActive(id, true, when);
-        }
+        const ids = this._resolveTrackIds(args.TRACK);
+        if (ids.length === 0) return;
+        // Batch so the scheduler can add every id to _activeTracks before
+        // start() runs its first tick — otherwise tracks past the first lose
+        // their step-0 notes to the lookahead-window guard.
+        this.runtime.songPlayback.setTracksActive(ids, true, when);
     }
 
     stopTrack (args) {
         const when = Cast.toString(args.WHEN) === 'loop' ? 'loop' : 'now';
         const ids = this._resolveTrackIds(args.TRACK);
         if (ids.length === 0) return;
-        // Stopping every track immediately is equivalent to stop() — but
-        // doing it per-track lets the user mix `__all__` deactivations with
-        // partial ones cleanly.
-        for (const id of ids) {
-            this.runtime.songPlayback.setTrackActive(id, false, when);
-        }
+        this.runtime.songPlayback.setTracksActive(ids, false, when);
     }
 
     fadeTrack (args) {

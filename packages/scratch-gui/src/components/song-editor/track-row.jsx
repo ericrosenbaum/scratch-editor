@@ -1117,7 +1117,6 @@ class TrackRow extends React.Component {
                             d="M12.5 11l.7 1.8L15 13.5l-1.8.7-.7 1.8-.7-1.8L10 13.5l1.8-.7z"
                             fill="currentColor"
                         /></svg>
-                        <span>AI Edit</span>
                     </button>
                     <div className="move-stack">
                         <button

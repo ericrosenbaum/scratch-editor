@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Magenta AI in Song Maker — explainer &amp; redesign proposal</title>
+<style>
+:root {
+  --text: hsl(220, 20%, 15%);
+  --muted: hsl(220, 12%, 35%);
+  --faint: hsl(220, 10%, 55%);
+  --border: hsl(220, 15%, 86%);
+  --border-strong: hsl(220, 15%, 70%);
+  --bg: hsl(220, 20%, 98%);
+  --panel: white;
+  --blue: hsl(215, 100%, 65%);
+  --blue-bg: hsl(215, 100%, 96%);
+  --green: hsl(150, 55%, 42%);
+  --amber: hsl(35, 90%, 50%);
+  --red: hsl(0, 60%, 50%);
+  --red-bg: hsl(0, 80%, 97%);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+main {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 6rem;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 0 0 0.3rem;
+  letter-spacing: -0.01em;
+}
+.subtitle {
+  color: var(--muted);
+  margin: 0 0 2.5rem;
+  font-size: 1.05rem;
+}
+
+h2 {
+  font-size: 1.35rem;
+  margin: 3rem 0 0.6rem;
+  letter-spacing: -0.005em;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+h2:first-of-type { border-top: none; padding-top: 0; }
+
+h3 {
+  font-size: 1.05rem;
+  margin: 1.6rem 0 0.4rem;
+}
+
+p { margin: 0.4rem 0 0.9rem; }
+
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code {
+  font: 13px/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+  background: hsl(220, 20%, 94%);
+  padding: 0.08rem 0.32rem;
+  border-radius: 0.25rem;
+  color: hsl(220, 25%, 25%);
+}
+
+pre {
+  font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
+  background: hsl(220, 20%, 96%);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.8rem 1rem;
+  overflow-x: auto;
+  margin: 0.6rem 0 1rem;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.8rem 0 1.2rem;
+  font-size: 0.95rem;
+}
+th, td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+th {
+  background: hsl(220, 20%, 96%);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.callout {
+  border-left: 3px solid var(--blue);
+  background: var(--blue-bg);
+  padding: 0.7rem 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin: 0.8rem 0 1.2rem;
+}
+.callout.warn {
+  border-left-color: var(--amber);
+  background: hsl(35, 100%, 96%);
+}
+.callout.bad {
+  border-left-color: var(--red);
+  background: var(--red-bg);
+}
+
+/* --- Architecture diagram --- */
+.arch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin: 1rem 0 1.5rem;
+}
+.arch .box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.8rem;
+  font-size: 0.9rem;
+}
+.arch .box .title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+.arch .box .sub {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin: 0.8rem 0 1.5rem;
+}
+.flow .step {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.9rem;
+  flex: 1;
+  min-width: 9rem;
+}
+.flow .step .label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+.flow .arrow {
+  color: var(--faint);
+  font-size: 1.2rem;
+  user-select: none;
+}
+
+/* --- Mock modal --- */
+.mock-modal {
+  max-width: 30rem;
+  margin: 0.8rem 0 1.5rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 6px 24px hsla(220, 30%, 30%, 0.08);
+  padding: 1.25rem 1.5rem;
+}
+.mock-modal h4 {
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.mock-modal .modal-sub {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+}
+.field-row label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.field-row select,
+.field-row input[type="text"] {
+  width: 100%;
+  font: inherit;
+  font-size: 0.92rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: white;
+  color: var(--text);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.field-row select:focus,
+.field-row input[type="text"]:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px hsla(215, 100%, 65%, 0.18);
+}
+.mock-modal textarea {
+  width: 100%;
+  min-height: 5rem;
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  resize: vertical;
+  margin-bottom: 0.6rem;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.mock-modal textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px hsla(215, 100%, 65%, 0.18);
+}
+.btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.btn {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-strong);
+  background: white;
+  color: var(--muted);
+  cursor: pointer;
+}
+.btn:hover { background: hsl(220, 20%, 96%); }
+.btn.primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+  box-shadow: 0 2px 6px hsla(215, 100%, 50%, 0.25);
+}
+.btn.primary:hover { background: hsl(215, 100%, 60%); }
+
+.edit-btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+.edit-btn-grid .group-label {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.5rem;
+}
+.edit-btn-grid .btn { width: 100%; text-align: center; }
+
+/* --- Provider toggle (hybrid demo) --- */
+.provider-toggle {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.provider-toggle input { display: none; }
+.provider-toggle label {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: white;
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+}
+.provider-toggle label:last-child { border-right: none; }
+.provider-toggle input:checked + label {
+  background: var(--blue);
+  color: white;
+}
+
+.hybrid-demo .magenta-panel,
+.hybrid-demo .llm-panel { display: none; }
+.hybrid-demo:has(#prov-magenta:checked) .magenta-panel { display: block; }
+.hybrid-demo:has(#prov-claude:checked) .llm-panel { display: block; }
+
+/* --- Old vs new comparison --- */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 0.8rem 0 1.5rem;
+}
+.compare > div {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.9rem 1rem;
+}
+.compare .head {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+  margin-bottom: 0.4rem;
+}
+.compare .strike { color: var(--muted); }
+
+.pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.3rem;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
+.pill.magenta { background: hsl(280, 60%, 92%); color: hsl(280, 50%, 35%); }
+.pill.llm { background: hsl(150, 55%, 90%); color: hsl(150, 55%, 28%); }
+.pill.proc { background: hsl(35, 90%, 92%); color: hsl(35, 70%, 32%); }
+
+ul, ol { margin: 0.4rem 0 0.9rem; padding-left: 1.4rem; }
+li { margin: 0.15rem 0; }
+
+.tip {
+  font-size: 0.85rem;
+  color: var(--faint);
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .arch { grid-template-columns: 1fr; }
+  .compare { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; gap: 0.2rem; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Magenta AI in Song Maker</h1>
+<p class="subtitle">How it works today, what it's actually doing under the hood, and a proposal to swap the free-form prompt for structured dropdowns.</p>
+
+<h2>1. What is Magenta?</h2>
+<p>
+<a href="https://magenta.tensorflow.org/">Magenta</a> is a Google research library for generative music, exposed in the browser via <code>@magenta/music</code> (TensorFlow.js under the hood). We use two of its smallest models, both in the <strong>MusicRNN</strong> family — recurrent neural networks that take a short <em>seed</em> NoteSequence and "continue" it for N more steps.
+</p>
+<ul>
+  <li><strong>Melody RNN</strong> — checkpoint <code>basic_rnn</code>. Continues a monophonic melody.</li>
+  <li><strong>Drum Kit RNN</strong> — checkpoint <code>drum_kit_rnn</code>. Continues a drum pattern, emitting GM-MIDI drum pitches.</li>
+</ul>
+<p>Both checkpoints are downloaded on first use from <code>storage.googleapis.com/magentadata/js/checkpoints/music_rnn/</code>. The core call is:</p>
+<pre>rnn.continueSequence(seedNoteSequence, stepsToGenerate, temperature)</pre>
+<p>That's it. There is no prompt input on the model itself. The "prompt" only exists in our UI — Magenta only sees a fixed-shape seed sequence and a temperature.</p>
+
+<h2>2. How it's wired into Song Maker</h2>
+<p>All Magenta code lives in <a href="../src/lib/song-ai/providers/magenta.js">packages/scratch-gui/src/lib/song-ai/providers/magenta.js</a>. A few key bits:</p>
+<ul>
+  <li><strong>Lazy-loaded</strong> via <code>webpackChunkName: "magenta"</code> (<code>magenta.js</code> lines 15&ndash;29) so TF.js only enters the bundle when the provider is selected.</li>
+  <li><strong>Model cache</strong> keyed by checkpoint URL (<code>getRnn</code>, lines 39&ndash;51). One initialize per checkpoint per session.</li>
+  <li><strong>Drum pitch mapping</strong> GM-MIDI &rarr; our 1-based drum indices (<code>drumPitchToOurIndex</code>, lines 59&ndash;74).</li>
+  <li><strong>Prompt parsing</strong> keyword-spots mood / tempo / key from the textarea (<code>parseVibe</code>, lines 79&ndash;163).</li>
+</ul>
+<p>The whole "AI understands my prompt" illusion is just keyword spotting against three dictionaries:</p>
+<pre>const MOOD_KEYWORDS = {
+  happy:  ['happy', 'bright', 'cheerful', 'joyful', 'sunny', 'triumphant', 'celebrat'],
+  sad:    ['sad', 'somber', 'melancholy', 'sorrowful', 'gloomy', 'mournful'],
+  dark:   ['dark', 'cinematic', 'serious', 'epic', 'tense'],
+  spooky: ['spooky', 'haunting', 'creepy', 'eerie', 'mysterious', 'horror', 'scary', 'ghost'],
+  bluesy: ['blues', 'bluesy', 'soulful', 'gritty'],
+  rock:   ['rock', 'metal', 'punk', 'grunge'],
+  folk:   ['folk', 'whimsical', 'wholesome', 'kid', 'nursery', 'lullaby'],
+  funk:   ['funk', 'funky', 'groovy'],
+  jazz:   ['jazz', 'jazzy', 'swing', 'bebop'],
+  chill:  ['chill', 'lo-fi', 'lofi', 'mellow', 'dreamy', 'ambient', 'relaxed'],
+  upbeat: ['upbeat', 'energetic', 'punchy', 'driving', 'dance', 'party']
+};</pre>
+<p>Anything outside these eleven moods, three tempo buckets (slow/medium/fast), and a handful of key-phrase regexes is silently discarded.</p>
+
+<h2>3. The three usage flows</h2>
+<p>Magenta sits behind three UI entry points, but only contributes to <em>some</em> of the work in each:</p>
+
+<table>
+  <thead>
+    <tr><th>Modal</th><th>What runs</th><th>Magenta involvement</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="../src/components/song-editor/ai-song-modal.jsx">Whole song</a></td>
+      <td>4 tracks built in parallel</td>
+      <td><span class="pill magenta">Magenta</span>drums + melody only. <span class="pill proc">procedural</span>bass + pad are rule-based arpeggiation and 3-note chords, no model.</td>
+    </tr>
+    <tr>
+      <td><a href="../src/components/song-editor/ai-generate-track-modal.jsx">Generate track</a></td>
+      <td>One new track</td>
+      <td><span class="pill magenta">Magenta</span>Drum RNN for <code>kind=drum</code>; Melody RNN for <code>instrument</code> and <code>synth</code>.</td>
+    </tr>
+    <tr>
+      <td><a href="../src/components/song-editor/ai-edit-track-modal.jsx">Edit track</a></td>
+      <td>Mutate existing track</td>
+      <td><em>Today:</em> <span class="pill proc">procedural</span>velocity &plusmn;20, pitch &plusmn;12, density double/halve. <em>Proposed:</em> <span class="pill magenta">Magenta</span>feed the existing track as the seed to <code>continueSequence</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The "generate track" flow looks like this end-to-end:</p>
+<div class="flow">
+  <div class="step"><span class="label">User</span>Types prompt</div>
+  <div class="arrow">&rarr;</div>
+  <div class="step"><span class="label">parseVibe()</span>Keyword match: mood, tempo, key</div>
+  <div class="arrow">&rarr;</div>
+  <div class="step"><span class="label">pickSeed()</span>Look up canned seed for that mood</div>
+  <div class="arrow">&rarr;</div>
+  <div class="step"><span class="label">continueSequence()</span>RNN extends seed by N steps</div>
+  <div class="arrow">&rarr;</div>
+  <div class="step"><span class="label">Convert</span>Map pitches to drum lanes / transpose to key</div>
+</div>
+
+<h2>4. The problem with the prompt textarea</h2>
+<p>The textarea creates an expectation the model can't meet. Magenta is a small RNN over a fixed seed — it can't <em>interpret</em> language. Three concrete examples:</p>
+
+<div class="callout bad">
+  <strong>Prompt:</strong> "a soaring lead melody with a syncopated swing feel in F# minor"<br>
+  <strong>What Magenta sees:</strong> mood = <code>null</code> (no keyword matches "soaring lead"), tempoBucket = <code>null</code>, key = <code>F#</code>, scale = <code>minor</code>. Everything else is dropped.
+</div>
+
+<div class="callout bad">
+  <strong>Prompt:</strong> "a punchy four-on-the-floor groove"<br>
+  <strong>What Magenta sees:</strong> mood = <code>upbeat</code> (matched "punchy"), tempo = fast. "Four-on-the-floor" is silently ignored. Seed = funk pattern from <code>DRUM_SEEDS.funk</code> regardless.
+</div>
+
+<div class="callout bad">
+  <strong>Edit prompt:</strong> "harmonize this with 3-note chords"<br>
+  <strong>What Magenta sees:</strong> none of the edit keywords (<em>louder, softer, higher, lower, faster, slower, regenerate</em>) match &rarr; falls through to <code>regenerate</code>, producing a new unrelated track. The user's intent is lost.
+</div>
+
+<p>The textarea is fine for the <em>LLM</em> providers (Claude, Gemma 4, Gemini Nano), which actually do parse it. But for Magenta — the default, on-device, always-available provider — the prompt is theatre.</p>
+
+<h2>5. Proposed redesign</h2>
+
+<p>Replace the textarea with structured controls that map directly to the parameters Magenta actually consumes. Each track type gets a control set tuned to what its model can do.</p>
+
+<h3>5a. Drum track generation <span class="pill magenta">Magenta</span></h3>
+<p>Drum generation is driven by <em>which seed pattern</em> we pick from <code>DRUM_SEEDS</code> (rock / funk / chill) and how many steps we let the RNN continue. Both are dropdown-shaped already:</p>
+
+<div class="mock-modal">
+  <h4>Add a drum track</h4>
+  <p class="modal-sub">On-device Magenta will generate the pattern.</p>
+
+  <div class="field-row">
+    <label for="d-style">Style</label>
+    <select id="d-style">
+      <option>Rock</option>
+      <option>Funk</option>
+      <option>Chill / Lo-fi</option>
+      <option>Hip-hop</option>
+      <option>Latin</option>
+    </select>
+  </div>
+  <div class="field-row">
+    <label for="d-density">Density</label>
+    <select id="d-density">
+      <option>Sparse</option>
+      <option selected>Medium</option>
+      <option>Busy</option>
+    </select>
+  </div>
+  <div class="field-row">
+    <label for="d-lanes">Drums</label>
+    <select id="d-lanes">
+      <option>Kick + snare only</option>
+      <option selected>Add hi-hats</option>
+      <option>Full kit (kick, snare, hats, crash, clap)</option>
+    </select>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn">Cancel</button>
+    <button class="btn primary">Generate</button>
+  </div>
+</div>
+
+<p class="tip">Hip-hop and Latin are new seed patterns we'd add to <code>DRUM_SEEDS</code> alongside the existing rock/funk/chill.</p>
+
+<h3>5b. Instrument / synth track generation <span class="pill magenta">Magenta</span></h3>
+<p>Melody RNN is one model — what changes between "lead", "bass", "pad", "arp" is what we do <em>around</em> it (which builder is called, which transpose, whether we keep melody output or repurpose as chords).</p>
+
+<div class="mock-modal">
+  <h4>Add an instrument track</h4>
+  <p class="modal-sub">On-device Magenta will generate the part.</p>
+
+  <div class="field-row">
+    <label for="i-role">Role</label>
+    <select id="i-role">
+      <option selected>Lead melody</option>
+      <option>Bass line</option>
+      <option>Pad / chords</option>
+      <option>Arpeggio</option>
+    </select>
+  </div>
+  <div class="field-row">
+    <label for="i-mood">Mood</label>
+    <select id="i-mood">
+      <option>Happy</option>
+      <option>Sad</option>
+      <option>Spooky</option>
+      <option>Dark / cinematic</option>
+      <option>Bluesy</option>
+      <option>Rock</option>
+      <option>Folk</option>
+      <option>Funk</option>
+      <option>Jazz</option>
+      <option selected>Chill</option>
+      <option>Upbeat</option>
+    </select>
+  </div>
+  <div class="field-row">
+    <label for="i-register">Register</label>
+    <select id="i-register">
+      <option>Low</option>
+      <option selected>Medium</option>
+      <option>High</option>
+    </select>
+  </div>
+  <div class="field-row">
+    <label for="i-density">Note density</label>
+    <select id="i-density">
+      <option>Sparse</option>
+      <option selected>Medium</option>
+      <option>Busy</option>
+    </select>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn">Cancel</button>
+    <button class="btn primary">Generate</button>
+  </div>
+</div>
+
+<p class="tip">The 11 mood options exactly mirror <code>MOOD_KEYWORDS</code>. Register maps to the <code>leadRegister</code> parameter on <code>buildMelodyTrack</code> (currently hard-coded to +12 semitones). Density maps to <code>stepsToGenerate</code> and the temperature passed to <code>continueSequence</code>.</p>
+
+<h3>5c. Edit track — continue from the user's notes <span class="pill magenta">Magenta</span></h3>
+<p>The procedural transforms (lines 513&ndash;521 in <code>magenta.js</code>) are a workaround for the prompt textarea — they exist because Magenta's prompt parsing doesn't understand edit instructions. But Magenta's <code>continueSequence</code> is <em>literally</em> a "given these notes, what comes next" model. Edit-track is actually its <strong>best fit</strong> in the entire app.</p>
+
+<p>Proposal: drop the procedural transforms entirely. Feed the existing track's notes as the seed to <code>continueSequence</code> and let the RNN produce a variation that's musically related to what the user already has.</p>
+
+<div class="mock-modal">
+  <h4>Edit "Lead synth"</h4>
+  <p class="modal-sub">Magenta will use your existing notes as the seed and generate a variation.</p>
+
+  <div class="field-row">
+    <label for="e-seed">Seed from</label>
+    <select id="e-seed">
+      <option>First 4 steps</option>
+      <option selected>First half of the track</option>
+      <option>The whole track</option>
+    </select>
+  </div>
+  <div class="field-row">
+    <label for="e-vary">Variation</label>
+    <select id="e-vary">
+      <option>Subtle (stays close)</option>
+      <option selected>Balanced</option>
+      <option>Bold (more surprising)</option>
+    </select>
+  </div>
+  <div class="field-row">
+    <label for="e-replace">Apply as</label>
+    <select id="e-replace">
+      <option selected>Replace the track</option>
+      <option>Append after existing notes</option>
+      <option>Layer alongside</option>
+    </select>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn">Cancel</button>
+    <button class="btn primary">Generate variation</button>
+  </div>
+</div>
+
+<p class="tip"><strong>How the controls map to Magenta:</strong> "Seed from" controls how much of the existing track is passed to <code>makeSeedSequence()</code>. "Variation" maps to the <code>temperature</code> argument of <code>continueSequence</code> (0.7 / 1.0 / 1.4). "Apply as" decides what to do with the continuation — overwrite, concatenate, or merge into the existing notes.</p>
+
+<p class="tip">This works uniformly for drum tracks (seeded with Drum RNN) and instrument/synth tracks (seeded with Melody RNN) — pick the model by <code>track.kind</code>, same as today.</p>
+
+<div class="callout">
+<strong>What we lose:</strong> the instant velocity/pitch nudges (Louder / Softer / Up octave / Down octave). Those are useful but they aren't AI &mdash; they're regular edit operations. They'd be better off as toolbar buttons on the track row itself, separate from the "AI edit" entry point. The AI modal becomes specifically for <em>generating</em> a variation, which matches the user's mental model better.
+</div>
+
+<h3>5d. Whole-song modal — hybrid by provider</h3>
+<p>This is the most interesting case because the modal is shared across <em>all</em> providers, and the LLM providers really do interpret prose. The proposal: <strong>switch the input region based on the selected provider.</strong> Click the toggle below to see how it'd feel:</p>
+
+<div class="hybrid-demo">
+  <div class="provider-toggle">
+    <input type="radio" id="prov-magenta" name="prov" checked>
+    <label for="prov-magenta">Magenta.js (on-device)</label>
+    <input type="radio" id="prov-claude" name="prov">
+    <label for="prov-claude">Claude Haiku</label>
+  </div>
+
+  <div class="mock-modal magenta-panel">
+    <h4>Create a song <span class="pill magenta">Magenta</span></h4>
+    <p class="modal-sub">Pick the basics — Magenta will fill in the rest.</p>
+
+    <div class="field-row">
+      <label for="s-mood">Mood</label>
+      <select id="s-mood">
+        <option>Happy</option><option>Sad</option><option>Spooky</option>
+        <option>Dark</option><option>Bluesy</option><option>Rock</option>
+        <option>Folk</option><option>Funk</option><option>Jazz</option>
+        <option selected>Chill</option><option>Upbeat</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <label for="s-root">Key</label>
+      <select id="s-root">
+        <option>C</option><option>C#</option><option>D</option><option>D#</option>
+        <option>E</option><option>F</option><option>F#</option><option selected>G</option>
+        <option>G#</option><option>A</option><option>A#</option><option>B</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <label for="s-scale">Scale</label>
+      <select id="s-scale">
+        <option selected>Major</option>
+        <option>Minor</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <label for="s-tempo">Tempo</label>
+      <select id="s-tempo">
+        <option>Slow (75 BPM)</option>
+        <option selected>Medium (110 BPM)</option>
+        <option>Fast (140 BPM)</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <label for="s-length">Length</label>
+      <select id="s-length">
+        <option>16 steps</option>
+        <option selected>32 steps</option>
+        <option>64 steps</option>
+      </select>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn">Cancel</button>
+      <button class="btn primary">Create song</button>
+    </div>
+  </div>
+
+  <div class="mock-modal llm-panel">
+    <h4>Create a song <span class="pill llm">Claude</span></h4>
+    <p class="modal-sub">Describe what you want — Claude can interpret freely.</p>
+    <textarea placeholder="e.g. a soaring lead melody with a syncopated swing feel in F# minor, plus a walking jazz bass"></textarea>
+    <div class="btn-row">
+      <button class="btn">Cancel</button>
+      <button class="btn primary">Create song</button>
+    </div>
+  </div>
+</div>
+
+<p class="tip">The provider picker already lives in <a href="../src/components/song-editor/provider-picker.jsx">provider-picker.jsx</a>. The hybrid is a small change in <code>ai-song-modal.jsx</code>: gate the input section on <code>providerId === 'magenta'</code>.</p>
+
+<h2>6. Before &amp; after</h2>
+<div class="compare">
+  <div>
+    <div class="head">Today</div>
+    <div class="strike">"a punchy four-on-the-floor groove"</div>
+    <p class="tip" style="margin-top:0.5rem">Magenta keyword-matches "punchy" &rarr; mood=upbeat &rarr; <code>DRUM_SEEDS.funk</code>. "Four-on-the-floor" silently dropped.</p>
+  </div>
+  <div>
+    <div class="head">Proposed</div>
+    Style: <strong>Rock</strong> &nbsp;&middot;&nbsp; Density: <strong>Busy</strong> &nbsp;&middot;&nbsp; Drums: <strong>Full kit</strong>
+    <p class="tip" style="margin-top:0.5rem">Each field maps to a real parameter Magenta consumes. No silent drops.</p>
+  </div>
+</div>
+
+<h2>7. Implementation sketch</h2>
+<p>Files that would change (this doc is not yet implementing them):</p>
+<ul>
+  <li><a href="../src/components/song-editor/ai-generate-track-modal.jsx">ai-generate-track-modal.jsx</a> — branch on <code>kind</code> prop, render the drum or instrument dropdown set when the selected provider is Magenta.</li>
+  <li><a href="../src/components/song-editor/ai-edit-track-modal.jsx">ai-edit-track-modal.jsx</a> — replace textarea with the three-dropdown variation picker.</li>
+  <li><a href="../src/lib/song-ai/providers/magenta.js">magenta.js</a> <code>editTrackProcedurally()</code> — replace its body with a <code>continueSequence</code> call seeded from <code>originalTrack.notes</code>. Pick the model (<code>DRUMS_RNN_URL</code> vs <code>MELODY_RNN_URL</code>) from <code>originalTrack.kind</code>. The existing GM-MIDI &rarr; lane mapping (<code>noteSeqToDrumNotes</code>) and transpose (<code>noteSeqToInstrumentNotes</code>) helpers can be reused unchanged.</li>
+  <li>Delete the <code>EDIT_KEYWORDS</code> dictionary at lines 513&ndash;521 and the velocity/pitch/density branches that follow it. Consider relocating those as direct toolbar buttons on the track row.</li>
+  <li><a href="../src/components/song-editor/ai-song-modal.jsx">ai-song-modal.jsx</a> — hybrid: swap input region on <code>providerId</code> change.</li>
+  <li><a href="../src/lib/song-ai/providers/magenta.js">magenta.js</a> — accept a structured params object alongside (or instead of) <code>prompt</code>. When structured params arrive, bypass <code>parseVibe</code> and use them directly. Keep prompt-based path for any callers that still need it.</li>
+</ul>
+<p>Constants we can reuse rather than redeclare:</p>
+<ul>
+  <li><code>INSTRUMENT_NAMES</code>, <code>DRUM_NAMES</code> from <a href="../src/lib/song-defaults.js">song-defaults.js</a></li>
+  <li><code>SYNTH_PRESETS</code> from <a href="../src/lib/synth-presets.js">synth-presets.js</a></li>
+  <li><code>PITCH_CLASS_NAMES</code>, <code>SCALE_LABELS</code> from <a href="../src/lib/scale-utils.js">scale-utils.js</a></li>
+</ul>
+
+<h2>8. Open questions</h2>
+<ol>
+  <li><strong>Should LLM providers also get dropdowns as an option?</strong> The Magenta dropdowns could double as a "quick mode" for Claude / Gemma 4 / Gemini Nano, with the textarea as an optional override. Or we keep LLMs prose-only to play to their strength.</li>
+  <li><strong>Edit modal for LLM providers?</strong> The continue-from-seed dropdowns are right for Magenta. LLM providers (Claude, Gemma 4, Gemini Nano) can interpret instructions like "harmonize with 3-note chords" or "make this swing" that go far beyond what an RNN can do — so the edit modal probably wants the same hybrid treatment as the whole-song modal: dropdowns for Magenta, textarea for LLMs.</li>
+  <li><strong>How do we serialize the dropdown selections to LLM providers?</strong> Two options: (a) pass them verbatim as structured tool input, (b) render them into a synthesized English prompt like "Style: Rock. Density: Busy. Drums: Full kit." Option (a) is cleaner; option (b) preserves the LLM's prompt-shaped expectation.</li>
+  <li><strong>Voice input</strong> — currently a mic button on the track modals. Where does it land in a dropdown UI? Drop it entirely for Magenta, keep it for LLM textarea, or have voice fill structured fields ("make it a rock drum part" &rarr; sets Style=Rock)?</li>
+</ol>
+
+</main>
+</body>
+</html>

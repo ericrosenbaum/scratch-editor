@@ -6,6 +6,8 @@ import {defineMessages, FormattedMessage, injectIntl} from 'react-intl';
 import Modal from '../../containers/modal.jsx';
 import intlShape from '../../lib/intlShape.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../../lib/voice-input.js';
+import Gemma4LoadStatus from './gemma4-load-status.jsx';
+import ProviderPicker, {getStoredProviderId} from './provider-picker.jsx';
 
 import micIcon from './icon--mic.svg';
 import './ai-song-modal.raw.css';
@@ -80,12 +82,22 @@ const EXAMPLE_PROMPTS_FOR_KIND = {
 class AiGenerateTrackModal extends React.Component {
     constructor (props) {
         super(props);
-        this.state = {prompt: '', listening: false, interimTranscript: ''};
+        this.state = {
+            prompt: '',
+            listening: false,
+            interimTranscript: '',
+            providerId: getStoredProviderId()
+        };
         this.handleChange = this.handleChange.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.handleExampleClick = this.handleExampleClick.bind(this);
         this.handleVoiceClick = this.handleVoiceClick.bind(this);
+        this.handleProviderChange = this.handleProviderChange.bind(this);
+    }
+
+    handleProviderChange (providerId) {
+        this.setState({providerId});
     }
 
     handleVoiceClick () {
@@ -117,7 +129,7 @@ class AiGenerateTrackModal extends React.Component {
     handleApply () {
         const trimmed = this.state.prompt.trim();
         if (!trimmed || this.props.busy) return;
-        this.props.onApply(trimmed);
+        this.props.onApply(trimmed, this.state.providerId);
     }
 
     handleExampleClick (event) {
@@ -144,6 +156,12 @@ class AiGenerateTrackModal extends React.Component {
                     <h2 className="ai-song-modal-title">
                         <FormattedMessage {...titleMessage} />
                     </h2>
+                    <ProviderPicker
+                        busy={busy}
+                        value={this.state.providerId}
+                        onChange={this.handleProviderChange}
+                    />
+                    <Gemma4LoadStatus providerId={this.state.providerId} />
                     <label
                         className="ai-song-modal-label"
                         htmlFor="aiGenerateTrackPrompt"

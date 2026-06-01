@@ -450,6 +450,58 @@ class SongScheduler {
         this._applyTrackActiveChange(trackId, !!active);
     }
 
+    /**
+     * Activate or deactivate several tracks atomically. Routing through
+     * setTrackActive() once per id has a subtle bug when the transport is
+     * idle: the first id's call triggers start(), which immediately runs a
+     * _tick() and advances _enqueuedThroughCtxTime past the lookahead window.
+     * Subsequent ids are added to _activeTracks AFTER that tick, so the next
+     * tick's "noteCtxTime < _enqueuedThroughCtxTime" guard silently drops
+     * their step-0 (and sometimes step-1) notes. Batching here makes all the
+     * tracks live BEFORE start() runs its first tick, so every track gets
+     * its first note.
+     * @param {string[]} trackIds
+     * @param {boolean} active
+     * @param {string} [when]
+     */
+    setTracksActive (trackIds, active, when = 'now') {
+        const ids = (trackIds || []).filter(Boolean);
+        if (ids.length === 0) return;
+        if (ids.length === 1) {
+            this.setTrackActive(ids[0], active, when);
+            return;
+        }
+        if (when === 'loop' && this._started) {
+            for (const id of ids) this._pendingTrackChanges.set(id, !!active);
+            return;
+        }
+        if (active) {
+            const toAdd = ids.filter(id => !this._activeTracks.has(id));
+            if (toAdd.length === 0) return;
+            for (const id of toAdd) {
+                this._activeTracks.add(id);
+                this._pendingDeactivations.delete(id);
+            }
+            if (this._started) {
+                this._notes = this._flattenNotes();
+            } else {
+                // start() does its own _flattenNotes() with whatever's in
+                // _activeTracks, so all the just-added ids' notes are included
+                // in the first lookahead window.
+                this.start();
+            }
+        } else {
+            const toRemove = ids.filter(id => this._activeTracks.has(id));
+            if (toRemove.length === 0) return;
+            for (const id of toRemove) this._activeTracks.delete(id);
+            this._notes = this._flattenNotes();
+            for (const id of toRemove) {
+                this._cancelScheduledForTrack(id);
+                this._lastPitchByTrack.delete(id);
+            }
+        }
+    }
+
     _applyTrackActiveChange (trackId, active) {
         if (active) {
             if (this._activeTracks.has(trackId)) return;

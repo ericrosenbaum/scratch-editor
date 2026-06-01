@@ -123,7 +123,9 @@
     ]
   },
   "dependencies": {
+    "@magenta/music": "^1.23.1",
     "@mediapipe/face_detection": "0.4.1646425229",
+    "@mediapipe/tasks-genai": "0.10.27",
     "@microbit/microbit-universal-hex": "0.2.2",
     "@radix-ui/react-context-menu": "2.2.16",
     "@scratch/scratch-render": "13.7.2",

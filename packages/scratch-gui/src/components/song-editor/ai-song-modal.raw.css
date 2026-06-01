@@ -82,6 +82,56 @@
     padding-right: 2.5rem;
 }
 
+/* Structured-edit fields (Magenta edit mode) */
+.ai-song-modal-edit-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.ai-song-modal-edit-blurb {
+    margin: 0 0 0.2rem;
+    color: hsl(220, 12%, 35%);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.ai-song-modal-edit-row {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.ai-song-modal-edit-label {
+    color: hsl(220, 12%, 35%);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.ai-song-modal-edit-select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.7rem;
+    font-family: inherit;
+    font-size: 0.92rem;
+    color: hsl(220, 20%, 15%);
+    background: white;
+    border: 1px solid hsl(220, 15%, 86%);
+    border-radius: 0.5rem;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.ai-song-modal-edit-select:focus {
+    outline: none;
+    border-color: hsl(215, 100%, 65%);
+    box-shadow: 0 0 0 3px hsla(215, 100%, 65%, 0.18);
+}
+
+.ai-song-modal-edit-select:disabled {
+    opacity: 0.6;
+}
+
 .ai-song-modal-mic-button {
     position: absolute;
     top: 6px;
@@ -249,4 +299,82 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+.ai-song-modal-provider {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: hsl(0, 0%, 30%);
+}
+
+.ai-song-modal-provider-label {
+    font-weight: 600;
+}
+
+.ai-song-modal-provider-select {
+    padding: 0.25rem 0.4rem;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 0.3rem;
+    background: white;
+    font-size: 0.85rem;
+    font-family: inherit;
+}
+
+.ai-song-modal-provider-select:disabled {
+    opacity: 0.5;
+}
+
+/* Gemma 4 inline load status: shown below the provider picker while the
+   on-device model is downloading or warming up. */
+.ai-song-modal-gemma-load {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.55rem 0.7rem;
+    background: hsl(220, 25%, 97%);
+    border: 1px solid hsl(220, 15%, 88%);
+    border-radius: 0.45rem;
+}
+
+.ai-song-modal-gemma-load-error {
+    background: hsl(0, 60%, 97%);
+    border-color: hsl(0, 60%, 80%);
+}
+
+.ai-song-modal-gemma-bar {
+    height: 6px;
+    width: 100%;
+    background: hsl(220, 15%, 90%);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.ai-song-modal-gemma-bar-fill {
+    height: 100%;
+    background: hsl(216, 100%, 65%);
+    border-radius: 3px;
+    transition: width 200ms ease;
+}
+
+@keyframes ai-song-modal-gemma-indeterminate {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.ai-song-modal-gemma-bar-indeterminate {
+    width: 50%;
+    animation: ai-song-modal-gemma-indeterminate 1.6s ease-in-out infinite;
+}
+
+.ai-song-modal-gemma-status {
+    font-size: 0.8rem;
+    color: hsl(220, 12%, 35%);
+    font-variant-numeric: tabular-nums;
+}
+
+.ai-song-modal-gemma-load-error .ai-song-modal-gemma-status {
+    color: hsl(0, 60%, 35%);
 }

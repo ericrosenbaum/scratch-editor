@@ -82,7 +82,18 @@ const baseConfig = new ScratchWebpackConfigBuilder(
         // edits to a sibling package in this monorepo silently fail to rebuild.
         watchOptions: {
             ignored: ['**/.git/**', '**/node_modules/!(@scratch)/**']
-        }
+        },
+        ignoreWarnings: [
+            // protobufjs's `inquire` helper uses a dynamic `require()` so it
+            // can soft-load Node-only deps at runtime. Webpack can't statically
+            // analyze the path and warns. It's harmless in our browser bundle
+            // (the dynamic branch is never taken), and the warning is pulled
+            // in via @magenta/music → protobufjs.
+            {
+                module: /[\\/]@protobufjs[\\/]inquire[\\/]/,
+                message: /Critical dependency: the request of a dependency is an expression/
+            }
+        ]
     })
     .addModuleRule({
         test: /\.(svg|png|wav|mp3|gif|jpg)$/,

@@ -4,6 +4,8 @@ import {defineMessages, FormattedMessage, injectIntl} from 'react-intl';
 
 import Modal from '../../containers/modal.jsx';
 import intlShape from '../../lib/intlShape.js';
+import Gemma4LoadStatus from './gemma4-load-status.jsx';
+import ProviderPicker, {getStoredProviderId} from './provider-picker.jsx';
 
 import './ai-song-modal.raw.css';
 
@@ -40,11 +42,16 @@ const EXAMPLE_PROMPTS = [
 class AiSongModal extends React.Component {
     constructor (props) {
         super(props);
-        this.state = {prompt: ''};
+        this.state = {prompt: '', providerId: getStoredProviderId()};
         this.handleChange = this.handleChange.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleGenerate = this.handleGenerate.bind(this);
         this.handleExampleClick = this.handleExampleClick.bind(this);
+        this.handleProviderChange = this.handleProviderChange.bind(this);
+    }
+
+    handleProviderChange (providerId) {
+        this.setState({providerId});
     }
 
     handleChange (e) {
@@ -62,7 +69,7 @@ class AiSongModal extends React.Component {
     handleGenerate () {
         const trimmed = this.state.prompt.trim();
         if (!trimmed || this.props.busy) return;
-        this.props.onGenerate(trimmed);
+        this.props.onGenerate(trimmed, this.state.providerId);
     }
 
     handleExampleClick (event) {
@@ -84,6 +91,12 @@ class AiSongModal extends React.Component {
                     <h2 className="ai-song-modal-title">
                         <FormattedMessage {...messages.title} />
                     </h2>
+                    <ProviderPicker
+                        busy={busy}
+                        value={this.state.providerId}
+                        onChange={this.handleProviderChange}
+                    />
+                    <Gemma4LoadStatus providerId={this.state.providerId} />
                     <label
                         className="ai-song-modal-label"
                         htmlFor="aiSongPrompt"

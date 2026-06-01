@@ -71,7 +71,10 @@ const displayNameForTrack = track => {
     if (!track) return '';
     if (typeof track.name === 'string' && track.name.length > 0) return track.name;
     if (track.kind === 'drum') return 'Drums';
-    if (track.kind === 'synth') return 'Synth';
+    if (track.kind === 'synth') {
+        const preset = track.synth && track.synth.preset;
+        return preset || 'Synth';
+    }
     const idx = (track.instrument || 1) - 1;
     return INSTRUMENT_NAMES[idx] || 'Track';
 };

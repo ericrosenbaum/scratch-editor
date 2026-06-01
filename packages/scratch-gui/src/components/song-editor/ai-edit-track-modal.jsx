@@ -6,6 +6,8 @@ import {defineMessages, FormattedMessage, injectIntl} from 'react-intl';
 import Modal from '../../containers/modal.jsx';
 import intlShape from '../../lib/intlShape.js';
 import {isSupported as isVoiceSupported, listen as voiceListen} from '../../lib/voice-input.js';
+import Gemma4LoadStatus from './gemma4-load-status.jsx';
+import ProviderPicker, {getStoredProviderId} from './provider-picker.jsx';
 
 import micIcon from './icon--mic.svg';
 import './ai-song-modal.raw.css';
@@ -55,15 +57,61 @@ const EXAMPLE_PROMPTS_FOR_KIND = {
     ]
 };
 
+const SEED_FROM_OPTIONS = [
+    {value: 'first-4', label: 'First 4 steps'},
+    {value: 'first-half', label: 'First half of the track'},
+    {value: 'all', label: 'The whole track'}
+];
+
+const VARIATION_OPTIONS = [
+    {value: 'subtle', label: 'Subtle (stays close)'},
+    {value: 'balanced', label: 'Balanced'},
+    {value: 'bold', label: 'Bold (more surprising)'}
+];
+
+const APPLY_AS_OPTIONS = [
+    {value: 'replace', label: 'Replace the track'},
+    {value: 'append', label: 'Append after existing notes'},
+    {value: 'layer', label: 'Layer alongside'}
+];
+
 class AiEditTrackModal extends React.Component {
     constructor (props) {
         super(props);
-        this.state = {prompt: '', listening: false, interimTranscript: ''};
+        this.state = {
+            prompt: '',
+            listening: false,
+            interimTranscript: '',
+            providerId: getStoredProviderId(),
+            seedFrom: 'first-half',
+            variation: 'balanced',
+            applyAs: 'replace'
+        };
         this.handleChange = this.handleChange.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleApply = this.handleApply.bind(this);
         this.handleExampleClick = this.handleExampleClick.bind(this);
         this.handleVoiceClick = this.handleVoiceClick.bind(this);
+        this.handleProviderChange = this.handleProviderChange.bind(this);
+        this.handleSeedFromChange = this.handleSeedFromChange.bind(this);
+        this.handleVariationChange = this.handleVariationChange.bind(this);
+        this.handleApplyAsChange = this.handleApplyAsChange.bind(this);
+    }
+
+    handleProviderChange (providerId) {
+        this.setState({providerId});
+    }
+
+    handleSeedFromChange (e) {
+        this.setState({seedFrom: e.target.value});
+    }
+
+    handleVariationChange (e) {
+        this.setState({variation: e.target.value});
+    }
+
+    handleApplyAsChange (e) {
+        this.setState({applyAs: e.target.value});
     }
 
     handleVoiceClick () {
@@ -93,9 +141,18 @@ class AiEditTrackModal extends React.Component {
     }
 
     handleApply () {
+        if (this.props.busy) return;
+        if (this.state.providerId === 'magenta') {
+            this.props.onApply('', this.state.providerId, {
+                seedFrom: this.state.seedFrom,
+                variation: this.state.variation,
+                applyAs: this.state.applyAs
+            });
+            return;
+        }
         const trimmed = this.state.prompt.trim();
-        if (!trimmed || this.props.busy) return;
-        this.props.onApply(trimmed);
+        if (!trimmed) return;
+        this.props.onApply(trimmed, this.state.providerId, null);
     }
 
     handleExampleClick (event) {
@@ -105,7 +162,8 @@ class AiEditTrackModal extends React.Component {
 
     render () {
         const {busy, error, intl, onCancel, trackName, trackKind} = this.props;
-        const canSubmit = this.state.prompt.trim().length > 0 && !busy;
+        const isMagenta = this.state.providerId === 'magenta';
+        const canSubmit = !busy && (isMagenta || this.state.prompt.trim().length > 0);
         const examples = EXAMPLE_PROMPTS_FOR_KIND[trackKind] || EXAMPLE_PROMPTS_FOR_KIND.instrument;
         return (
             <Modal
@@ -121,62 +179,169 @@ class AiEditTrackModal extends React.Component {
                             <span className="ai-song-modal-subtitle">{` — ${trackName}`}</span>
                         ) : null}
                     </h2>
-                    <label
-                        className="ai-song-modal-label"
-                        htmlFor="aiEditTrackPrompt"
-                    >
-                        <FormattedMessage {...messages.promptLabel} />
-                    </label>
-                    <div className="ai-song-modal-textarea-wrap">
-                        <textarea
-                            autoFocus
-                            className="ai-song-modal-textarea"
-                            disabled={busy}
-                            id="aiEditTrackPrompt"
-                            placeholder={intl.formatMessage(messages.placeholder)}
-                            readOnly={this.state.listening}
-                            rows={3}
-                            value={this.state.listening && this.state.interimTranscript ?
-                                this.state.interimTranscript :
-                                this.state.prompt}
-                            onChange={this.handleChange}
-                            onKeyDown={this.handleKeyDown}
-                        />
-                        {isVoiceSupported() ? (
-                            <button
-                                className={classNames(
-                                    'ai-song-modal-mic-button',
-                                    {'ai-song-modal-mic-button-active': this.state.listening}
-                                )}
-                                disabled={busy || this.state.listening}
-                                title="Speak your prompt"
-                                type="button"
-                                onClick={this.handleVoiceClick}
-                            >
-                                <img
-                                    className="ai-song-modal-mic-icon"
-                                    src={micIcon}
+                    <ProviderPicker
+                        busy={busy}
+                        value={this.state.providerId}
+                        onChange={this.handleProviderChange}
+                    />
+                    <Gemma4LoadStatus providerId={this.state.providerId} />
+                    {isMagenta ? (
+                        <div className="ai-song-modal-edit-fields">
+                            <p className="ai-song-modal-edit-blurb">
+                                <FormattedMessage
+                                    defaultMessage={
+                                        'Magenta will use your existing notes as the seed and ' +
+                                        'generate a variation.'
+                                    }
+                                    description="Explanation of Magenta's edit-by-continuation behaviour"
+                                    id="gui.songTab.aiEditMagentaBlurb"
                                 />
-                            </button>
-                        ) : null}
-                    </div>
-                    <div className="ai-song-modal-examples">
-                        <span className="ai-song-modal-examples-label">
-                            <FormattedMessage {...messages.tryLabel} />
-                        </span>
-                        {examples.map(example => (
-                            <button
-                                className="ai-song-modal-example-chip"
-                                data-example={example}
-                                disabled={busy}
-                                key={example}
-                                type="button"
-                                onClick={this.handleExampleClick}
+                            </p>
+                            <div className="ai-song-modal-edit-row">
+                                <label
+                                    className="ai-song-modal-edit-label"
+                                    htmlFor="aiEditSeedFrom"
+                                >
+                                    <FormattedMessage
+                                        defaultMessage="Seed from"
+                                        description="Label for the seed-source dropdown"
+                                        id="gui.songTab.aiEditSeedFrom"
+                                    />
+                                </label>
+                                <select
+                                    className="ai-song-modal-edit-select"
+                                    disabled={busy}
+                                    id="aiEditSeedFrom"
+                                    value={this.state.seedFrom}
+                                    onChange={this.handleSeedFromChange}
+                                >
+                                    {SEED_FROM_OPTIONS.map(opt => (
+                                        <option
+                                            key={opt.value}
+                                            value={opt.value}
+                                        >
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="ai-song-modal-edit-row">
+                                <label
+                                    className="ai-song-modal-edit-label"
+                                    htmlFor="aiEditVariation"
+                                >
+                                    <FormattedMessage
+                                        defaultMessage="Variation"
+                                        description="Label for the variation-amount dropdown"
+                                        id="gui.songTab.aiEditVariation"
+                                    />
+                                </label>
+                                <select
+                                    className="ai-song-modal-edit-select"
+                                    disabled={busy}
+                                    id="aiEditVariation"
+                                    value={this.state.variation}
+                                    onChange={this.handleVariationChange}
+                                >
+                                    {VARIATION_OPTIONS.map(opt => (
+                                        <option
+                                            key={opt.value}
+                                            value={opt.value}
+                                        >
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="ai-song-modal-edit-row">
+                                <label
+                                    className="ai-song-modal-edit-label"
+                                    htmlFor="aiEditApplyAs"
+                                >
+                                    <FormattedMessage
+                                        defaultMessage="Apply as"
+                                        description="Label for the apply-as dropdown"
+                                        id="gui.songTab.aiEditApplyAs"
+                                    />
+                                </label>
+                                <select
+                                    className="ai-song-modal-edit-select"
+                                    disabled={busy}
+                                    id="aiEditApplyAs"
+                                    value={this.state.applyAs}
+                                    onChange={this.handleApplyAsChange}
+                                >
+                                    {APPLY_AS_OPTIONS.map(opt => (
+                                        <option
+                                            key={opt.value}
+                                            value={opt.value}
+                                        >
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    ) : (
+                        <React.Fragment>
+                            <label
+                                className="ai-song-modal-label"
+                                htmlFor="aiEditTrackPrompt"
                             >
-                                {example}
-                            </button>
-                        ))}
-                    </div>
+                                <FormattedMessage {...messages.promptLabel} />
+                            </label>
+                            <div className="ai-song-modal-textarea-wrap">
+                                <textarea
+                                    autoFocus
+                                    className="ai-song-modal-textarea"
+                                    disabled={busy}
+                                    id="aiEditTrackPrompt"
+                                    placeholder={intl.formatMessage(messages.placeholder)}
+                                    readOnly={this.state.listening}
+                                    rows={3}
+                                    value={this.state.listening && this.state.interimTranscript ?
+                                        this.state.interimTranscript :
+                                        this.state.prompt}
+                                    onChange={this.handleChange}
+                                    onKeyDown={this.handleKeyDown}
+                                />
+                                {isVoiceSupported() ? (
+                                    <button
+                                        className={classNames(
+                                            'ai-song-modal-mic-button',
+                                            {'ai-song-modal-mic-button-active': this.state.listening}
+                                        )}
+                                        disabled={busy || this.state.listening}
+                                        title="Speak your prompt"
+                                        type="button"
+                                        onClick={this.handleVoiceClick}
+                                    >
+                                        <img
+                                            className="ai-song-modal-mic-icon"
+                                            src={micIcon}
+                                        />
+                                    </button>
+                                ) : null}
+                            </div>
+                            <div className="ai-song-modal-examples">
+                                <span className="ai-song-modal-examples-label">
+                                    <FormattedMessage {...messages.tryLabel} />
+                                </span>
+                                {examples.map(example => (
+                                    <button
+                                        className="ai-song-modal-example-chip"
+                                        data-example={example}
+                                        disabled={busy}
+                                        key={example}
+                                        type="button"
+                                        onClick={this.handleExampleClick}
+                                    >
+                                        {example}
+                                    </button>
+                                ))}
+                            </div>
+                        </React.Fragment>
+                    )}
                     {error ? (
                         <div
                             className="ai-song-modal-error"
@@ -213,6 +378,12 @@ class AiEditTrackModal extends React.Component {
                                         id="gui.songTab.aiEditTrackBusy"
                                     />
                                 </span>
+                            ) : isMagenta ? (
+                                <FormattedMessage
+                                    defaultMessage="Generate variation"
+                                    description="Action button in AI track edit modal (Magenta mode)"
+                                    id="gui.songTab.aiEditTrackGenerateVariation"
+                                />
                             ) : (
                                 <FormattedMessage
                                     defaultMessage="Apply"

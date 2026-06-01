@@ -147,6 +147,20 @@ class SongPlayback {
     }
 
     /**
+     * Atomically activate/deactivate a list of tracks. Used by the extension's
+     * `play all tracks` / `stop all tracks` blocks so that every track joins
+     * the transport at the same anchor and no track loses its first note.
+     * @param {string[]} trackIds
+     * @param {boolean} active
+     * @param {string} [when] - 'now' or 'loop'
+     */
+    setTracksActive (trackIds, active, when) {
+        const sched = this._ensureScheduler();
+        if (!sched) return;
+        sched.setTracksActive(trackIds || [], !!active, when || 'now');
+    }
+
+    /**
      * Editor preview convenience: stop any current transport, then start it
      * anchored at `startStep` with every track in the project song active.
      * Mirrors the prior "play the whole song" semantics so the editor's Play
