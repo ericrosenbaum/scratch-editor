@@ -18,15 +18,25 @@ class Scratch3SoundBlocks {
 
         this.waitingSounds = {};
 
+        /**
+         * Active sound marker watchers. Each entry tracks a currently-playing
+         * sound that has markers, so that broadcasts can be fired as playback
+         * crosses each marker's time. See {@link _soundMarkerStep}.
+         * @type {Array.<object>}
+         */
+        this._markerWatchers = [];
+
         // Clear sound effects on green flag and stop button events.
         this.stopAllSounds = this.stopAllSounds.bind(this);
         this._stopWaitingSoundsForTarget = this._stopWaitingSoundsForTarget.bind(this);
         this._clearEffectsForAllTargets = this._clearEffectsForAllTargets.bind(this);
+        this._soundMarkerStep = this._soundMarkerStep.bind(this);
         if (this.runtime) {
             this.runtime.on('PROJECT_STOP_ALL', this.stopAllSounds);
             this.runtime.on('PROJECT_STOP_ALL', this._clearEffectsForAllTargets);
             this.runtime.on('STOP_FOR_TARGET', this._stopWaitingSoundsForTarget);
             this.runtime.on('PROJECT_START', this._clearEffectsForAllTargets);
+            this.runtime._stepCallbacks.push(this._soundMarkerStep);
         }
 
         this._onTargetCreated = this._onTargetCreated.bind(this);
@@ -168,14 +178,71 @@ class Scratch3SoundBlocks {
         if (index >= 0) {
             const {target} = util;
             const {sprite} = target;
-            const {soundId} = sprite.sounds[index];
+            const sound = sprite.sounds[index];
+            const {soundId} = sound;
             if (sprite.soundBank) {
                 if (storeWaiting === STORE_WAITING) {
                     this._addWaitingSound(target.id, soundId);
                 } else {
                     this._removeWaitingSound(target.id, soundId);
                 }
-                return sprite.soundBank.playSound(target, soundId);
+                const playPromise = sprite.soundBank.playSound(target, soundId);
+                this._watchSoundMarkers(sound, sprite, soundId, playPromise);
+                return playPromise;
+            }
+        }
+    }
+
+    /**
+     * Begin watching a playing sound's markers so that broadcasts fire as
+     * playback crosses each marker time. The watcher is removed when playback
+     * finishes.
+     * @param {object} sound - the sound object being played.
+     * @param {Sprite} sprite - the sprite that owns the sound's soundBank.
+     * @param {string} soundId - the playing sound's id.
+     * @param {?Promise} playPromise - resolves when playback finishes.
+     * @private
+     */
+    _watchSoundMarkers (sound, sprite, soundId, playPromise) {
+        if (!sound.markers || sound.markers.length === 0) return;
+        if (!this.runtime.audioEngine || !playPromise) return;
+        const player = sprite.soundBank.getSoundPlayer(soundId);
+        if (!player) return;
+        const watcher = {
+            startTime: this.runtime.audioEngine.currentTime,
+            player,
+            markers: sound.markers.slice().sort((a, b) => a.time - b.time),
+            fired: new Set()
+        };
+        this._markerWatchers.push(watcher);
+        playPromise.then(() => {
+            const i = this._markerWatchers.indexOf(watcher);
+            if (i !== -1) this._markerWatchers.splice(i, 1);
+        });
+    }
+
+    /**
+     * Per-frame poll (registered on the runtime) that fires broadcasts when a
+     * playing sound's playback time crosses a marker. Assumes constant playback
+     * rate during a given play.
+     * @private
+     */
+    _soundMarkerStep () {
+        if (this._markerWatchers.length === 0 || !this.runtime.audioEngine) return;
+        const now = this.runtime.audioEngine.currentTime;
+        const stage = this.runtime.getTargetForStage();
+        for (const watcher of this._markerWatchers) {
+            const elapsed = (now - watcher.startTime) * (watcher.player.playbackRate || 1);
+            for (const marker of watcher.markers) {
+                if (watcher.fired.has(marker.broadcastId)) continue;
+                if (elapsed < marker.time) break; // markers are sorted by time
+                watcher.fired.add(marker.broadcastId);
+                const broadcastVar = stage && stage.variables[marker.broadcastId];
+                if (broadcastVar) {
+                    this.runtime.startHats('event_whenbroadcastreceived', {
+                        BROADCAST_OPTION: broadcastVar.name
+                    });
+                }
             }
         }
     }
@@ -229,6 +296,7 @@ class Scratch3SoundBlocks {
     }
 
     stopAllSounds () {
+        this._markerWatchers = [];
         if (this.runtime.targets === null) return;
         const allTargets = this.runtime.targets;
         for (let i = 0; i < allTargets.length; i++) {

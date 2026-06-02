@@ -467,6 +467,11 @@ const serializeSound = function (sound) {
     // but that change should be made carefully since it is very
     // pervasive
     obj.md5ext = soundToSerialize.md5;
+    // Sound markers/flags that fire broadcasts during playback. Only serialize
+    // when present to avoid bloating projects that don't use the feature.
+    if (sound.markers && sound.markers.length) {
+        obj.markers = sound.markers.map(m => ({time: m.time, broadcastId: m.broadcastId}));
+    }
     return obj;
 };
 
@@ -1107,6 +1112,13 @@ const parseScratchAssets = function (object, runtime, zip) {
             dataFormat: soundSource.dataFormat,
             data: null
         };
+        // Sound markers/flags that fire broadcasts during playback.
+        if (soundSource.markers) {
+            sound.markers = soundSource.markers.map(m => ({
+                time: m.time,
+                broadcastId: m.broadcastId
+            }));
+        }
         // deserializeSound should be called on the sound object we're
         // creating above instead of the source sound object, because this way
         // we're always loading the 'sb3' representation of the costume

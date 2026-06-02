@@ -1,0 +1,185 @@
+@import "../../css/colors.css";
+
+$flag-color: hsla(45, 100%, 50%, 1); /* events/broadcast yellow #FFD500 */
+$flag-outline: $text-primary;
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    /*
+        Let clicks fall through to the audio selector (for trim selection)
+        everywhere except on the interactive flag handles/popover below.
+    */
+    pointer-events: none;
+}
+
+.marker {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    /* Zero-width so left maps directly to the marker time position. */
+    width: 0;
+}
+
+.line {
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 0;
+    height: 100%;
+    border-left: 2px solid $flag-color;
+    pointer-events: none;
+}
+
+/* Sequential number, always visible just to the left of the flag/line. */
+.number {
+    position: absolute;
+    top: -21px;
+    right: 5px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    line-height: 1;
+    color: $text-primary;
+    pointer-events: none;
+    user-select: none;
+}
+
+.handle {
+    position: absolute;
+    /* Raise the flag above the waveform; align the pole (near the icon's left
+       edge) with the marker's vertical line. */
+    top: -23px;
+    left: -4.5px;
+    width: 27px;
+    height: 27px;
+    cursor: ew-resize;
+    pointer-events: auto;
+    user-select: none;
+    touch-action: none;
+}
+
+.handle img {
+    width: 27px;
+    height: 27px;
+    user-select: none;
+    user-drag: none;
+    -webkit-user-drag: none;
+}
+
+.selected .line {
+    border-left-color: $flag-outline;
+}
+
+.popover {
+    position: absolute;
+    /* Sit above the raised flag so it never covers it. */
+    bottom: calc(100% + 24px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    /* Align the side buttons to the input row (below the label). */
+    align-items: flex-end;
+    padding: 6px;
+    background: $ui-white;
+    border: 1px solid $ui-black-transparent;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px $ui-black-transparent;
+    pointer-events: auto;
+    white-space: nowrap;
+    z-index: 2;
+}
+
+/* Anchor the popover's left edge to the flag (for flags near the left edge). */
+.popover-left {
+    left: 0;
+    right: auto;
+    transform: none;
+}
+
+/* Anchor the popover's right edge to the flag (for flags near the right edge). */
+.popover-right {
+    left: auto;
+    right: 0;
+    transform: none;
+}
+
+.play-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2rem;
+    width: 2rem;
+    margin-right: 6px;
+    padding: 0.4rem;
+    /* The play glyph is white, so it needs a colored background to be visible. */
+    background: $looks-secondary;
+    border: 1px solid $looks-secondary;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.play-button:active {
+    filter: brightness(0.9);
+}
+
+/* While playing, the play button becomes a (red) stop button, like the main one. */
+.stop-button {
+    background: $red-primary;
+    border-color: $red-tertiary;
+}
+
+.play-button img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.input-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-label {
+    /* Indent to line up with the text inside the input (border + padding),
+       not the input's border. */
+    padding-left: calc(0.75rem + 1px);
+    font-size: 0.625rem;
+    font-weight: bold;
+    color: $text-primary;
+    margin-bottom: 3px;
+    user-select: none;
+}
+
+.popover-input {
+    width: 220px;
+    margin: 0;
+}
+
+.delete-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2rem;
+    width: 2rem;
+    margin-left: 6px;
+    padding: 0.35rem;
+    /* The delete glyph is white, so it needs a colored background to be visible. */
+    background: $red-primary;
+    border: 1px solid $red-tertiary;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.delete-button:active {
+    background: $red-tertiary;
+}
+
+.delete-button img {
+    max-width: 100%;
+    max-height: 100%;
+}

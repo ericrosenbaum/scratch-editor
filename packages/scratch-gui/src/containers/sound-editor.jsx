@@ -21,6 +21,31 @@ const UNDO_STACK_SIZE = 99;
 
 const MAX_RMS = 1.2;
 
+// Small epsilon (seconds) so markers exactly at the new end aren't dropped.
+const MARKER_EPSILON = 1e-4;
+
+// Markers whose time falls inside a removed region [cutStart, cutEnd] are
+// dropped; markers after the region shift earlier by the removed length.
+const remapMarkersCut = (markers, cutStart, cutEnd) => markers
+    .filter(m => m.time <= cutStart || m.time >= cutEnd)
+    .map(m => (m.time >= cutEnd ? {...m, time: m.time - (cutEnd - cutStart)} : m));
+
+// Keep only markers within [cutStart, cutEnd], shifted so cutStart becomes 0.
+const remapMarkersCrop = (markers, cutStart, cutEnd) => markers
+    .filter(m => m.time >= cutStart && m.time <= cutEnd)
+    .map(m => ({...m, time: m.time - cutStart}));
+
+// Scale all marker times by a duration ratio, dropping any past the new end.
+const remapMarkersScale = (markers, ratio, newDuration) => markers
+    .map(m => ({...m, time: m.time * ratio}))
+    .filter(m => m.time <= newDuration + MARKER_EPSILON);
+
+// Replace region [cutStart, cutEnd] with an inserted clip of length insertLen:
+// drop markers inside the region, shift later markers by the net length change.
+const remapMarkersReplace = (markers, cutStart, cutEnd, insertLen) => markers
+    .filter(m => m.time <= cutStart || m.time >= cutEnd)
+    .map(m => (m.time >= cutEnd ? {...m, time: m.time - (cutEnd - cutStart) + insertLen} : m));
+
 class SoundEditor extends React.Component {
     constructor (props) {
         super(props);
@@ -44,6 +69,11 @@ class SoundEditor extends React.Component {
             'paste',
             'handleKeyPress',
             'handleContainerClick',
+            'handleAddMarker',
+            'handleDeleteMarker',
+            'handlePlayMarker',
+            'handleRenameMarker',
+            'handleSetMarkerTime',
             'setRef',
             'resampleBufferToRate'
         ]);
@@ -198,6 +228,10 @@ class SoundEditor extends React.Component {
         const firstPart = samples.slice(0, startIndex);
         const secondPart = samples.slice(endIndex, sampleCount);
         const newLength = firstPart.length + secondPart.length;
+        const oldDuration = sampleCount / sampleRate;
+        const cutStart = this.state.trimStart * oldDuration;
+        const cutEnd = this.state.trimEnd * oldDuration;
+        const remappedMarkers = remapMarkersCut(this.props.markers, cutStart, cutEnd);
         let newSamples;
         if (newLength === 0) {
             newSamples = new Float32Array(1);
@@ -206,7 +240,8 @@ class SoundEditor extends React.Component {
             newSamples.set(firstPart, 0);
             newSamples.set(secondPart, firstPart.length);
         }
-        this.submitNewSamples(newSamples, sampleRate).then(() => {
+        this.submitNewSamples(newSamples, sampleRate).then(success => {
+            if (success) this.commitMarkers(remappedMarkers);
             this.setState({
                 trimStart: null,
                 trimEnd: null
@@ -219,12 +254,17 @@ class SoundEditor extends React.Component {
         const sampleCount = samples.length;
         const startIndex = Math.floor(this.state.trimStart * sampleCount);
         const endIndex = Math.floor(this.state.trimEnd * sampleCount);
+        const oldDuration = sampleCount / sampleRate;
+        const cutStart = this.state.trimStart * oldDuration;
+        const cutEnd = this.state.trimEnd * oldDuration;
+        const remappedMarkers = remapMarkersCrop(this.props.markers, cutStart, cutEnd);
         let clippedSamples = samples.slice(startIndex, endIndex);
         if (clippedSamples.length === 0) {
             clippedSamples = new Float32Array(1);
         }
         this.submitNewSamples(clippedSamples, sampleRate).then(success => {
             if (success) {
+                this.commitMarkers(remappedMarkers);
                 this.setState({
                     trimStart: null,
                     trimEnd: null
@@ -255,12 +295,22 @@ class SoundEditor extends React.Component {
             return;
         }
 
+        const oldMarkers = this.props.markers;
+        const oldDuration = this.audioBufferPlayer.buffer.length / this.audioBufferPlayer.buffer.sampleRate;
+
         const effects = new AudioEffects(this.audioBufferPlayer.buffer, name, trimStart, trimEnd);
         effects.process((renderedBuffer, adjustedTrimStart, adjustedTrimEnd) => {
             const samples = renderedBuffer.getChannelData(0);
             const sampleRate = renderedBuffer.sampleRate;
+            // Effects may change the sound's length (faster/slower/echo). Remap
+            // markers proportionally to the new duration; length-preserving
+            // effects leave marker positions unchanged (ratio === 1).
+            const newDuration = renderedBuffer.length / renderedBuffer.sampleRate;
+            const ratio = oldDuration > 0 ? (newDuration / oldDuration) : 1;
+            const remappedMarkers = remapMarkersScale(oldMarkers, ratio, newDuration);
             this.submitNewSamples(samples, sampleRate).then(success => {
                 if (success) {
+                    this.commitMarkers(remappedMarkers);
                     if (this.state.trimStart === null) {
                         this.handlePlay();
                     } else {
@@ -283,26 +333,34 @@ class SoundEditor extends React.Component {
         return {
             ...this.copyCurrentBuffer(),
             trimStart: this.state.trimStart,
-            trimEnd: this.state.trimEnd
+            trimEnd: this.state.trimEnd,
+            // Snapshot markers (with names) so broadcasts can be re-created on undo.
+            markers: this.props.markers.map(m => ({
+                time: m.time,
+                broadcastId: m.broadcastId,
+                name: m.name
+            }))
         };
     }
     handleUndo () {
         this.redoStack.push(this.getUndoItem());
-        const {samples, sampleRate, trimStart, trimEnd} = this.undoStack.pop();
+        const {samples, sampleRate, trimStart, trimEnd, markers} = this.undoStack.pop();
         if (samples) {
             return this.submitNewSamples(samples, sampleRate, true).then(success => {
                 if (success) {
+                    if (markers) this.commitMarkers(markers);
                     this.setState({trimStart: trimStart, trimEnd: trimEnd}, this.handlePlay);
                 }
             });
         }
     }
     handleRedo () {
-        const {samples, sampleRate, trimStart, trimEnd} = this.redoStack.pop();
+        const {samples, sampleRate, trimStart, trimEnd, markers} = this.redoStack.pop();
         if (samples) {
             this.undoStack.push(this.getUndoItem());
             return this.submitNewSamples(samples, sampleRate, true).then(success => {
                 if (success) {
+                    if (markers) this.commitMarkers(markers);
                     this.setState({trimStart: trimStart, trimEnd: trimEnd}, this.handlePlay);
                 }
             });
@@ -397,8 +455,16 @@ class SoundEditor extends React.Component {
             const newDurationSeconds = newSamples.length / this.state.copyBuffer.sampleRate;
             const adjustedTrimStart = trimStartSeconds / newDurationSeconds;
             const adjustedTrimEnd = trimEndSeconds / newDurationSeconds;
+            // Replace [cutStart, cutEnd] with the pasted clip: drop markers inside
+            // the replaced region, shift later markers by the net length change.
+            const oldDuration = samples.length / this.props.sampleRate;
+            const cutStart = this.state.trimStart * oldDuration;
+            const cutEnd = this.state.trimEnd * oldDuration;
+            const insertLen = this.state.copyBuffer.samples.length / this.state.copyBuffer.sampleRate;
+            const remappedMarkers = remapMarkersReplace(this.props.markers, cutStart, cutEnd, insertLen);
             this.submitNewSamples(newSamples, this.props.sampleRate, false).then(success => {
                 if (success) {
+                    this.commitMarkers(remappedMarkers);
                     this.setState({
                         trimStart: adjustedTrimStart,
                         trimEnd: adjustedTrimEnd
@@ -428,6 +494,69 @@ class SoundEditor extends React.Component {
             this.handleUpdateTrim(null, null);
         }
     }
+    getDuration () {
+        if (!this.props.samples || !this.props.sampleRate) return 0;
+        return this.props.samples.length / this.props.sampleRate;
+    }
+    handleAddMarker () {
+        const duration = this.getDuration();
+        // Use the playhead while playing, or the selection start if trimming;
+        // otherwise default to the middle of the sound.
+        let time;
+        let isDefaultPosition = false;
+        if (this.state.playhead !== null) {
+            time = this.state.playhead * duration;
+        } else if (this.state.trimStart !== null) {
+            time = this.state.trimStart * duration;
+        } else {
+            time = duration / 2;
+            isDefaultPosition = true;
+        }
+        // Only nudge to avoid stacking when dropping at the default center spot;
+        // an explicit position (playhead while playing, or selection start) is
+        // placed exactly as requested. Gap is ~8% of the waveform width, enough
+        // to clear a flag's number badge + body.
+        if (isDefaultPosition && duration > 0) {
+            const minGap = 0.08 * duration;
+            const times = (this.props.markers || []).map(m => m.time);
+            // Small epsilon avoids a floating-point off-by-one extra nudge.
+            const overlaps = t => times.some(existing => Math.abs(existing - t) < minGap - 1e-6);
+            let guard = 0;
+            while (overlaps(time) && time < duration && guard < 1000) {
+                time = Math.min(duration, time + minGap);
+                guard++;
+            }
+        }
+        this.props.vm.addSoundMarker(this.props.soundIndex, time);
+    }
+    handlePlayMarker (time) {
+        const duration = this.getDuration();
+        const startFraction = duration > 0 ? Math.max(0, Math.min(1, time / duration)) : 0;
+        this.audioBufferPlayer.stop();
+        this.audioBufferPlayer.play(
+            startFraction,
+            1,
+            this.handleUpdatePlayhead,
+            this.handleStoppedPlaying);
+    }
+    handleDeleteMarker (broadcastId) {
+        this.props.vm.deleteSoundMarker(this.props.soundIndex, broadcastId);
+    }
+    handleRenameMarker (broadcastId, newName) {
+        this.props.vm.renameSoundMarkerBroadcast(broadcastId, newName);
+    }
+    handleSetMarkerTime (broadcastId, time) {
+        this.props.vm.setSoundMarkerTime(this.props.soundIndex, broadcastId, time);
+    }
+    /**
+     * Commit a remapped set of markers (used after destructive edits and undo/redo).
+     * Markers may carry an optional `name` so that broadcasts garbage-collected
+     * during the edit can be re-created on undo.
+     * @param {Array.<object>} markers - the new markers [{time, broadcastId, name?}].
+     */
+    commitMarkers (markers) {
+        this.props.vm.setSoundMarkers(this.props.soundIndex, markers);
+    }
     render () {
         const {effectTypes} = AudioEffects;
         return (
@@ -436,17 +565,24 @@ class SoundEditor extends React.Component {
                 canRedo={this.redoStack.length > 0}
                 canUndo={this.undoStack.length > 0}
                 chunkLevels={this.state.chunkLevels}
+                duration={this.getDuration()}
+                markers={this.props.markers}
                 name={this.props.name}
                 playhead={this.state.playhead}
                 setRef={this.setRef}
                 tooLoud={this.tooLoud()}
                 trimEnd={this.state.trimEnd}
                 trimStart={this.state.trimStart}
+                onAddMarker={this.handleAddMarker}
                 onChangeName={this.handleChangeName}
                 onContainerClick={this.handleContainerClick}
                 onCopy={this.handleCopy}
                 onCopyToNew={this.handleCopyToNew}
                 onDelete={this.handleDelete}
+                onDeleteMarker={this.handleDeleteMarker}
+                onPlayMarker={this.handlePlayMarker}
+                onRenameMarker={this.handleRenameMarker}
+                onSetMarkerTime={this.handleSetMarkerTime}
                 onEcho={this.effectFactory(effectTypes.ECHO)}
                 onFadeIn={this.effectFactory(effectTypes.FADEIN)}
                 onFadeOut={this.effectFactory(effectTypes.FADEOUT)}
@@ -470,6 +606,11 @@ class SoundEditor extends React.Component {
 
 SoundEditor.propTypes = {
     isFullScreen: PropTypes.bool,
+    markers: PropTypes.arrayOf(PropTypes.shape({
+        broadcastId: PropTypes.string,
+        name: PropTypes.string,
+        time: PropTypes.number
+    })),
     name: PropTypes.string.isRequired,
     sampleRate: PropTypes.number,
     samples: PropTypes.instanceOf(Float32Array),
@@ -484,11 +625,22 @@ const mapStateToProps = (state, {soundIndex}) => {
     const index = soundIndex < sprite.sounds.length ? soundIndex : sprite.sounds.length - 1;
     const sound = state.scratchGui.vm.editingTarget.sprite.sounds[index];
     const audioBuffer = state.scratchGui.vm.getSoundBuffer(index);
+    // Resolve each marker's broadcast name from the stage's variables.
+    const stage = state.scratchGui.vm.runtime.getTargetForStage();
+    const markers = (sound?.markers || []).map(marker => {
+        const broadcastVar = stage && stage.variables[marker.broadcastId];
+        return {
+            time: marker.time,
+            broadcastId: marker.broadcastId,
+            name: broadcastVar ? broadcastVar.name : ''
+        };
+    });
     return {
         soundId: sound?.soundId,
         sampleRate: audioBuffer?.sampleRate,
         samples: audioBuffer?.getChannelData(0),
         isFullScreen: state.scratchGui.mode.isFullScreen,
+        markers,
         name: sound?.name,
         vm: state.scratchGui.vm
     };

@@ -9,9 +9,12 @@ import Input from '../forms/input.jsx';
 
 import BufferedInputHOC from '../forms/buffered-input-hoc.jsx';
 import AudioSelector from '../../containers/audio-selector.jsx';
+import FlagMarkers from '../../containers/flag-markers.jsx';
 import IconButton from '../icon-button/icon-button.jsx';
 
 import styles from './sound-editor.css';
+
+import flagIcon from './icon--flag.svg';
 
 import playIcon from './icon--play.svg';
 import stopIcon from './icon--stop.svg';
@@ -69,6 +72,16 @@ const messages = defineMessages({
         id: 'gui.soundEditor.delete',
         description: 'Title of the button to delete the sound',
         defaultMessage: 'Delete'
+    },
+    addFlag: {
+        id: 'gui.soundEditor.addFlag',
+        description: 'Title of the button to add a flag/marker that fires a broadcast during playback',
+        defaultMessage: 'Add flag'
+    },
+    broadcastMessage: {
+        id: 'gui.soundEditor.broadcastMessage',
+        description: 'Label above the field for editing a sound flag\'s broadcast message name',
+        defaultMessage: 'Broadcast message'
     },
     save: {
         id: 'gui.soundEditor.save',
@@ -211,6 +224,12 @@ const SoundEditor = props => {
                     title={intl.formatMessage(messages.delete)}
                     onClick={props.onDelete}
                 />
+                <IconButton
+                    className={styles.toolButton}
+                    img={flagIcon}
+                    title={intl.formatMessage(messages.addFlag)}
+                    onClick={props.onAddMarker}
+                />
             </div>
             <div className={styles.row}>
                 <div className={styles.waveformContainer}>
@@ -226,6 +245,20 @@ const SoundEditor = props => {
                         onPlay={props.onPlay}
                         onSetTrim={props.onSetTrim}
                         onStop={props.onStop}
+                    />
+                    <FlagMarkers
+                        broadcastLabel={intl.formatMessage(messages.broadcastMessage)}
+                        deleteLabel={intl.formatMessage(messages.delete)}
+                        duration={props.duration}
+                        markers={props.markers}
+                        playLabel={intl.formatMessage(messages.play)}
+                        playing={props.playhead !== null}
+                        stopLabel={intl.formatMessage(messages.stop)}
+                        onDeleteMarker={props.onDeleteMarker}
+                        onPlayMarker={props.onPlayMarker}
+                        onRenameMarker={props.onRenameMarker}
+                        onSetMarkerTime={props.onSetMarkerTime}
+                        onStopMarker={props.onStop}
                     />
                 </div>
             </div>
@@ -322,12 +355,20 @@ SoundEditor.propTypes = {
     canRedo: PropTypes.bool.isRequired,
     canUndo: PropTypes.bool.isRequired,
     chunkLevels: PropTypes.arrayOf(PropTypes.number).isRequired,
+    duration: PropTypes.number,
+    markers: PropTypes.arrayOf(PropTypes.shape({
+        broadcastId: PropTypes.string,
+        name: PropTypes.string,
+        time: PropTypes.number
+    })),
     name: PropTypes.string.isRequired,
+    onAddMarker: PropTypes.func,
     onChangeName: PropTypes.func.isRequired,
     onContainerClick: PropTypes.func.isRequired,
     onCopy: PropTypes.func.isRequired,
     onCopyToNew: PropTypes.func.isRequired,
     onDelete: PropTypes.func,
+    onDeleteMarker: PropTypes.func,
     onEcho: PropTypes.func.isRequired,
     onFadeIn: PropTypes.func.isRequired,
     onFadeOut: PropTypes.func.isRequired,
@@ -336,9 +377,12 @@ SoundEditor.propTypes = {
     onMute: PropTypes.func.isRequired,
     onPaste: PropTypes.func.isRequired,
     onPlay: PropTypes.func.isRequired,
+    onPlayMarker: PropTypes.func,
     onRedo: PropTypes.func.isRequired,
+    onRenameMarker: PropTypes.func,
     onReverse: PropTypes.func.isRequired,
     onRobot: PropTypes.func.isRequired,
+    onSetMarkerTime: PropTypes.func,
     onSetTrim: PropTypes.func,
     onSlower: PropTypes.func.isRequired,
     onSofter: PropTypes.func.isRequired,

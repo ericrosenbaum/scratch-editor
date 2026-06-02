@@ -798,6 +798,149 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
+     * Add a flag/marker at a time position within a sound on the current editing
+     * target. A new global broadcast message is created for the marker so that it
+     * can be received with `when I receive` blocks. Returns the created marker.
+     * @param {int} soundIndex - the index of the sound to add a marker to.
+     * @param {number} time - the time position of the marker, in seconds.
+     * @returns {?object} the created marker {time, broadcastId}, or null.
+     */
+    addSoundMarker (soundIndex, time) {
+        const sound = this.editingTarget.sprite.sounds[soundIndex];
+        if (!sound) return null;
+        if (!sound.markers) sound.markers = [];
+        const broadcastName = `${sound.name} flag 1`;
+        const broadcastVar = this.runtime.createNewGlobalVariable(
+            broadcastName, null, Variable.BROADCAST_MESSAGE_TYPE);
+        const marker = {time, broadcastId: broadcastVar.id};
+        sound.markers.push(marker);
+        this._renumberSoundMarkers(soundIndex);
+        this.refreshWorkspace();
+        this.emitTargetsUpdate();
+        return marker;
+    }
+
+    /**
+     * Set the name (and value) of a broadcast message variable and rewrite every
+     * block field that references it (broadcasts are matched by name).
+     * @param {string} broadcastId - the broadcast id to rename.
+     * @param {string} name - the new name to assign.
+     * @private
+     */
+    _updateBroadcastName (broadcastId, name) {
+        const stage = this.runtime.getTargetForStage();
+        const broadcastVar = stage.variables[broadcastId];
+        if (!broadcastVar || broadcastVar.type !== Variable.BROADCAST_MESSAGE_TYPE) return;
+        broadcastVar.name = name;
+        broadcastVar.value = name; // name and value are the same for broadcast msgs
+        for (const target of this.runtime.targets) {
+            const refs = target.blocks.getAllVariableAndListReferences(null, true);
+            if (refs[broadcastId]) {
+                for (const ref of refs[broadcastId]) {
+                    if (ref.type === Variable.BROADCAST_MESSAGE_TYPE) {
+                        ref.referencingField.value = name;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Renumber a sound's markers so their broadcast names stay sequential in time
+     * order (e.g. "Meow flag 1", "Meow flag 2", ... left to right). Only markers
+     * whose broadcast still uses the default "<sound name> flag <n>" name are
+     * renumbered; manually-renamed broadcasts are left untouched.
+     * @param {int} soundIndex - the index of the sound to renumber.
+     * @private
+     */
+    _renumberSoundMarkers (soundIndex) {
+        const sound = this.editingTarget.sprite.sounds[soundIndex];
+        if (!sound || !sound.markers) return;
+        const stage = this.runtime.getTargetForStage();
+        const prefix = `${sound.name} flag `;
+        const isDefaultName = name =>
+            name.indexOf(prefix) === 0 && /^[0-9]+$/.test(name.slice(prefix.length));
+        const sorted = sound.markers.slice().sort((a, b) => a.time - b.time);
+        sorted.forEach((marker, i) => {
+            const broadcastVar = stage.variables[marker.broadcastId];
+            if (!broadcastVar || !isDefaultName(broadcastVar.name)) return;
+            const newName = `${prefix}${i + 1}`;
+            if (broadcastVar.name !== newName) this._updateBroadcastName(marker.broadcastId, newName);
+        });
+    }
+
+    /**
+     * Delete a sound marker by its broadcast id. The associated broadcast message
+     * is garbage-collected on the next workspace refresh if nothing else uses it.
+     * @param {int} soundIndex - the index of the sound owning the marker.
+     * @param {string} broadcastId - the broadcast id identifying the marker.
+     */
+    deleteSoundMarker (soundIndex, broadcastId) {
+        const sound = this.editingTarget.sprite.sounds[soundIndex];
+        if (!sound || !sound.markers) return;
+        sound.markers = sound.markers.filter(m => m.broadcastId !== broadcastId);
+        this._renumberSoundMarkers(soundIndex);
+        this.refreshWorkspace();
+        this.emitTargetsUpdate();
+    }
+
+    /**
+     * Update the time position of an existing sound marker.
+     * @param {int} soundIndex - the index of the sound owning the marker.
+     * @param {string} broadcastId - the broadcast id identifying the marker.
+     * @param {number} time - the new time position, in seconds.
+     */
+    setSoundMarkerTime (soundIndex, broadcastId, time) {
+        const sound = this.editingTarget.sprite.sounds[soundIndex];
+        if (!sound || !sound.markers) return;
+        const marker = sound.markers.find(m => m.broadcastId === broadcastId);
+        if (marker) {
+            marker.time = time;
+            // Reordering may change the sequential numbering of the flags.
+            this._renumberSoundMarkers(soundIndex);
+            // emitTargetsUpdate (not just emitProjectChanged) so the sound editor
+            // re-renders with the marker's new position.
+            this.refreshWorkspace();
+            this.emitTargetsUpdate();
+        }
+    }
+
+    /**
+     * Replace the full set of markers on a sound (used when remapping markers
+     * after a destructive edit). Markers dropped from the array have their
+     * broadcasts garbage-collected on workspace refresh if otherwise unused.
+     * @param {int} soundIndex - the index of the sound to update.
+     * @param {Array.<object>} markers - the new markers array [{time, broadcastId}].
+     */
+    setSoundMarkers (soundIndex, markers) {
+        const sound = this.editingTarget.sprite.sounds[soundIndex];
+        if (!sound) return;
+        sound.markers = markers;
+        this._renumberSoundMarkers(soundIndex);
+        this.refreshWorkspace();
+        this.emitTargetsUpdate();
+    }
+
+    /**
+     * Rename the broadcast message associated with a sound marker. Updates the
+     * broadcast variable and rewrites every block field that references it (they
+     * are matched by name), then refreshes the workspace so dropdowns update.
+     * @param {string} broadcastId - the broadcast id to rename.
+     * @param {string} newName - the requested new name (collision-checked).
+     */
+    renameSoundMarkerBroadcast (broadcastId, newName) {
+        const stage = this.runtime.getTargetForStage();
+        const broadcastVar = stage.variables[broadcastId];
+        if (!broadcastVar || broadcastVar.type !== Variable.BROADCAST_MESSAGE_TYPE) return;
+        const existingNames = this.runtime.getAllVarNamesOfType(Variable.BROADCAST_MESSAGE_TYPE)
+            .filter(name => name !== broadcastVar.name);
+        const finalName = StringUtil.unusedName(newName, existingNames);
+        this._updateBroadcastName(broadcastId, finalName);
+        this.refreshWorkspace();
+        this.runtime.emitProjectChanged();
+    }
+
+    /**
      * Get a sound buffer from the audio engine.
      * @param {int} soundIndex - the index of the sound to be got.
      * @returns {AudioBuffer} the sound's audio buffer.
@@ -860,11 +1003,33 @@ class VirtualMachine extends EventEmitter {
      */
     deleteSound (soundIndex) {
         const target = this.editingTarget;
+        // Snapshot any marker broadcasts so they can be restored on undo.
+        const sound = target.sprite.sounds[soundIndex];
+        const markerBroadcasts = [];
+        if (sound && sound.markers) {
+            const stage = this.runtime.getTargetForStage();
+            for (const marker of sound.markers) {
+                const broadcastVar = stage.variables[marker.broadcastId];
+                if (broadcastVar) {
+                    markerBroadcasts.push({id: broadcastVar.id, name: broadcastVar.name});
+                }
+            }
+        }
         const deletedSound = this.editingTarget.deleteSound(soundIndex);
         if (deletedSound) {
             this.runtime.emitProjectChanged();
+            // Garbage-collect the deleted sound's marker broadcasts if unused.
+            this.refreshWorkspace();
             const restoreFun = () => {
                 target.addSound(deletedSound);
+                // Re-create any marker broadcasts that were garbage-collected.
+                const stage = this.runtime.getTargetForStage();
+                for (const b of markerBroadcasts) {
+                    if (!stage.variables[b.id]) {
+                        stage.createVariable(b.id, b.name, Variable.BROADCAST_MESSAGE_TYPE);
+                    }
+                }
+                this.refreshWorkspace();
                 this.emitTargetsUpdate();
             };
             return restoreFun;
@@ -1396,6 +1561,23 @@ class VirtualMachine extends EventEmitter {
                 if (currBlocks[blockId].fields.BROADCAST_OPTION) {
                     const id = currBlocks[blockId].fields.BROADCAST_OPTION.id;
                     const index = messageIds.indexOf(id);
+                    if (index !== -1) {
+                        messageIds = messageIds.slice(0, index)
+                            .concat(messageIds.slice(index + 1));
+                    }
+                }
+            }
+        }
+        // Go through all sounds on all targets, removing broadcast ids that are
+        // referenced by a sound marker/flag. These broadcasts are "live" even
+        // before any `when I receive` block references them.
+        for (let i = 0; i < this.runtime.targets.length; i++) {
+            const sounds = this.runtime.targets[i].sprite.sounds;
+            for (let j = 0; j < sounds.length; j++) {
+                const markers = sounds[j].markers;
+                if (!markers) continue;
+                for (let k = 0; k < markers.length; k++) {
+                    const index = messageIds.indexOf(markers[k].broadcastId);
                     if (index !== -1) {
                         messageIds = messageIds.slice(0, index)
                             .concat(messageIds.slice(index + 1));

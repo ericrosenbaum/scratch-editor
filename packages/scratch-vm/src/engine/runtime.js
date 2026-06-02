@@ -248,6 +248,13 @@ class Runtime extends EventEmitter {
         this._hats = {};
 
         /**
+         * Callbacks invoked once per frame in `_step`. Extensions (e.g. the sound
+         * extension's marker watcher) can push a function here to poll each frame.
+         * @type {Array.<Function>}
+         */
+        this._stepCallbacks = [];
+
+        /**
          * A list of script block IDs that were glowing during the previous frame.
          * @type {!Array.<!string>}
          */
@@ -2146,6 +2153,10 @@ class Runtime extends EventEmitter {
         }
         this.redrawRequested = false;
         this._pushMonitors();
+        // Invoke any per-frame step callbacks (e.g. sound marker watchers).
+        for (let i = 0; i < this._stepCallbacks.length; i++) {
+            this._stepCallbacks[i]();
+        }
         if (this.profiler !== null) {
             if (stepThreadsProfilerId === -1) {
                 stepThreadsProfilerId = this.profiler.idByName('Sequencer.stepThreads');
