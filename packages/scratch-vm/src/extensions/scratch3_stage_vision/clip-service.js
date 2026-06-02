@@ -73,26 +73,52 @@ const _imageCache = new Map();
 // Serial queue — the ONNX session is not reentrant.
 let _queue = Promise.resolve();
 
-function getModels () {
-    if (_modelsPromise) return _modelsPromise;
+function loadModels (device, dtype) {
     const opts = {
-        dtype: 'q8',
-        device: 'wasm',
+        device, dtype,
         progress_callback (p) { self.postMessage({type: 'progress', progress: p}); }
     };
-    _modelsPromise = Promise.all([
+    return Promise.all([
         AutoTokenizer.from_pretrained(MODEL_ID),
         AutoProcessor.from_pretrained(MODEL_ID),
         CLIPTextModelWithProjection.from_pretrained(MODEL_ID, opts),
         CLIPVisionModelWithProjection.from_pretrained(MODEL_ID, opts)
-    ]).then(([tokenizer, processor, textModel, visionModel]) => {
-        self.postMessage({type: 'ready'});
-        return {tokenizer, processor, textModel, visionModel};
-    }).catch(err => {
-        self.postMessage({type: 'pipelineError', message: String(err)});
+    ]).then(([tokenizer, processor, textModel, visionModel]) =>
+        ({tokenizer, processor, textModel, visionModel}));
+}
+
+// Prefer WebGPU (fp16) when the adapter is present; fall back to WASM (q8) if
+// the backend is unavailable or the model has no matching weights. The fp16
+// weights are larger to download but the vision encoder runs far faster on GPU.
+function modelCandidates () {
+    const list = [];
+    if (typeof navigator !== 'undefined' && navigator.gpu) {
+        list.push({device: 'webgpu', dtype: 'fp16'});
+    }
+    list.push({device: 'wasm', dtype: 'q8'});
+    return list;
+}
+
+function getModels () {
+    if (_modelsPromise) return _modelsPromise;
+    _modelsPromise = (async () => {
+        const candidates = modelCandidates();
+        let lastErr;
+        for (let i = 0; i < candidates.length; i++) {
+            const {device, dtype} = candidates[i];
+            try {
+                const models = await loadModels(device, dtype);
+                self.postMessage({type: 'ready', device});
+                return models;
+            } catch (err) {
+                lastErr = err;
+                self.postMessage({type: 'loadFallback', device, message: String(err)});
+            }
+        }
+        self.postMessage({type: 'pipelineError', message: String(lastErr)});
         _modelsPromise = null;
-        throw err;
-    });
+        throw lastErr;
+    })();
     return _modelsPromise;
 }
 
@@ -215,8 +241,11 @@ const _handleWorkerMessage = e => {
         _forwardProgress(data.progress);
 
     } else if (data.type === 'ready') {
-        console.log(LOG_PREFIX, 'Worker models ready');
+        console.log(LOG_PREFIX, 'Worker models ready on', data.device || 'wasm');
         _dispatch('stagevision:ready');
+
+    } else if (data.type === 'loadFallback') {
+        console.warn(LOG_PREFIX, `Model load on ${data.device} failed, trying next backend:`, data.message);
 
     } else if (data.type === 'pipelineError') {
         console.error(LOG_PREFIX, 'Worker model load error:', data.message);
@@ -307,6 +336,28 @@ const _softmax = logits => {
     return out;
 };
 
+// Mirror the worker's WebGPU-then-WASM cascade on the main thread.
+const _fbCandidates = () => {
+    const list = [];
+    if (typeof navigator !== 'undefined' && navigator.gpu) {
+        list.push({device: 'webgpu', dtype: 'fp16'});
+    }
+    list.push({device: 'wasm', dtype: 'q8'});
+    return list;
+};
+
+const _fbLoadModels = (mod, device, dtype) => {
+    const opts = {device, dtype, progress_callback: _forwardProgress};
+    return Promise.all([
+        mod.AutoTokenizer.from_pretrained(MODEL_ID),
+        mod.AutoProcessor.from_pretrained(MODEL_ID),
+        mod.CLIPTextModelWithProjection.from_pretrained(MODEL_ID, opts),
+        mod.CLIPVisionModelWithProjection.from_pretrained(MODEL_ID, opts)
+    ]).then(([tokenizer, processor, textModel, visionModel]) => ({
+        mod, tokenizer, processor, textModel, visionModel
+    }));
+};
+
 const _fbGetModels = () => {
     if (_fbModelsPromise) return _fbModelsPromise;
     const t0 = Date.now();
@@ -317,21 +368,22 @@ const _fbGetModels = () => {
         });
     }
     _fbModelsPromise = _fbModulePromise
-        .then(mod => {
-            const opts = {dtype: 'q8', device: 'wasm', progress_callback: _forwardProgress};
-            return Promise.all([
-                mod.AutoTokenizer.from_pretrained(MODEL_ID),
-                mod.AutoProcessor.from_pretrained(MODEL_ID),
-                mod.CLIPTextModelWithProjection.from_pretrained(MODEL_ID, opts),
-                mod.CLIPVisionModelWithProjection.from_pretrained(MODEL_ID, opts)
-            ]).then(([tokenizer, processor, textModel, visionModel]) => ({
-                mod, tokenizer, processor, textModel, visionModel
-            }));
-        })
-        .then(bundle => {
-            console.log(LOG_PREFIX, 'Fallback models ready in', Date.now() - t0, 'ms');
-            _dispatch('stagevision:ready');
-            return bundle;
+        .then(async mod => {
+            const candidates = _fbCandidates();
+            let lastErr;
+            for (let i = 0; i < candidates.length; i++) {
+                const {device, dtype} = candidates[i];
+                try {
+                    const bundle = await _fbLoadModels(mod, device, dtype);
+                    console.log(LOG_PREFIX, `Fallback models ready on ${device} in ${Date.now() - t0}ms`);
+                    _dispatch('stagevision:ready');
+                    return bundle;
+                } catch (err) {
+                    lastErr = err;
+                    console.warn(LOG_PREFIX, `Fallback load on ${device} failed, trying next backend:`, err);
+                }
+            }
+            throw lastErr;
         })
         .catch(err => {
             _fbModelsPromise = null;
