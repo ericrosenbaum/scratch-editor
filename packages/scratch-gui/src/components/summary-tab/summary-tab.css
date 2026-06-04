@@ -1,0 +1,208 @@
+@import "../../css/colors.css";
+
+.summary-tab {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    background-color: $ui-white;
+    padding: 1.25rem 1.5rem;
+    box-sizing: border-box;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: $text-primary;
+}
+
+/* Project Header */
+
+.project-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid $ui-tertiary;
+}
+
+.project-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 0.25rem;
+}
+
+.project-description {
+    font-size: 0.875rem;
+    color: $text-primary-transparent;
+    font-style: italic;
+}
+
+.generate-button {
+    margin-top: 0.6rem;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $ui-white;
+    background-color: $motion-primary;
+    border: none;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: background-color 0.1s, opacity 0.1s;
+}
+
+.generate-button:hover:not(:disabled) {
+    background-color: $motion-tertiary;
+}
+
+.generate-button:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.status-message {
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: $text-primary-transparent;
+}
+
+/* Sprite Sections */
+
+.sprite-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sprite-section {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 2px solid $ui-tertiary;
+    transition: border-color 0.1s, box-shadow 0.1s;
+}
+
+.sprite-section.is-selected {
+    border-color: $looks-secondary;
+    box-shadow: 0 0 0 3px $looks-transparent;
+}
+
+.sprite-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    background-color: $ui-secondary;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.1s;
+}
+
+.sprite-header:hover {
+    background-color: $ui-tertiary;
+}
+
+.sprite-thumbnail-container {
+    width: 3.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sprite-thumbnail {
+    max-height: 2.5rem;
+    max-width: 3.5rem;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.sprite-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.sprite-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: $text-primary;
+}
+
+.sprite-description {
+    font-size: 0.78rem;
+    color: $text-primary-transparent;
+    font-weight: 400;
+}
+
+.sprite-status {
+    font-size: 0.78rem;
+    color: $text-primary-transparent;
+    font-weight: 400;
+    font-style: italic;
+}
+
+.row-button {
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: $motion-primary;
+    background-color: $ui-white;
+    border: 1px solid $motion-primary;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: background-color 0.1s, opacity 0.1s;
+}
+
+.row-button:hover:not(:disabled) {
+    background-color: $ui-primary;
+}
+
+.row-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Stack Sections */
+
+.stack-list {
+    padding: 0.5rem 0;
+    background-color: $ui-white;
+}
+
+.stack-section {
+    padding: 0.35rem 0.75rem 0.35rem 1.5rem;
+}
+
+.stack-event {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: $motion-tertiary;
+    font-family: monospace;
+}
+
+.stack-description {
+    font-size: 0.85rem;
+    color: $text-primary-transparent;
+    padding: 0.1rem 0 0 0;
+    line-height: 1.4;
+}
+
+.no-stacks {
+    font-size: 0.8rem;
+    color: $text-primary-transparent;
+    font-style: italic;
+    padding: 0 0.75rem 0.5rem 1.5rem;
+}
+
+/* Chevron */
+
+.chevron {
+    font-size: 0.6rem;
+    color: $text-primary-transparent;
+    flex-shrink: 0;
+    width: 0.75rem;
+    text-align: center;
+}

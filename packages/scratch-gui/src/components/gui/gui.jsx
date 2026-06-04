@@ -12,7 +12,7 @@ import Renderer from '@scratch/scratch-render';
 
 import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
-import MapTab from '../map-tab/map-tab.jsx';
+import SummaryTab from '../summary-tab/summary-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
@@ -40,7 +40,7 @@ import {DEFAULT_THEME, themeMap} from '../../lib/settings/theme/index.js';
 import {AccountMenuOptionsPropTypes} from '../../lib/account-menu-options';
 
 import styles from './gui.css';
-import mapIcon from './icon--map.svg';
+import summaryIcon from './icon--summary.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
@@ -415,12 +415,12 @@ const GUIComponent = props => {
                                         >
                                             <img
                                                 draggable={false}
-                                                src={mapIcon}
+                                                src={summaryIcon}
                                             />
                                             <FormattedMessage
-                                                defaultMessage="Map"
-                                                description="Button to get to the map panel"
-                                                id="gui.gui.mapTab"
+                                                defaultMessage="Summary"
+                                                description="Button to get to the summary panel"
+                                                id="gui.gui.summaryTab"
                                             />
                                         </Tab>
                                         <Tab
@@ -484,7 +484,7 @@ const GUIComponent = props => {
                                     className={tabClassNames.tabPanel}
                                     role="tabpanel"
                                 >
-                                    <MapTab />
+                                    <SummaryTab />
                                 </TabPanel>
                                 <TabPanel
                                     className={tabClassNames.tabPanel}
@@ -601,7 +601,7 @@ GUIComponent.propTypes = {
     backpackHost: PropTypes.string,
     backpackVisible: PropTypes.bool,
     basePath: PropTypes.string,
-    mapTabVisible: PropTypes.bool,
+    summaryTabVisible: PropTypes.bool,
     blocksTabVisible: PropTypes.bool,
     blocksId: PropTypes.string,
     canChangeLanguage: PropTypes.bool,

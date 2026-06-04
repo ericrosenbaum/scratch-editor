@@ -18,12 +18,11 @@ import {
 } from '../reducers/project-state';
 import {
     activateTab,
-    MAP_TAB_INDEX
+    SUMMARY_TAB_INDEX
 } from '../reducers/editor-tab';
 
+import log from './log';
 import {GUIStoragePropType} from '../gui-config';
-
-import dancepartySb3 from '!arraybuffer-loader!./default-project/DanceParty.sb3';
 
 /* Higher Order Component to provide behavior for loading projects by id. If
  * there's no id, the default project is loaded.
@@ -76,12 +75,27 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 this.props.onProjectUnchanged();
             }
             if (this.props.isShowingProject && (prevProps.isLoadingProject || prevProps.isCreatingNew)) {
-                this.props.onActivateTab(MAP_TAB_INDEX);
+                this.props.onActivateTab(SUMMARY_TAB_INDEX);
             }
         }
-        fetchProject (_projectId, loadingState) {
-            this.props.onFetchedProjectData(new Uint8Array(dancepartySb3), loadingState);
-            return Promise.resolve();
+        fetchProject (projectId, loadingState) {
+            const storage = this.props.storage.scratchStorage;
+
+            return storage
+                .load(storage.AssetType.Project, projectId, storage.DataFormat.JSON)
+                .then(projectAsset => {
+                    if (projectAsset) {
+                        this.props.onFetchedProjectData(projectAsset.data, loadingState);
+                    } else {
+                        // Treat failure to load as an error
+                        // Throw to be caught by catch later on
+                        throw new Error('Could not find project');
+                    }
+                })
+                .catch(err => {
+                    this.props.onError(err);
+                    log.error(err);
+                });
         }
         render () {
             const {
