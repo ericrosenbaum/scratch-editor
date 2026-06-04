@@ -52,6 +52,16 @@ const GESTURES = {
 };
 
 /**
+ * On/off options for the pinch-drag mode.
+ * @readonly
+ * @enum {string}
+ */
+const DRAG_STATE = {
+    ON: 'on',
+    OFF: 'off'
+};
+
+/**
  * Keypoint indices for finger-up detection.
  * For each finger: [tip index, pip/comparison joint index]
  * Thumb uses MCP (index 2) for comparison instead of PIP.
@@ -97,10 +107,32 @@ const FINGER_NEAR_TIP = {
 const PALM_INDICES = [0, 5, 9, 13, 17];
 
 /**
- * Maximum pixel distance between thumb tip and index tip that counts as a pinch gesture.
+ * Pixel distance between thumb tip and index tip at or below which a pinch is
+ * considered active ("on"). Used both to start a pinch and to keep a dragged
+ * sprite following the pinch point. Kept tight so the sprite stops following
+ * as soon as the fingers begin to open.
  * @type {number}
  */
-const PINCH_THRESHOLD = 40;
+const PINCH_ON_DISTANCE = 40;
+
+/**
+ * Pixel distance above which an active pinch is considered fully released
+ * ("off"). Larger than PINCH_ON_DISTANCE to form a hysteresis band: between the
+ * two distances an in-progress pinch is held but the sprite stops following, so
+ * brief detection glitches don't drop the grab yet the sprite doesn't drift as
+ * the fingers spread on release.
+ * @type {number}
+ */
+const PINCH_OFF_DISTANCE = 60;
+
+/**
+ * Number of consecutive non-pinch frames required to end a pinch. The pinch
+ * state turns on immediately when a pinch is detected, but only turns off after
+ * this many frames in a row report no pinch. This hysteresis prevents brief
+ * detection glitches (false negatives) from interrupting an ongoing pinch.
+ * @type {number}
+ */
+const PINCH_RELEASE_FRAMES = 3;
 
 /**
  * Class for the Hand Sensing blocks in Scratch 3.0
@@ -153,6 +185,28 @@ class Scratch3HandSensingBlocks {
          * @type {object|null}
          */
         this._currentHand = null;
+
+        /**
+         * Smoothed (hysteresis-filtered) pinch state per hand, keyed by
+         * handedness label ('Left'/'Right').
+         * @type {object}
+         */
+        this._pinchState = {};
+
+        /**
+         * Recent raw pinch detection history per hand, keyed by handedness label.
+         * Used to apply the release hysteresis.
+         * @type {object}
+         */
+        this._pinchHistory = {};
+
+        /**
+         * Active pinch drags, keyed by hand handedness label ('Left'/'Right').
+         * Each entry holds the dragged target's id and the offset between the
+         * sprite position and the pinch point at the moment it was grabbed.
+         * @type {object}
+         */
+        this._pinchDrags = {};
 
         this.runtime.emit('EXTENSION_DATA_LOADING', true);
 
@@ -429,6 +483,28 @@ class Scratch3HandSensingBlocks {
     }
 
     /**
+     * On/off menu for the pinch-drag command.
+     * @type {object[]}
+     */
+    get DRAG_INFO () {
+        return [{
+            text: formatMessage({
+                id: 'handSensing.on',
+                default: 'on',
+                description: 'Option to turn pinch dragging on'
+            }),
+            value: DRAG_STATE.ON
+        }, {
+            text: formatMessage({
+                id: 'handSensing.off',
+                default: 'off',
+                description: 'Option to turn pinch dragging off'
+            }),
+            value: DRAG_STATE.OFF
+        }];
+    }
+
+    /**
      * Select a hand from _allHands based on the given hand choice.
      * @param {string} handChoice - one of HAND_CHOICE values
      * @returns {object|null} the matching hand, or null
@@ -480,6 +556,8 @@ class Scratch3HandSensingBlocks {
                     this._currentHand = null;
                 }
                 this._updateIsDetected();
+                this._updatePinchStates();
+                this._updatePinchDrags();
             });
         }
     }
@@ -677,13 +755,20 @@ class Scratch3HandSensingBlocks {
                     }
                 },
                 {
-                    opcode: 'spritePinched',
+                    opcode: 'setPinchDrag',
                     text: formatMessage({
-                        id: 'handSensing.spritePinched',
-                        default: 'sprite is pinched?',
-                        description: 'Boolean that returns whether a hand is pinching at the sprite'
+                        id: 'handSensing.setPinchDrag',
+                        default: 'set pinch dragging [STATE]',
+                        description: 'Command that turns pinch-to-drag mode on or off'
                     }),
-                    blockType: BlockType.BOOLEAN,
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        STATE: {
+                            type: ArgumentType.STRING,
+                            menu: 'DRAG_STATE',
+                            defaultValue: DRAG_STATE.ON
+                        }
+                    },
                     filter: [TargetType.SPRITE]
                 },
                 '---',
@@ -731,7 +816,8 @@ class Scratch3HandSensingBlocks {
                 HAND_LR: this.HAND_LR_INFO,
                 FINGER: this.FINGER_INFO,
                 GESTURE_HAT: this.GESTURE_HAT_INFO,
-                GESTURE_STATE: this.GESTURE_STATE_INFO
+                GESTURE_STATE: this.GESTURE_STATE_INFO,
+                DRAG_STATE: this.DRAG_INFO
             }
         };
     }
@@ -886,6 +972,92 @@ class Scratch3HandSensingBlocks {
         return Math.sqrt((dx * dx) + (dy * dy));
     }
 
+    /**
+     * Update the hysteresis-filtered pinch state for each detected hand. Called
+     * once per detection frame.
+     *
+     * Two levels of hysteresis are applied:
+     *  - Distance (Schmitt trigger): a pinch starts when the fingers close to
+     *    within PINCH_ON_DISTANCE and is only let go once they open past the
+     *    larger PINCH_OFF_DISTANCE.
+     *  - Time: the "off" transition additionally requires PINCH_RELEASE_FRAMES
+     *    consecutive non-pinch frames, so a brief detection glitch does not drop
+     *    an ongoing pinch.
+     * @private
+     */
+    _updatePinchStates () {
+        const seen = new Set();
+        for (const hand of this._allHands) {
+            const label = hand.handedness;
+            if (!label) continue;
+            seen.add(label);
+
+            const dist = this._getThumbIndexDistance(hand);
+            // Asymmetric distance threshold: harder to keep a pinch alive than
+            // to start one would cause drift on release, so instead we require a
+            // tight pinch to start (PINCH_ON_DISTANCE) and only fully release
+            // once clearly open (PINCH_OFF_DISTANCE).
+            const wasPinching = this._pinchState[label] === true;
+            const threshold = wasPinching ? PINCH_OFF_DISTANCE : PINCH_ON_DISTANCE;
+            const rawPinch = dist >= 0 && dist < threshold;
+
+            const history = this._pinchHistory[label] || [];
+            history.push(rawPinch);
+            if (history.length > PINCH_RELEASE_FRAMES) {
+                history.shift();
+            }
+            this._pinchHistory[label] = history;
+
+            if (rawPinch) {
+                // Turn on immediately.
+                this._pinchState[label] = true;
+            } else if (history.length >= PINCH_RELEASE_FRAMES && history.every(p => !p)) {
+                // Turn off only after a sustained release.
+                this._pinchState[label] = false;
+            }
+            // Otherwise hold the previous state (hysteresis window).
+        }
+
+        // Clear state for any hand no longer detected this frame.
+        for (const label of Object.keys(this._pinchState)) {
+            if (!seen.has(label)) {
+                this._pinchState[label] = false;
+                this._pinchHistory[label] = [];
+            }
+        }
+    }
+
+    /**
+     * Whether a hand is tightly pinching right now (fingers within
+     * PINCH_ON_DISTANCE), ignoring the hysteresis hold. A dragged sprite only
+     * follows the pinch point while this is true, so it stops moving as soon as
+     * the fingers begin to open rather than drifting until the full release.
+     * @param {object} hand - the hand object
+     * @returns {boolean} true if the fingers are tightly pinched
+     * @private
+     */
+    _isHandTightlyPinching (hand) {
+        const dist = this._getThumbIndexDistance(hand);
+        return dist >= 0 && dist < PINCH_ON_DISTANCE;
+    }
+
+    /**
+     * Whether a hand is pinching, using the hysteresis-filtered state.
+     * Falls back to a raw distance check for hands with no handedness label.
+     * @param {object} hand - the hand object
+     * @returns {boolean} true if the hand is considered to be pinching
+     * @private
+     */
+    _isHandPinching (hand) {
+        if (!hand) return false;
+        const label = hand.handedness;
+        if (label && Object.prototype.hasOwnProperty.call(this._pinchState, label)) {
+            return this._pinchState[label];
+        }
+        const dist = this._getThumbIndexDistance(hand);
+        return dist >= 0 && dist < PINCH_ON_DISTANCE;
+    }
+
 
     /**
      * Detect whether a specific gesture is occurring on the selected hand(s).
@@ -933,8 +1105,7 @@ class Scratch3HandSensingBlocks {
                 this._isFingerDown(hand, FINGER_TIP_PIP.PINKY);
         }
         case GESTURES.PINCH: {
-            const dist = this._getThumbIndexDistance(hand);
-            return dist >= 0 && dist < PINCH_THRESHOLD;
+            return this._isHandPinching(hand);
         }
         default:
             return false;
@@ -1058,28 +1229,164 @@ class Scratch3HandSensingBlocks {
     }
 
     /**
-     * A scratch boolean block that reports whether a hand is currently pinching
-     * at the location of the calling sprite.
+     * A scratch command block that turns pinch-to-drag mode on or off for the
+     * calling sprite. While on, pinching the thumb and index finger together
+     * over this sprite's pixels grabs it and makes it follow the pinch until the
+     * pinch is released. The setting is isolated per sprite (and per clone).
      * @param {object} args - the block arguments
      * @param {BlockUtility} util - the block utility
-     * @returns {boolean} true if a pinching hand's pinch point touches the sprite
      */
-    spritePinched (args, util) {
-        for (const hand of this._allHands) {
-            const dist = this._getThumbIndexDistance(hand);
-            if (dist < 0 || dist >= PINCH_THRESHOLD) continue;
-            const thumbTip = hand.keypoints[4];
-            const indexTip = hand.keypoints[8];
-            if (!thumbTip || !indexTip) continue;
-            const pinchPoint = toScratchCoords({
-                x: (thumbTip.x + indexTip.x) / 2,
-                y: (thumbTip.y + indexTip.y) / 2
-            });
-            if (util.target.isTouchingScratchPoint(pinchPoint.x, pinchPoint.y)) {
-                return true;
+    setPinchDrag (args, util) {
+        const enabled = args.STATE === DRAG_STATE.ON;
+        util.target.pinchDragEnabled = enabled;
+        if (!enabled) {
+            // Immediately release any active drag of this sprite.
+            for (const label of Object.keys(this._pinchDrags)) {
+                if (this._pinchDrags[label].targetId === util.target.id) {
+                    this._releaseDrag(label);
+                }
             }
         }
-        return false;
+    }
+
+    /**
+     * Get the pinch point (midpoint of thumb tip and index tip) for a hand,
+     * in Scratch coordinates.
+     * @param {object} hand - the hand object
+     * @returns {?{x: number, y: number}} the pinch point, or null if unavailable
+     * @private
+     */
+    _getPinchPoint (hand) {
+        if (!hand || !hand.keypoints) return null;
+        const thumbTip = hand.keypoints[4];
+        const indexTip = hand.keypoints[8];
+        if (!thumbTip || !indexTip) return null;
+        return toScratchCoords({
+            x: (thumbTip.x + indexTip.x) / 2,
+            y: (thumbTip.y + indexTip.y) / 2
+        });
+    }
+
+    /**
+     * Find the topmost pinch-draggable sprite whose pixels are touched by the
+     * given point.
+     * @param {number} x - Scratch x coordinate
+     * @param {number} y - Scratch y coordinate
+     * @param {Set.<string>} excludeIds - target ids to ignore (already being dragged)
+     * @returns {?RenderedTarget} the topmost touched sprite, or null
+     * @private
+     */
+    _pickTopSpriteAt (x, y, excludeIds) {
+        const candidates = this.runtime.targets.filter(t =>
+            !t.isStage &&
+            t.pinchDragEnabled &&
+            t.visible &&
+            !excludeIds.has(t.id) &&
+            t.isTouchingScratchPoint(x, y)
+        );
+        if (candidates.length === 0) return null;
+
+        // Pick the frontmost candidate using the renderer's draw order
+        // (drawables later in the list are drawn on top).
+        const drawList = this.runtime.renderer && this.runtime.renderer._drawList;
+        if (!drawList) return candidates[candidates.length - 1];
+
+        let top = candidates[0];
+        let topOrder = drawList.indexOf(top.drawableID);
+        for (const t of candidates) {
+            const order = drawList.indexOf(t.drawableID);
+            if (order > topOrder) {
+                topOrder = order;
+                top = t;
+            }
+        }
+        return top;
+    }
+
+    /**
+     * Release a single active pinch drag and take its sprite out of the drag state.
+     * @param {string} label - the handedness label keying the drag
+     * @private
+     */
+    _releaseDrag (label) {
+        const drag = this._pinchDrags[label];
+        if (!drag) return;
+        const target = this.runtime.getTargetById(drag.targetId);
+        if (target) target.stopDrag();
+        delete this._pinchDrags[label];
+    }
+
+    /**
+     * Update pinch drags for the latest frame: release drags whose hand stopped
+     * pinching, start new drags for pinching hands over a sprite, and move
+     * already-grabbed sprites to follow their pinch point.
+     * @private
+     */
+    _updatePinchDrags () {
+        // Map each currently pinching hand by its handedness label, using the
+        // hysteresis-filtered pinch state so glitches don't interrupt a drag.
+        const pinchingByLabel = {};
+        for (const hand of this._allHands) {
+            if (hand.handedness && this._isHandPinching(hand)) {
+                pinchingByLabel[hand.handedness] = hand;
+            }
+        }
+
+        // Release drags whose hand stopped pinching, or whose sprite is gone or
+        // is no longer pinch-draggable.
+        for (const label of Object.keys(this._pinchDrags)) {
+            const target = this.runtime.getTargetById(this._pinchDrags[label].targetId);
+            if (!pinchingByLabel[label] || !target || !target.pinchDragEnabled) {
+                this._releaseDrag(label);
+            }
+        }
+
+        // Sprites already grabbed by another hand should not be grabbed again.
+        const grabbedIds = new Set(
+            Object.values(this._pinchDrags).map(drag => drag.targetId)
+        );
+
+        for (const label of Object.keys(pinchingByLabel)) {
+            const hand = pinchingByLabel[label];
+            const pinchPoint = this._getPinchPoint(hand);
+            if (!pinchPoint) continue;
+
+            const existing = this._pinchDrags[label];
+            if (existing) {
+                const target = this.runtime.getTargetById(existing.targetId);
+                if (!target) {
+                    delete this._pinchDrags[label];
+                    continue;
+                }
+                if (this._isHandTightlyPinching(hand)) {
+                    // Follow the pinch, even if it has moved off the sprite.
+                    target.setXY(
+                        pinchPoint.x + existing.offsetX,
+                        pinchPoint.y + existing.offsetY,
+                        true
+                    );
+                } else {
+                    // Fingers have started to open: keep the grab (in case this
+                    // is a glitch or the fingers re-close) but freeze the sprite
+                    // so it doesn't drift. Re-anchor the offset to the current
+                    // position so re-tightening resumes seamlessly.
+                    existing.offsetX = target.x - pinchPoint.x;
+                    existing.offsetY = target.y - pinchPoint.y;
+                }
+            } else {
+                // Try to grab a sprite under the pinch point.
+                const target = this._pickTopSpriteAt(pinchPoint.x, pinchPoint.y, grabbedIds);
+                if (!target) continue;
+                target.goToFront();
+                target.startDrag();
+                this._pinchDrags[label] = {
+                    targetId: target.id,
+                    offsetX: target.x - pinchPoint.x,
+                    offsetY: target.y - pinchPoint.y
+                };
+                grabbedIds.add(target.id);
+            }
+        }
     }
 
     /**
