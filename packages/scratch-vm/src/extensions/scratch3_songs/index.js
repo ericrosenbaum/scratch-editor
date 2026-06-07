@@ -168,6 +168,18 @@ class Scratch3SongsBlocks {
                     }
                 },
                 {
+                    opcode: 'changeTempoBy',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'songs.changeTempoBy',
+                        default: 'change tempo by [TEMPO] bpm',
+                        description: 'Increment the song tempo at playback time'
+                    }),
+                    arguments: {
+                        TEMPO: {type: ArgumentType.NUMBER, defaultValue: 10}
+                    }
+                },
+                {
                     opcode: 'setSongKey',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -178,6 +190,18 @@ class Scratch3SongsBlocks {
                     arguments: {
                         NOTE: {type: ArgumentType.STRING, menu: 'NOTE', defaultValue: '0'},
                         OCTAVE: {type: ArgumentType.NUMBER, defaultValue: 4}
+                    }
+                },
+                {
+                    opcode: 'changeKeyBy',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'songs.changeKeyBy',
+                        default: 'change key by [SEMITONES] semitones',
+                        description: 'Transpose the song key at playback time by a number of semitones'
+                    }),
+                    arguments: {
+                        SEMITONES: {type: ArgumentType.NUMBER, defaultValue: 1}
                     }
                 },
                 {
@@ -379,6 +403,15 @@ class Scratch3SongsBlocks {
         pb.setTempoOverride(bpm);
     }
 
+    // Composes against the currently-audible tempo (override if set, else the
+    // song's authored value) so repeated `change` blocks accumulate.
+    changeTempoBy (args) {
+        const pb = this.runtime.songPlayback;
+        if (!pb) return;
+        const bpm = Math.max(20, Math.min(500, pb.getTempo() + Cast.toNumber(args.TEMPO)));
+        pb.setTempoOverride(bpm);
+    }
+
     setSongKey (args) {
         const pb = this.runtime.songPlayback;
         if (!pb) return;
@@ -386,6 +419,17 @@ class Scratch3SongsBlocks {
         const oct = Math.max(1, Math.min(7, Cast.toNumber(args.OCTAVE) || 4));
         // Octave 4 + pitch class 0 = MIDI 60 (C4). Same encoding as the editor.
         const midi = ((oct + 1) * 12) + pc;
+        pb.setRootPitchOverride(midi);
+    }
+
+    // Transpose the key by whole semitones, composing against the currently
+    // effective root pitch. Clamped to the same MIDI span the setSongKey menu
+    // can express (octave 1–7).
+    changeKeyBy (args) {
+        const pb = this.runtime.songPlayback;
+        if (!pb) return;
+        const delta = Math.round(Cast.toNumber(args.SEMITONES));
+        const midi = Math.max(24, Math.min(107, pb.getRootPitch() + delta));
         pb.setRootPitchOverride(midi);
     }
 

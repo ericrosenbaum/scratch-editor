@@ -5,6 +5,13 @@ import {listAvailableProviders} from '../../lib/song-ai.js';
 
 const STORAGE_KEY = 'scratchSongAiProvider';
 
+// TEMPORARY: lock the Song Maker AI to Claude Haiku and hide the model picker.
+// While this is set, the picker renders nothing and always reports this
+// provider to the parent. Set to null (or delete the guards below) to restore
+// the user-selectable picker.
+// const FORCED_PROVIDER_ID = 'anthropic';
+const FORCED_PROVIDER_ID = null;
+
 const getStoredProviderId = () => {
     if (typeof localStorage === 'undefined') return null;
     try {
@@ -29,6 +36,12 @@ class ProviderPicker extends React.Component {
     }
 
     componentDidMount () {
+        // While locked, skip availability discovery and just report the forced
+        // provider so every generate/edit call routes through Haiku.
+        if (FORCED_PROVIDER_ID) {
+            if (this.props.onChange) this.props.onChange(FORCED_PROVIDER_ID);
+            return;
+        }
         listAvailableProviders().then(available => {
             this.setState({available});
             // Pick the stored choice if it's still available; otherwise the
@@ -51,6 +64,8 @@ class ProviderPicker extends React.Component {
     }
 
     render () {
+        // Hidden while locked to a single provider.
+        if (FORCED_PROVIDER_ID) return null;
         const {available} = this.state;
         if (!available) return null;
         const usable = available.filter(p => p.available);

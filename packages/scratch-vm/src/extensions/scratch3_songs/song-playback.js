@@ -343,6 +343,27 @@ class SongPlayback {
         return typeof (track && track.volume) === 'number' ? track.volume : 80;
     }
 
+    /**
+     * Current effective tempo (BPM): the block override if one is set, else
+     * the song's authored tempo, else 120. Lets `change tempo by` compose
+     * against the currently-audible value.
+     */
+    getTempo () {
+        if (this._tempoOverride !== null) return this._tempoOverride;
+        return (this.runtime.song && this.runtime.song.tempo) || 120;
+    }
+
+    /**
+     * Current effective root pitch (MIDI int): the block override if set, else
+     * the song's authored root, else 60 (C4). Lets `change key by` compose
+     * against the currently-audible value.
+     */
+    getRootPitch () {
+        if (this._rootPitchOverride !== null) return this._rootPitchOverride;
+        const root = this.runtime.song && this.runtime.song.rootPitch;
+        return (typeof root === 'number') ? root : 60;
+    }
+
     _trackById (trackId) {
         for (const t of ((this.runtime.song && this.runtime.song.tracks) || [])) {
             if (t.trackId === trackId) return t;
