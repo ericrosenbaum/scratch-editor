@@ -22,7 +22,7 @@ describe('HandSensingModal', () => {
         expect(screen.getByText(/sense your hands/i)).toBeTruthy();
     });
 
-    test('renders exactly three starter cards', () => {
+    test('renders one card per starter project', () => {
         renderWithIntl(
             <HandSensingModal
                 onRequestClose={jest.fn()}
@@ -30,7 +30,7 @@ describe('HandSensingModal', () => {
             />
         );
         const cards = screen.getAllByTestId('hand-sensing-starter');
-        expect(cards).toHaveLength(3);
+        expect(cards).toHaveLength(6);
     });
 
     test('clicking a starter card calls onSelectProject with a loadable starter', () => {
