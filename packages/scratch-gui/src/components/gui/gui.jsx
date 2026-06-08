@@ -31,6 +31,7 @@ import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
+import HandSensingModal from '../../containers/hand-sensing-modal.jsx';
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
 import {resolveStageSize} from '../../lib/screen-utils';
@@ -143,6 +144,7 @@ const GUIComponent = props => {
         costumeLibraryVisible,
         costumesTabVisible,
         debugModalVisible,
+        handSensingModalVisible,
         onDebugModalClose,
         onTutorialSelect,
         enableCommunity,
@@ -301,6 +303,9 @@ const GUIComponent = props => {
                         hideTutorialProjects={hideTutorialProjects}
                         onTutorialSelect={onTutorialSelect}
                     />
+                ) : null}
+                {handSensingModalVisible ? (
+                    <HandSensingModal />
                 ) : null}
                 {cardsVisible ? (
                     <Cards />
@@ -599,6 +604,7 @@ GUIComponent.propTypes = {
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
     debugModalVisible: PropTypes.bool,
+    handSensingModalVisible: PropTypes.bool,
     hasActiveMembership: PropTypes.bool,
     onDebugModalClose: PropTypes.func,
     onTutorialSelect: PropTypes.func,

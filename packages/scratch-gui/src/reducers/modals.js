@@ -12,6 +12,7 @@ const MODAL_SPRITE_LIBRARY = 'spriteLibrary';
 const MODAL_SOUND_RECORDER = 'soundRecorder';
 const MODAL_CONNECTION = 'connectionModal';
 const MODAL_TIPS_LIBRARY = 'tipsLibrary';
+const MODAL_HAND_SENSING = 'handSensingModal';
 
 const initialState = {
     [MODAL_BACKDROP_LIBRARY]: false,
@@ -24,7 +25,9 @@ const initialState = {
     [MODAL_SPRITE_LIBRARY]: false,
     [MODAL_SOUND_RECORDER]: false,
     [MODAL_CONNECTION]: false,
-    [MODAL_TIPS_LIBRARY]: false
+    [MODAL_TIPS_LIBRARY]: false,
+    // Open by default so the Hand Sensing welcome modal greets the user on load.
+    [MODAL_HAND_SENSING]: true
 };
 
 const reducer = function (state, action) {
@@ -87,6 +90,9 @@ const openConnectionModal = function () {
 const openTipsLibrary = function () {
     return openModal(MODAL_TIPS_LIBRARY);
 };
+const openHandSensingModal = function () {
+    return openModal(MODAL_HAND_SENSING);
+};
 const closeBackdropLibrary = function () {
     return closeModal(MODAL_BACKDROP_LIBRARY);
 };
@@ -120,6 +126,9 @@ const closeTipsLibrary = function () {
 const closeConnectionModal = function () {
     return closeModal(MODAL_CONNECTION);
 };
+const closeHandSensingModal = function () {
+    return closeModal(MODAL_HAND_SENSING);
+};
 export {
     reducer as default,
     initialState as modalsInitialState,
@@ -134,6 +143,7 @@ export {
     openTelemetryModal,
     openTipsLibrary,
     openConnectionModal,
+    openHandSensingModal,
     closeBackdropLibrary,
     closeCostumeLibrary,
     closeDebugModal,
@@ -144,5 +154,6 @@ export {
     closeSoundRecorder,
     closeTelemetryModal,
     closeTipsLibrary,
-    closeConnectionModal
+    closeConnectionModal,
+    closeHandSensingModal
 };

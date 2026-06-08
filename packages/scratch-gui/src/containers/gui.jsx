@@ -24,6 +24,7 @@ import {
     closeBackdropLibrary,
     closeTelemetryModal,
     openExtensionLibrary,
+    openHandSensingModal,
     closeDebugModal
 } from '../reducers/modals';
 
@@ -168,6 +169,7 @@ const mapStateToProps = (state, ownProps) => {
         costumeLibraryVisible: state.scratchGui.modals.costumeLibrary,
         costumesTabVisible: state.scratchGui.editorTab.activeTabIndex === COSTUMES_TAB_INDEX,
         debugModalVisible: state.scratchGui.modals.debugModal,
+        handSensingModalVisible: state.scratchGui.modals.handSensingModal,
         error: state.scratchGui.projectState.error,
         isError: getIsError(loadingState),
         isFullScreen: state.scratchGui.mode.isFullScreen,
@@ -190,6 +192,7 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = dispatch => ({
     onExtensionButtonClick: () => dispatch(openExtensionLibrary()),
+    onClickLogo: () => dispatch(openHandSensingModal()),
     onActivateTab: tab => dispatch(activateTab(tab)),
     onActivateCostumesTab: () => dispatch(activateTab(COSTUMES_TAB_INDEX)),
     onActivateSoundsTab: () => dispatch(activateTab(SOUNDS_TAB_INDEX)),
