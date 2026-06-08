@@ -221,9 +221,16 @@ class Scratch3HandSensingBlocks {
         // Use the 'lite' landmark model (vs. the library default 'full'): roughly
         // 2x faster inference for a small drop in landmark precision that doesn't
         // affect pinch/gesture/finger detection. Important for low-end Chromebooks.
+        // Resolve the bundled MediaPipe assets against the page's base path so
+        // they load whether the editor is served from the domain root or a
+        // subdirectory (e.g. GitHub Pages, where an absolute "/chunks/..." path
+        // resolves to the domain root and 404s).
+        const assetBase = (typeof window !== 'undefined' && window.location) ?
+            `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, '')}` :
+            '/';
         const detectorConfig = {
             runtime: 'mediapipe',
-            solutionPath: '/chunks/mediapipe/hands',
+            solutionPath: `${assetBase}chunks/mediapipe/hands`,
             modelType: 'lite',
             maxHands: 2
         };

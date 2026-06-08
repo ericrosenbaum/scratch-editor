@@ -92,9 +92,16 @@ class Scratch3FaceSensingBlocks {
         this.runtime.emit('EXTENSION_DATA_LOADING', true);
 
         const model = FaceDetection.SupportedModels.MediaPipeFaceDetector;
+        // Resolve the bundled MediaPipe assets against the page's base path so
+        // they load whether the editor is served from the domain root or a
+        // subdirectory (e.g. GitHub Pages, where an absolute "/chunks/..." path
+        // resolves to the domain root and 404s).
+        const assetBase = (typeof window !== 'undefined' && window.location) ?
+            `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, '')}` :
+            '/';
         const detectorConfig = {
             runtime: 'mediapipe',
-            solutionPath: '/chunks/mediapipe/face_detection',
+            solutionPath: `${assetBase}chunks/mediapipe/face_detection`,
             maxFaces: 1
         };
     
