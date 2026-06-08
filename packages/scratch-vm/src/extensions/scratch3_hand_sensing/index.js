@@ -208,12 +208,23 @@ class Scratch3HandSensingBlocks {
          */
         this._pinchDrags = {};
 
+        /**
+         * Whether an estimateHands() call is still in flight. Used to drop frames
+         * instead of stacking overlapping inferences on slow devices.
+         * @type {boolean}
+         */
+        this._inferenceInFlight = false;
+
         this.runtime.emit('EXTENSION_DATA_LOADING', true);
 
         const model = HandPoseDetection.SupportedModels.MediaPipeHands;
+        // Use the 'lite' landmark model (vs. the library default 'full'): roughly
+        // 2x faster inference for a small drop in landmark precision that doesn't
+        // affect pinch/gesture/finger detection. Important for low-end Chromebooks.
         const detectorConfig = {
             runtime: 'mediapipe',
             solutionPath: '/chunks/mediapipe/hands',
+            modelType: 'lite',
             maxHands: 2
         };
 
@@ -222,6 +233,7 @@ class Scratch3HandSensingBlocks {
                 const fallbackConfig = {
                     runtime: 'mediapipe',
                     solutionPath: `https://cdn.jsdelivr.net/npm/@mediapipe/hands@${mediapipePackage.version}`,
+                    modelType: 'lite',
                     maxHands: 2
                 };
 
@@ -537,28 +549,48 @@ class Scratch3HandSensingBlocks {
             this._firstTime = true;
         }
 
+        // Skip inference while the page is hidden (e.g. a backgrounded tab) so we
+        // don't burn CPU/GPU/battery on a camera the user can't see. The loop keeps
+        // rescheduling and resumes automatically once the page is visible again.
+        if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+            return;
+        }
+
+        // Skip if a previous inference is still running. On slow devices estimateHands
+        // can take longer than INTERVAL; without this guard calls would stack into a
+        // growing backlog. Dropping frames instead lets the loop self-adapt to
+        // whatever framerate the hardware can sustain.
+        if (this._inferenceInFlight) {
+            return;
+        }
+
         const frame = this.runtime.ioDevices.video.getFrame({
             format: Video.FORMAT_IMAGE_DATA,
             dimensions: Scratch3HandSensingBlocks.DIMENSIONS,
             cacheTimeout: this.runtime.currentStepTime
         });
         if (frame) {
-            this._handDetector.estimateHands(frame).then(hands => {
-                if (hands && hands.length > 0) {
-                    if (!this._firstTime) {
-                        this._firstTime = true;
-                        this.runtime.emit('EXTENSION_DATA_LOADING', false);
+            this._inferenceInFlight = true;
+            this._handDetector.estimateHands(frame)
+                .then(hands => {
+                    if (hands && hands.length > 0) {
+                        if (!this._firstTime) {
+                            this._firstTime = true;
+                            this.runtime.emit('EXTENSION_DATA_LOADING', false);
+                        }
+                        this._allHands = hands;
+                        this._currentHand = hands[0];
+                    } else {
+                        this._allHands = [];
+                        this._currentHand = null;
                     }
-                    this._allHands = hands;
-                    this._currentHand = hands[0];
-                } else {
-                    this._allHands = [];
-                    this._currentHand = null;
-                }
-                this._updateIsDetected();
-                this._updatePinchStates();
-                this._updatePinchDrags();
-            });
+                    this._updateIsDetected();
+                    this._updatePinchStates();
+                    this._updatePinchDrags();
+                })
+                .finally(() => {
+                    this._inferenceInFlight = false;
+                });
         }
     }
 
