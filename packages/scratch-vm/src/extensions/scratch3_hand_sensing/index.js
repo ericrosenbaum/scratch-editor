@@ -656,6 +656,46 @@ class Scratch3HandSensingBlocks {
                     },
                     filter: [TargetType.SPRITE]
                 },
+                {
+                    opcode: 'pointInDirectionOfFinger',
+                    text: formatMessage({
+                        id: 'handSensing.pointInDirectionOfFinger',
+                        default: 'point in direction of [HAND] [FINGER]',
+                        description: 'Command that points the sprite the way a finger is pointing'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        HAND: {
+                            type: ArgumentType.STRING,
+                            menu: 'HAND_LR',
+                            defaultValue: HAND_CHOICE.LEFT
+                        },
+                        FINGER: {
+                            type: ArgumentType.STRING,
+                            menu: 'FINGER',
+                            defaultValue: FINGER_CHOICE.INDEX
+                        }
+                    },
+                    filter: [TargetType.SPRITE]
+                },
+                '---',
+                {
+                    opcode: 'setPinchDrag',
+                    text: formatMessage({
+                        id: 'handSensing.setPinchDrag',
+                        default: 'set pinch dragging [STATE]',
+                        description: 'Command that turns pinch-to-drag mode on or off'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        STATE: {
+                            type: ArgumentType.STRING,
+                            menu: 'DRAG_STATE',
+                            defaultValue: DRAG_STATE.ON
+                        }
+                    },
+                    filter: [TargetType.SPRITE]
+                },
                 '---',
                 {
                     opcode: 'whenGesture',
@@ -787,24 +827,6 @@ class Scratch3HandSensingBlocks {
                     }
                 },
                 {
-                    opcode: 'setPinchDrag',
-                    text: formatMessage({
-                        id: 'handSensing.setPinchDrag',
-                        default: 'set pinch dragging [STATE]',
-                        description: 'Command that turns pinch-to-drag mode on or off'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        STATE: {
-                            type: ArgumentType.STRING,
-                            menu: 'DRAG_STATE',
-                            defaultValue: DRAG_STATE.ON
-                        }
-                    },
-                    filter: [TargetType.SPRITE]
-                },
-                '---',
-                {
                     opcode: 'handAngle',
                     text: formatMessage({
                         id: 'handSensing.handAngle',
@@ -812,6 +834,9 @@ class Scratch3HandSensingBlocks {
                         description: 'Reporter that returns the angle of the hand'
                     }),
                     blockType: BlockType.REPORTER,
+                    // Hidden from the palette but still registered so existing
+                    // projects that use this block continue to load and run.
+                    hideFromPalette: true,
                     arguments: {
                         HAND: {
                             type: ArgumentType.STRING,
@@ -828,6 +853,9 @@ class Scratch3HandSensingBlocks {
                         description: 'Reporter that returns the angle of a finger'
                     }),
                     blockType: BlockType.REPORTER,
+                    // Hidden from the palette but still registered so existing
+                    // projects that use this block continue to load and run.
+                    hideFromPalette: true,
                     arguments: {
                         HAND: {
                             type: ArgumentType.STRING,
@@ -1451,6 +1479,23 @@ class Scratch3HandSensingBlocks {
         const tip = hand.keypoints[indices[1]];
         if (!nearTip || !tip) return 0;
         return this._angleBetween(nearTip, tip);
+    }
+
+    /**
+     * A scratch command that points the sprite the way a finger is pointing,
+     * measured from the joint nearest the tip (DIP, or IP for the thumb) toward the tip.
+     * @param {object} args - the block arguments
+     * @param {BlockUtility} util - the block utility
+     */
+    pointInDirectionOfFinger (args, util) {
+        const hand = this._selectHand(args.HAND);
+        if (!hand || !hand.keypoints) return;
+        const indices = FINGER_NEAR_TIP[args.FINGER];
+        if (!indices) return;
+        const nearTip = hand.keypoints[indices[0]];
+        const tip = hand.keypoints[indices[1]];
+        if (!nearTip || !tip) return;
+        util.target.setDirection(this._angleBetween(nearTip, tip));
     }
 
 }
