@@ -43,7 +43,8 @@
     opacity: 0;
 }
 .scratch-logo {
-    height:  1.6rem;
+    height: 3.5rem;
+    padding-bottom: 4px;
     vertical-align: middle;
 }
 
