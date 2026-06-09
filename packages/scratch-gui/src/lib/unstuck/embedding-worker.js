@@ -10,7 +10,20 @@ let embedder = null;
 // Each entry: {embedding: Float32Array, tipId: string}
 const tipEmbeddings = [];
 
-const TRANSFORMERS_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3';
+// Pin the exact transformers.js version (keep in sync with @huggingface/transformers
+// in package.json devDependencies). A floating `@3` major range means a momentarily
+// broken new 3.x release on the CDN can break tips-search setup.
+const TRANSFORMERS_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
+
+// Resilience tuning for the one-time model setup. Loading transformers.js and the
+// model weights are network calls that can fail or stall intermittently; we retry
+// transient failures instead of immediately dropping the user to keyword-only search.
+const LIB_LOAD_ATTEMPTS = 3;
+const LIB_LOAD_TIMEOUT_MS = 15000; // per-attempt cap for the transformers.js import
+const LIB_RETRY_BACKOFF_MS = [500, 1500]; // backoff before retry 2 and 3
+const MODEL_LOAD_ATTEMPTS = 2;
+const MODEL_STALL_TIMEOUT_MS = 30000; // reject only if the download makes no progress for this long
+const MODEL_RETRY_BACKOFF_MS = [2000]; // backoff before retry 2
 
 // EmbeddingGemma requires task-specific query prefix at search time.
 // Document prefixing happens at build time in tip-document.js, so the
@@ -54,41 +67,157 @@ function cosineSimilarity (a, b) {
     return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+function delay (ms) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+    });
+}
+
+/**
+ * Reject if `promise` does not settle within `ms`. The timeout only stops us
+ * waiting — it cannot abort the underlying fetch — so callers retry on timeout.
+ */
+async function withTimeout (promise, ms, label) {
+    let timer;
+    const timeout = new Promise(function (resolve, reject) {
+        timer = setTimeout(function () {
+            reject(new Error(label + ' timed out after ' + ms + 'ms'));
+        }, ms);
+    });
+    try {
+        return await Promise.race([promise, timeout]);
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+/**
+ * Import transformers.js from the CDN, retrying transient failures. A blocked or
+ * offline request rejects immediately, so this still fails fast when the CDN is
+ * unreachable; the per-attempt timeout only matters when a connection hangs.
+ */
+async function loadTransformers () {
+    let lastError;
+    for (let attempt = 1; attempt <= LIB_LOAD_ATTEMPTS; attempt++) {
+        try {
+            // A failed dynamic import() of a specifier can be cached as a rejected
+            // module record, so vary the URL on retries to force a real re-fetch.
+            // jsdelivr ignores unknown query params and serves the same file.
+            const url = TRANSFORMERS_CDN + '/dist/transformers.min.js' +
+                (attempt > 1 ? '?retry=' + attempt : '');
+            console.log('[Embedding Worker] Loading transformers.js from CDN (attempt ' + attempt + ')...');
+            return await withTimeout(
+                import(/* webpackIgnore: true */ url),
+                LIB_LOAD_TIMEOUT_MS,
+                'transformers.js load'
+            );
+        } catch (error) {
+            lastError = error;
+            console.warn(
+                '[Embedding Worker] transformers.js load attempt ' + attempt + ' failed: ' + error.message
+            );
+            if (attempt < LIB_LOAD_ATTEMPTS) {
+                await delay(LIB_RETRY_BACKOFF_MS[attempt - 1] || 1500);
+            }
+        }
+    }
+    throw lastError;
+}
+
+/**
+ * Build the feature-extraction pipeline once, guarded by a stall watchdog: it
+ * rejects only if the download makes NO progress for MODEL_STALL_TIMEOUT_MS, so a
+ * healthy-but-slow download is never killed. Progress events are forwarded to the
+ * main thread unchanged.
+ */
+function createEmbedderOnce (pipeline) {
+    return new Promise(function (resolve, reject) {
+        let stallTimer;
+        let settled = false;
+        const arm = function () {
+            clearTimeout(stallTimer);
+            stallTimer = setTimeout(function () {
+                if (settled) return;
+                settled = true;
+                reject(new Error(
+                    'model download stalled (no progress for ' + MODEL_STALL_TIMEOUT_MS + 'ms)'
+                ));
+            }, MODEL_STALL_TIMEOUT_MS);
+        };
+        arm();
+        pipeline(
+            'feature-extraction',
+            'onnx-community/embeddinggemma-300m-ONNX',
+            {
+                dtype: 'q8',
+                device: 'wasm',
+                progress_callback: function (progressInfo) {
+                    // Any callback activity counts as liveness — reset the stall timer.
+                    arm();
+                    if (progressInfo.status === 'progress') {
+                        console.log(
+                            '[Embedding Worker] Download: ' + progressInfo.file +
+                            ' ' + Math.round(progressInfo.progress) + '%'
+                        );
+                        self.postMessage({
+                            type: 'progress',
+                            progress: progressInfo.progress,
+                            file: progressInfo.file
+                        });
+                    }
+                }
+            }
+        ).then(
+            function (embedderInstance) {
+                if (settled) return;
+                settled = true;
+                clearTimeout(stallTimer);
+                resolve(embedderInstance);
+            },
+            function (error) {
+                if (settled) return;
+                settled = true;
+                clearTimeout(stallTimer);
+                reject(error);
+            }
+        );
+    });
+}
+
+/**
+ * Create the embedder, retrying on stall/failure. transformers.js caches completed
+ * files in the browser Cache API, so a retry re-fetches only the unfinished file.
+ */
+async function createEmbedder (pipeline) {
+    let lastError;
+    for (let attempt = 1; attempt <= MODEL_LOAD_ATTEMPTS; attempt++) {
+        try {
+            if (attempt > 1) {
+                console.log('[Embedding Worker] Retrying model load (attempt ' + attempt + ')...');
+            }
+            return await createEmbedderOnce(pipeline);
+        } catch (error) {
+            lastError = error;
+            console.warn('[Embedding Worker] Model load attempt ' + attempt + ' failed: ' + error.message);
+            if (attempt < MODEL_LOAD_ATTEMPTS) {
+                await delay(MODEL_RETRY_BACKOFF_MS[attempt - 1] || 2000);
+            }
+        }
+    }
+    throw lastError;
+}
+
 self.onmessage = async function (event) {
     const {type} = event.data;
 
     if (type === 'init') {
         try {
-            console.log('[Embedding Worker] Loading transformers.js from CDN...');
-            const {pipeline, env} = await import(
-                /* webpackIgnore: true */
-                TRANSFORMERS_CDN + '/dist/transformers.min.js'
-            );
+            const {pipeline, env} = await loadTransformers();
 
             env.allowLocalModels = false;
 
             console.log('[Embedding Worker] Creating feature-extraction pipeline...');
-            embedder = await pipeline(
-                'feature-extraction',
-                'onnx-community/embeddinggemma-300m-ONNX',
-                {
-                    dtype: 'q8',
-                    device: 'wasm',
-                    progress_callback: function (progressInfo) {
-                        if (progressInfo.status === 'progress') {
-                            console.log(
-                                '[Embedding Worker] Download: ' + progressInfo.file +
-                                ' ' + Math.round(progressInfo.progress) + '%'
-                            );
-                            self.postMessage({
-                                type: 'progress',
-                                progress: progressInfo.progress,
-                                file: progressInfo.file
-                            });
-                        }
-                    }
-                }
-            );
+            embedder = await createEmbedder(pipeline);
 
             console.log('[Embedding Worker] Model ready');
             self.postMessage({type: 'ready'});

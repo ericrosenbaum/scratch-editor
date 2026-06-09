@@ -13,6 +13,13 @@ import embeddingCache from '../libraries/tips/embeddings-cache.json';
 import {createHash} from './embedding-hash.js';
 import {buildTipDocument} from './tip-document.js';
 
+// Backstop for a worker that goes completely silent during init (no progress, no
+// ready, no error). Reset on every worker message, so a healthy slow download keeps
+// it alive via progress events; it only fires on a genuine hang, letting the consumer
+// fall back to keyword search instead of spinning forever. Generous because the worker
+// runs its own retries (transformers.js import + model download) before giving up.
+const INIT_IDLE_TIMEOUT_MS = 75000;
+
 class EmbeddingTipProvider {
     constructor (tips) {
         this.tips = tips;
@@ -78,6 +85,25 @@ class EmbeddingTipProvider {
         this._progressListener = listener;
     }
 
+    /**
+     * (Re)arm the init watchdog. No-op once the model is ready. Called on every
+     * worker message so liveness (e.g. download progress) keeps it from firing.
+     */
+    _armInitWatchdog () {
+        if (this._ready) return;
+        clearTimeout(this._initWatchdog);
+        this._initWatchdog = setTimeout(() => {
+            if (this._ready) return;
+            console.error('[EmbeddingTipProvider] Init watchdog fired — worker silent, falling back');
+            this._readyReject(new Error('embedding init timed out (worker silent)'));
+        }, INIT_IDLE_TIMEOUT_MS);
+    }
+
+    _clearInitWatchdog () {
+        clearTimeout(this._initWatchdog);
+        this._initWatchdog = null;
+    }
+
     _initWorker () {
         try {
             // Load the standalone worker file (copied to build output, not bundled by webpack).
@@ -94,6 +120,9 @@ class EmbeddingTipProvider {
 
         this._worker.onmessage = event => {
             const {type} = event.data;
+
+            // Any message is a sign of life — keep the watchdog from firing.
+            this._armInitWatchdog();
 
             if (type === 'ready') {
                 if (this._cachedDocs && this._cachedEmbeddings) {
@@ -120,6 +149,7 @@ class EmbeddingTipProvider {
             } else if (type === 'tips-ready') {
                 console.log('[EmbeddingTipProvider] Tips embedded, ready for queries');
                 this._ready = true;
+                this._clearInitWatchdog();
                 this._readyResolve();
             } else if (type === 'results') {
                 const pending = this._pendingQueries.get(event.data.queryId);
@@ -130,6 +160,7 @@ class EmbeddingTipProvider {
             } else if (type === 'error') {
                 const message = event.data.message;
                 console.error(`[EmbeddingTipProvider] Worker error: ${message}`);
+                this._clearInitWatchdog();
                 if (!this._ready) {
                     this._readyReject(new Error(message));
                 }
@@ -143,11 +174,15 @@ class EmbeddingTipProvider {
         this._worker.onerror = error => {
             const message = error.message || 'Worker failed to load';
             console.error('[EmbeddingTipProvider] Worker onerror:', message);
+            this._clearInitWatchdog();
             if (!this._ready) {
                 this._readyReject(new Error(message));
             }
         };
 
+        // Arm the watchdog before kicking off init, so even a worker that never
+        // replies eventually settles `ready` (as a rejection → keyword fallback).
+        this._armInitWatchdog();
         this._worker.postMessage({type: 'init'});
     }
 
@@ -172,6 +207,7 @@ class EmbeddingTipProvider {
     }
 
     dispose () {
+        this._clearInitWatchdog();
         if (this._worker) {
             this._worker.terminate();
             this._worker = null;
