@@ -5,7 +5,9 @@ import {
     INSTRUMENT_NAMES,
     DRUM_NAMES,
     SYNTH_PRESETS,
-    DEFAULT_SYNTH
+    DEFAULT_SYNTH,
+    SYNTH_DRUM_PRESETS,
+    drumVoicesForLanes
 } from '../song-defaults.js';
 import {
     PITCH_CLASS_NAMES,
@@ -61,7 +63,13 @@ const effectsForModel = track => {
 
 const sanitizeTrack = (rt, lengthSteps, baseEffects) => {
     const rawKind = rt?.kind;
-    const kind = rawKind === 'drum' ? 'drum' : (rawKind === 'synth' ? 'synth' : 'instrument');
+    const kind = rawKind === 'drum' ? 'drum' :
+        rawKind === 'synth' ? 'synth' :
+            rawKind === 'synthDrum' ? 'synthDrum' : 'instrument';
+    // Drum and synthDrum share the lane-based note model; only the sound
+    // catalog differs (sampled drum names vs synthesized presets).
+    const isLaneKind = kind === 'drum' || kind === 'synthDrum';
+    const drumCatalogLen = kind === 'synthDrum' ? SYNTH_DRUM_PRESETS.length : DRUM_NAMES.length;
     const track = createBlankTrack(kind);
     if (kind === 'instrument') {
         track.instrument = clamp(
@@ -71,27 +79,32 @@ const sanitizeTrack = (rt, lengthSteps, baseEffects) => {
         );
         delete track.drum;
         delete track.drumLanes;
+        delete track.drumVoices;
         delete track.synth;
     } else if (kind === 'synth') {
         track.synth = synthParamsFromPresetName(rt?.synthPreset);
         delete track.instrument;
         delete track.drum;
         delete track.drumLanes;
+        delete track.drumVoices;
     } else {
         let lanes = Array.isArray(rt?.drumLanes) ? rt.drumLanes : null;
         if (lanes) {
             lanes = lanes
-                .map(d => clamp(Math.round(Number(d)), 1, DRUM_NAMES.length))
+                .map(d => clamp(Math.round(Number(d)), 1, drumCatalogLen))
                 .filter((d, i, a) => a.indexOf(d) === i);
         }
         if (!lanes || lanes.length === 0) {
-            const legacy = clamp(Math.round(Number(rt?.drum) || 1), 1, DRUM_NAMES.length);
+            const legacy = clamp(Math.round(Number(rt?.drum) || 1), 1, drumCatalogLen);
             lanes = [legacy];
         }
         track.drumLanes = lanes;
         delete track.instrument;
         delete track.drum;
         delete track.synth;
+        // synthDrum voices are seeded from the catalog after the notes loop
+        // (notes may add lanes); sampled drum tracks have no voices.
+        if (kind !== 'synthDrum') delete track.drumVoices;
     }
     const rawVolume = Number(rt?.volume);
     track.volume = clamp(
@@ -149,7 +162,7 @@ const sanitizeTrack = (rt, lengthSteps, baseEffects) => {
             let drum;
             if (Number.isFinite(rawDrum) && lanes.indexOf(rawDrum) >= 0) {
                 drum = rawDrum;
-            } else if (Number.isFinite(rawDrum) && rawDrum >= 1 && rawDrum <= DRUM_NAMES.length) {
+            } else if (Number.isFinite(rawDrum) && rawDrum >= 1 && rawDrum <= drumCatalogLen) {
                 drum = rawDrum;
                 if (lanes.indexOf(drum) < 0) lanes.push(drum);
             } else {
@@ -158,6 +171,12 @@ const sanitizeTrack = (rt, lengthSteps, baseEffects) => {
             note.drum = drum;
         }
         track.notes.push(note);
+    }
+
+    // Seed editable voice params for every synthDrum lane (including any added
+    // by a note above) from the preset catalog.
+    if (kind === 'synthDrum') {
+        track.drumVoices = drumVoicesForLanes(track.drumLanes);
     }
 
     return track;
@@ -229,7 +248,7 @@ const stripIdsFromSong = song => {
         octave: keyOctave,
         scale: scaleType,
         tracks: (song.tracks || []).map(t => {
-            const isDrum = t.kind === 'drum';
+            const isLaneKind = t.kind === 'drum' || t.kind === 'synthDrum';
             const isSynth = t.kind === 'synth';
             const ot = {
                 kind: t.kind,
@@ -242,7 +261,7 @@ const stripIdsFromSong = song => {
                         durationSteps: n.durationSteps,
                         velocity: typeof n.velocity === 'number' ? n.velocity : 80
                     };
-                    if (isDrum) {
+                    if (isLaneKind) {
                         on.drum = typeof n.drum === 'number' ? n.drum : (t.drum || 1);
                     } else if (typeof n.pitch === 'number') {
                         on.pitch = n.pitch;
@@ -250,7 +269,9 @@ const stripIdsFromSong = song => {
                     return on;
                 })
             };
-            if (isDrum) {
+            if (isLaneKind) {
+                // Both drum and synthDrum use drumLanes; we don't expose the
+                // synthDrum voice params to the model (it picks lanes only).
                 ot.drumLanes = Array.isArray(t.drumLanes) && t.drumLanes.length > 0 ?
                     t.drumLanes.slice() :
                     [t.drum || 1];

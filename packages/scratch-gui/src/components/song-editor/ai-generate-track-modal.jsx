@@ -28,6 +28,11 @@ const messages = defineMessages({
         description: 'Title of the AI new-synth-track modal',
         id: 'gui.songTab.aiGenerateSynthTitle'
     },
+    titleSynthDrum: {
+        defaultMessage: 'Generate Synth Drum Track',
+        description: 'Title of the AI new-synth-drum-track modal',
+        id: 'gui.songTab.aiGenerateSynthDrumTitle'
+    },
     promptLabel: {
         defaultMessage: 'Describe the new track:',
         description: 'Label for the AI generate-track prompt textarea',
@@ -47,6 +52,11 @@ const messages = defineMessages({
         defaultMessage: 'e.g. a warm pad that floats above the song',
         description: 'Placeholder text for the AI generate-synth-track prompt',
         id: 'gui.songTab.aiGenerateSynthPlaceholder'
+    },
+    placeholderSynthDrum: {
+        defaultMessage: 'e.g. a punchy 808 trap beat with rolling hats',
+        description: 'Placeholder text for the AI generate-synth-drum-track prompt',
+        id: 'gui.songTab.aiGenerateSynthDrumPlaceholder'
     },
     tryLabel: {
         defaultMessage: 'Try:',
@@ -76,6 +86,13 @@ const EXAMPLE_PROMPTS_FOR_KIND = {
         'a fat sub bass that locks in with the kick',
         'a glassy bell-like counter-melody up high',
         'a wobbly synth riff with attitude'
+    ],
+    synthDrum: [
+        'a punchy 808 trap beat with rolling hi-hats',
+        'a four-on-the-floor techno groove',
+        'a boom-bap hip-hop kit with a fat kick and snappy snare',
+        'a minimal electro beat with claps on the backbeat',
+        'a fast drum-and-bass break'
     ]
 };
 
@@ -142,9 +159,11 @@ class AiGenerateTrackModal extends React.Component {
         const canSubmit = this.state.prompt.trim().length > 0 && !busy;
         const examples = EXAMPLE_PROMPTS_FOR_KIND[kind] || EXAMPLE_PROMPTS_FOR_KIND.instrument;
         const titleMessage = kind === 'drum' ? messages.titleDrum :
-            (kind === 'synth' ? messages.titleSynth : messages.titleInstrument);
+            (kind === 'synthDrum' ? messages.titleSynthDrum :
+                (kind === 'synth' ? messages.titleSynth : messages.titleInstrument));
         const placeholderMessage = kind === 'drum' ? messages.placeholderDrum :
-            (kind === 'synth' ? messages.placeholderSynth : messages.placeholderInstrument);
+            (kind === 'synthDrum' ? messages.placeholderSynthDrum :
+                (kind === 'synth' ? messages.placeholderSynth : messages.placeholderInstrument));
         return (
             <Modal
                 className="ai-song-modal"
@@ -273,7 +292,7 @@ AiGenerateTrackModal.propTypes = {
     busy: PropTypes.bool,
     error: PropTypes.string,
     intl: intlShape.isRequired,
-    kind: PropTypes.oneOf(['instrument', 'drum', 'synth']).isRequired,
+    kind: PropTypes.oneOf(['instrument', 'drum', 'synth', 'synthDrum']).isRequired,
     onCancel: PropTypes.func.isRequired,
     onApply: PropTypes.func.isRequired
 };

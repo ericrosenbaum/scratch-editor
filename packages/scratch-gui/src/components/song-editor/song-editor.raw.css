@@ -479,6 +479,16 @@
     color: #B5570A;
 }
 
+.track-kind-badge.synth {
+    background: #E9E2FF;
+    color: #6B3FD4;
+}
+
+.track-kind-badge.synthDrum {
+    background: #FBE2F4;
+    color: #A8208A;
+}
+
 .track-row-controls .track-name {
     flex: 1 1 auto;
     min-width: 0;
@@ -1375,6 +1385,75 @@
 .drum-lane-add:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+/* synthDrum lane rows: a per-lane "edit sound" disclosure toggle sits before
+   the preset picker. The row keeps the same 28px height as sampled drum lanes
+   so it stays aligned with the grid rows on the right. */
+.synth-drum-lane-row .lane-edit-btn {
+    width: 18px;
+    height: 22px;
+    padding: 0;
+    color: #8a90a3;
+    flex-shrink: 0;
+    transition: transform 0.12s ease;
+}
+
+.synth-drum-lane-row .lane-edit-btn.is-open {
+    transform: rotate(90deg);
+    color: #A8208A;
+}
+
+.synth-drum-lane-row .lane-edit-btn:hover:not(:disabled) {
+    color: #A8208A;
+}
+
+/* Full-width per-lane voice editor, rendered below the grid so it has room
+   without disturbing the lane/grid row alignment. */
+.synth-drum-voice-panel {
+    margin: 8px 10px 4px;
+    padding: 8px 10px;
+    background: #fbf3f9;
+    border: 1px solid #f0d6e8;
+    border-radius: 8px;
+}
+
+.synth-drum-voice-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.synth-drum-voice-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #A8208A;
+}
+
+.synth-drum-voice-close {
+    width: 20px;
+    height: 20px;
+    font-size: 15px;
+    line-height: 1;
+    padding: 0;
+    color: #8a90a3;
+}
+
+.synth-drum-voice-close:hover {
+    color: #A8208A;
+}
+
+/* Two-column grid of sliders so ~10 controls stay compact. The wave selector
+   spans both columns at the top. */
+.synth-drum-voice-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 16px;
+}
+
+.synth-drum-voice-controls .synth-wave-label {
+    grid-column: 1 / -1;
 }
 
 /* Mini compact preview grid */

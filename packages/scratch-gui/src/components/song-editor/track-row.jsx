@@ -6,7 +6,7 @@ import DrumGrid, {drumNoteKey} from './drum-grid.jsx';
 import MiniGrid from './mini-grid.jsx';
 import VelocityStrip from './velocity-strip.jsx';
 import {computeCellWidth, DEFAULT_CELL_W} from './grid-sizing.js';
-import {INSTRUMENT_NAMES, DRUM_NAMES, DEFAULT_VELOCITY, getTrackEffects, displayNameForTrack, SYNTH_PRESETS, DEFAULT_SYNTH, getTrackSynth} from '../../lib/song-defaults.js';
+import {INSTRUMENT_NAMES, DRUM_NAMES, DEFAULT_VELOCITY, getTrackEffects, displayNameForTrack, SYNTH_PRESETS, DEFAULT_SYNTH, getTrackSynth, SYNTH_DRUM_PRESETS, SYNTH_DRUM_PRESET_NAMES, getDrumVoice, voiceParamsForPreset} from '../../lib/song-defaults.js';
 
 class TrackRow extends React.Component {
     constructor (props) {
@@ -23,7 +23,12 @@ class TrackRow extends React.Component {
             // of the synth params (oscillators, ADSR, LFO…) are advanced
             // controls that most users won't reach for, so keep them tucked
             // behind a disclosure toggle.
-            synthParamsExpanded: false
+            synthParamsExpanded: false,
+            // synthDrum tracks: the preset index of the lane whose voice
+            // controls are open in the editor panel below the grid, or null.
+            // Keyed by preset index (stable across lane reorder) so it follows
+            // a lane when its sound is swapped.
+            editingVoiceLane: null
         };
         this.handleInstrumentChange = this.handleInstrumentChange.bind(this);
         this.handleDrumChange = this.handleDrumChange.bind(this);
@@ -38,6 +43,7 @@ class TrackRow extends React.Component {
         this.handleSynthParamChange = this.handleSynthParamChange.bind(this);
         this.handleSynthWaveChange = this.handleSynthWaveChange.bind(this);
         this.handleSynthParamsToggle = this.handleSynthParamsToggle.bind(this);
+        this.handleSynthDrumParamChange = this.handleSynthDrumParamChange.bind(this);
 
         this.handleAddNote = this.handleAddNote.bind(this);
         this.handleRemoveNote = this.handleRemoveNote.bind(this);
@@ -170,10 +176,21 @@ class TrackRow extends React.Component {
             [track.drum || 1];
     }
 
+    _isSynthDrum () {
+        return this.props.track.kind === 'synthDrum';
+    }
+
+    // Number of selectable sounds for this kind's lane pickers: the synthDrum
+    // preset catalog vs the sampled drum-name list.
+    _laneCatalogLength () {
+        return this._isSynthDrum() ? SYNTH_DRUM_PRESETS.length : DRUM_NAMES.length;
+    }
+
     handleLaneChange (laneIdx, newDrum) {
         const track = this.props.track;
         const lanes = this._drumLanes().slice();
         const prevDrum = lanes[laneIdx];
+        if (newDrum === prevDrum) return;
         lanes[laneIdx] = newDrum;
         // Re-tag any notes that were on the old lane so they now play the new
         // drum sound. This is what the user expects when they swap a lane's
@@ -181,19 +198,39 @@ class TrackRow extends React.Component {
         const notes = (track.notes || []).map(n =>
             ((n.drum || track.drum || 1) === prevDrum) ? {...n, drum: newDrum} : n
         );
-        this._updateTrack({drumLanes: lanes, notes});
+        const patch = {drumLanes: lanes, notes};
+        if (this._isSynthDrum()) {
+            // Move the editable voice with the lane: seed the new sound's
+            // params if absent, drop the old sound's params if no lane uses it.
+            const voices = {...(track.drumVoices || {})};
+            if (!voices[newDrum]) voices[newDrum] = voiceParamsForPreset(newDrum);
+            if (lanes.indexOf(prevDrum) < 0) delete voices[prevDrum];
+            patch.drumVoices = voices;
+            if (this.state.editingVoiceLane === prevDrum) {
+                this.setState({editingVoiceLane: newDrum});
+            }
+        }
+        this._updateTrack(patch);
     }
 
     handleAddLane () {
+        const track = this.props.track;
         const lanes = this._drumLanes();
-        // Add the first drum not already in the kit; if all 18 are present
-        // (unlikely), just append the first one again.
+        // Add the first sound not already in the kit; if all are present,
+        // just append the first one again.
+        const catalogLen = this._laneCatalogLength();
         const unused = [];
-        for (let d = 1; d <= DRUM_NAMES.length; d++) {
+        for (let d = 1; d <= catalogLen; d++) {
             if (lanes.indexOf(d) < 0) unused.push(d);
         }
         const newDrum = unused[0] || 1;
-        this._updateTrack({drumLanes: [...lanes, newDrum]});
+        const patch = {drumLanes: [...lanes, newDrum]};
+        if (this._isSynthDrum()) {
+            const voices = {...(track.drumVoices || {})};
+            if (!voices[newDrum]) voices[newDrum] = voiceParamsForPreset(newDrum);
+            patch.drumVoices = voices;
+        }
+        this._updateTrack(patch);
     }
 
     handleRemoveLane (laneIdx) {
@@ -206,7 +243,33 @@ class TrackRow extends React.Component {
         const notes = (track.notes || []).filter(n =>
             (n.drum || track.drum || 1) !== removed
         );
-        this._updateTrack({drumLanes: newLanes, notes});
+        const patch = {drumLanes: newLanes, notes};
+        if (this._isSynthDrum()) {
+            const voices = {...(track.drumVoices || {})};
+            if (newLanes.indexOf(removed) < 0) delete voices[removed];
+            patch.drumVoices = voices;
+            if (this.state.editingVoiceLane === removed) {
+                this.setState({editingVoiceLane: null});
+            }
+        }
+        this._updateTrack(patch);
+    }
+
+    handleSynthDrumLaneToggle (presetIdx) {
+        this.setState(s => ({
+            editingVoiceLane: s.editingVoiceLane === presetIdx ? null : presetIdx
+        }));
+    }
+
+    // Update one voice param for a synthDrum lane (keyed by preset index). The
+    // scheduler re-resolves params per hit, so changes are heard on the next
+    // note during playback — no preview spam while dragging a slider.
+    handleSynthDrumParamChange (presetIdx, key, value) {
+        const track = this.props.track;
+        const current = getDrumVoice(track, presetIdx);
+        const voices = {...(track.drumVoices || {})};
+        voices[presetIdx] = {...current, [key]: value};
+        this._updateTrack({drumVoices: voices});
     }
 
     renderLanePicker () {
@@ -247,6 +310,148 @@ class TrackRow extends React.Component {
                     onClick={() => this.handleAddLane()}
                     disabled={lanes.length >= DRUM_NAMES.length}
                 >+ Add drum sound</button>
+            </div>
+        );
+    }
+
+    // Lane picker for synthDrum tracks: like the sampled drum picker but each
+    // lane chooses a synthesized preset and has a disclosure toggle that opens
+    // its voice controls in the panel below the grid (renderSynthDrumVoicePanel).
+    renderSynthDrumLanePicker () {
+        const lanes = this._drumLanes();
+        const canRemove = lanes.length > 1;
+        const editing = this.state.editingVoiceLane;
+        return (
+            <div className="drum-lane-picker synth-drum-lane-picker">
+                {lanes.map((presetIdx, idx) => (
+                    <div
+                        className="drum-lane-row synth-drum-lane-row"
+                        key={`lane-${idx}`}
+                    >
+                        <button
+                            type="button"
+                            className={`icon-btn lane-edit-btn ${editing === presetIdx ? 'is-open' : ''}`}
+                            onClick={() => this.handleSynthDrumLaneToggle(presetIdx)}
+                            aria-expanded={editing === presetIdx}
+                            aria-label={`Edit sound for lane ${idx + 1}`}
+                            title="Edit this sound"
+                        >
+                            <svg
+                                viewBox="0 0 10 10"
+                                width="9"
+                                height="9"
+                                aria-hidden="true"
+                            ><path
+                                d="M3 2.5l3 2.5-3 2.5z"
+                                fill="currentColor"
+                            /></svg>
+                        </button>
+                        <select
+                            value={presetIdx}
+                            onChange={e => this.handleLaneChange(idx, parseInt(e.target.value, 10))}
+                            aria-label={`Drum sound for lane ${idx + 1}`}
+                        >
+                            {SYNTH_DRUM_PRESET_NAMES.map((name, i) => (
+                                <option
+                                    key={i + 1}
+                                    value={i + 1}
+                                >{name}</option>
+                            ))}
+                        </select>
+                        <button
+                            type="button"
+                            className="icon-btn lane-remove-btn"
+                            onClick={() => this.handleRemoveLane(idx)}
+                            disabled={!canRemove}
+                            aria-label="Remove lane"
+                            title="Remove lane"
+                        >−</button>
+                    </div>
+                ))}
+                <button
+                    type="button"
+                    className="drum-lane-add"
+                    onClick={() => this.handleAddLane()}
+                    disabled={lanes.length >= SYNTH_DRUM_PRESETS.length}
+                >+ Add drum sound</button>
+            </div>
+        );
+    }
+
+    // Full-width editor for the currently-open synthDrum lane's voice. Rendered
+    // below the track body so it has room without breaking the lane/grid row
+    // alignment. Reuses the effect-row slider styling.
+    renderSynthDrumVoicePanel () {
+        const presetIdx = this.state.editingVoiceLane;
+        if (presetIdx === null || typeof presetIdx === 'undefined') return null;
+        const track = this.props.track;
+        const v = getDrumVoice(track, presetIdx);
+        const name = SYNTH_DRUM_PRESET_NAMES[presetIdx - 1] || 'Sound';
+        const WAVES = ['sine', 'square', 'sawtooth', 'triangle'];
+        // Exponential time mapping (same shape as the synth ADSR sliders) so the
+        // 0–100 scale has fine control over short decays.
+        const secToUi = (s, max) => Math.round(100 * Math.pow(Math.max(0, Math.min(s, max)) / max, 1 / 2.5));
+        const uiToSec = (u, max) => max * Math.pow(Math.max(0, Math.min(100, u)) / 100, 2.5);
+        const rows = [
+            {key: 'tune', label: 'Tune', uiValue: Math.round(v.tune * 100), fromUi: x => x / 100},
+            {key: 'pitchEnv', label: 'Pitch', uiValue: Math.round(v.pitchEnv * 100), fromUi: x => x / 100},
+            {key: 'pitchDecay', label: 'P.Dec', uiValue: secToUi(v.pitchDecay, 0.5), fromUi: x => uiToSec(x, 0.5)},
+            {key: 'bodyLevel', label: 'Tone', uiValue: Math.round(v.bodyLevel * 100), fromUi: x => x / 100},
+            {key: 'bodyDecay', label: 'Body', uiValue: secToUi(v.bodyDecay, 2), fromUi: x => uiToSec(x, 2)},
+            {key: 'noiseLevel', label: 'Noise', uiValue: Math.round(v.noiseLevel * 100), fromUi: x => x / 100},
+            {key: 'noiseColor', label: 'Color', uiValue: Math.round(v.noiseColor * 100), fromUi: x => x / 100},
+            {key: 'noiseDecay', label: 'N.Dec', uiValue: secToUi(v.noiseDecay, 2), fromUi: x => uiToSec(x, 2)},
+            {key: 'drive', label: 'Drive', uiValue: Math.round(v.drive * 100), fromUi: x => x / 100}
+        ];
+        return (
+            <div className="synth-drum-voice-panel">
+                <div className="synth-drum-voice-head">
+                    <span className="synth-drum-voice-name">{name}</span>
+                    <button
+                        type="button"
+                        className="icon-btn synth-drum-voice-close"
+                        onClick={() => this.setState({editingVoiceLane: null})}
+                        aria-label="Close sound editor"
+                        title="Close"
+                    >×</button>
+                </div>
+                <div className="synth-drum-voice-controls">
+                    <label className="synth-wave-label">
+                        <span>Wave</span>
+                        <select
+                            value={v.bodyWave}
+                            onChange={e => this.handleSynthDrumParamChange(presetIdx, 'bodyWave', e.target.value)}
+                            aria-label="Body waveform"
+                        >
+                            {WAVES.map(w => (<option
+                                key={w}
+                                value={w}
+                            >{w}</option>))}
+                        </select>
+                    </label>
+                    {rows.map(row => {
+                        const fillPct = Math.max(0, Math.min(100, row.uiValue));
+                        return (
+                            <div
+                                className="effect-row"
+                                key={row.key}
+                            >
+                                <span className="effect-label">{row.label}</span>
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    value={row.uiValue}
+                                    onChange={e => this.handleSynthDrumParamChange(presetIdx, row.key, row.fromUi(parseInt(e.target.value, 10)))}
+                                    aria-label={`${row.label} for ${name}`}
+                                    style={{'--fx-pct': `${fillPct}%`}}
+                                />
+                                <span className="effect-value">{row.uiValue}</span>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         );
     }
@@ -317,7 +522,7 @@ class TrackRow extends React.Component {
 
     handleAddNote (step, pitchOrDrum) {
         const track = this.props.track;
-        if (track.kind === 'drum') {
+        if (track.kind === 'drum' || track.kind === 'synthDrum') {
             // Second arg is the drum sound index (the lane that was clicked).
             // Notes are identified by (drum, step), so the same step can have
             // hits across different lanes.
@@ -351,6 +556,13 @@ class TrackRow extends React.Component {
                 // fall back to the track-level legacy drum for single-lane
                 // drum tracks.
                 drum: drum || track.drum || 1,
+                velocity: DEFAULT_VELOCITY
+            });
+        } else if (track.kind === 'synthDrum') {
+            this.props.onPreviewNote({
+                kind: 'synthDrum',
+                // Resolve the clicked lane's voice params (preset index = drum).
+                synthDrum: getDrumVoice(track, drum || 1),
                 velocity: DEFAULT_VELOCITY
             });
         } else if (track.kind === 'synth') {
@@ -396,7 +608,7 @@ class TrackRow extends React.Component {
         const selectedKeys = this.props.selectedKeys;
         if (!selectedKeys || selectedKeys.size === 0) return;
         const lengthSteps = this.props.lengthSteps;
-        const isDrum = track.kind === 'drum';
+        const isDrum = track.kind === 'drum' || track.kind === 'synthDrum';
         // Build a key function consistent with the grid (instrument uses pitch_step;
         // drum uses step). The keyOfNote helper from song-editor isn't imported
         // here but we can replicate via the kind.
@@ -431,7 +643,8 @@ class TrackRow extends React.Component {
 
     handlePreviewPitch (pitch) {
         const track = this.props.track;
-        if (track.kind === 'drum') return; // drum has no pitch concept
+        // Drum and synthDrum tracks have no pitch concept.
+        if (track.kind === 'drum' || track.kind === 'synthDrum') return;
         this._preview({pitch});
     }
 
@@ -896,15 +1109,45 @@ class TrackRow extends React.Component {
         const {track} = this.props;
         const isDrum = track.kind === 'drum';
         const isSynth = track.kind === 'synth';
-        const badgeClass = isDrum ? 'drum' : (isSynth ? 'synth' : 'instrument');
-        const badgeTitle = isDrum ? 'Drum track' : (isSynth ? 'Synth track' : 'Instrument track');
+        const isSynthDrum = track.kind === 'synthDrum';
+        const badgeClass = isDrum ? 'drum' :
+            (isSynthDrum ? 'synthDrum' : (isSynth ? 'synth' : 'instrument'));
+        const badgeTitle = isDrum ? 'Drum track' :
+            (isSynthDrum ? 'Synth drum track' : (isSynth ? 'Synth track' : 'Instrument track'));
         return (
             <div className="track-name-row">
                 <span
                     className={`track-kind-badge ${badgeClass}`}
                     aria-hidden="true"
                     title={badgeTitle}
-                >{isDrum ? (
+                >{isSynthDrum ? (
+                        // A drum body with a synth wave through it.
+                        <svg
+                            viewBox="0 0 16 16"
+                            width="12"
+                            height="12"
+                        ><ellipse
+                            cx="8"
+                            cy="4.2"
+                            rx="6"
+                            ry="2.2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.3"
+                        /><path
+                            d="M2 4.2v6c0 1.3 2.7 2.3 6 2.3s6-1 6-2.3v-6"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.3"
+                        /><path
+                            d="M4 8.6q1-1.8 2 0t2 0 2 0"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        /></svg>
+                    ) : isDrum ? (
                         <svg
                             viewBox="0 0 16 16"
                             width="12"
@@ -959,15 +1202,21 @@ class TrackRow extends React.Component {
         const {track, isFirst, isLast, onMoveUp, onMoveDown, onMoveTop, onMoveBottom} = this.props;
         const isDrum = track.kind === 'drum';
         const isSynth = track.kind === 'synth';
+        const isSynthDrum = track.kind === 'synthDrum';
         const volume = typeof track.volume === 'number' ? track.volume : 80;
         return (
-            <div className={`track-row-controls ${isDrum ? 'drum-track' : ''} ${isSynth ? 'synth-track' : ''}`}>
+            <div className={`track-row-controls ${isDrum ? 'drum-track' : ''} ${isSynth ? 'synth-track' : ''} ${isSynthDrum ? 'synth-drum-track' : ''}`}>
                 {isDrum ? (
                     // Drum tracks put the lane picker at the very top of the
                     // panel so its rows are vertically aligned with the grid's
                     // rows on the right. The track name + edit toggle live in
                     // a full-width header bar above the controls panel.
                     this.renderLanePicker()
+                ) : isSynthDrum ? (
+                    // Same lane-aligned layout as drum tracks, but with the
+                    // synth-drum preset picker (per-lane voice editor opens
+                    // below the grid).
+                    this.renderSynthDrumLanePicker()
                 ) : isSynth ? (
                     // Synth tracks: just the name row at the top; the preset
                     // dropdown + synth params render below (via renderSynthControls).
@@ -1255,8 +1504,11 @@ class TrackRow extends React.Component {
     render () {
         const {track, lengthSteps, stepsPerBeat, playStep, isEditing, selectedKeys} = this.props;
         const isDrum = track.kind === 'drum';
+        const isSynthDrum = track.kind === 'synthDrum';
+        // synthDrum shares the sampled-drum lane/grid model and editing layout.
+        const isLaneBased = isDrum || isSynthDrum;
         const muted = !!track.muted;
-        const isDrumEditing = isEditing && isDrum;
+        const isDrumEditing = isEditing && isLaneBased;
         // selectedKeys for compact mode is ignored — only the editing track shows selection state.
 
         const body = (
@@ -1271,7 +1523,7 @@ class TrackRow extends React.Component {
                         className={`track-row-grid ${isEditing ? 'is-editing' : 'is-compact'}`}
                     >
                         {isEditing ? (
-                            isDrum ? (
+                            isLaneBased ? (
                                 <DrumGrid
                                     notes={track.notes || []}
                                     lengthSteps={lengthSteps}
@@ -1339,7 +1591,7 @@ class TrackRow extends React.Component {
         );
 
         return (
-            <div className={`track-row ${muted ? 'muted' : ''} ${isEditing ? 'editing' : 'compact'} ${isDrumEditing ? 'drum-editing' : ''}`}>
+            <div className={`track-row ${muted ? 'muted' : ''} ${isEditing ? 'editing' : 'compact'} ${isDrumEditing ? 'drum-editing' : ''} ${isSynthDrum && isEditing ? 'synth-drum-editing' : ''}`}>
                 {isDrumEditing ? (
                     <React.Fragment>
                         <div className="track-row-header">
@@ -1348,6 +1600,7 @@ class TrackRow extends React.Component {
                         <div className="track-row-body">
                             {body}
                         </div>
+                        {isSynthDrum ? this.renderSynthDrumVoicePanel() : null}
                     </React.Fragment>
                 ) : body}
             </div>

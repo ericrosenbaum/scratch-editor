@@ -496,6 +496,16 @@ const serializeSong = function (song) {
                 [track.drum || 1];
             t.drumLanes = lanes;
             t.drum = lanes[0];
+        } else if (track.kind === 'synthDrum') {
+            // Synthesized drum machine. Persist the lane list (indices into the
+            // synth-drum preset catalog) and the per-lane editable voice params.
+            const lanes = Array.isArray(track.drumLanes) && track.drumLanes.length > 0 ?
+                track.drumLanes.slice() :
+                [1];
+            t.drumLanes = lanes;
+            if (track.drumVoices) {
+                t.drumVoices = Object.assign(Object.create(null), track.drumVoices);
+            }
         } else if (track.kind === 'synth') {
             // Persist the full subtractive-synth param bag. Shallow copy is
             // enough — values are primitives.
@@ -510,9 +520,9 @@ const serializeSong = function (song) {
             const n = Object.create(null);
             n.step = note.step;
             n.durationSteps = note.durationSteps;
-            if (track.kind === 'drum') {
-                // Per-note drum so multi-lane patterns round-trip. Default
-                // to the track's first lane if a legacy note didn't have one.
+            if (track.kind === 'drum' || track.kind === 'synthDrum') {
+                // Per-note drum/lane index so multi-lane patterns round-trip.
+                // Default to the track's first lane if a note didn't have one.
                 n.drum = typeof note.drum === 'number' ?
                     note.drum :
                     (track.drum || (Array.isArray(track.drumLanes) ? track.drumLanes[0] : 1));

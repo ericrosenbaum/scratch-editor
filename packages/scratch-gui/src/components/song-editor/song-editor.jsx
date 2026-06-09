@@ -26,12 +26,13 @@ import {
 import './song-editor.raw.css';
 
 const keyOfNote = (track, note) =>
-    (track.kind === 'drum' ? drumNoteKey(note) : noteKey(note));
+    ((track.kind === 'drum' || track.kind === 'synthDrum') ? drumNoteKey(note) : noteKey(note));
 
 // Synth and instrument tracks both store pitched notes ({step, pitch, ...}),
-// so the clipboard travels freely between them. Drum tracks use a (drum, step)
-// addressing scheme with no pitch, so paste only flows within drum or within
-// pitched.
+// so the clipboard travels freely between them. Drum and synthDrum tracks use a
+// (drum, step) addressing scheme with no pitch — and their `drum` indexes
+// different catalogs (sampled drum names vs synth-drum presets) — so paste only
+// flows within the exact same kind for those.
 const clipboardCompatible = (clipKind, trackKind) => {
     if (clipKind === trackKind) return true;
     const pitched = k => k === 'synth' || k === 'instrument';
@@ -93,6 +94,7 @@ class SongEditor extends React.Component {
         this.handleAddInstrumentTrack = this.handleAddInstrumentTrack.bind(this);
         this.handleAddDrumTrack = this.handleAddDrumTrack.bind(this);
         this.handleAddSynthTrack = this.handleAddSynthTrack.bind(this);
+        this.handleAddSynthDrumTrack = this.handleAddSynthDrumTrack.bind(this);
         this.handleSelectionDelete = this.handleSelectionDelete.bind(this);
         this.handleSelectionCopy = this.handleSelectionCopy.bind(this);
         this.handleSelectionCut = this.handleSelectionCut.bind(this);
@@ -106,6 +108,7 @@ class SongEditor extends React.Component {
         this.handleOpenAiGenerateInstrument = this.handleOpenAiGenerateInstrument.bind(this);
         this.handleOpenAiGenerateDrum = this.handleOpenAiGenerateDrum.bind(this);
         this.handleOpenAiGenerateSynth = this.handleOpenAiGenerateSynth.bind(this);
+        this.handleOpenAiGenerateSynthDrum = this.handleOpenAiGenerateSynthDrum.bind(this);
         this.handleCloseAiGenerate = this.handleCloseAiGenerate.bind(this);
         this.handleApplyAiGenerate = this.handleApplyAiGenerate.bind(this);
         this.handleOpenAiSong = this.handleOpenAiSong.bind(this);
@@ -404,6 +407,14 @@ class SongEditor extends React.Component {
         this.setState({editingTrackId: blank.trackId, selectedKeys: new Set()});
     }
 
+    handleAddSynthDrumTrack () {
+        const blank = createBlankTrack('synthDrum');
+        const base = displayNameForTrack(blank);
+        blank.name = unusedTrackName(base, this._existingTrackNames());
+        this._commit({tracks: [...(this.props.song.tracks || []), blank]});
+        this.setState({editingTrackId: blank.trackId, selectedKeys: new Set()});
+    }
+
     renameTrack (trackIdx, newName) {
         const tracks = this.props.song.tracks || [];
         const target = tracks[trackIdx];
@@ -516,8 +527,8 @@ class SongEditor extends React.Component {
         const existingNotes = (track.notes || []).slice();
         const newKeys = new Set();
         const isDup = (note) => {
-            if (track.kind === 'drum') {
-                return existingNotes.some(n => n.step === note.step);
+            if (track.kind === 'drum' || track.kind === 'synthDrum') {
+                return existingNotes.some(n => n.step === note.step && (n.drum || 1) === (note.drum || 1));
             }
             return existingNotes.some(n => n.step === note.step && n.pitch === note.pitch);
         };
@@ -616,6 +627,10 @@ class SongEditor extends React.Component {
 
     handleOpenAiGenerateSynth () {
         this.setState({aiGenerateKind: 'synth', aiGenerateBusy: false, aiGenerateError: null});
+    }
+
+    handleOpenAiGenerateSynthDrum () {
+        this.setState({aiGenerateKind: 'synthDrum', aiGenerateBusy: false, aiGenerateError: null});
     }
 
     handleCloseAiGenerate () {
@@ -1145,6 +1160,33 @@ class SongEditor extends React.Component {
                                 onClick={this.handleOpenAiGenerateSynth}
                                 title="Generate a new synth track with AI"
                                 aria-label="Generate synth track with AI"
+                            >
+                                <svg
+                                    viewBox="0 0 16 16"
+                                    width="13"
+                                    height="13"
+                                    aria-hidden="true"
+                                ><path
+                                    d="M8 1.5l1.4 3.6L13 6.5l-3.6 1.4L8 11.5 6.6 7.9 3 6.5l3.6-1.4L8 1.5z"
+                                    fill="currentColor"
+                                /><path
+                                        d="M12.5 11l.7 1.8L15 13.5l-1.8.7-.7 1.8-.7-1.8L10 13.5l1.8-.7z"
+                                        fill="currentColor"
+                                    /></svg>
+                            </button>
+                        </div>
+                        <div className="track-row-add-group">
+                            <button
+                                type="button"
+                                className="add-track"
+                                onClick={this.handleAddSynthDrumTrack}
+                            >+ Add Synth Drum Track</button>
+                            <button
+                                type="button"
+                                className="generate-track"
+                                onClick={this.handleOpenAiGenerateSynthDrum}
+                                title="Generate a new synth drum track with AI"
+                                aria-label="Generate synth drum track with AI"
                             >
                                 <svg
                                     viewBox="0 0 16 16"

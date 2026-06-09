@@ -54,6 +54,12 @@ const EXAMPLE_PROMPTS_FOR_KIND = {
         'rewrite as a bouncy 16th-note arpeggio',
         'simplify to a single sustained drone',
         'add a counter-melody an octave higher'
+    ],
+    synthDrum: [
+        'make it a half-time trap groove',
+        'add rolling 16th-note hi-hats',
+        'simplify to just kick + snare backbeat',
+        'add claps on the off-beats'
     ]
 };
 
@@ -404,7 +410,7 @@ AiEditTrackModal.propTypes = {
     error: PropTypes.string,
     intl: intlShape.isRequired,
     trackName: PropTypes.string,
-    trackKind: PropTypes.oneOf(['instrument', 'drum', 'synth']),
+    trackKind: PropTypes.oneOf(['instrument', 'drum', 'synth', 'synthDrum']),
     onCancel: PropTypes.func.isRequired,
     onApply: PropTypes.func.isRequired
 };

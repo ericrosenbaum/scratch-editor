@@ -134,7 +134,8 @@ class VelocityStrip extends React.Component {
     render () {
         const {notes, lengthSteps, stepsPerBeat, kind} = this.props;
         const width = LABEL_W + (lengthSteps * this._cellW());
-        const isDrum = kind === 'drum';
+        // synthDrum hits have no pitch, so color them like sampled drums.
+        const isDrum = kind === 'drum' || kind === 'synthDrum';
 
         // Beat-tick lines so the strip reads like a horizontal ruler.
         const ticks = [];
@@ -258,7 +259,7 @@ VelocityStrip.propTypes = {
     lengthSteps: PropTypes.number.isRequired,
     stepsPerBeat: PropTypes.number.isRequired,
     cellWidth: PropTypes.number,
-    kind: PropTypes.oneOf(['instrument', 'drum', 'synth']).isRequired,
+    kind: PropTypes.oneOf(['instrument', 'drum', 'synth', 'synthDrum']).isRequired,
     onUpdateVelocity: PropTypes.func.isRequired
 };
 

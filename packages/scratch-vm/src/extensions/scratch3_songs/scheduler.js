@@ -9,6 +9,8 @@
  */
 
 const {getTrackSynth} = require('./synth-defaults');
+const {getDrumVoice} = require('./synth-drum-defaults');
+const {buildPercussionVoice} = require('./synth-drum-voice');
 const {snapToScale, MIN_PITCH, MAX_PITCH} = require('./scale-utils');
 
 const ratioForPitchInterval = interval => Math.pow(2, interval / 12);
@@ -359,7 +361,9 @@ class SongScheduler {
             if (!this._activeTracks.has(track.trackId)) continue;
             if (track.muted) continue;
             if (anySolo && !track.solo) continue;
-            const isPitched = track.kind !== 'drum';
+            // synthDrum tracks are unpitched (lane-based, like sampled drums),
+            // so key/scale overrides must leave their hits alone.
+            const isPitched = track.kind !== 'drum' && track.kind !== 'synthDrum';
             for (const note of (track.notes || [])) {
                 const drumIdx = (typeof note.drum === 'number' ? note.drum : (track.drum || 1)) - 1;
                 let pitch = typeof note.pitch === 'number' ? note.pitch : 60;
@@ -799,6 +803,10 @@ class SongScheduler {
             this._scheduleSynthNote(note, when);
             return;
         }
+        if (note.kind === 'synthDrum') {
+            this._scheduleSynthDrumNote(note, when);
+            return;
+        }
         const ctx = this.audioContext;
         const sps = this.secondsPerStep;
         const noteDuration = (note.durationSteps || 1) * sps;
@@ -1087,6 +1095,32 @@ class SongScheduler {
             voice.disconnect();
         };
 
+        this.onNote(note, when);
+    }
+
+    // Synthesized percussion voice for "synthDrum" tracks. Resolves the lane's
+    // params fresh from the live track (so slider tweaks during playback take
+    // effect on the next hit, like _scheduleSynthNote) and hands off to the
+    // shared percussion voice builder. Drums are one-shots — note duration is
+    // ignored; the voice rings for its own envelope.
+    _scheduleSynthDrumNote (note, when) {
+        const ctx = this.audioContext;
+        const track = note.trackId ? this._trackById(note.trackId) : null;
+        // _flattenNotes stores `drum` 0-based (for getDrumBuffer); the synthDrum
+        // catalog and drumVoices are keyed 1-based, so add one back here.
+        const presetIndex = (note.drum || 0) + 1;
+        const params = getDrumVoice(track || {}, presetIndex);
+        const chain = note.trackId ? this._getTrackChain(note.trackId) : null;
+        const voice = buildPercussionVoice(
+            ctx, params, when, note.velocity,
+            chain ? chain.input : this.destination
+        );
+        voice._trackId = note.trackId;
+        this._activeSources.push(voice);
+        voice.onEnded = () => {
+            const idx = this._activeSources.indexOf(voice);
+            if (idx >= 0) this._activeSources.splice(idx, 1);
+        };
         this.onNote(note, when);
     }
 }

@@ -1,5 +1,6 @@
 const SongScheduler = require('./scheduler');
 const {getTrackSynth} = require('./synth-defaults');
+const {buildPercussionVoice} = require('./synth-drum-voice');
 const {midiToFreq} = require('./scheduler');
 
 /**
@@ -489,10 +490,14 @@ class SongPlayback {
             ctx.resume().catch(() => {});
         }
         this._ensureMusicLoaded();
-        const {kind, instrument, drum, pitch, velocity = 90, durationSec = 0.18, synth} = opts || {};
+        const {kind, instrument, drum, pitch, velocity = 90, durationSec = 0.18, synth, synthDrum} = opts || {};
         if (kind === 'synth') {
             const synthDur = opts && opts.durationSec ? opts.durationSec : 0.35;
             this._previewSynthNote({synth, pitch, velocity, durationSec: synthDur});
+            return;
+        }
+        if (kind === 'synthDrum') {
+            this._previewSynthDrumNote({synthDrum, velocity});
             return;
         }
         let buffer;
@@ -540,6 +545,16 @@ class SongPlayback {
                 releaseGain.disconnect();
             } catch (e) { /* ignore */ }
         };
+    }
+
+    // One-shot percussion voice for editor previews — mirror of the synth
+    // preview but for synthDrum lanes. `synthDrum` is an already-resolved voice
+    // param bag (the editor merges it via getDrumVoice before previewing).
+    // Routes straight to the playback destination (no per-track FX chain).
+    _previewSynthDrumNote ({synthDrum, velocity = 90}) {
+        const ctx = this._audioContext();
+        if (!ctx) return;
+        buildPercussionVoice(ctx, synthDrum || {}, ctx.currentTime, velocity, this._audioDestination());
     }
 
     // One-shot synth voice for editor previews — same voice graph as

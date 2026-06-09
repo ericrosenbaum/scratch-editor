@@ -1,7 +1,8 @@
 import {
     INSTRUMENT_NAMES,
     DRUM_NAMES,
-    SYNTH_PRESETS
+    SYNTH_PRESETS,
+    SYNTH_DRUM_PRESET_NAMES
 } from '../song-defaults.js';
 import {
     SCALE_OFFSETS,
@@ -26,6 +27,11 @@ const SYNTH_PRESET_NAMES = SYNTH_PRESETS.map(p => p.name);
 
 const buildSynthPresetList = () =>
     SYNTH_PRESET_NAMES
+        .map((name, idx) => `${idx + 1}=${name}`)
+        .join(', ');
+
+const buildSynthDrumList = () =>
+    SYNTH_DRUM_PRESET_NAMES
         .map((name, idx) => `${idx + 1}=${name}`)
         .join(', ');
 
@@ -134,7 +140,7 @@ const EFFECTS_SCHEMA = {
 const TRACK_SCHEMA = {
     type: 'object',
     properties: {
-        kind: {type: 'string', enum: ['instrument', 'drum', 'synth']},
+        kind: {type: 'string', enum: ['instrument', 'drum', 'synth', 'synthDrum']},
         instrument: {
             type: 'integer',
             minimum: 1,
@@ -143,13 +149,18 @@ const TRACK_SCHEMA = {
         },
         drumLanes: {
             type: 'array',
-            items: {type: 'integer', minimum: 1, maximum: DRUM_NAMES.length},
+            items: {type: 'integer', minimum: 1,
+                maximum: Math.max(DRUM_NAMES.length, SYNTH_DRUM_PRESET_NAMES.length)},
             description:
                 'For kind=drum, the ordered list of drum sounds (drum-machine ' +
-                'lanes) this track plays. Each note carries its own `drum` ' +
-                'index choosing which lane it hits. A typical pattern uses ' +
-                '4-6 lanes: kick (2), snare (1), closed-hi-hat (6), open-hi-hat ' +
-                '(5), crash (4), clap (8).'
+                'lanes) this track plays — indices into the sampled drum list. ' +
+                'A typical pattern uses 4-6 lanes: kick (2), snare (1), ' +
+                'closed-hi-hat (6), open-hi-hat (5), crash (4), clap (8). ' +
+                'For kind=synthDrum, the SAME field lists the SYNTHESIZED drum ' +
+                'presets the kit uses (different catalog — see synth-drum list). ' +
+                'A typical synthDrum kit is [1,2,3,4,5] = kick, snare, ' +
+                'closed-hat, open-hat, clap. Each note carries its own `drum` ' +
+                'index choosing which lane it hits.'
         },
         synthPreset: {
             type: 'string',
@@ -195,17 +206,18 @@ const TRACK_SCHEMA = {
                         maximum: PITCH_MAX,
                         description:
                             'MIDI pitch. Required for instrument and synth ' +
-                            'notes; ignored for drum tracks and for rests.'
+                            'notes; ignored for drum / synthDrum tracks and ' +
+                            'for rests.'
                     },
                     drum: {
                         type: 'integer',
                         minimum: 1,
-                        maximum: DRUM_NAMES.length,
+                        maximum: Math.max(DRUM_NAMES.length, SYNTH_DRUM_PRESET_NAMES.length),
                         description:
-                            'For drum tracks ONLY: which drum sound this hit ' +
-                            'plays. Required for every drum note (the track can ' +
-                            'have multiple drum sounds active across notes). ' +
-                            'Ignored for rests.'
+                            'For drum AND synthDrum tracks: which sound (one of ' +
+                            'the track\'s drumLanes) this hit plays. Required for ' +
+                            'every such note (the track has multiple sounds active ' +
+                            'across notes). Ignored for rests and pitched tracks.'
                     },
                     velocity: {
                         type: 'integer',
@@ -331,6 +343,13 @@ const buildSystemPrompt = () => [
     `    Synth presets: ${buildSynthPresetList()}.`,
     '    Use synth tracks for sounds that the sampled instruments cannot do well:',
     '    pads, wobbles, sub bass, plucks, leads, bells, etc.',
+    '  - kind="synthDrum" — a drum-machine track like "drum", but the kit pieces',
+    '    are SYNTHESIZED (punchy electronic kick, snare, hats, clap — 808/909',
+    '    style) rather than sampled. Set `drumLanes` to the synth-drum preset',
+    '    indices the kit uses; each note has `drum` choosing which lane it hits',
+    `    (pitch ignored). Synth-drum presets: ${buildSynthDrumList()}.`,
+    '    A typical kit is [1,2,3,4,5] = kick, snare, closed-hat, open-hat, clap.',
+    '    Prefer synthDrum over drum for electronic / hip-hop / techno / trap.',
     '',
     'Each entry in a track\'s `notes` array is either a NOTE or a REST.',
     '- A NOTE has step (0-based, < lengthSteps), durationSteps (>=1),',
@@ -517,13 +536,14 @@ const buildEditSystemPrompt = () => [
     'Your job: return ONE updated track via the edit_track tool.',
     '- Output only the new contents of the chosen track. You cannot modify other tracks,',
     '  the tempo, lengthSteps, or any song-level field.',
-    '- Keep the same kind (instrument vs drum vs synth) as the original — do not switch a',
-    '  piano track into a drum track or vice versa.',
+    '- Keep the same kind (instrument vs drum vs synth vs synthDrum) as the original —',
+    '  do not switch a piano track into a drum track or vice versa.',
     '- Do NOT change the instrument index, synth preset, or drum kit. The user chose the',
     '  sound; your job is to write notes that fit it. (If kind=instrument, emit the exact',
     '  same `instrument` value as the original. If kind=synth, emit the exact same',
-    '  `synthPreset` as the original. If kind=drum, emit the same `drumLanes`; only the',
-    '  per-note `drum` field can vary, and it must be one of those lane indices.)',
+    '  `synthPreset` as the original. If kind=drum or kind=synthDrum, emit the same',
+    '  `drumLanes`; only the per-note `drum` field can vary, and it must be one of',
+    '  those lane indices.)',
     '- Keep the music coherent with the rest of the song: same key, compatible rhythm,',
     '  and tempo. If the user asks for something that would clash (e.g. "make it atonal"),',
     '  honor the request anyway — they\'re the boss.',
@@ -547,10 +567,14 @@ const buildEditSystemPrompt = () => [
     `    choosing which drum sound it hits. Available sounds: ${buildDrumList()}.`,
     '  - kind="synth" — pitched subtractive-synth track. `synthPreset` names the voice.',
     `    Notes have pitch like instrument tracks. Presets: ${buildSynthPresetList()}.`,
+    '  - kind="synthDrum" — a drum-machine track with SYNTHESIZED kit pieces.',
+    '    drumLanes lists the synth-drum preset indices the kit uses; each note',
+    `    has \`drum\` choosing which lane it hits. Presets: ${buildSynthDrumList()}.`,
     '',
     'Each entry in a track\'s `notes` array is either a NOTE or a REST.',
     '- A NOTE has step (0-based, < lengthSteps), durationSteps (>=1),',
-    '  velocity (1-127), and either pitch (instrument/synth) or drum (drum).',
+    '  velocity (1-127), and either pitch (instrument/synth) or drum',
+    '  (drum/synthDrum).',
     '- A REST has step, durationSteps, and rest=true. Rests are stripped',
     '  before playback — they exist so you can WRITE OUT the silences in',
     '  this part instead of leaving them implicit. Writing rests explicitly',
@@ -638,8 +662,8 @@ const buildGenerateTrackSystemPrompt = kind => [
         kind === 'synth' ?
             '- You DO choose the `synthPreset` — pick whichever preset best fits the prompt' :
             '- You DO choose the `drumLanes` — pick the kit pieces that fit the prompt and the',
-    '  existing arrangement. The user picked the KIND (instrument vs drum vs synth); the',
-    '  specific sound is yours to pick.',
+    '  existing arrangement. The user picked the KIND (instrument / drum / synth /',
+    '  synthDrum); the specific sound is yours to pick.',
     '- Keep the music coherent with the existing tracks: same key, complementary rhythm,',
     '  compatible tempo. The new track should fill a role the existing tracks DO NOT —',
     '  if there\'s already a lead, write a bass or pad; if there\'s a bass and drums,',
@@ -663,11 +687,13 @@ const buildGenerateTrackSystemPrompt = kind => [
         `Instrument indices (1..${INSTRUMENT_NAMES.length}): ${buildInstrumentList()}.` :
         kind === 'synth' ?
             `Synth presets: ${buildSynthPresetList()}.` :
-            `Drum sounds (1..${DRUM_NAMES.length}): ${buildDrumList()}.`,
-    kind === 'drum' ?
-        'drumLanes lists the drum sounds the track uses (e.g. [2,1,6,5,4,8] = kick, snare,' +
-            ' closed-hh, open-hh, crash, clap). Each note has its own `drum` (1..18) field' +
-            ' choosing which drum sound it hits.' :
+            kind === 'synthDrum' ?
+                `Synth-drum presets (1..${SYNTH_DRUM_PRESET_NAMES.length}): ${buildSynthDrumList()}.` :
+                `Drum sounds (1..${DRUM_NAMES.length}): ${buildDrumList()}.`,
+    (kind === 'drum' || kind === 'synthDrum') ?
+        'drumLanes lists the kit pieces the track uses (e.g. [1,2,3,4,5] for synthDrum, or' +
+            ' [2,1,6,5,4,8] for sampled drum). Each note has its own `drum` field choosing' +
+            ' which lane it hits; pitch is ignored.' :
         'Notes have pitch (MIDI: C1=24, C2=36, C3=48, C4=60, C5=72, C6=84, C7=96, C8=108).',
     kind === 'synth' ?
         'Synth tracks are FULLY POLYPHONIC — stack notes (overlap step ranges) wherever the ' +
@@ -677,7 +703,7 @@ const buildGenerateTrackSystemPrompt = kind => [
     '',
     'Each entry in `notes` is either a NOTE or a REST.',
     '- A NOTE has step (0-based, < lengthSteps), durationSteps (>=1),',
-    `  velocity (1-127), and ${kind === 'drum' ? 'drum (1..18)' : 'pitch (MIDI)'}.`,
+    `  velocity (1-127), and ${(kind === 'drum' || kind === 'synthDrum') ? 'drum (a drumLanes index)' : 'pitch (MIDI)'}.`,
     '- A REST has step, durationSteps, and rest=true. Rests are stripped',
     '  before playback — they exist so you can WRITE OUT the silences in',
     '  this new part instead of leaving them implicit. Writing rests',

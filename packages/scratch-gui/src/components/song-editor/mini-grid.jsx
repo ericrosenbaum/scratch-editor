@@ -16,7 +16,9 @@ const MINI_DRUM_LANE_COLORS = [
  * track sits at exactly the same x as beat 1 of the editing track.
  */
 const MiniGrid = ({track, lengthSteps, stepsPerBeat, playStep, height = 80, cellWidth}) => {
-    const isDrum = track.kind === 'drum';
+    // synthDrum tracks use the same lane-based (drum, step) note model as
+    // sampled drum tracks, so they render identically in the compact preview.
+    const isDrum = track.kind === 'drum' || track.kind === 'synthDrum';
     const notes = track.notes || [];
     const cellW = cellWidth || DEFAULT_CELL_W;
     const viewH = Math.max(24, height);

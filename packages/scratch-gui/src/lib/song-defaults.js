@@ -1,4 +1,13 @@
 import {SYNTH_PRESETS, DEFAULT_SYNTH, getTrackSynth} from './synth-presets';
+import {
+    SYNTH_DRUM_PRESETS,
+    SYNTH_DRUM_PRESET_NAMES,
+    DEFAULT_SYNTH_DRUM,
+    DEFAULT_SYNTH_DRUM_LANES,
+    voiceParamsForPreset,
+    getDrumVoice,
+    drumVoicesForLanes
+} from './synth-drum-presets';
 
 // Default MIDI velocity for notes created in the UI (no per-note velocity
 // editor yet). 80 sits in the middle of "comfortably audible" territory.
@@ -50,6 +59,13 @@ const createBlankTrack = (kind = 'instrument', name) => {
     if (kind === 'drum') {
         t.drumLanes = DEFAULT_DRUM_LANES.slice();
     }
+    if (kind === 'synthDrum') {
+        // Multi-lane synthesized drum machine: lanes index into
+        // SYNTH_DRUM_PRESETS, and each lane carries an editable copy of its
+        // preset params in drumVoices (keyed by preset index).
+        t.drumLanes = DEFAULT_SYNTH_DRUM_LANES.slice();
+        t.drumVoices = drumVoicesForLanes(t.drumLanes);
+    }
     if (kind === 'synth') {
         t.synth = {...DEFAULT_SYNTH};
     }
@@ -71,6 +87,7 @@ const displayNameForTrack = track => {
     if (!track) return '';
     if (typeof track.name === 'string' && track.name.length > 0) return track.name;
     if (track.kind === 'drum') return 'Drums';
+    if (track.kind === 'synthDrum') return 'Synth Drums';
     if (track.kind === 'synth') {
         const preset = track.synth && track.synth.preset;
         return preset || 'Synth';
@@ -185,5 +202,12 @@ export {
     getTrackEffects,
     SYNTH_PRESETS,
     DEFAULT_SYNTH,
-    getTrackSynth
+    getTrackSynth,
+    SYNTH_DRUM_PRESETS,
+    SYNTH_DRUM_PRESET_NAMES,
+    DEFAULT_SYNTH_DRUM,
+    DEFAULT_SYNTH_DRUM_LANES,
+    voiceParamsForPreset,
+    getDrumVoice,
+    drumVoicesForLanes
 };

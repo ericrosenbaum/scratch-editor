@@ -96,6 +96,61 @@ test('Song Maker: sb3 round-trip preserves the project song', t => {
     });
 });
 
+test('Song Maker: sb3 round-trip preserves a synthDrum track (lanes, voices, notes)', t => {
+    const vm = new VirtualMachine();
+    loadDefaultProject(vm).then(() => {
+        vm.runtime.song = {
+            songId: 'song-sd',
+            name: 'Synth Beat',
+            tempo: 120,
+            lengthSteps: 16,
+            stepsPerBeat: 4,
+            tracks: [
+                {
+                    trackId: 'track-sd',
+                    kind: 'synthDrum',
+                    drumLanes: [1, 2, 3],
+                    drumVoices: {
+                        1: {preset: 'Kick', bodyWave: 'sine', tune: 0.42, drive: 0.3},
+                        2: {preset: 'Snare', noiseLevel: 0.9},
+                        3: {preset: 'Closed Hat'}
+                    },
+                    volume: 85,
+                    muted: false,
+                    notes: [
+                        {step: 0, durationSteps: 1, drum: 1, velocity: 110},
+                        {step: 4, durationSteps: 1, drum: 2, velocity: 90},
+                        {step: 2, durationSteps: 1, drum: 3, velocity: 70}
+                    ]
+                }
+            ]
+        };
+
+        const serialized = sb3.serialize(vm.runtime);
+        const track = serialized.song.tracks[0];
+        t.equal(track.kind, 'synthDrum', 'synthDrum kind preserved');
+        t.same(track.drumLanes, [1, 2, 3], 'drumLanes preserved');
+        t.ok(track.drumVoices, 'drumVoices present');
+        t.equal(track.drumVoices[1].tune, 0.42, 'edited voice param preserved');
+        t.equal(track.notes[0].drum, 1, 'per-note drum index preserved');
+        t.notOk('pitch' in track.notes[0], 'synthDrum notes omit pitch');
+
+        const vm2 = new VirtualMachine();
+        sb3.deserialize(serialized, vm2.runtime).then(() => {
+            const rt = vm2.runtime.song.tracks[0];
+            t.equal(rt.kind, 'synthDrum', 'kind round-trips');
+            t.same(rt.drumLanes, [1, 2, 3], 'lanes round-trip');
+            t.equal(rt.drumVoices[1].tune, 0.42, 'voice param round-trips');
+            t.equal(rt.drumVoices[2].noiseLevel, 0.9, 'second voice param round-trips');
+            t.equal(rt.notes[2].drum, 3, 'per-note drum round-trips');
+            t.end();
+        });
+    }).catch(err => {
+        t.fail(err.message);
+        t.end();
+    });
+});
+
 test('Song Maker: sb3 deserialize migrates legacy multi-song format (first wins)', t => {
     const vm = new VirtualMachine();
     loadDefaultProject(vm).then(() => {

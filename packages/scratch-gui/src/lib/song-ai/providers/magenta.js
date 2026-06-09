@@ -56,6 +56,22 @@ const getRnn = url => {
 // fall back to the closest sound in our kit.
 const STANDARD_DRUM_LANES = [2, 1, 6, 5, 4, 8]; // kick, snare, closed-hh, open-hh, crash, clap
 
+// Translation between the sampled drum catalog (DRUM_NAMES, used by the Magenta
+// drum RNN machinery) and the synthesized-drum preset catalog. Lets Magenta
+// generate/edit synthDrum tracks by reusing its drum model and remapping each
+// kit piece to the nearest synth-drum preset. The common kit pieces (kick,
+// snare, hats, clap, toms, cowbell, clave, cymbal) round-trip cleanly.
+const SAMPLED_TO_SYNTHDRUM = {
+    1: 2, 2: 1, 3: 6, 4: 12, 5: 4, 6: 3, 7: 3, 8: 5, 9: 11,
+    10: 11, 11: 10, 12: 3, 13: 8, 14: 7, 15: 3, 16: 3, 17: 6, 18: 9
+};
+const SYNTHDRUM_TO_SAMPLED = {
+    1: 2, 2: 1, 3: 6, 4: 5, 5: 8, 6: 3, 7: 14, 8: 13, 9: 18,
+    10: 11, 11: 9, 12: 4, 13: 2
+};
+const mapSampledToSynthDrum = d => SAMPLED_TO_SYNTHDRUM[d] || 1;
+const mapSynthDrumToSampled = d => SYNTHDRUM_TO_SAMPLED[d] || 2;
+
 const drumPitchToOurIndex = pitch => {
     if (pitch === 35 || pitch === 36) return 2; // kick
     if (pitch === 38 || pitch === 40 || pitch === 37) return 1; // snare / side-stick → snare
@@ -487,6 +503,17 @@ const composeTrack = async ({prompt, song, kind}) => {
     if (kind === 'drum') {
         return buildDrumTrack(lengthSteps, vibe.mood);
     }
+    if (kind === 'synthDrum') {
+        // Reuse the drum RNN, then remap the sampled kit pieces to synth-drum
+        // presets. sanitizeTrack dedupes lanes and seeds drumVoices downstream.
+        const dt = await buildDrumTrack(lengthSteps, vibe.mood);
+        return {
+            kind: 'synthDrum',
+            drumLanes: dt.drumLanes.map(mapSampledToSynthDrum),
+            volume: dt.volume,
+            notes: dt.notes.map(n => ({...n, drum: mapSampledToSynthDrum(n.drum)}))
+        };
+    }
     if (kind === 'synth') {
         const presetIdx = Math.abs(hashString(vibe.mood || 'default')) % SYNTH_PRESETS.length;
         const preset = SYNTH_PRESETS[presetIdx].name;
@@ -611,10 +638,14 @@ const editTrackByContinuation = async ({song, originalTrack, editParams = {}}) =
 
     let generatedNotes;
 
-    if (originalTrack.kind === 'drum') {
+    if (originalTrack.kind === 'drum' || originalTrack.kind === 'synthDrum') {
+        // synthDrum reuses the drum RNN: translate its lanes/notes to the
+        // sampled-drum index space for Magenta, then map the result back.
+        const isSynthDrum = originalTrack.kind === 'synthDrum';
+        const toSampledDrum = d => (isSynthDrum ? mapSynthDrumToSampled(d) : d);
         const {mm, rnn} = await getRnn(DRUMS_RNN_URL);
         const seedForMagenta = seedNotes.map(n => ({
-            pitch: ourIndexToDrumPitch(n.drum),
+            pitch: ourIndexToDrumPitch(toSampledDrum(n.drum)),
             start: n.step || 0,
             end: (n.step || 0) + (n.durationSteps || 1),
             isDrum: true,
@@ -627,10 +658,14 @@ const editTrackByContinuation = async ({song, originalTrack, editParams = {}}) =
             quantizedStartStep: (n.quantizedStartStep || 0) + seedSpan,
             quantizedEndStep: (n.quantizedEndStep || 0) + seedSpan
         }));
-        const activeLanes = Array.isArray(originalTrack.drumLanes) && originalTrack.drumLanes.length > 0 ?
+        const rawActiveLanes = Array.isArray(originalTrack.drumLanes) && originalTrack.drumLanes.length > 0 ?
             originalTrack.drumLanes :
             STANDARD_DRUM_LANES;
+        const activeLanes = isSynthDrum ? rawActiveLanes.map(mapSynthDrumToSampled) : rawActiveLanes;
         generatedNotes = noteSeqToDrumNotes({notes: shifted}, lengthSteps, activeLanes);
+        if (isSynthDrum) {
+            generatedNotes = generatedNotes.map(n => ({...n, drum: mapSampledToSynthDrum(n.drum)}));
+        }
     } else {
         // instrument or synth: melody RNN. Center the seed near C4 so the RNN
         // doesn't drift far, then transpose the continuation back to where

@@ -206,6 +206,12 @@ const editTrackWithPrompt = async ({prompt, editParams, song, trackIndex, signal
             if (typeof n.drum === 'number' && origLanes.indexOf(n.drum) >= 0) return n;
             return {...n, drum: origLanes[0]};
         });
+        // For synthDrum, also keep the user's edited voice params — the AI
+        // chooses the pattern, not the sound. (sanitizeTrack re-seeds these
+        // from preset defaults; restore the originals here.)
+        if (originalTrack.kind === 'synthDrum' && originalTrack.drumVoices) {
+            sanitized.drumVoices = {...originalTrack.drumVoices};
+        }
     }
     sanitized.trackId = originalTrack.trackId;
     sanitized.muted = !!originalTrack.muted;

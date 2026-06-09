@@ -63,7 +63,9 @@ const snapToScale = (pitch, rootPitch, scaleType) => {
     return clamped;
 };
 
-const _isPitched = track => track && track.kind !== 'drum';
+// Drum and synthDrum tracks are unpitched (lane-based) — key/scale transforms
+// must leave their notes untouched.
+const _isPitched = track => track && track.kind !== 'drum' && track.kind !== 'synthDrum';
 
 const transposeNotes = (tracks, deltaSemitones) => (tracks || []).map(track => {
     if (!_isPitched(track)) return track;

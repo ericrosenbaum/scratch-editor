@@ -6,7 +6,10 @@ import {
     displayNameForTrack,
     normalizeDrumTrack,
     DEFAULT_VELOCITY,
-    DEFAULT_SYNTH
+    DEFAULT_SYNTH,
+    DRUM_NAMES,
+    SYNTH_DRUM_PRESET_NAMES,
+    getDrumVoice
 } from '../../lib/song-defaults.js';
 import PianoKeyboard from './piano-keyboard.jsx';
 import DrumPadGrid from './drum-pad-grid.jsx';
@@ -149,14 +152,27 @@ class KeyboardEntryModal extends React.Component {
 
     _isDrum () {
         const t = this._track();
-        return t && t.kind === 'drum';
+        // synthDrum uses the same lane-based pad entry as sampled drums.
+        return t && (t.kind === 'drum' || t.kind === 'synthDrum');
+    }
+
+    _isSynthDrum () {
+        const t = this._track();
+        return t && t.kind === 'synthDrum';
     }
 
     _drumLanes () {
         const raw = this._track();
-        if (!raw || raw.kind !== 'drum') return [];
+        if (!raw) return [];
+        if (raw.kind === 'synthDrum') return raw.drumLanes || [];
+        if (raw.kind !== 'drum') return [];
         const normalized = normalizeDrumTrack(raw);
         return normalized.drumLanes || [];
+    }
+
+    // Names for the current track's lane catalog, for pad labels.
+    _laneNames () {
+        return this._isSynthDrum() ? SYNTH_DRUM_PRESET_NAMES : DRUM_NAMES;
     }
 
     // --- mode + octave ---
@@ -206,6 +222,14 @@ class KeyboardEntryModal extends React.Component {
     }
 
     _previewDrum (drum) {
+        if (this._isSynthDrum()) {
+            this.props.player.previewNote({
+                kind: 'synthDrum',
+                synthDrum: getDrumVoice(this._track(), drum),
+                velocity: DEFAULT_VELOCITY
+            });
+            return;
+        }
         this.props.player.previewNote({
             kind: 'drum',
             drum,
@@ -461,7 +485,7 @@ class KeyboardEntryModal extends React.Component {
         const existing = (track.notes || []).slice();
         const isDup = (a, b) => {
             if (a.step !== b.step) return false;
-            if (track.kind === 'drum') return a.drum === b.drum;
+            if (track.kind === 'drum' || track.kind === 'synthDrum') return a.drum === b.drum;
             return a.pitch === b.pitch;
         };
         const merged = existing.slice();
@@ -730,6 +754,7 @@ class KeyboardEntryModal extends React.Component {
                     {isDrum ? (
                         <DrumPadGrid
                             lanes={this._drumLanes()}
+                            names={this._laneNames()}
                             heldLanes={heldLanes}
                             onLaneDown={this.handleDrumDown}
                             onLaneUp={this.handleDrumUp}

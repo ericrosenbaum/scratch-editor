@@ -31,11 +31,12 @@ class DrumPadGrid extends React.Component {
     }
 
     render () {
-        const {lanes, heldLanes} = this.props;
+        const {lanes, heldLanes, names} = this.props;
+        const catalog = names || DRUM_NAMES;
         return (
             <div className="kbe-pad-grid">
                 {lanes.map((drum, idx) => {
-                    const name = DRUM_NAMES[drum - 1] || `Drum ${drum}`;
+                    const name = catalog[drum - 1] || `Drum ${drum}`;
                     const label = drumKeyLabel(idx).toUpperCase();
                     const held = heldLanes && heldLanes.has(drum);
                     return (
@@ -61,6 +62,7 @@ class DrumPadGrid extends React.Component {
 
 DrumPadGrid.propTypes = {
     lanes: PropTypes.arrayOf(PropTypes.number).isRequired,
+    names: PropTypes.arrayOf(PropTypes.string),
     heldLanes: PropTypes.instanceOf(Set),
     onLaneDown: PropTypes.func.isRequired,
     onLaneUp: PropTypes.func.isRequired
