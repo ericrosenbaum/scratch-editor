@@ -1,0 +1,20 @@
+{
+  "id": "gen-spooky-maze-instrument",
+  "category": "single-track-gen",
+  "settingId": "spooky-maze",
+  "operation": "generateTrack",
+  "prompt": "Add a creepy high music-box countermelody. Keep it in the song's key and groove.",
+  "kind": "instrument",
+  "seedRef": "seeds/spooky-maze.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "spooky"
+    ]
+  },
+  "goldenRef": "goldens/gen-spooky-maze-instrument/golden.json"
+}

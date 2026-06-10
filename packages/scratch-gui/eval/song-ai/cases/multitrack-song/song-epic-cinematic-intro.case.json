@@ -1,0 +1,18 @@
+{
+  "id": "song-epic-cinematic-intro",
+  "category": "multitrack-song",
+  "settingId": "epic-cinematic-intro",
+  "operation": "generateSong",
+  "prompt": "Big, dramatic cinematic intro theme. Make it cinematic style in D minor at 100 bpm.",
+  "intent": {
+    "requireKey": "D",
+    "requireScale": "minor",
+    "requireTempo": 100,
+    "requireLengthSteps": null,
+    "expectKind": null,
+    "moodTags": [
+      "cinematic"
+    ]
+  },
+  "goldenRef": "goldens/song-epic-cinematic-intro/golden.json"
+}

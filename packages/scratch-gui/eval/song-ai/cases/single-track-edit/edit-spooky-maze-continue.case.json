@@ -1,0 +1,26 @@
+{
+  "id": "edit-spooky-maze-continue",
+  "category": "single-track-edit",
+  "settingId": "spooky-maze",
+  "operation": "editTrack",
+  "prompt": "Edit the melody: develop the spooky motif over the whole loop.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "continue",
+    "seedFrom": "first-4",
+    "variation": "balanced",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/spooky-maze.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "spooky"
+    ]
+  },
+  "goldenRef": "goldens/edit-spooky-maze-continue/golden.json"
+}

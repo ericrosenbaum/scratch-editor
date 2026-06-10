@@ -1,0 +1,26 @@
+{
+  "id": "edit-lofi-study-loop-vary",
+  "category": "single-track-edit",
+  "settingId": "lofi-study-loop",
+  "operation": "editTrack",
+  "prompt": "Edit the melody: give a subtle variation of the melody.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "vary",
+    "seedFrom": "all",
+    "variation": "subtle",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/lofi-study-loop.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "lo-fi"
+    ]
+  },
+  "goldenRef": "goldens/edit-lofi-study-loop-vary/golden.json"
+}

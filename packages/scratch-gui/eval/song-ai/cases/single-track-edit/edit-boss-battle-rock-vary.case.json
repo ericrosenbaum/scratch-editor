@@ -1,0 +1,26 @@
+{
+  "id": "edit-boss-battle-rock-vary",
+  "category": "single-track-edit",
+  "settingId": "boss-battle-rock",
+  "operation": "editTrack",
+  "prompt": "Edit the melody: make a bolder, busier variation of the riff.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "vary",
+    "seedFrom": "all",
+    "variation": "bold",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/boss-battle-rock.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "rock"
+    ]
+  },
+  "goldenRef": "goldens/edit-boss-battle-rock-vary/golden.json"
+}

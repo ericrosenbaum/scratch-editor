@@ -1,0 +1,20 @@
+{
+  "id": "gen-dance-party-loop-drum",
+  "category": "single-track-gen",
+  "settingId": "dance-party-loop",
+  "operation": "generateTrack",
+  "prompt": "Add a funky danceable drum groove. Keep it in the song's key and groove.",
+  "kind": "drum",
+  "seedRef": "seeds/dance-party-loop.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "drum",
+    "moodTags": [
+      "funk"
+    ]
+  },
+  "goldenRef": "goldens/gen-dance-party-loop-drum/golden.json"
+}

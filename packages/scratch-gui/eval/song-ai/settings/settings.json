@@ -1,0 +1,278 @@
+[
+  {
+    "id": "platformer-chiptune",
+    "genre": "chiptune",
+    "projectType": "platformer game",
+    "description": "Bouncy 8-bit loop for a side-scrolling platformer level.",
+    "targetKey": "C",
+    "targetOctave": 4,
+    "targetScale": "major",
+    "targetTempo": 130,
+    "targetLengthSteps": 32,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      7,
+      9,
+      5
+    ]
+  },
+  {
+    "id": "boss-battle-rock",
+    "genre": "rock",
+    "projectType": "boss battle",
+    "description": "Driving, intense rock loop for a boss fight.",
+    "targetKey": "E",
+    "targetOctave": 3,
+    "targetScale": "pentatonicMinor",
+    "targetTempo": 160,
+    "targetLengthSteps": 32,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      5,
+      7,
+      0
+    ]
+  },
+  {
+    "id": "lofi-study-loop",
+    "genre": "lo-fi",
+    "projectType": "background animation",
+    "description": "Mellow lo-fi loop to play behind a calm animation.",
+    "targetKey": "D",
+    "targetOctave": 4,
+    "targetScale": "minor",
+    "targetTempo": 80,
+    "targetLengthSteps": 32,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      8,
+      5,
+      7
+    ]
+  },
+  {
+    "id": "spooky-maze",
+    "genre": "spooky",
+    "projectType": "maze game",
+    "description": "Eerie, suspenseful loop for a dark maze level.",
+    "targetKey": "A",
+    "targetOctave": 3,
+    "targetScale": "minor",
+    "targetTempo": 90,
+    "targetLengthSteps": 32,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      8,
+      5,
+      7
+    ]
+  },
+  {
+    "id": "nursery-singalong",
+    "genre": "nursery",
+    "projectType": "storytelling animation",
+    "description": "Sweet, simple sing-along tune for a kids story.",
+    "targetKey": "C",
+    "targetOctave": 4,
+    "targetScale": "pentatonicMajor",
+    "targetTempo": 100,
+    "targetLengthSteps": 32,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      7,
+      9,
+      5
+    ]
+  },
+  {
+    "id": "dance-party-loop",
+    "genre": "funk",
+    "projectType": "dance loop",
+    "description": "Funky four-on-the-floor groove for a dance party.",
+    "targetKey": "C",
+    "targetOctave": 4,
+    "targetScale": "major",
+    "targetTempo": 124,
+    "targetLengthSteps": 32,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      7,
+      9,
+      5
+    ]
+  },
+  {
+    "id": "quiz-correct-jingle",
+    "genre": "jingle",
+    "projectType": "quiz game",
+    "description": "Short happy jingle for a correct answer.",
+    "targetKey": "G",
+    "targetOctave": 4,
+    "targetScale": "major",
+    "targetTempo": 120,
+    "targetLengthSteps": 16,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      7,
+      9,
+      5
+    ]
+  },
+  {
+    "id": "underwater-ambient",
+    "genre": "ambient",
+    "projectType": "exploration animation",
+    "description": "Floating, dreamy ambience for an underwater scene.",
+    "targetKey": "D",
+    "targetOctave": 4,
+    "targetScale": "minor",
+    "targetTempo": 75,
+    "targetLengthSteps": 32,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      8,
+      5,
+      7
+    ]
+  },
+  {
+    "id": "racing-game-drive",
+    "genre": "upbeat",
+    "projectType": "racing game",
+    "description": "High-energy driving loop for a racing game.",
+    "targetKey": "E",
+    "targetOctave": 4,
+    "targetScale": "major",
+    "targetTempo": 140,
+    "targetLengthSteps": 32,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      7,
+      9,
+      5
+    ]
+  },
+  {
+    "id": "sad-story-piano",
+    "genre": "sad",
+    "projectType": "storytelling",
+    "description": "Gentle, melancholy piano theme for a sad moment.",
+    "targetKey": "A",
+    "targetOctave": 3,
+    "targetScale": "minor",
+    "targetTempo": 70,
+    "targetLengthSteps": 32,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      8,
+      5,
+      7
+    ]
+  },
+  {
+    "id": "marching-parade",
+    "genre": "march",
+    "projectType": "parade animation",
+    "description": "Cheerful marching-band parade tune.",
+    "targetKey": "C",
+    "targetOctave": 4,
+    "targetScale": "major",
+    "targetTempo": 120,
+    "targetLengthSteps": 32,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      7,
+      9,
+      5
+    ]
+  },
+  {
+    "id": "epic-cinematic-intro",
+    "genre": "cinematic",
+    "projectType": "intro cutscene",
+    "description": "Big, dramatic cinematic intro theme.",
+    "targetKey": "D",
+    "targetOctave": 4,
+    "targetScale": "minor",
+    "targetTempo": 100,
+    "targetLengthSteps": 64,
+    "expectedTrackKinds": [
+      "instrument",
+      "instrument",
+      "instrument",
+      "drum"
+    ],
+    "chordProgressionOffsets": [
+      0,
+      8,
+      5,
+      7
+    ]
+  }
+]

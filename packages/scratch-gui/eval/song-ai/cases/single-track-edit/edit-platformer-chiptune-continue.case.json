@@ -1,0 +1,26 @@
+{
+  "id": "edit-platformer-chiptune-continue",
+  "category": "single-track-edit",
+  "settingId": "platformer-chiptune",
+  "operation": "editTrack",
+  "prompt": "Edit the melody: extend the melody to fill the rest of the loop.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "continue",
+    "seedFrom": "first-half",
+    "variation": "balanced",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/platformer-chiptune.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "chiptune"
+    ]
+  },
+  "goldenRef": "goldens/edit-platformer-chiptune-continue/golden.json"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "gen-boss-battle-rock-instrument",
+  "category": "single-track-gen",
+  "settingId": "boss-battle-rock",
+  "operation": "generateTrack",
+  "prompt": "Add a heavy driving bass line. Keep it in the song's key and groove.",
+  "kind": "instrument",
+  "seedRef": "seeds/boss-battle-rock.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "rock"
+    ]
+  },
+  "goldenRef": "goldens/gen-boss-battle-rock-instrument/golden.json"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "gen-underwater-ambient-synth",
+  "category": "single-track-gen",
+  "settingId": "underwater-ambient",
+  "operation": "generateTrack",
+  "prompt": "Add a slow floating pad. Keep it in the song's key and groove.",
+  "kind": "synth",
+  "seedRef": "seeds/underwater-ambient.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "synth",
+    "moodTags": [
+      "ambient"
+    ]
+  },
+  "goldenRef": "goldens/gen-underwater-ambient-synth/golden.json"
+}

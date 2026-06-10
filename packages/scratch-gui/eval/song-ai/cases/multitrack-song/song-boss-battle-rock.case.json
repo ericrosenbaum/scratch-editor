@@ -1,0 +1,18 @@
+{
+  "id": "song-boss-battle-rock",
+  "category": "multitrack-song",
+  "settingId": "boss-battle-rock",
+  "operation": "generateSong",
+  "prompt": "Driving, intense rock loop for a boss fight. Make it rock style in E pentatonicMinor at 160 bpm.",
+  "intent": {
+    "requireKey": "E",
+    "requireScale": "pentatonicMinor",
+    "requireTempo": 160,
+    "requireLengthSteps": null,
+    "expectKind": null,
+    "moodTags": [
+      "rock"
+    ]
+  },
+  "goldenRef": "goldens/song-boss-battle-rock/golden.json"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "harm-lofi-study-loop",
+  "category": "harmonize",
+  "settingId": "lofi-study-loop",
+  "operation": "editTrack",
+  "prompt": "Add a chord/harmony accompaniment that supports the melody in the other track. Use chord tones that fit the song key.",
+  "trackIndex": 2,
+  "editParams": {
+    "mode": "harmonize",
+    "seedFrom": "all",
+    "variation": "balanced",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/lofi-study-loop.seed.json",
+  "seedMutation": {
+    "clearTrack": 2
+  },
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "lo-fi"
+    ]
+  },
+  "goldenRef": "goldens/harm-lofi-study-loop/golden.json"
+}

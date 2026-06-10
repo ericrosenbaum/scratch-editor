@@ -1,0 +1,53 @@
+Song-Maker eval — run 2026-06-09T20-22-43-310Z
+provider=magenta  samples=2  judge=on  (vs baseline 2026-06-09T20-10-34-256Z)
+
+CATEGORY SCORES  (* = known gap, excluded from gate until Coconet/MusicVAE)
+category           cases  mean   Δ vs base
+─────────────────  ─────  ─────  ─────────
+single-track-gen   9      0.743  ▼ -0.007 
+single-track-edit  9      0.681  ▼ -0.054 
+multitrack-song    8      0.821  ▲ +0.043 
+harmonize *        5      0.647  ▲ +0.039 
+infill *           4      0.803  ▲ +0.070 
+
+PER-CASE
+case                                mean   best  std    Δ         weakest metric            judge            
+──────────────────────────────────  ─────  ────  ─────  ────────  ────────────────────────  ─────────────────
+gen-boss-battle-rock-instrument     0.718  0.72  ±0.00  ▲ +0.019  registerMatch=0.00        mus35/adh10/sim15
+gen-dance-party-loop-drum           0.779  0.79  ±0.01  ▲ +0.008  goldenSimilarity=0.46     mus55/adh60/sim45
+gen-lofi-study-loop-instrument      0.689  0.70  ±0.01  ▼ -0.001  registerMatch=0.00        mus35/adh20/sim15
+gen-nursery-singalong-instrument    0.758  0.77  ±0.01  ▲ +0.026  registerMatch=0.40        mus45/adh40/sim35
+gen-platformer-chiptune-instrument  0.822  0.87  ±0.05  ▼ -0.041  harmonicAlignment=0.52    mus68/adh62/sim60
+gen-racing-game-drive-drum          0.737  0.75  ±0.02  ▼ -0.011  goldenSimilarity=0.41     mus55/adh50/sim45
+gen-sad-story-piano-instrument      0.708  0.71  ±0.00  ▼ -0.055  registerMatch=0.10        mus40/adh35/sim30
+gen-spooky-maze-instrument          0.777  0.79  ±0.01  ▼ -0.014  registerMatch=0.42        mus55/adh58/sim45
+gen-underwater-ambient-synth        0.702  0.71  ±0.01  ▲ +0.008  harmonicAlignment=0.35    mus45/adh25/sim30
+edit-boss-battle-rock-vary          0.698  0.73  ±0.03  ▼ -0.126  noteDensityRatio=0.25     mus35/adh20/sim20
+edit-dance-party-loop-continue      0.598  0.60  ±0.00  ▲ +0.004  trackCountKindMatch=0.00  mus78/adh75/sim85
+edit-lofi-study-loop-vary           0.748  0.75  ±0.00  ▼ -0.067  noteDensityRatio=0.35     mus62/adh45/sim40
+edit-nursery-singalong-vary         0.758  0.76  ±0.00  ▼ -0.036  noteDensityRatio=0.24     mus55/adh30/sim25
+edit-platformer-chiptune-continue   0.649  0.66  ±0.01  ▼ -0.006  trackCountKindMatch=0.00  mus72/adh85/sim68
+edit-racing-game-drive-continue     0.822  0.82  ±0.00  ▼ -0.030  harmonicAlignment=0.26    mus62/adh75/sim65
+edit-sad-story-piano-vary           0.786  0.79  ±0.00  ▼ -0.077  noteDensityRatio=0.42     mus62/adh55/sim45
+edit-spooky-maze-continue           0.571  0.57  ±0.00  ▼ -0.012  trackCountKindMatch=0.00  mus45/adh40/sim30
+edit-underwater-ambient-vary        0.500  0.50  ±0.00  ▼ -0.135  trackCountKindMatch=0.00  mus35/adh40/sim20
+song-boss-battle-rock               0.731  0.73  ±0.00  ▲ +0.063  registerMatch=0.10        mus55/adh45/sim40
+song-dance-party-loop               0.810  0.82  ±0.01  ▲ +0.063  harmonicAlignment=0.48    mus62/adh45/sim50
+song-epic-cinematic-intro           0.817  0.82  ±0.01  ▲ +0.033  registerMatch=0.51        mus62/adh68/sim58
+song-lofi-study-loop                0.853  0.85  ±0.00  ▲ +0.013  registerMatch=0.41        mus55/adh60/sim50
+song-nursery-singalong              0.860  0.86  ±0.00  ▲ +0.023  registerMatch=0.47        mus62/adh70/sim55
+song-platformer-chiptune            0.889  0.89  ±0.00  ▲ +0.070  goldenSimilarity=0.65     mus72/adh78/sim65
+song-racing-game-drive              0.828  0.83  ±0.00  ▲ +0.006  registerMatch=0.38        mus68/adh72/sim60
+song-spooky-maze                    0.784  0.78  ±0.00  ▲ +0.075  registerMatch=0.21        mus45/adh50/sim40
+harm-epic-cinematic-intro           0.598  0.61  ±0.01  ▲ +0.083  trackCountKindMatch=0.00  mus38/adh45/sim35
+harm-lofi-study-loop                0.599  0.61  ±0.01  ▲ +0.050  trackCountKindMatch=0.00  mus40/adh45/sim35
+harm-nursery-singalong              0.561  0.57  ±0.00  ▼ -0.021  trackCountKindMatch=0.00  mus45/adh50/sim35
+harm-sad-story-piano                0.747  0.75  ±0.00  ▲ +0.053  noteDensityRatio=0.38     mus55/adh60/sim45
+harm-spooky-maze                    0.730  0.74  ±0.01  ▲ +0.030  registerMatch=0.09        mus35/adh40/sim25
+infill-epic-cinematic-intro         0.798  0.87  ±0.07  ▲ +0.069  harmonicAlignment=0.44    mus45/adh60/sim35
+infill-lofi-study-loop              0.801  0.82  ±0.02  ▲ +0.044  harmonicAlignment=0.21    mus35/adh40/sim25
+infill-nursery-singalong            0.895  0.90  ±0.00  ▲ +0.091  harmonicAlignment=0.58    mus40/adh45/sim35
+infill-platformer-chiptune          0.718  0.72  ±0.00  ▲ +0.077  trackCountKindMatch=0.00  mus45/adh55/sim40
+
+⚠ REGRESSIONS (non-gap categories):
+   single-track-edit: ▼ -0.054

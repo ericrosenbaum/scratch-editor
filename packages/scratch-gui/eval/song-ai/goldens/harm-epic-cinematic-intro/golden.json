@@ -1,0 +1,158 @@
+{
+  "kind": "synth",
+  "volume": 70,
+  "muted": false,
+  "effects": {
+    "reverb": 65,
+    "delay": 0,
+    "filter": 75,
+    "pan": -10
+  },
+  "notes": [
+    {
+      "step": 0,
+      "durationSteps": 16,
+      "velocity": 70,
+      "pitch": 50
+    },
+    {
+      "step": 0,
+      "durationSteps": 16,
+      "velocity": 65,
+      "pitch": 53
+    },
+    {
+      "step": 0,
+      "durationSteps": 16,
+      "velocity": 65,
+      "pitch": 57
+    },
+    {
+      "step": 16,
+      "durationSteps": 8,
+      "velocity": 72,
+      "pitch": 48
+    },
+    {
+      "step": 16,
+      "durationSteps": 8,
+      "velocity": 66,
+      "pitch": 53
+    },
+    {
+      "step": 16,
+      "durationSteps": 8,
+      "velocity": 66,
+      "pitch": 55
+    },
+    {
+      "step": 24,
+      "durationSteps": 8,
+      "velocity": 75,
+      "pitch": 53
+    },
+    {
+      "step": 24,
+      "durationSteps": 8,
+      "velocity": 68,
+      "pitch": 57
+    },
+    {
+      "step": 24,
+      "durationSteps": 8,
+      "velocity": 68,
+      "pitch": 60
+    },
+    {
+      "step": 32,
+      "durationSteps": 8,
+      "velocity": 78,
+      "pitch": 53
+    },
+    {
+      "step": 32,
+      "durationSteps": 8,
+      "velocity": 70,
+      "pitch": 57
+    },
+    {
+      "step": 32,
+      "durationSteps": 8,
+      "velocity": 70,
+      "pitch": 60
+    },
+    {
+      "step": 40,
+      "durationSteps": 8,
+      "velocity": 76,
+      "pitch": 45
+    },
+    {
+      "step": 40,
+      "durationSteps": 8,
+      "velocity": 70,
+      "pitch": 48
+    },
+    {
+      "step": 40,
+      "durationSteps": 8,
+      "velocity": 70,
+      "pitch": 52
+    },
+    {
+      "step": 48,
+      "durationSteps": 8,
+      "velocity": 82,
+      "pitch": 50
+    },
+    {
+      "step": 48,
+      "durationSteps": 8,
+      "velocity": 74,
+      "pitch": 53
+    },
+    {
+      "step": 48,
+      "durationSteps": 8,
+      "velocity": 74,
+      "pitch": 57
+    },
+    {
+      "step": 56,
+      "durationSteps": 4,
+      "velocity": 76,
+      "pitch": 55
+    },
+    {
+      "step": 56,
+      "durationSteps": 4,
+      "velocity": 70,
+      "pitch": 58
+    },
+    {
+      "step": 56,
+      "durationSteps": 4,
+      "velocity": 70,
+      "pitch": 62
+    },
+    {
+      "step": 60,
+      "durationSteps": 4,
+      "velocity": 80,
+      "pitch": 50
+    },
+    {
+      "step": 60,
+      "durationSteps": 4,
+      "velocity": 72,
+      "pitch": 53
+    },
+    {
+      "step": 60,
+      "durationSteps": 4,
+      "velocity": 72,
+      "pitch": 57
+    }
+  ],
+  "synthPreset": "Warm Pad"
+}

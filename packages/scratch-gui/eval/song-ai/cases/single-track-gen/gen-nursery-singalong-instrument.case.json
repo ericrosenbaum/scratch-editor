@@ -1,0 +1,20 @@
+{
+  "id": "gen-nursery-singalong-instrument",
+  "category": "single-track-gen",
+  "settingId": "nursery-singalong",
+  "operation": "generateTrack",
+  "prompt": "Add a simple flute melody a child could sing. Keep it in the song's key and groove.",
+  "kind": "instrument",
+  "seedRef": "seeds/nursery-singalong.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "nursery"
+    ]
+  },
+  "goldenRef": "goldens/gen-nursery-singalong-instrument/golden.json"
+}

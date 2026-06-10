@@ -1,0 +1,18 @@
+{
+  "id": "song-dance-party-loop",
+  "category": "multitrack-song",
+  "settingId": "dance-party-loop",
+  "operation": "generateSong",
+  "prompt": "Funky four-on-the-floor groove for a dance party. Make it funk style in C major at 124 bpm.",
+  "intent": {
+    "requireKey": "C",
+    "requireScale": "major",
+    "requireTempo": 124,
+    "requireLengthSteps": null,
+    "expectKind": null,
+    "moodTags": [
+      "funk"
+    ]
+  },
+  "goldenRef": "goldens/song-dance-party-loop/golden.json"
+}

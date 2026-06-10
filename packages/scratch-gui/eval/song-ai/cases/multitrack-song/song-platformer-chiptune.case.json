@@ -1,0 +1,18 @@
+{
+  "id": "song-platformer-chiptune",
+  "category": "multitrack-song",
+  "settingId": "platformer-chiptune",
+  "operation": "generateSong",
+  "prompt": "Bouncy 8-bit loop for a side-scrolling platformer level. Make it chiptune style in C major at 130 bpm.",
+  "intent": {
+    "requireKey": "C",
+    "requireScale": "major",
+    "requireTempo": 130,
+    "requireLengthSteps": null,
+    "expectKind": null,
+    "moodTags": [
+      "chiptune"
+    ]
+  },
+  "goldenRef": "goldens/song-platformer-chiptune/golden.json"
+}

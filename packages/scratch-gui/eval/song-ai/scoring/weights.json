@@ -1,0 +1,11 @@
+{
+  "scaleConformance": 0.18,
+  "harmonicAlignment": 0.14,
+  "constraintAdherence": 0.18,
+  "trackCountKindMatch": 0.14,
+  "noteDensityRatio": 0.10,
+  "registerMatch": 0.08,
+  "rhythmGridAlignment": 0.08,
+  "infillBoundaryContinuity": 0.06,
+  "goldenSimilarity": 0.04
+}

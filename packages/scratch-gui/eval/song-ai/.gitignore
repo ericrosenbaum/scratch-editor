@@ -1,0 +1,4 @@
+# Build artifacts and per-run output — not committed.
+.build/
+results/
+checkpoints/

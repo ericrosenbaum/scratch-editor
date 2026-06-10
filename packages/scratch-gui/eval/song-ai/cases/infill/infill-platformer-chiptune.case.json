@@ -1,0 +1,33 @@
+{
+  "id": "infill-platformer-chiptune",
+  "category": "infill",
+  "settingId": "platformer-chiptune",
+  "operation": "editTrack",
+  "prompt": "The melody is missing its middle section (steps 12-19). Fill in that gap so the two halves connect smoothly, keeping the same style and key.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "infill",
+    "maskFromStep": 12,
+    "maskToStep": 20,
+    "seedFrom": "all",
+    "variation": "balanced",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/platformer-chiptune.seed.json",
+  "seedMutation": {
+    "maskTrack": 0,
+    "from": 12,
+    "to": 20
+  },
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "chiptune"
+    ]
+  },
+  "goldenRef": "goldens/infill-platformer-chiptune/golden.json"
+}

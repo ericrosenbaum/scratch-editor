@@ -1,0 +1,18 @@
+{
+  "id": "song-lofi-study-loop",
+  "category": "multitrack-song",
+  "settingId": "lofi-study-loop",
+  "operation": "generateSong",
+  "prompt": "Mellow lo-fi loop to play behind a calm animation. Make it lo-fi style in D minor at 80 bpm.",
+  "intent": {
+    "requireKey": "D",
+    "requireScale": "minor",
+    "requireTempo": 80,
+    "requireLengthSteps": null,
+    "expectKind": null,
+    "moodTags": [
+      "lo-fi"
+    ]
+  },
+  "goldenRef": "goldens/song-lofi-study-loop/golden.json"
+}

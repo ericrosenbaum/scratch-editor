@@ -1,0 +1,26 @@
+{
+  "id": "edit-sad-story-piano-vary",
+  "category": "single-track-edit",
+  "settingId": "sad-story-piano",
+  "operation": "editTrack",
+  "prompt": "Edit the melody: a slightly different, equally gentle version.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "vary",
+    "seedFrom": "all",
+    "variation": "subtle",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/sad-story-piano.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "sad"
+    ]
+  },
+  "goldenRef": "goldens/edit-sad-story-piano-vary/golden.json"
+}

@@ -1,0 +1,230 @@
+{
+  "kind": "synth",
+  "volume": 55,
+  "muted": false,
+  "effects": {
+    "reverb": 65,
+    "delay": 0,
+    "filter": 70,
+    "pan": -15
+  },
+  "notes": [
+    {
+      "step": 0,
+      "durationSteps": 8,
+      "velocity": 60,
+      "pitch": 57
+    },
+    {
+      "step": 0,
+      "durationSteps": 8,
+      "velocity": 55,
+      "pitch": 60
+    },
+    {
+      "step": 0,
+      "durationSteps": 8,
+      "velocity": 58,
+      "pitch": 64
+    },
+    {
+      "step": 0,
+      "durationSteps": 8,
+      "velocity": 52,
+      "pitch": 67
+    },
+    {
+      "step": 8,
+      "durationSteps": 8,
+      "velocity": 58,
+      "pitch": 57
+    },
+    {
+      "step": 8,
+      "durationSteps": 8,
+      "velocity": 55,
+      "pitch": 60
+    },
+    {
+      "step": 8,
+      "durationSteps": 8,
+      "velocity": 60,
+      "pitch": 65
+    },
+    {
+      "step": 8,
+      "durationSteps": 8,
+      "velocity": 52,
+      "pitch": 69
+    },
+    {
+      "step": 16,
+      "durationSteps": 8,
+      "velocity": 60,
+      "pitch": 53
+    },
+    {
+      "step": 16,
+      "durationSteps": 8,
+      "velocity": 55,
+      "pitch": 57
+    },
+    {
+      "step": 16,
+      "durationSteps": 8,
+      "velocity": 58,
+      "pitch": 60
+    },
+    {
+      "step": 16,
+      "durationSteps": 8,
+      "velocity": 52,
+      "pitch": 65
+    },
+    {
+      "step": 24,
+      "durationSteps": 8,
+      "velocity": 58,
+      "pitch": 53
+    },
+    {
+      "step": 24,
+      "durationSteps": 8,
+      "velocity": 56,
+      "pitch": 57
+    },
+    {
+      "step": 24,
+      "durationSteps": 8,
+      "velocity": 60,
+      "pitch": 62
+    },
+    {
+      "step": 24,
+      "durationSteps": 8,
+      "velocity": 52,
+      "pitch": 65
+    },
+    {
+      "step": 32,
+      "durationSteps": 8,
+      "velocity": 62,
+      "pitch": 55
+    },
+    {
+      "step": 32,
+      "durationSteps": 8,
+      "velocity": 56,
+      "pitch": 59
+    },
+    {
+      "step": 32,
+      "durationSteps": 8,
+      "velocity": 58,
+      "pitch": 62
+    },
+    {
+      "step": 32,
+      "durationSteps": 8,
+      "velocity": 52,
+      "pitch": 67
+    },
+    {
+      "step": 40,
+      "durationSteps": 8,
+      "velocity": 60,
+      "pitch": 55
+    },
+    {
+      "step": 40,
+      "durationSteps": 8,
+      "velocity": 58,
+      "pitch": 60
+    },
+    {
+      "step": 40,
+      "durationSteps": 8,
+      "velocity": 56,
+      "pitch": 64
+    },
+    {
+      "step": 40,
+      "durationSteps": 8,
+      "velocity": 52,
+      "pitch": 67
+    },
+    {
+      "step": 48,
+      "durationSteps": 6,
+      "velocity": 64,
+      "pitch": 57
+    },
+    {
+      "step": 48,
+      "durationSteps": 6,
+      "velocity": 58,
+      "pitch": 60
+    },
+    {
+      "step": 48,
+      "durationSteps": 6,
+      "velocity": 60,
+      "pitch": 64
+    },
+    {
+      "step": 48,
+      "durationSteps": 6,
+      "velocity": 54,
+      "pitch": 69
+    },
+    {
+      "step": 54,
+      "durationSteps": 6,
+      "velocity": 62,
+      "pitch": 57
+    },
+    {
+      "step": 54,
+      "durationSteps": 6,
+      "velocity": 58,
+      "pitch": 60
+    },
+    {
+      "step": 54,
+      "durationSteps": 6,
+      "velocity": 60,
+      "pitch": 65
+    },
+    {
+      "step": 54,
+      "durationSteps": 6,
+      "velocity": 54,
+      "pitch": 69
+    },
+    {
+      "step": 60,
+      "durationSteps": 4,
+      "velocity": 70,
+      "pitch": 57
+    },
+    {
+      "step": 60,
+      "durationSteps": 4,
+      "velocity": 62,
+      "pitch": 60
+    },
+    {
+      "step": 60,
+      "durationSteps": 4,
+      "velocity": 60,
+      "pitch": 64
+    },
+    {
+      "step": 60,
+      "durationSteps": 4,
+      "velocity": 55,
+      "pitch": 67
+    }
+  ],
+  "synthPreset": "Glass Pad"
+}

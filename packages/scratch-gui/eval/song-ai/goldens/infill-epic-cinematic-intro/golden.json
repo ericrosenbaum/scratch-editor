@@ -1,0 +1,122 @@
+{
+  "kind": "instrument",
+  "volume": 85,
+  "muted": false,
+  "effects": {
+    "reverb": 55,
+    "delay": 0,
+    "filter": 100,
+    "pan": 5
+  },
+  "notes": [
+    {
+      "step": 8,
+      "durationSteps": 3,
+      "velocity": 70,
+      "pitch": 69
+    },
+    {
+      "step": 11,
+      "durationSteps": 1,
+      "velocity": 75,
+      "pitch": 70
+    },
+    {
+      "step": 12,
+      "durationSteps": 4,
+      "velocity": 95,
+      "pitch": 72
+    },
+    {
+      "step": 16,
+      "durationSteps": 6,
+      "velocity": 110,
+      "pitch": 74
+    },
+    {
+      "step": 22,
+      "durationSteps": 2,
+      "velocity": 85,
+      "pitch": 72
+    },
+    {
+      "step": 24,
+      "durationSteps": 4,
+      "velocity": 95,
+      "pitch": 69
+    },
+    {
+      "step": 28,
+      "durationSteps": 2,
+      "velocity": 85,
+      "pitch": 72
+    },
+    {
+      "step": 30,
+      "durationSteps": 2,
+      "velocity": 90,
+      "pitch": 70
+    },
+    {
+      "step": 32,
+      "durationSteps": 3,
+      "velocity": 100,
+      "pitch": 69
+    },
+    {
+      "step": 35,
+      "durationSteps": 1,
+      "velocity": 75,
+      "pitch": 67
+    },
+    {
+      "step": 36,
+      "durationSteps": 2,
+      "velocity": 90,
+      "pitch": 69
+    },
+    {
+      "step": 38,
+      "durationSteps": 2,
+      "velocity": 95,
+      "pitch": 72
+    },
+    {
+      "step": 40,
+      "durationSteps": 6,
+      "velocity": 115,
+      "pitch": 74
+    },
+    {
+      "step": 46,
+      "durationSteps": 2,
+      "velocity": 110,
+      "pitch": 77
+    },
+    {
+      "step": 48,
+      "durationSteps": 8,
+      "velocity": 120,
+      "pitch": 81
+    },
+    {
+      "step": 56,
+      "durationSteps": 2,
+      "velocity": 95,
+      "pitch": 79
+    },
+    {
+      "step": 58,
+      "durationSteps": 2,
+      "velocity": 90,
+      "pitch": 77
+    },
+    {
+      "step": 60,
+      "durationSteps": 4,
+      "velocity": 100,
+      "pitch": 74
+    }
+  ],
+  "instrument": 8
+}

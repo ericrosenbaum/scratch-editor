@@ -1,0 +1,218 @@
+{
+  "kind": "instrument",
+  "volume": 85,
+  "muted": false,
+  "effects": {
+    "reverb": 20,
+    "delay": 20,
+    "filter": 100,
+    "pan": 0
+  },
+  "notes": [
+    {
+      "step": 0,
+      "durationSteps": 2,
+      "velocity": 100,
+      "pitch": 76
+    },
+    {
+      "step": 2,
+      "durationSteps": 2,
+      "velocity": 90,
+      "pitch": 78
+    },
+    {
+      "step": 4,
+      "durationSteps": 4,
+      "velocity": 110,
+      "pitch": 80
+    },
+    {
+      "step": 8,
+      "durationSteps": 2,
+      "velocity": 95,
+      "pitch": 78
+    },
+    {
+      "step": 10,
+      "durationSteps": 2,
+      "velocity": 90,
+      "pitch": 76
+    },
+    {
+      "step": 12,
+      "durationSteps": 3,
+      "velocity": 100,
+      "pitch": 73
+    },
+    {
+      "step": 15,
+      "durationSteps": 1,
+      "velocity": 80,
+      "pitch": 71
+    },
+    {
+      "step": 16,
+      "durationSteps": 2,
+      "velocity": 95,
+      "pitch": 73
+    },
+    {
+      "step": 18,
+      "durationSteps": 2,
+      "velocity": 95,
+      "pitch": 76
+    },
+    {
+      "step": 20,
+      "durationSteps": 4,
+      "velocity": 105,
+      "pitch": 78
+    },
+    {
+      "step": 24,
+      "durationSteps": 1,
+      "velocity": 90,
+      "pitch": 80
+    },
+    {
+      "step": 25,
+      "durationSteps": 1,
+      "velocity": 95,
+      "pitch": 81
+    },
+    {
+      "step": 26,
+      "durationSteps": 2,
+      "velocity": 115,
+      "pitch": 83
+    },
+    {
+      "step": 28,
+      "durationSteps": 4,
+      "velocity": 105,
+      "pitch": 80
+    },
+    {
+      "step": 38,
+      "durationSteps": 2,
+      "velocity": 85,
+      "pitch": 76
+    },
+    {
+      "step": 40,
+      "durationSteps": 2,
+      "velocity": 95,
+      "pitch": 78
+    },
+    {
+      "step": 42,
+      "durationSteps": 2,
+      "velocity": 100,
+      "pitch": 80
+    },
+    {
+      "step": 44,
+      "durationSteps": 4,
+      "velocity": 115,
+      "pitch": 83
+    },
+    {
+      "step": 48,
+      "durationSteps": 1,
+      "velocity": 110,
+      "pitch": 85
+    },
+    {
+      "step": 49,
+      "durationSteps": 1,
+      "velocity": 100,
+      "pitch": 83
+    },
+    {
+      "step": 50,
+      "durationSteps": 1,
+      "velocity": 105,
+      "pitch": 85
+    },
+    {
+      "step": 51,
+      "durationSteps": 1,
+      "velocity": 110,
+      "pitch": 88
+    },
+    {
+      "step": 52,
+      "durationSteps": 1,
+      "velocity": 115,
+      "pitch": 85
+    },
+    {
+      "step": 53,
+      "durationSteps": 1,
+      "velocity": 105,
+      "pitch": 83
+    },
+    {
+      "step": 54,
+      "durationSteps": 1,
+      "velocity": 110,
+      "pitch": 80
+    },
+    {
+      "step": 55,
+      "durationSteps": 1,
+      "velocity": 100,
+      "pitch": 83
+    },
+    {
+      "step": 56,
+      "durationSteps": 1,
+      "velocity": 115,
+      "pitch": 85
+    },
+    {
+      "step": 57,
+      "durationSteps": 1,
+      "velocity": 105,
+      "pitch": 83
+    },
+    {
+      "step": 58,
+      "durationSteps": 1,
+      "velocity": 110,
+      "pitch": 80
+    },
+    {
+      "step": 59,
+      "durationSteps": 1,
+      "velocity": 105,
+      "pitch": 78
+    },
+    {
+      "step": 60,
+      "durationSteps": 1,
+      "velocity": 110,
+      "pitch": 76
+    },
+    {
+      "step": 61,
+      "durationSteps": 1,
+      "velocity": 105,
+      "pitch": 78
+    },
+    {
+      "step": 62,
+      "durationSteps": 1,
+      "velocity": 115,
+      "pitch": 80
+    },
+    {
+      "step": 63,
+      "durationSteps": 1,
+      "velocity": 125,
+      "pitch": 88
+    }
+  ],
+  "instrument": 20
+}

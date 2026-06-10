@@ -1,0 +1,20 @@
+{
+  "id": "gen-racing-game-drive-drum",
+  "category": "single-track-gen",
+  "settingId": "racing-game-drive",
+  "operation": "generateTrack",
+  "prompt": "Add a fast energetic drum beat. Keep it in the song's key and groove.",
+  "kind": "drum",
+  "seedRef": "seeds/racing-game-drive.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "drum",
+    "moodTags": [
+      "upbeat"
+    ]
+  },
+  "goldenRef": "goldens/gen-racing-game-drive-drum/golden.json"
+}

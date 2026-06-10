@@ -1,0 +1,26 @@
+{
+  "id": "edit-underwater-ambient-vary",
+  "category": "single-track-edit",
+  "settingId": "underwater-ambient",
+  "operation": "editTrack",
+  "prompt": "Edit the melody: a calm reinterpretation of the melody.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "vary",
+    "seedFrom": "all",
+    "variation": "subtle",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/underwater-ambient.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "ambient"
+    ]
+  },
+  "goldenRef": "goldens/edit-underwater-ambient-vary/golden.json"
+}

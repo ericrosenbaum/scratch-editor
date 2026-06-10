@@ -1,0 +1,52 @@
+[
+  {
+    "id": "platformer-chiptune",
+    "settingId": "platformer-chiptune",
+    "prompt": "Bouncy 8-bit loop for a side-scrolling platformer level. chiptune style, in C major at 130 bpm. Include a melody, a bass line, a chord/pad part, and drums."
+  },
+  {
+    "id": "boss-battle-rock",
+    "settingId": "boss-battle-rock",
+    "prompt": "Driving, intense rock loop for a boss fight. rock style, in E pentatonicMinor at 160 bpm. Include a melody, a bass line, a chord/pad part, and drums."
+  },
+  {
+    "id": "lofi-study-loop",
+    "settingId": "lofi-study-loop",
+    "prompt": "Mellow lo-fi loop to play behind a calm animation. lo-fi style, in D minor at 80 bpm. Include a melody, a bass line, a chord/pad part, and drums."
+  },
+  {
+    "id": "spooky-maze",
+    "settingId": "spooky-maze",
+    "prompt": "Eerie, suspenseful loop for a dark maze level. spooky style, in A minor at 90 bpm. Include a melody, a bass line, a chord/pad part, and drums."
+  },
+  {
+    "id": "nursery-singalong",
+    "settingId": "nursery-singalong",
+    "prompt": "Sweet, simple sing-along tune for a kids story. nursery style, in C pentatonicMajor at 100 bpm. Include a melody, a bass line, a chord/pad part, and drums."
+  },
+  {
+    "id": "dance-party-loop",
+    "settingId": "dance-party-loop",
+    "prompt": "Funky four-on-the-floor groove for a dance party. funk style, in C major at 124 bpm. Include a melody, a bass line, a chord/pad part, and drums."
+  },
+  {
+    "id": "underwater-ambient",
+    "settingId": "underwater-ambient",
+    "prompt": "Floating, dreamy ambience for an underwater scene. ambient style, in D minor at 75 bpm. Include a melody, a bass line, a chord/pad part, and drums."
+  },
+  {
+    "id": "racing-game-drive",
+    "settingId": "racing-game-drive",
+    "prompt": "High-energy driving loop for a racing game. upbeat style, in E major at 140 bpm. Include a melody, a bass line, a chord/pad part, and drums."
+  },
+  {
+    "id": "sad-story-piano",
+    "settingId": "sad-story-piano",
+    "prompt": "Gentle, melancholy piano theme for a sad moment. sad style, in A minor at 70 bpm. Include a melody, a bass line, a chord/pad part, and drums."
+  },
+  {
+    "id": "epic-cinematic-intro",
+    "settingId": "epic-cinematic-intro",
+    "prompt": "Big, dramatic cinematic intro theme. cinematic style, in D minor at 100 bpm. Include a melody, a bass line, a chord/pad part, and drums."
+  }
+]

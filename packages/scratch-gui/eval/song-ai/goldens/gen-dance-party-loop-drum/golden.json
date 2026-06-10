@@ -1,0 +1,403 @@
+{
+  "kind": "drum",
+  "volume": 75,
+  "muted": false,
+  "effects": {
+    "reverb": 8,
+    "delay": 0,
+    "filter": 100,
+    "pan": 15
+  },
+  "notes": [
+    {
+      "step": 0,
+      "durationSteps": 1,
+      "velocity": 85,
+      "drum": 15
+    },
+    {
+      "step": 1,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 2,
+      "durationSteps": 1,
+      "velocity": 90,
+      "drum": 7
+    },
+    {
+      "step": 3,
+      "durationSteps": 1,
+      "velocity": 75,
+      "drum": 15
+    },
+    {
+      "step": 4,
+      "durationSteps": 1,
+      "velocity": 80,
+      "drum": 15
+    },
+    {
+      "step": 5,
+      "durationSteps": 1,
+      "velocity": 95,
+      "drum": 11
+    },
+    {
+      "step": 6,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 7,
+      "durationSteps": 1,
+      "velocity": 85,
+      "drum": 9
+    },
+    {
+      "step": 8,
+      "durationSteps": 1,
+      "velocity": 85,
+      "drum": 15
+    },
+    {
+      "step": 9,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 10,
+      "durationSteps": 1,
+      "velocity": 90,
+      "drum": 7
+    },
+    {
+      "step": 11,
+      "durationSteps": 1,
+      "velocity": 75,
+      "drum": 15
+    },
+    {
+      "step": 12,
+      "durationSteps": 1,
+      "velocity": 80,
+      "drum": 15
+    },
+    {
+      "step": 13,
+      "durationSteps": 1,
+      "velocity": 95,
+      "drum": 11
+    },
+    {
+      "step": 14,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 15,
+      "durationSteps": 1,
+      "velocity": 88,
+      "drum": 9
+    },
+    {
+      "step": 16,
+      "durationSteps": 1,
+      "velocity": 85,
+      "drum": 15
+    },
+    {
+      "step": 17,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 18,
+      "durationSteps": 1,
+      "velocity": 92,
+      "drum": 7
+    },
+    {
+      "step": 19,
+      "durationSteps": 1,
+      "velocity": 75,
+      "drum": 15
+    },
+    {
+      "step": 20,
+      "durationSteps": 1,
+      "velocity": 80,
+      "drum": 15
+    },
+    {
+      "step": 21,
+      "durationSteps": 1,
+      "velocity": 95,
+      "drum": 11
+    },
+    {
+      "step": 22,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 23,
+      "durationSteps": 1,
+      "velocity": 85,
+      "drum": 9
+    },
+    {
+      "step": 24,
+      "durationSteps": 1,
+      "velocity": 88,
+      "drum": 15
+    },
+    {
+      "step": 25,
+      "durationSteps": 1,
+      "velocity": 72,
+      "drum": 15
+    },
+    {
+      "step": 26,
+      "durationSteps": 1,
+      "velocity": 95,
+      "drum": 7
+    },
+    {
+      "step": 27,
+      "durationSteps": 1,
+      "velocity": 75,
+      "drum": 15
+    },
+    {
+      "step": 28,
+      "durationSteps": 1,
+      "velocity": 82,
+      "drum": 15
+    },
+    {
+      "step": 29,
+      "durationSteps": 1,
+      "velocity": 98,
+      "drum": 11
+    },
+    {
+      "step": 30,
+      "durationSteps": 1,
+      "velocity": 90,
+      "drum": 7
+    },
+    {
+      "step": 31,
+      "durationSteps": 1,
+      "velocity": 95,
+      "drum": 9
+    },
+    {
+      "step": 32,
+      "durationSteps": 1,
+      "velocity": 85,
+      "drum": 15
+    },
+    {
+      "step": 33,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 34,
+      "durationSteps": 1,
+      "velocity": 90,
+      "drum": 7
+    },
+    {
+      "step": 35,
+      "durationSteps": 1,
+      "velocity": 75,
+      "drum": 15
+    },
+    {
+      "step": 36,
+      "durationSteps": 1,
+      "velocity": 80,
+      "drum": 15
+    },
+    {
+      "step": 37,
+      "durationSteps": 1,
+      "velocity": 95,
+      "drum": 11
+    },
+    {
+      "step": 38,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 39,
+      "durationSteps": 1,
+      "velocity": 85,
+      "drum": 9
+    },
+    {
+      "step": 40,
+      "durationSteps": 1,
+      "velocity": 85,
+      "drum": 15
+    },
+    {
+      "step": 41,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 42,
+      "durationSteps": 1,
+      "velocity": 92,
+      "drum": 7
+    },
+    {
+      "step": 43,
+      "durationSteps": 1,
+      "velocity": 75,
+      "drum": 15
+    },
+    {
+      "step": 44,
+      "durationSteps": 1,
+      "velocity": 80,
+      "drum": 15
+    },
+    {
+      "step": 45,
+      "durationSteps": 1,
+      "velocity": 95,
+      "drum": 11
+    },
+    {
+      "step": 46,
+      "durationSteps": 1,
+      "velocity": 72,
+      "drum": 15
+    },
+    {
+      "step": 47,
+      "durationSteps": 1,
+      "velocity": 88,
+      "drum": 9
+    },
+    {
+      "step": 48,
+      "durationSteps": 1,
+      "velocity": 85,
+      "drum": 15
+    },
+    {
+      "step": 49,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 50,
+      "durationSteps": 1,
+      "velocity": 92,
+      "drum": 7
+    },
+    {
+      "step": 51,
+      "durationSteps": 1,
+      "velocity": 75,
+      "drum": 15
+    },
+    {
+      "step": 52,
+      "durationSteps": 1,
+      "velocity": 80,
+      "drum": 15
+    },
+    {
+      "step": 53,
+      "durationSteps": 1,
+      "velocity": 95,
+      "drum": 11
+    },
+    {
+      "step": 54,
+      "durationSteps": 1,
+      "velocity": 70,
+      "drum": 15
+    },
+    {
+      "step": 55,
+      "durationSteps": 1,
+      "velocity": 85,
+      "drum": 9
+    },
+    {
+      "step": 56,
+      "durationSteps": 1,
+      "velocity": 90,
+      "drum": 7
+    },
+    {
+      "step": 57,
+      "durationSteps": 1,
+      "velocity": 75,
+      "drum": 15
+    },
+    {
+      "step": 58,
+      "durationSteps": 1,
+      "velocity": 95,
+      "drum": 11
+    },
+    {
+      "step": 59,
+      "durationSteps": 1,
+      "velocity": 80,
+      "drum": 15
+    },
+    {
+      "step": 60,
+      "durationSteps": 1,
+      "velocity": 95,
+      "drum": 7
+    },
+    {
+      "step": 61,
+      "durationSteps": 1,
+      "velocity": 100,
+      "drum": 7
+    },
+    {
+      "step": 62,
+      "durationSteps": 1,
+      "velocity": 105,
+      "drum": 11
+    },
+    {
+      "step": 63,
+      "durationSteps": 1,
+      "velocity": 115,
+      "drum": 7
+    }
+  ],
+  "drumLanes": [
+    7,
+    11,
+    15,
+    9
+  ]
+}

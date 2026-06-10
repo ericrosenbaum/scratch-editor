@@ -1,0 +1,26 @@
+{
+  "id": "edit-nursery-singalong-vary",
+  "category": "single-track-edit",
+  "settingId": "nursery-singalong",
+  "operation": "editTrack",
+  "prompt": "Edit the melody: a playful variation of the tune.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "vary",
+    "seedFrom": "all",
+    "variation": "balanced",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/nursery-singalong.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "nursery"
+    ]
+  },
+  "goldenRef": "goldens/edit-nursery-singalong-vary/golden.json"
+}

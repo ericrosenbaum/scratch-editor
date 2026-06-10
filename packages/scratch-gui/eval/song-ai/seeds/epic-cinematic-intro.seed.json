@@ -1,0 +1,558 @@
+{
+  "songId": "song-5cyxh8bc",
+  "name": "Shadow of the Crown",
+  "tempo": 100,
+  "lengthSteps": 64,
+  "stepsPerBeat": 4,
+  "rootPitch": 62,
+  "scaleType": "minor",
+  "tracks": [
+    {
+      "trackId": "track-d9cochob",
+      "kind": "instrument",
+      "instrument": 8,
+      "volume": 85,
+      "muted": false,
+      "solo": false,
+      "notes": [
+        {
+          "step": 8,
+          "durationSteps": 3,
+          "velocity": 70,
+          "pitch": 69
+        },
+        {
+          "step": 11,
+          "durationSteps": 1,
+          "velocity": 75,
+          "pitch": 70
+        },
+        {
+          "step": 12,
+          "durationSteps": 4,
+          "velocity": 95,
+          "pitch": 72
+        },
+        {
+          "step": 16,
+          "durationSteps": 6,
+          "velocity": 110,
+          "pitch": 74
+        },
+        {
+          "step": 22,
+          "durationSteps": 2,
+          "velocity": 85,
+          "pitch": 72
+        },
+        {
+          "step": 24,
+          "durationSteps": 4,
+          "velocity": 95,
+          "pitch": 70
+        },
+        {
+          "step": 28,
+          "durationSteps": 4,
+          "velocity": 90,
+          "pitch": 69
+        },
+        {
+          "step": 32,
+          "durationSteps": 3,
+          "velocity": 80,
+          "pitch": 65
+        },
+        {
+          "step": 35,
+          "durationSteps": 1,
+          "velocity": 80,
+          "pitch": 67
+        },
+        {
+          "step": 36,
+          "durationSteps": 4,
+          "velocity": 100,
+          "pitch": 69
+        },
+        {
+          "step": 40,
+          "durationSteps": 6,
+          "velocity": 115,
+          "pitch": 74
+        },
+        {
+          "step": 46,
+          "durationSteps": 2,
+          "velocity": 110,
+          "pitch": 77
+        },
+        {
+          "step": 48,
+          "durationSteps": 8,
+          "velocity": 120,
+          "pitch": 81
+        },
+        {
+          "step": 56,
+          "durationSteps": 2,
+          "velocity": 95,
+          "pitch": 79
+        },
+        {
+          "step": 58,
+          "durationSteps": 2,
+          "velocity": 90,
+          "pitch": 77
+        },
+        {
+          "step": 60,
+          "durationSteps": 4,
+          "velocity": 100,
+          "pitch": 74
+        }
+      ],
+      "effects": {
+        "reverb": 0.55,
+        "delay": 0,
+        "filter": 1,
+        "pan": 0.1,
+        "distortion": 0
+      }
+    },
+    {
+      "trackId": "track-a8025n26",
+      "kind": "instrument",
+      "instrument": 6,
+      "volume": 90,
+      "muted": false,
+      "solo": false,
+      "notes": [
+        {
+          "step": 0,
+          "durationSteps": 8,
+          "velocity": 105,
+          "pitch": 38
+        },
+        {
+          "step": 8,
+          "durationSteps": 8,
+          "velocity": 95,
+          "pitch": 38
+        },
+        {
+          "step": 16,
+          "durationSteps": 6,
+          "velocity": 100,
+          "pitch": 36
+        },
+        {
+          "step": 22,
+          "durationSteps": 2,
+          "velocity": 80,
+          "pitch": 38
+        },
+        {
+          "step": 24,
+          "durationSteps": 8,
+          "velocity": 100,
+          "pitch": 41
+        },
+        {
+          "step": 32,
+          "durationSteps": 6,
+          "velocity": 95,
+          "pitch": 41
+        },
+        {
+          "step": 38,
+          "durationSteps": 2,
+          "velocity": 85,
+          "pitch": 43
+        },
+        {
+          "step": 40,
+          "durationSteps": 6,
+          "velocity": 105,
+          "pitch": 33
+        },
+        {
+          "step": 46,
+          "durationSteps": 2,
+          "velocity": 90,
+          "pitch": 36
+        },
+        {
+          "step": 48,
+          "durationSteps": 4,
+          "velocity": 110,
+          "pitch": 38
+        },
+        {
+          "step": 52,
+          "durationSteps": 4,
+          "velocity": 100,
+          "pitch": 45
+        },
+        {
+          "step": 56,
+          "durationSteps": 4,
+          "velocity": 100,
+          "pitch": 43
+        },
+        {
+          "step": 60,
+          "durationSteps": 4,
+          "velocity": 115,
+          "pitch": 38
+        }
+      ],
+      "effects": {
+        "reverb": 0.2,
+        "delay": 0,
+        "filter": 1,
+        "pan": 0,
+        "distortion": 0
+      }
+    },
+    {
+      "trackId": "track-t76epfox",
+      "kind": "synth",
+      "volume": 70,
+      "muted": false,
+      "solo": false,
+      "notes": [
+        {
+          "step": 0,
+          "durationSteps": 16,
+          "velocity": 75,
+          "pitch": 50
+        },
+        {
+          "step": 0,
+          "durationSteps": 16,
+          "velocity": 70,
+          "pitch": 53
+        },
+        {
+          "step": 0,
+          "durationSteps": 16,
+          "velocity": 72,
+          "pitch": 57
+        },
+        {
+          "step": 16,
+          "durationSteps": 8,
+          "velocity": 75,
+          "pitch": 48
+        },
+        {
+          "step": 16,
+          "durationSteps": 8,
+          "velocity": 70,
+          "pitch": 53
+        },
+        {
+          "step": 16,
+          "durationSteps": 8,
+          "velocity": 72,
+          "pitch": 57
+        },
+        {
+          "step": 24,
+          "durationSteps": 8,
+          "velocity": 78,
+          "pitch": 53
+        },
+        {
+          "step": 24,
+          "durationSteps": 8,
+          "velocity": 70,
+          "pitch": 57
+        },
+        {
+          "step": 24,
+          "durationSteps": 8,
+          "velocity": 72,
+          "pitch": 60
+        },
+        {
+          "step": 32,
+          "durationSteps": 8,
+          "velocity": 75,
+          "pitch": 53
+        },
+        {
+          "step": 32,
+          "durationSteps": 8,
+          "velocity": 70,
+          "pitch": 57
+        },
+        {
+          "step": 32,
+          "durationSteps": 8,
+          "velocity": 72,
+          "pitch": 60
+        },
+        {
+          "step": 40,
+          "durationSteps": 8,
+          "velocity": 80,
+          "pitch": 45
+        },
+        {
+          "step": 40,
+          "durationSteps": 8,
+          "velocity": 72,
+          "pitch": 48
+        },
+        {
+          "step": 40,
+          "durationSteps": 8,
+          "velocity": 70,
+          "pitch": 52
+        },
+        {
+          "step": 48,
+          "durationSteps": 16,
+          "velocity": 85,
+          "pitch": 50
+        },
+        {
+          "step": 48,
+          "durationSteps": 16,
+          "velocity": 78,
+          "pitch": 53
+        },
+        {
+          "step": 48,
+          "durationSteps": 16,
+          "velocity": 80,
+          "pitch": 57
+        },
+        {
+          "step": 48,
+          "durationSteps": 16,
+          "velocity": 75,
+          "pitch": 62
+        }
+      ],
+      "effects": {
+        "reverb": 0.65,
+        "delay": 0,
+        "filter": 0.75,
+        "pan": -0.2,
+        "distortion": 0
+      },
+      "synth": {
+        "preset": "Warm Pad",
+        "osc1Wave": "sawtooth",
+        "osc2Wave": "sawtooth",
+        "osc2Detune": 9,
+        "oscMix": 0.5,
+        "filterCutoff": 0.45,
+        "filterResonance": 0.15,
+        "filterEnvAmount": 0.25,
+        "ampAttack": 0.03,
+        "ampDecay": 0.3,
+        "ampSustain": 0.85,
+        "ampRelease": 1.2,
+        "filterAttack": 0.05,
+        "filterDecay": 0.6,
+        "filterSustain": 0.7,
+        "filterRelease": 1,
+        "lfoRate": 5,
+        "lfoDepth": 0,
+        "lfoWave": "sine",
+        "lfoDest": "none",
+        "glideTime": 0
+      }
+    },
+    {
+      "trackId": "track-5qv244dr",
+      "kind": "drum",
+      "volume": 85,
+      "muted": false,
+      "solo": false,
+      "notes": [
+        {
+          "step": 0,
+          "durationSteps": 4,
+          "velocity": 120,
+          "drum": 4
+        },
+        {
+          "step": 0,
+          "durationSteps": 2,
+          "velocity": 115,
+          "drum": 2
+        },
+        {
+          "step": 8,
+          "durationSteps": 2,
+          "velocity": 100,
+          "drum": 2
+        },
+        {
+          "step": 12,
+          "durationSteps": 2,
+          "velocity": 95,
+          "drum": 2
+        },
+        {
+          "step": 14,
+          "durationSteps": 1,
+          "velocity": 70,
+          "drum": 6
+        },
+        {
+          "step": 16,
+          "durationSteps": 2,
+          "velocity": 110,
+          "drum": 2
+        },
+        {
+          "step": 16,
+          "durationSteps": 2,
+          "velocity": 75,
+          "drum": 6
+        },
+        {
+          "step": 20,
+          "durationSteps": 2,
+          "velocity": 65,
+          "drum": 6
+        },
+        {
+          "step": 24,
+          "durationSteps": 2,
+          "velocity": 105,
+          "drum": 2
+        },
+        {
+          "step": 28,
+          "durationSteps": 2,
+          "velocity": 90,
+          "drum": 1
+        },
+        {
+          "step": 30,
+          "durationSteps": 1,
+          "velocity": 80,
+          "drum": 7
+        },
+        {
+          "step": 31,
+          "durationSteps": 1,
+          "velocity": 85,
+          "drum": 7
+        },
+        {
+          "step": 32,
+          "durationSteps": 2,
+          "velocity": 115,
+          "drum": 2
+        },
+        {
+          "step": 32,
+          "durationSteps": 2,
+          "velocity": 70,
+          "drum": 6
+        },
+        {
+          "step": 36,
+          "durationSteps": 2,
+          "velocity": 65,
+          "drum": 6
+        },
+        {
+          "step": 40,
+          "durationSteps": 2,
+          "velocity": 115,
+          "drum": 2
+        },
+        {
+          "step": 40,
+          "durationSteps": 4,
+          "velocity": 105,
+          "drum": 4
+        },
+        {
+          "step": 44,
+          "durationSteps": 2,
+          "velocity": 95,
+          "drum": 1
+        },
+        {
+          "step": 46,
+          "durationSteps": 1,
+          "velocity": 80,
+          "drum": 1
+        },
+        {
+          "step": 47,
+          "durationSteps": 1,
+          "velocity": 100,
+          "drum": 1
+        },
+        {
+          "step": 48,
+          "durationSteps": 4,
+          "velocity": 125,
+          "drum": 4
+        },
+        {
+          "step": 48,
+          "durationSteps": 2,
+          "velocity": 125,
+          "drum": 2
+        },
+        {
+          "step": 52,
+          "durationSteps": 2,
+          "velocity": 110,
+          "drum": 2
+        },
+        {
+          "step": 56,
+          "durationSteps": 2,
+          "velocity": 115,
+          "drum": 2
+        },
+        {
+          "step": 56,
+          "durationSteps": 2,
+          "velocity": 100,
+          "drum": 1
+        },
+        {
+          "step": 60,
+          "durationSteps": 4,
+          "velocity": 120,
+          "drum": 2
+        },
+        {
+          "step": 60,
+          "durationSteps": 4,
+          "velocity": 120,
+          "drum": 4
+        }
+      ],
+      "effects": {
+        "reverb": 0.3,
+        "delay": 0,
+        "filter": 1,
+        "pan": 0,
+        "distortion": 0
+      },
+      "drumLanes": [
+        2,
+        1,
+        6,
+        5,
+        4,
+        7
+      ]
+    }
+  ]
+}

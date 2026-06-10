@@ -1,0 +1,26 @@
+{
+  "id": "edit-dance-party-loop-continue",
+  "category": "single-track-edit",
+  "settingId": "dance-party-loop",
+  "operation": "editTrack",
+  "prompt": "Edit the melody: continue the melody naturally.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "continue",
+    "seedFrom": "first-half",
+    "variation": "balanced",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/dance-party-loop.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "funk"
+    ]
+  },
+  "goldenRef": "goldens/edit-dance-party-loop-continue/golden.json"
+}

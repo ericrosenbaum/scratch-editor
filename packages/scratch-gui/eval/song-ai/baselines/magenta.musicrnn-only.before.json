@@ -1,0 +1,920 @@
+{
+  "runId": "2026-06-09T20-10-34-256Z",
+  "samples": 2,
+  "judge": false,
+  "weightsHash": "ccae4c2b858253e401166a1b2d8db0d5f2837739210ac446796a4ef3072ead16",
+  "cases": [
+    {
+      "id": "gen-boss-battle-rock-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.6990459393101434,
+      "best": 0.7149412531023643,
+      "std": 0.015895313792220922,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4723076923076923,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.5100000006272001,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 0.824277906668285,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.7052401089112315
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "gen-dance-party-loop-drum",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.7710990252324255,
+      "best": 0.7729820878204898,
+      "std": 0.0018830625880643659,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": null,
+        "harmonicAlignment": null,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.4921875005078125,
+        "registerMatch": null,
+        "rhythmGridAlignment": 0.8820549879111486,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.4453125
+      },
+      "weakest": {
+        "name": "goldenSimilarity",
+        "value": 0.4453125
+      },
+      "judge": null
+    },
+    {
+      "id": "gen-lofi-study-loop-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.6899814447260177,
+      "best": 0.6913066677758446,
+      "std": 0.0013252230498268514,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.35426267281105994,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.8156682031613328,
+        "registerMatch": 0.01205357142857152,
+        "rhythmGridAlignment": 0.7306644635125643,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.3451215171700225
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.01205357142857152
+      },
+      "judge": null
+    },
+    {
+      "id": "gen-nursery-singalong-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.7318872218518936,
+      "best": 0.7454749619977019,
+      "std": 0.013587740145808325,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4666666666666667,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.5250000011244444,
+        "registerMatch": 0.21180465367965381,
+        "rhythmGridAlignment": 0.9452720182574178,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6458705351673881
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.21180465367965381
+      },
+      "judge": null
+    },
+    {
+      "id": "gen-platformer-chiptune-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.8623894121291702,
+      "best": 0.8672221012841163,
+      "std": 0.004832689154946113,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.564516129032258,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 1,
+        "registerMatch": 0.7535714285714289,
+        "rhythmGridAlignment": 0.874399653000794,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6536502156968813
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.564516129032258
+      },
+      "judge": null
+    },
+    {
+      "id": "gen-racing-game-drive-drum",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.7478646205184583,
+      "best": 0.754670425498582,
+      "std": 0.006805804980123787,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": null,
+        "harmonicAlignment": null,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.4788732399063678,
+        "registerMatch": null,
+        "rhythmGridAlignment": 0.8019554924501018,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.4296875
+      },
+      "weakest": {
+        "name": "goldenSimilarity",
+        "value": 0.4296875
+      },
+      "judge": null
+    },
+    {
+      "id": "gen-sad-story-piano-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.7625235578722358,
+      "best": 0.7869303397136101,
+      "std": 0.024406781841374348,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4772727272727273,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.7272727280661158,
+        "registerMatch": 0.35068779904306213,
+        "rhythmGridAlignment": 0.8740597691482834,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5498160975699546
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.35068779904306213
+      },
+      "judge": null
+    },
+    {
+      "id": "gen-spooky-maze-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.790634871765185,
+      "best": 0.8086293102201519,
+      "std": 0.0179944384549669,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.3279569892473118,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.9354838711009366,
+        "registerMatch": 0.5659168081494058,
+        "rhythmGridAlignment": 0.9179774684516155,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5677148702185394
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.3279569892473118
+      },
+      "judge": null
+    },
+    {
+      "id": "gen-underwater-ambient-synth",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.6939993097480837,
+      "best": 0.7224160492368935,
+      "std": 0.028416739488809795,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.34127565982404695,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.32991202462201047,
+        "registerMatch": 0.6669066820276499,
+        "rhythmGridAlignment": 0.7010336834374015,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.43086128334429635
+      },
+      "weakest": {
+        "name": "noteDensityRatio",
+        "value": 0.32991202462201047
+      },
+      "judge": null
+    },
+    {
+      "id": "edit-boss-battle-rock-vary",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.8234195581361923,
+      "best": 0.8262977865702428,
+      "std": 0.0028782284340505004,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5408602150537634,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.5545454550638016,
+        "registerMatch": 0.8848277844862287,
+        "rhythmGridAlignment": 0.9220847990574796,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.7517720471525602
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.5408602150537634
+      },
+      "judge": null
+    },
+    {
+      "id": "edit-dance-party-loop-continue",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.5941660810705436,
+      "best": 0.6019265006729414,
+      "std": 0.007760419602397817,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": null,
+        "harmonicAlignment": null,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.9573260458660703,
+        "registerMatch": null,
+        "rhythmGridAlignment": 0.9993120297070803,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.9555555555555556
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "edit-lofi-study-loop-vary",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.8158751591749046,
+      "best": 0.8158751591749046,
+      "std": 0,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.3125,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.6956521747599245,
+        "registerMatch": 0.959375,
+        "rhythmGridAlignment": 0.9717315962146992,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.8065343949939795
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.3125
+      },
+      "judge": null
+    },
+    {
+      "id": "edit-nursery-singalong-vary",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.7932337161528505,
+      "best": 0.7932337161528505,
+      "std": 0,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.47619047619047616,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.5000000007619048,
+        "registerMatch": 0.8476190476190479,
+        "rhythmGridAlignment": 0.8799999999999999,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6995358430946348
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.47619047619047616
+      },
+      "judge": null
+    },
+    {
+      "id": "edit-platformer-chiptune-continue",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.6545168418812655,
+      "best": 0.6763322178347386,
+      "std": 0.02181537595347316,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.40145502645502645,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.8088235297716262,
+        "registerMatch": 0.8713352007469657,
+        "rhythmGridAlignment": 0.9844226596967232,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.7971528578350078
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "edit-racing-game-drive-continue",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.8518080918105662,
+      "best": 0.8561328151837869,
+      "std": 0.004324723373220818,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.3582887700534759,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.9852941176747405,
+        "registerMatch": 0.8400178253119428,
+        "rhythmGridAlignment": 0.9931437617678229,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.8007845808672079
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.3582887700534759
+      },
+      "judge": null
+    },
+    {
+      "id": "edit-sad-story-piano-vary",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.8637115592954926,
+      "best": 0.8637115592954926,
+      "std": 0,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.47058823529411764,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.8947368424598338,
+        "registerMatch": 0.8496904024767802,
+        "rhythmGridAlignment": 0.9888264649460884,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.8495849620896261
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.47058823529411764
+      },
+      "judge": null
+    },
+    {
+      "id": "edit-spooky-maze-continue",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.5837976656222021,
+      "best": 0.5944952540297725,
+      "std": 0.010697588407570402,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5333333333333333,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.2916666679259259,
+        "registerMatch": 0.771388888888889,
+        "rhythmGridAlignment": 0.9836010548249526,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.4863424229126764
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "edit-underwater-ambient-vary",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.6345999637186058,
+      "best": 0.6345999637186058,
+      "std": 0,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.3125,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.7500000010000001,
+        "registerMatch": 0.8029761904761905,
+        "rhythmGridAlignment": 1,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.9826969272011288
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "song-boss-battle-rock",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.6678995111755064,
+      "best": 0.6815049657043667,
+      "std": 0.013605454528860361,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.6028921023359288,
+        "constraintAdherence": 0.3333333333333333,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.5777777783782716,
+        "registerMatch": 0.10069930069930069,
+        "rhythmGridAlignment": 0.9145369307016634,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6105992457010396
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.10069930069930069
+      },
+      "judge": null
+    },
+    {
+      "id": "song-dance-party-loop",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.746539947953218,
+      "best": 0.747061291053112,
+      "std": 0.0005213430998940449,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.375366568914956,
+        "constraintAdherence": 0.7333333333333334,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.46568627518031525,
+        "registerMatch": 0.7326142915834362,
+        "rhythmGridAlignment": 0.8307597965512878,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6389419214780405
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.375366568914956
+      },
+      "judge": null
+    },
+    {
+      "id": "song-epic-cinematic-intro",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.7848824989206152,
+      "best": 0.786620124857804,
+      "std": 0.001737625937188736,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5378787878787878,
+        "constraintAdherence": 0.8333333333333334,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.590236095486586,
+        "registerMatch": 0.4283560606060603,
+        "rhythmGridAlignment": 0.9696243131914832,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5406119807471452
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.4283560606060603
+      },
+      "judge": null
+    },
+    {
+      "id": "song-lofi-study-loop",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.8399819356780807,
+      "best": 0.8458417229381644,
+      "std": 0.0058597872600837375,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.48484848484848486,
+        "constraintAdherence": 1,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.9651162791736073,
+        "registerMatch": 0.3511381231479276,
+        "rhythmGridAlignment": 0.9067248594353853,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6140891283645511
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.3511381231479276
+      },
+      "judge": null
+    },
+    {
+      "id": "song-nursery-singalong",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.8369229401479836,
+      "best": 0.844878527283437,
+      "std": 0.007955587135453468,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.6097972972972974,
+        "constraintAdherence": 0.9166666666666666,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.7508236004645321,
+        "registerMatch": 0.48127558549449345,
+        "rhythmGridAlignment": 0.9605790103964204,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6476303599939143
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.48127558549449345
+      },
+      "judge": null
+    },
+    {
+      "id": "song-platformer-chiptune",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.8187018273575164,
+      "best": 0.8246345645256511,
+      "std": 0.00593273716813475,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.7165178571428572,
+        "constraintAdherence": 0.6666666666666666,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.7553956839037317,
+        "registerMatch": 0.7458143642072215,
+        "rhythmGridAlignment": 0.8487277723542777,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6541069600193044
+      },
+      "weakest": {
+        "name": "goldenSimilarity",
+        "value": 0.6541069600193044
+      },
+      "judge": null
+    },
+    {
+      "id": "song-racing-game-drive",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.8219850461311031,
+      "best": 0.829555183474031,
+      "std": 0.00757013734292783,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.47619047619047616,
+        "constraintAdherence": 1,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.6666666672471655,
+        "registerMatch": 0.4812831813576498,
+        "rhythmGridAlignment": 0.9519475512027149,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6168537841756128
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.47619047619047616
+      },
+      "judge": null
+    },
+    {
+      "id": "song-spooky-maze",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.7094503476168541,
+      "best": 0.7229769027167708,
+      "std": 0.013526555099916793,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4444444444444444,
+        "constraintAdherence": 0.6666666666666666,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.47321428698693885,
+        "registerMatch": 0.21550650820599887,
+        "rhythmGridAlignment": 0.9663005918760164,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5698776958091375
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.21550650820599887
+      },
+      "judge": null
+    },
+    {
+      "id": "harm-epic-cinematic-intro",
+      "category": "harmonize",
+      "knownGap": true,
+      "mean": 0.5143073926416813,
+      "best": 0.540898779294732,
+      "std": 0.026591386653050636,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.43546365914786966,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.7532894741611265,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 0.7174008276570314,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.42969231245752104
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "harm-lofi-study-loop",
+      "category": "harmonize",
+      "knownGap": true,
+      "mean": 0.5487717633072189,
+      "best": 0.5540640177526842,
+      "std": 0.0052922544454653275,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.467741935483871,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.9687500000625,
+        "registerMatch": 0.011714770797962648,
+        "rhythmGridAlignment": 0.7295372041400852,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.38518777861126596
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "harm-nursery-singalong",
+      "category": "harmonize",
+      "knownGap": true,
+      "mean": 0.5821947758227608,
+      "best": 0.5883473233551226,
+      "std": 0.006152547532361774,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4405458089668616,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.8402777781872428,
+        "registerMatch": 0.37397439305334024,
+        "rhythmGridAlignment": 0.816389004251278,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5383691691710977
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "harm-sad-story-piano",
+      "category": "harmonize",
+      "knownGap": true,
+      "mean": 0.6935995843403818,
+      "best": 0.7089760520483496,
+      "std": 0.015376467707967745,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.3596774193548387,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.6991935490932779,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 0.8395547745631284,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.4924277128658682
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "harm-spooky-maze",
+      "category": "harmonize",
+      "knownGap": true,
+      "mean": 0.7004264123390271,
+      "best": 0.7197633197290942,
+      "std": 0.01933690739006705,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.3325892857142857,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.9040178573399235,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 0.6956561979945413,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.49268229510262807
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "infill-epic-cinematic-intro",
+      "category": "infill",
+      "knownGap": true,
+      "mean": 0.7293215046026604,
+      "best": 0.7293215046026604,
+      "std": 0,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.2727272727272727,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.6111111124938272,
+        "registerMatch": 0.8506854256854259,
+        "rhythmGridAlignment": 0.9992087264911398,
+        "infillBoundaryContinuity": 0,
+        "goldenSimilarity": 0.7689793042213846
+      },
+      "weakest": {
+        "name": "infillBoundaryContinuity",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "infill-lofi-study-loop",
+      "category": "infill",
+      "knownGap": true,
+      "mean": 0.7565813128950604,
+      "best": 0.7565813128950604,
+      "std": 0,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.23076923076923078,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.7647058832387543,
+        "registerMatch": 0.9595022624434385,
+        "rhythmGridAlignment": 0.9978443605023737,
+        "infillBoundaryContinuity": 0,
+        "goldenSimilarity": 0.8757666526679191
+      },
+      "weakest": {
+        "name": "infillBoundaryContinuity",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "infill-nursery-singalong",
+      "category": "infill",
+      "knownGap": true,
+      "mean": 0.8042919980705953,
+      "best": 0.8042919980705953,
+      "std": 0,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4444444444444444,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.8181818187107438,
+        "registerMatch": 0.9911616161616159,
+        "rhythmGridAlignment": 0.9984603532054125,
+        "infillBoundaryContinuity": 0,
+        "goldenSimilarity": 0.9077319193807338
+      },
+      "weakest": {
+        "name": "infillBoundaryContinuity",
+        "value": 0
+      },
+      "judge": null
+    },
+    {
+      "id": "infill-platformer-chiptune",
+      "category": "infill",
+      "knownGap": true,
+      "mean": 0.6414964315503573,
+      "best": 0.6414964315503573,
+      "std": 0,
+      "n": 2,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.48,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.8333333336888888,
+        "registerMatch": 0.9936666666666667,
+        "rhythmGridAlignment": 0.9983775061334008,
+        "infillBoundaryContinuity": 0,
+        "goldenSimilarity": 0.9032551669599675
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": null
+    }
+  ],
+  "categories": [
+    {
+      "id": "single-track-gen",
+      "label": "Single-track generation",
+      "knownGap": false,
+      "mean": 0.749936155905957,
+      "nCases": 9
+    },
+    {
+      "id": "single-track-edit",
+      "label": "Single-track edit (continue/vary)",
+      "knownGap": false,
+      "mean": 0.7350142929847361,
+      "nCases": 9
+    },
+    {
+      "id": "multitrack-song",
+      "label": "Multitrack song",
+      "knownGap": false,
+      "mean": 0.7782955068726097,
+      "nCases": 8
+    },
+    {
+      "id": "harmonize",
+      "label": "Harmonization (Coconet)",
+      "knownGap": true,
+      "mean": 0.607859985690214,
+      "nCases": 5
+    },
+    {
+      "id": "infill",
+      "label": "Infill (Coconet)",
+      "knownGap": true,
+      "mean": 0.7329228117796683,
+      "nCases": 4
+    }
+  ]
+}

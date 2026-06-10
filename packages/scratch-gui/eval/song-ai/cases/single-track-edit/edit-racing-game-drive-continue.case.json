@@ -1,0 +1,26 @@
+{
+  "id": "edit-racing-game-drive-continue",
+  "category": "single-track-edit",
+  "settingId": "racing-game-drive",
+  "operation": "editTrack",
+  "prompt": "Edit the melody: extend with a more energetic ending.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "continue",
+    "seedFrom": "first-half",
+    "variation": "bold",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/racing-game-drive.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "upbeat"
+    ]
+  },
+  "goldenRef": "goldens/edit-racing-game-drive-continue/golden.json"
+}

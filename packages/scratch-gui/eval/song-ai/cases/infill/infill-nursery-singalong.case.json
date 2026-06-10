@@ -1,0 +1,33 @@
+{
+  "id": "infill-nursery-singalong",
+  "category": "infill",
+  "settingId": "nursery-singalong",
+  "operation": "editTrack",
+  "prompt": "The melody is missing its middle section (steps 8-15). Fill in that gap so the two halves connect smoothly, keeping the same style and key.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "infill",
+    "maskFromStep": 8,
+    "maskToStep": 16,
+    "seedFrom": "all",
+    "variation": "balanced",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/nursery-singalong.seed.json",
+  "seedMutation": {
+    "maskTrack": 0,
+    "from": 8,
+    "to": 16
+  },
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "nursery"
+    ]
+  },
+  "goldenRef": "goldens/infill-nursery-singalong/golden.json"
+}

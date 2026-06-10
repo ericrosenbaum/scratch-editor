@@ -1,0 +1,20 @@
+{
+  "id": "gen-platformer-chiptune-instrument",
+  "category": "single-track-gen",
+  "settingId": "platformer-chiptune",
+  "operation": "generateTrack",
+  "prompt": "Add a catchy 8-bit lead melody. Keep it in the song's key and groove.",
+  "kind": "instrument",
+  "seedRef": "seeds/platformer-chiptune.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "chiptune"
+    ]
+  },
+  "goldenRef": "goldens/gen-platformer-chiptune-instrument/golden.json"
+}

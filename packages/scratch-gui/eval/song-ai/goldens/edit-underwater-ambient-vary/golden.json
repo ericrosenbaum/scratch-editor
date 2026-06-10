@@ -1,0 +1,86 @@
+{
+  "kind": "synth",
+  "volume": 70,
+  "muted": false,
+  "effects": {
+    "reverb": 75,
+    "delay": 25,
+    "filter": 65,
+    "pan": 0
+  },
+  "notes": [
+    {
+      "step": 0,
+      "durationSteps": 16,
+      "velocity": 60,
+      "pitch": 50
+    },
+    {
+      "step": 0,
+      "durationSteps": 16,
+      "velocity": 55,
+      "pitch": 57
+    },
+    {
+      "step": 0,
+      "durationSteps": 16,
+      "velocity": 58,
+      "pitch": 62
+    },
+    {
+      "step": 16,
+      "durationSteps": 16,
+      "velocity": 60,
+      "pitch": 48
+    },
+    {
+      "step": 16,
+      "durationSteps": 16,
+      "velocity": 55,
+      "pitch": 55
+    },
+    {
+      "step": 16,
+      "durationSteps": 16,
+      "velocity": 58,
+      "pitch": 60
+    },
+    {
+      "step": 32,
+      "durationSteps": 16,
+      "velocity": 62,
+      "pitch": 53
+    },
+    {
+      "step": 32,
+      "durationSteps": 16,
+      "velocity": 56,
+      "pitch": 60
+    },
+    {
+      "step": 32,
+      "durationSteps": 16,
+      "velocity": 58,
+      "pitch": 65
+    },
+    {
+      "step": 48,
+      "durationSteps": 16,
+      "velocity": 60,
+      "pitch": 50
+    },
+    {
+      "step": 48,
+      "durationSteps": 16,
+      "velocity": 55,
+      "pitch": 57
+    },
+    {
+      "step": 48,
+      "durationSteps": 16,
+      "velocity": 58,
+      "pitch": 62
+    }
+  ],
+  "synthPreset": "Warm Pad"
+}

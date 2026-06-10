@@ -1,0 +1,18 @@
+{
+  "id": "song-nursery-singalong",
+  "category": "multitrack-song",
+  "settingId": "nursery-singalong",
+  "operation": "generateSong",
+  "prompt": "Sweet, simple sing-along tune for a kids story. Make it nursery style in C pentatonicMajor at 100 bpm.",
+  "intent": {
+    "requireKey": "C",
+    "requireScale": "pentatonicMajor",
+    "requireTempo": 100,
+    "requireLengthSteps": null,
+    "expectKind": null,
+    "moodTags": [
+      "nursery"
+    ]
+  },
+  "goldenRef": "goldens/song-nursery-singalong/golden.json"
+}

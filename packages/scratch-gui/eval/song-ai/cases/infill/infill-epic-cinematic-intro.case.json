@@ -1,0 +1,33 @@
+{
+  "id": "infill-epic-cinematic-intro",
+  "category": "infill",
+  "settingId": "epic-cinematic-intro",
+  "operation": "editTrack",
+  "prompt": "The melody is missing its middle section (steps 24-39). Fill in that gap so the two halves connect smoothly, keeping the same style and key.",
+  "trackIndex": 0,
+  "editParams": {
+    "mode": "infill",
+    "maskFromStep": 24,
+    "maskToStep": 40,
+    "seedFrom": "all",
+    "variation": "balanced",
+    "applyAs": "replace"
+  },
+  "seedRef": "seeds/epic-cinematic-intro.seed.json",
+  "seedMutation": {
+    "maskTrack": 0,
+    "from": 24,
+    "to": 40
+  },
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "cinematic"
+    ]
+  },
+  "goldenRef": "goldens/infill-epic-cinematic-intro/golden.json"
+}

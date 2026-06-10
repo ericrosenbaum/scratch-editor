@@ -1,0 +1,18 @@
+{
+  "id": "song-racing-game-drive",
+  "category": "multitrack-song",
+  "settingId": "racing-game-drive",
+  "operation": "generateSong",
+  "prompt": "High-energy driving loop for a racing game. Make it upbeat style in E major at 140 bpm.",
+  "intent": {
+    "requireKey": "E",
+    "requireScale": "major",
+    "requireTempo": 140,
+    "requireLengthSteps": null,
+    "expectKind": null,
+    "moodTags": [
+      "upbeat"
+    ]
+  },
+  "goldenRef": "goldens/song-racing-game-drive/golden.json"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "gen-lofi-study-loop-instrument",
+  "category": "single-track-gen",
+  "settingId": "lofi-study-loop",
+  "operation": "generateTrack",
+  "prompt": "Add a warm mellow chord/pad part. Keep it in the song's key and groove.",
+  "kind": "instrument",
+  "seedRef": "seeds/lofi-study-loop.seed.json",
+  "intent": {
+    "requireKey": null,
+    "requireScale": null,
+    "requireTempo": null,
+    "requireLengthSteps": null,
+    "expectKind": "instrument",
+    "moodTags": [
+      "lo-fi"
+    ]
+  },
+  "goldenRef": "goldens/gen-lofi-study-loop-instrument/golden.json"
+}

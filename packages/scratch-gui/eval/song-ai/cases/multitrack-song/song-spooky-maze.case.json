@@ -1,0 +1,18 @@
+{
+  "id": "song-spooky-maze",
+  "category": "multitrack-song",
+  "settingId": "spooky-maze",
+  "operation": "generateSong",
+  "prompt": "Eerie, suspenseful loop for a dark maze level. Make it spooky style in A minor at 90 bpm.",
+  "intent": {
+    "requireKey": "A",
+    "requireScale": "minor",
+    "requireTempo": 90,
+    "requireLengthSteps": null,
+    "expectKind": null,
+    "moodTags": [
+      "spooky"
+    ]
+  },
+  "goldenRef": "goldens/song-spooky-maze/golden.json"
+}
