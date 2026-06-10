@@ -4892,7 +4892,7 @@
         "graphic-effects": {
             "id": "graphic-effects",
             "title": "Visual effects",
-            "text": "Try \"set effect\" to apply color, whirl, fisheye, ghost and other effects to your sprite",
+            "text": "Try \"set effect\" to apply color, fisheye, whirl, pixelate, mosaic, brightness, and ghost effects to your sprite",
             "tags": [
                 "looks",
                 "effects"
@@ -6493,7 +6493,7 @@
             "id": "tutorial-add-effects",
             "title": "Add Effects tutorial",
             "tutorialId": "add-effects",
-            "text": "Learn about color, fisheye, whirl, pixelate, and other cool effects!",
+            "text": "Learn about the color, fisheye, whirl, pixelate, mosaic, brightness, and ghost effects!",
             "tags": [
                 "looks",
                 "tutorial"
