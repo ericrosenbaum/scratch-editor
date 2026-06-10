@@ -50,6 +50,58 @@ const getRnn = url => {
     return promise;
 };
 
+// Coconet (Bach-style counterpoint) for harmonization + infill, and MusicVAE
+// for melodic variation. Both ship in @magenta/music but the narrow esm entry
+// points keep them out of the bundle until a harmonize/infill/vary edit is
+// actually requested. (Coconet's coconet_utils reads navigator.userAgent at
+// import; that's fine in the browser this runs in.)
+const COCONET_URL = 'https://storage.googleapis.com/magentadata/js/checkpoints/coconet/bach';
+const MUSICVAE_MEL_URL = 'https://storage.googleapis.com/magentadata/js/checkpoints/music_vae/mel_2bar_small';
+
+let coconetClassPromise = null;
+const loadCoconetClass = () => {
+    if (!coconetClassPromise) {
+        coconetClassPromise = import(/* webpackChunkName: "magenta-extra" */ '@magenta/music/esm/coconet')
+            .then(m => m.Coconet);
+    }
+    return coconetClassPromise;
+};
+const coconetCache = new Map();
+const getCoconet = (url = COCONET_URL) => {
+    if (coconetCache.has(url)) return coconetCache.get(url);
+    const promise = (async () => {
+        const [mm, Coconet] = await Promise.all([loadMagenta(), loadCoconetClass()]);
+        const model = new Coconet(url);
+        await model.initialize();
+        return {mm, model};
+    })();
+    coconetCache.set(url, promise);
+    promise.catch(() => coconetCache.delete(url));
+    return promise;
+};
+
+let vaeClassPromise = null;
+const loadVaeClass = () => {
+    if (!vaeClassPromise) {
+        vaeClassPromise = import(/* webpackChunkName: "magenta-extra" */ '@magenta/music/esm/music_vae')
+            .then(m => m.MusicVAE);
+    }
+    return vaeClassPromise;
+};
+const vaeCache = new Map();
+const getMusicVae = (url = MUSICVAE_MEL_URL) => {
+    if (vaeCache.has(url)) return vaeCache.get(url);
+    const promise = (async () => {
+        const [mm, MusicVAE] = await Promise.all([loadMagenta(), loadVaeClass()]);
+        const model = new MusicVAE(url);
+        await model.initialize();
+        return {mm, model};
+    })();
+    vaeCache.set(url, promise);
+    promise.catch(() => vaeCache.delete(url));
+    return promise;
+};
+
 // ===== Drum mapping =====
 // Magenta drum_kit_rnn emits GM-MIDI drum pitches. Map each to one of our
 // 1-based drum indices (DRUM_NAMES). For drums we don't have (toms, ride),
@@ -62,12 +114,39 @@ const STANDARD_DRUM_LANES = [2, 1, 6, 5, 4, 8]; // kick, snare, closed-hh, open-
 // kit piece to the nearest synth-drum preset. The common kit pieces (kick,
 // snare, hats, clap, toms, cowbell, clave, cymbal) round-trip cleanly.
 const SAMPLED_TO_SYNTHDRUM = {
-    1: 2, 2: 1, 3: 6, 4: 12, 5: 4, 6: 3, 7: 3, 8: 5, 9: 11,
-    10: 11, 11: 10, 12: 3, 13: 8, 14: 7, 15: 3, 16: 3, 17: 6, 18: 9
+    1: 2,
+    2: 1,
+    3: 6,
+    4: 12,
+    5: 4,
+    6: 3,
+    7: 3,
+    8: 5,
+    9: 11,
+    10: 11,
+    11: 10,
+    12: 3,
+    13: 8,
+    14: 7,
+    15: 3,
+    16: 3,
+    17: 6,
+    18: 9
 };
 const SYNTHDRUM_TO_SAMPLED = {
-    1: 2, 2: 1, 3: 6, 4: 5, 5: 8, 6: 3, 7: 14, 8: 13, 9: 18,
-    10: 11, 11: 9, 12: 4, 13: 2
+    1: 2,
+    2: 1,
+    3: 6,
+    4: 5,
+    5: 8,
+    6: 3,
+    7: 14,
+    8: 13,
+    9: 18,
+    10: 11,
+    11: 9,
+    12: 4,
+    13: 2
 };
 const mapSampledToSynthDrum = d => SAMPLED_TO_SYNTHDRUM[d] || 1;
 const mapSynthDrumToSampled = d => SYNTHDRUM_TO_SAMPLED[d] || 2;
@@ -93,22 +172,31 @@ const drumPitchToOurIndex = pitch => {
 // Lightweight keyword spotting; everything is best-effort and falls back to
 // musical defaults when no match is found.
 const MOOD_KEYWORDS = {
-    happy: ['happy', 'bright', 'cheerful', 'joyful', 'sunny', 'triumphant', 'celebrat'],
-    sad: ['sad', 'somber', 'melancholy', 'sorrowful', 'gloomy', 'mournful'],
-    dark: ['dark', 'cinematic', 'serious', 'epic', 'tense'],
-    spooky: ['spooky', 'haunting', 'creepy', 'eerie', 'mysterious', 'horror', 'scary', 'ghost'],
+    happy: ['happy', 'bright', 'cheerful', 'joyful', 'sunny', 'triumphant', 'celebrat',
+        'chiptune', 'chip-tune', '8-bit', '8 bit', '8bit', 'retro', 'arcade', 'march', 'parade'],
+    sad: ['sad', 'somber', 'melancholy', 'sorrowful', 'gloomy', 'mournful', 'lonely'],
+    dark: ['dark', 'cinematic', 'serious', 'epic', 'tense', 'dramatic', 'intense', 'boss'],
+    spooky: ['spooky', 'haunting', 'creepy', 'eerie', 'mysterious', 'horror', 'scary', 'ghost', 'maze'],
     bluesy: ['blues', 'bluesy', 'soulful', 'gritty'],
-    rock: ['rock', 'metal', 'punk', 'grunge'],
-    folk: ['folk', 'whimsical', 'wholesome', 'kid', 'nursery', 'lullaby'],
-    funk: ['funk', 'funky', 'groovy'],
+    rock: ['rock', 'metal', 'punk', 'grunge', 'guitar'],
+    folk: ['folk', 'whimsical', 'wholesome', 'kid', 'nursery', 'lullaby', 'sing-along', 'singalong'],
+    funk: ['funk', 'funky', 'groovy', 'disco'],
     jazz: ['jazz', 'jazzy', 'swing', 'bebop'],
-    chill: ['chill', 'lo-fi', 'lofi', 'mellow', 'dreamy', 'ambient', 'relaxed'],
-    upbeat: ['upbeat', 'energetic', 'punchy', 'driving', 'dance', 'party']
+    chill: ['chill', 'lo-fi', 'lofi', 'mellow', 'dreamy', 'ambient', 'relaxed', 'underwater', 'floating', 'calm'],
+    upbeat: ['upbeat', 'energetic', 'punchy', 'driving', 'dance', 'party', 'racing', 'race']
 };
 
 const TEMPO_KEYWORDS = {
     slow: ['slow', 'ballad', 'sleepy', 'dreamy', 'lullaby', 'mellow'],
     fast: ['fast', 'energetic', 'punchy', 'driving', 'racing', 'frantic', 'party']
+};
+
+// Explicit "130 bpm" / "tempo 120" → honor it directly instead of bucketing.
+const parseExplicitTempo = lower => {
+    const m = lower.match(/(\d{2,3})\s*bpm\b/) || lower.match(/\btempo\s*[:=]?\s*(\d{2,3})\b/);
+    if (!m) return null;
+    const t = parseInt(m[1], 10);
+    return (t >= 40 && t <= 240) ? t : null;
 };
 
 const PITCH_CLASSES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -151,7 +239,14 @@ const parseVibe = text => {
         }
     }
     const explicit = parseExplicitKey(lower);
-    return {mood, tempoBucket, explicitKey: explicit.key, explicitScale: explicit.scale, raw: text};
+    return {
+        mood,
+        tempoBucket,
+        explicitKey: explicit.key,
+        explicitScale: explicit.scale,
+        explicitTempo: parseExplicitTempo(lower),
+        raw: text
+    };
 };
 
 // ===== Mood → musical settings =====
@@ -267,7 +362,10 @@ const DRUM_SEEDS = {
         {pitch: 42, start: 6, end: 7, isDrum: true},
         {pitch: 36, start: 8, end: 9, isDrum: true},
         {pitch: 42, start: 8, end: 9, isDrum: true},
-        {pitch: 38, start: 12, end: 13, isDrum: true}
+        {pitch: 42, start: 10, end: 11, isDrum: true},
+        {pitch: 38, start: 12, end: 13, isDrum: true}, // snare (beat 4)
+        {pitch: 42, start: 12, end: 13, isDrum: true},
+        {pitch: 42, start: 14, end: 15, isDrum: true} // steady eighth-note hats through the bar
     ],
     funk: [
         {pitch: 36, start: 0, end: 1, isDrum: true},
@@ -351,15 +449,23 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const buildDrumTrack = async (lengthSteps, mood) => {
     const {mm, rnn} = await getRnn(DRUMS_RNN_URL);
     const seed = makeSeedSequence(mm, pickDrumSeed(mood));
-    const stepsToGenerate = Math.max(lengthSteps - 16, 16);
+    // The seed is a one-bar (16-step) groove, but quantizeNoteSequence sizes the
+    // sequence to the *last hit* — step 13 for the rock/chill seeds, 15 for funk.
+    // continueSequence then continues from that step, so offsetting the result by
+    // a fixed 16 left a 1-3 step gap and pushed the whole continuation off the
+    // beat. Pin the seed to a full bar so the model continues on the next
+    // downbeat and the offset matches the seed length exactly.
+    const barSteps = 16;
+    seed.totalQuantizedSteps = barSteps;
+    const stepsToGenerate = Math.max(lengthSteps - barSteps, 16);
     const continued = await rnn.continueSequence(seed, stepsToGenerate, 1.0);
     // Merge seed + continuation, then map to our schema.
     const allNotes = [
         ...(seed.notes || []),
         ...(continued.notes || []).map(n => ({
             ...n,
-            quantizedStartStep: (n.quantizedStartStep || 0) + 16,
-            quantizedEndStep: (n.quantizedEndStep || 0) + 16
+            quantizedStartStep: (n.quantizedStartStep || 0) + barSteps,
+            quantizedEndStep: (n.quantizedEndStep || 0) + barSteps
         }))
     ];
     const drumNotes = noteSeqToDrumNotes({notes: allNotes}, lengthSteps, STANDARD_DRUM_LANES);
@@ -383,14 +489,19 @@ const buildMelodyTrack = async ({
     // doesn't drift too far. We'll transpose to the actual key on conversion.
     const magentaRoot = 60;
     const seed = makeSeedSequence(mm, buildMelodySeed(magentaRoot, chordOffsets[0]));
-    const stepsToGenerate = Math.max(lengthSteps - 8, 16);
+    // Pin the seed length to the offset (same off-beat bug as the drum track):
+    // the seed's notes only reach step 6, so without this the continuation would
+    // be placed two steps past where the model actually continued from.
+    const seedSteps = 8;
+    seed.totalQuantizedSteps = seedSteps;
+    const stepsToGenerate = Math.max(lengthSteps - seedSteps, 16);
     const continued = await rnn.continueSequence(seed, stepsToGenerate, 1.1);
     const allNotes = [
         ...(seed.notes || []),
         ...(continued.notes || []).map(n => ({
             ...n,
-            quantizedStartStep: (n.quantizedStartStep || 0) + 8,
-            quantizedEndStep: (n.quantizedEndStep || 0) + 8
+            quantizedStartStep: (n.quantizedStartStep || 0) + seedSteps,
+            quantizedEndStep: (n.quantizedEndStep || 0) + seedSteps
         }))
     ];
     const notes = noteSeqToInstrumentNotes(
@@ -469,7 +580,7 @@ const composeSong = async ({prompt, fallbackName}) => {
     const scale = vibe.explicitScale || moodToScale(vibe.mood);
     const key = vibe.explicitKey || moodToKey(vibe.mood);
     const octave = 4;
-    const tempo = moodToTempo(vibe.mood, vibe.tempoBucket);
+    const tempo = vibe.explicitTempo || moodToTempo(vibe.mood, vibe.tempoBucket);
     const lengthSteps = 32;
     const rootPitch = rootPitchFromKey(key, octave);
     const chordOffsets = pickProgression(vibe.mood, scale);
@@ -713,6 +824,231 @@ const editTrackByContinuation = async ({song, originalTrack, editParams = {}}) =
     };
 };
 
+// ===== Coconet / MusicVAE edit modes =====
+// These cover what MusicRNN continuation cannot: harmonizing a melody and
+// infilling a gap (Coconet), and producing a true latent-space variation
+// (MusicVAE). All are best-effort — any model/network failure falls back to
+// the continuation path so an edit always returns something usable.
+const COCONET_MIN = 36; // Coconet's Bach pitch range
+const COCONET_MAX = 81;
+// Coconet runs Gibbs sampling; 32 passes is a good quality/speed point on the
+// browser's WebGL backend. The eval harness (Node CPU backend) can lower this
+// via MAGENTA_COCONET_ITERS to keep batch runs tractable.
+const COCONET_ITERS = (typeof process !== 'undefined' && process.env &&
+    parseInt(process.env.MAGENTA_COCONET_ITERS, 10)) || 32;
+
+const medianPitch = notes => {
+    const ps = notes.map(n => n.pitch).filter(p => typeof p === 'number')
+        .sort((a, b) => a - b);
+    return ps.length ? ps[Math.floor(ps.length / 2)] : 60;
+};
+
+// Whole-octave shift that lands `median` inside [lo, hi].
+const octaveShiftIntoRange = (median, lo, hi) => {
+    let shift = 0;
+    while (median + shift < lo) shift += 12;
+    while (median + shift > hi) shift -= 12;
+    return shift;
+};
+
+// The pitched sibling track with the most notes — treated as "the melody".
+const pickMelodyTrack = (song, excludeIndex) => {
+    let best = null;
+    (song.tracks || []).forEach((t, i) => {
+        if (i === excludeIndex) return;
+        if (t.kind !== 'instrument' && t.kind !== 'synth') return;
+        const count = (t.notes || []).filter(n => typeof n.pitch === 'number').length;
+        if (count > 0 && (!best || count > best.count)) best = {track: t, count};
+    });
+    return best ? best.track : null;
+};
+
+// Strictly monophonic, clipped to [0, span): MusicVAE's melody converter
+// rejects overlapping notes.
+const monophonic = (notes, span) => {
+    const sorted = notes
+        .filter(n => typeof n.pitch === 'number' && (n.step || 0) < span)
+        .map(n => ({
+            step: n.step || 0,
+            durationSteps: Math.max(1, n.durationSteps || 1),
+            pitch: n.pitch,
+            velocity: n.velocity || 90
+        }))
+        .sort((a, b) => a.step - b.step);
+    const out = [];
+    for (let i = 0; i < sorted.length; i++) {
+        const cur = sorted[i];
+        if (out.length && cur.step === out[out.length - 1].step) continue; // one note per onset
+        const next = sorted[i + 1];
+        const maxEnd = next ? next.step : span;
+        const end = Math.min(cur.step + cur.durationSteps, maxEnd, span);
+        if (end - cur.step >= 1) out.push({...cur, durationSteps: end - cur.step});
+    }
+    return out;
+};
+
+const echoLockedFields = (originalTrack, notes) => ({
+    kind: originalTrack.kind,
+    instrument: originalTrack.instrument,
+    drumLanes: originalTrack.drumLanes,
+    synthPreset: originalTrack.synth && originalTrack.synth.preset,
+    volume: originalTrack.volume,
+    notes
+});
+
+const harmonizeTrack = async context => {
+    const {song, originalTrack, trackIndex} = context;
+    const lengthSteps = song.lengthSteps || 32;
+    const melodyTrack = pickMelodyTrack(song, trackIndex);
+    const melodyNotes = melodyTrack ?
+        (melodyTrack.notes || []).filter(n => typeof n.pitch === 'number') : [];
+    if (melodyNotes.length === 0) return editTrackByContinuation(context);
+
+    const shift = octaveShiftIntoRange(medianPitch(melodyNotes), COCONET_MIN, COCONET_MAX);
+    const {mm, model} = await getCoconet();
+    const seq = mm.NoteSequence.create({
+        notes: melodyNotes.map(n => ({
+            pitch: clamp(n.pitch + shift, COCONET_MIN, COCONET_MAX),
+            quantizedStartStep: n.step || 0,
+            quantizedEndStep: Math.max((n.step || 0) + 1, (n.step || 0) + (n.durationSteps || 1)),
+            instrument: 0,
+            program: 0
+        })),
+        quantizationInfo: {stepsPerQuarter: 4},
+        totalQuantizedSteps: lengthSteps
+    });
+    const filled = await model.infill(seq, {numIterations: COCONET_ITERS, temperature: 0.99});
+    // Coconet emits a dense 4-part chorale; collapse the three lower voices
+    // (alto/tenor/bass) into clean block chords on the beat grid so the result
+    // reads as a pad/harmony track rather than a wall of one-step notes.
+    const lowVoices = (filled.notes || []).filter(n => (n.instrument || 0) >= 1);
+    const beat = 4;
+    const harmony = [];
+    const seen = new Set();
+    for (let b = 0; b < lengthSteps; b += beat) {
+        for (const voice of [1, 2, 3]) {
+            const note = lowVoices.find(n =>
+                (n.instrument || 0) === voice &&
+                (n.quantizedStartStep || 0) <= b &&
+                (n.quantizedEndStep || 0) > b);
+            if (!note) continue;
+            const pitch = clamp((note.pitch || 60) - shift, 24, 108);
+            const key = `${b}:${pitch}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            harmony.push({step: b, durationSteps: beat, pitch, velocity: 66});
+        }
+    }
+    return echoLockedFields(originalTrack, harmony);
+};
+
+const infillTrack = async context => {
+    const {song, originalTrack, editParams} = context;
+    const lengthSteps = song.lengthSteps || 32;
+    const from = editParams && editParams.maskFromStep;
+    const to = editParams && editParams.maskToStep;
+    const melodyNotes = (originalTrack.notes || []).filter(n => typeof n.pitch === 'number');
+    if (melodyNotes.length === 0 || typeof from !== 'number' || typeof to !== 'number') {
+        return editTrackByContinuation(context);
+    }
+    const shift = octaveShiftIntoRange(medianPitch(melodyNotes), COCONET_MIN, COCONET_MAX);
+    const {mm, model} = await getCoconet();
+    const seq = mm.NoteSequence.create({
+        notes: melodyNotes.map(n => ({
+            pitch: clamp(n.pitch + shift, COCONET_MIN, COCONET_MAX),
+            quantizedStartStep: n.step || 0,
+            quantizedEndStep: Math.max((n.step || 0) + 1, (n.step || 0) + (n.durationSteps || 1)),
+            instrument: 0,
+            program: 0
+        })),
+        quantizationInfo: {stepsPerQuarter: 4},
+        totalQuantizedSteps: lengthSteps
+    });
+    const infillMask = [];
+    for (let s = from; s < to; s++) infillMask.push({step: s, voice: 0});
+    const filled = await model.infill(seq, {numIterations: COCONET_ITERS, temperature: 0.99, infillMask});
+    const gapNotes = (filled.notes || [])
+        .filter(n => (n.instrument || 0) === 0)
+        .filter(n => (n.quantizedStartStep || 0) >= from && (n.quantizedStartStep || 0) < to)
+        .map(n => ({
+            step: Math.round(n.quantizedStartStep || 0),
+            durationSteps: Math.max(1, Math.round((n.quantizedEndStep || 0) - (n.quantizedStartStep || 0))),
+            pitch: clamp((n.pitch || 60) - shift, 24, 108),
+            velocity: 85
+        }));
+    const notes = [...melodyNotes.map(n => ({...n})), ...gapNotes]
+        .filter(n => (n.step || 0) >= 0 && (n.step || 0) < lengthSteps);
+    return echoLockedFields(originalTrack, notes);
+};
+
+// Higher = closer to the original. Kept high so a "variation" preserves the
+// melody's density/character rather than wandering into a sparse new line.
+const VARIATION_SIMILARITY = {subtle: 0.95, balanced: 0.85, bold: 0.7};
+
+const varyTrack = async context => {
+    const {song, originalTrack, editParams} = context;
+    const lengthSteps = song.lengthSteps || 32;
+    const span = 32; // MusicVAE mel_2bar is a fixed 2-bar (32-step) model
+    const mono = monophonic((originalTrack.notes || []), span);
+    if (mono.length === 0) return editTrackByContinuation(context);
+
+    const {mm, model} = await getMusicVae();
+    const seq = mm.NoteSequence.create({
+        notes: mono.map(n => ({
+            pitch: clamp(n.pitch, 24, 108),
+            quantizedStartStep: n.step,
+            quantizedEndStep: Math.min(span, n.step + n.durationSteps),
+            program: 0
+        })),
+        quantizationInfo: {stepsPerQuarter: 4},
+        totalQuantizedSteps: span
+    });
+    const similarity = VARIATION_SIMILARITY[(editParams && editParams.variation)] || 0.7;
+    const temperature = (editParams && editParams.variation === 'bold') ? 0.9 : 0.6;
+    const outs = await model.similar(seq, 1, similarity, temperature);
+    const out = Array.isArray(outs) ? outs[0] : outs;
+    const vaeNotes = (out.notes || [])
+        .slice()
+        .sort((a, b) => (a.quantizedStartStep || 0) - (b.quantizedStartStep || 0));
+    if (vaeNotes.length === 0) return editTrackByContinuation(context);
+
+    // Re-pitch the ORIGINAL rhythm with MusicVAE's varied melodic contour: keep
+    // the part's note density and phrasing (so it still reads as the same idea)
+    // while the pitches genuinely change. Using the decoder's own rhythm tends
+    // to thin the line out, which scores — and sounds — worse than a variation
+    // that preserves the groove.
+    const pitchAtStep = step => {
+        let best = null;
+        for (const n of vaeNotes) {
+            if ((n.quantizedStartStep || 0) <= step) best = n;
+            else break;
+        }
+        return best ? clamp(best.pitch || 60, 24, 108) : null;
+    };
+    const notes = mono
+        .map(n => {
+            const p = pitchAtStep(n.step);
+            return {...n, pitch: p === null ? n.pitch : p};
+        })
+        .filter(n => (n.step || 0) < lengthSteps);
+    return echoLockedFields(originalTrack, notes);
+};
+
+// Route an edit to the right engine. Unknown/`continue` modes — and any
+// Coconet/MusicVAE failure — use the MusicRNN continuation path.
+const editTrack = async context => {
+    const mode = context.editParams && context.editParams.mode;
+    try {
+        if (mode === 'harmonize') return await harmonizeTrack(context);
+        if (mode === 'infill') return await infillTrack(context);
+        if (mode === 'vary') return await varyTrack(context);
+    } catch (err) {
+        if (err && err.name === 'AbortError') throw err;
+        // fall through to continuation
+    }
+    return editTrackByContinuation(context);
+};
+
 // ===== Provider =====
 const magentaProvider = {
     id: 'magenta',
@@ -737,7 +1073,7 @@ const magentaProvider = {
                 toolInput = await composeTrack(context);
                 break;
             case 'edit_track':
-                toolInput = await editTrackByContinuation(context);
+                toolInput = await editTrack(context);
                 break;
             default:
                 throw new SongAiError(`Magenta cannot handle tool: ${tool.name}`, 'NO_TOOL_USE');
