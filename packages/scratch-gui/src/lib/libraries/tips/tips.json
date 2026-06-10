@@ -6694,7 +6694,7 @@
         "starter-dance-party": {
             "id": "starter-dance-party",
             "title": "Dance Party",
-            "text": "Shows how to make characters dance by switching costumes in a forever loop while the stage plays music",
+            "text": "Example of making characters dance by switching costumes in a forever loop while the stage plays music",
             "tags": [
                 "animation",
                 "looks",
@@ -6712,7 +6712,7 @@
         "starter-animate-crab": {
             "id": "starter-animate-crab",
             "title": "Animate the Crab",
-            "text": "Shows how to bring a character to life with costume expressions, \"if on edge bounce,\" and random positioning!",
+            "text": "Example of bringing a character to life with costume expressions, \"if on edge bounce,\" and random positioning!",
             "tags": [
                 "animation",
                 "motion",
@@ -6730,7 +6730,7 @@
         "starter-walk-cycle": {
             "id": "starter-walk-cycle",
             "title": "Walk Cycle",
-            "text": "Shows how to create a realistic walking animation by combining \"move steps\" with \"next costume\" in a repeat loop!",
+            "text": "Example of creating a realistic walking animation by combining \"move steps\" with \"next costume\" in a repeat loop!",
             "tags": [
                 "animation",
                 "motion",
@@ -6748,7 +6748,7 @@
         "starter-mouse-trail": {
             "id": "starter-mouse-trail",
             "title": "Mouse Trail",
-            "text": "Shows how to use cloning to create a trail of stars that follows your mouse, with each clone shrinking and disappearing!",
+            "text": "Example of using cloning to create a trail of stars that follows your mouse, with each clone shrinking and disappearing!",
             "tags": [
                 "animation",
                 "clones",
@@ -6766,7 +6766,7 @@
         "starter-food-truck": {
             "id": "starter-food-truck",
             "title": "Food Truck Animation",
-            "text": "Shows how to make a scrolling background, spinning tires, and flashing graphic effects with multiple sprites!",
+            "text": "Example of making a scrolling background, spinning tires, and flashing graphic effects with multiple sprites!",
             "tags": [
                 "animation",
                 "motion",
@@ -6784,7 +6784,7 @@
         "starter-make-it-fly": {
             "id": "starter-make-it-fly",
             "title": "Make It Fly",
-            "text": "Shows how to use keyboard controls to make a flying cat dodge scrolling buildings",
+            "text": "Example of using keyboard controls to make a flying cat dodge scrolling buildings",
             "tags": [
                 "game",
                 "control",
@@ -6802,7 +6802,7 @@
         "starter-maze": {
             "id": "starter-maze",
             "title": "Maze Starter",
-            "text": "Shows how to navigate a ball through a maze using arrow keys, with color touching detection for wall collisions",
+            "text": "Example of navigating a ball through a maze using arrow keys, with color touching detection for wall collisions",
             "tags": [
                 "game",
                 "sensing",
@@ -6820,7 +6820,7 @@
         "starter-dress-up": {
             "id": "starter-dress-up",
             "title": "Dress Up Tera",
-            "text": "Shows how to make sprites draggable and detect if a sprite is touching another sprite to create an interactive dress-up game",
+            "text": "Example of making sprites draggable and detecting if a sprite is touching another sprite to create an interactive dress-up game",
             "tags": [
                 "game",
                 "sensing",
@@ -6838,7 +6838,7 @@
         "starter-pong": {
             "id": "starter-pong",
             "title": "Pong Starter",
-            "text": "Shows how to make a simple game including mouse movement, ball bouncing, collisions, and sound effects",
+            "text": "Example of making a simple game including mouse movement, ball bouncing, collisions, and sound effects",
             "tags": [
                 "game",
                 "motion",
@@ -6857,7 +6857,7 @@
         "starter-hide-seek": {
             "id": "starter-hide-seek",
             "title": "Hide and Seek",
-            "text": "Shows how to make a clicker game with a score variable, random positioning, and show and hide",
+            "text": "Example of making a clicker game with a score variable, random positioning, and show and hide",
             "tags": [
                 "game",
                 "variables",
@@ -6875,7 +6875,7 @@
         "starter-stamp-studio": {
             "id": "starter-stamp-studio",
             "title": "Stamp Studio",
-            "text": "Shows how to use the pen stamp block with if-then conditions to draw colorful patterns that follow your mouse",
+            "text": "Example of using the pen stamp block with if-then conditions to draw colorful patterns that follow your mouse",
             "tags": [
                 "art",
                 "pen",
@@ -6893,7 +6893,7 @@
         "starter-parallax": {
             "id": "starter-parallax",
             "title": "Interactive Parallax",
-            "text": "Shows how to use math operators and mouse sensing to move layers at different speeds for a depth effect!",
+            "text": "Example of using math operators and mouse sensing to move layers at different speeds for a depth effect!",
             "tags": [
                 "art",
                 "operators",
@@ -6911,7 +6911,7 @@
         "starter-soundflower": {
             "id": "starter-soundflower",
             "title": "Soundflower",
-            "text": "Shows how to use the loudness and multiply blocks to make a flower that responds to your microphone",
+            "text": "Example of using the loudness and multiply blocks to make a flower that responds to your microphone",
             "tags": [
                 "art",
                 "sensing",
@@ -6929,7 +6929,7 @@
         "starter-art-alive": {
             "id": "starter-art-alive",
             "title": "Make Art Come Alive",
-            "text": "Shows how to use click events, broadcasts, and glide blocks to animate parts of a painting",
+            "text": "Example of using click events, broadcasts, and glide blocks to animate parts of a painting",
             "tags": [
                 "art",
                 "events",
@@ -6947,7 +6947,7 @@
         "starter-spin-art": {
             "id": "starter-spin-art",
             "title": "Spin Art",
-            "text": "Shows how to use variable sliders, the stamp block, and movement to create mesmerizing spiral patterns!",
+            "text": "Example of using variable sliders, the stamp block, and movement to create mesmerizing spiral patterns!",
             "tags": [
                 "art",
                 "pen",
@@ -6965,7 +6965,7 @@
         "starter-dj": {
             "id": "starter-dj",
             "title": "DJ Scratch Cat",
-            "text": "Shows how to use key press events and sound blocks to make a DJ mixing board with a looping beat!",
+            "text": "Example of using key press events and sound blocks to make a DJ mixing board with a looping beat!",
             "tags": [
                 "music",
                 "sound",
@@ -6983,7 +6983,7 @@
         "starter-piano": {
             "id": "starter-piano",
             "title": "Piano",
-            "text": "Shows how to build a playable instrument with clickable key sprites using the Music extension's play note block!",
+            "text": "Example of building a playable instrument with clickable key sprites using the Music extension's play note block!",
             "tags": [
                 "music",
                 "extensions",
@@ -7001,7 +7001,7 @@
         "starter-fish-pitch": {
             "id": "starter-fish-pitch",
             "title": "Catch the Fish",
-            "text": "Shows how to use cloning, a score variable, and the pitch effect to make music play higher as you score!",
+            "text": "Example of using cloning, a score variable, and the pitch effect to make music play higher as you score!",
             "tags": [
                 "music",
                 "clones",
@@ -7020,7 +7020,7 @@
         "starter-fur-elise": {
             "id": "starter-fur-elise",
             "title": "Fur Elise",
-            "text": "Shows how to use custom My Blocks to organize a song into reusable sections with the Music extension!",
+            "text": "Example of using custom My Blocks to organize a song into reusable sections with the Music extension!",
             "tags": [
                 "music",
                 "extensions",
@@ -7038,7 +7038,7 @@
         "starter-drum-sequencer": {
             "id": "starter-drum-sequencer",
             "title": "Drum Sequencer",
-            "text": "Shows how to use clones to make a row of buttons, and color sensing to trigger sounds",
+            "text": "Example of using clones to make a row of buttons, and color sensing to trigger sounds",
             "tags": [
                 "music",
                 "clones",
@@ -7056,7 +7056,7 @@
         "starter-story": {
             "id": "starter-story",
             "title": "Story Starter",
-            "text": "Shows how to make characters take turns talking with the broadcast and when I receive blocks",
+            "text": "Example of making characters take turns talking with the broadcast and when I receive blocks",
             "tags": [
                 "story",
                 "events",
@@ -7074,7 +7074,7 @@
         "starter-random-facts": {
             "id": "starter-random-facts",
             "title": "Random Facts",
-            "text": "Shows how to create a slideshow presentation using backdrops and key press events!",
+            "text": "Example of creating a slideshow presentation using backdrops and key press events!",
             "tags": [
                 "story",
                 "events",
@@ -7092,7 +7092,7 @@
         "starter-fill-blanks": {
             "id": "starter-fill-blanks",
             "title": "Fill in the Blanks",
-            "text": "Shows how to make a mad-libs story using the ask block, variables, and the join block",
+            "text": "Example of making a mad-libs story using the ask block, variables, and the join block",
             "tags": [
                 "story",
                 "sensing",
@@ -7111,7 +7111,7 @@
         "starter-stop-motion": {
             "id": "starter-stop-motion",
             "title": "Stop Motion",
-            "text": "Shows how to create a flipbook-style animation by switching costumes in a forever loop!",
+            "text": "Example of creating a flipbook-style animation by switching costumes in a forever loop!",
             "tags": [
                 "story",
                 "animation",
@@ -7129,7 +7129,7 @@
         "starter-adventure": {
             "id": "starter-adventure",
             "title": "Adventure Game",
-            "text": "Shows how to build an interactive adventure with collision detection and broadcast-driven scene changes!",
+            "text": "Example of building an interactive adventure with collision detection and broadcast-driven scene changes!",
             "tags": [
                 "story",
                 "game",
@@ -7148,7 +7148,7 @@
         "starter-gravity": {
             "id": "starter-gravity",
             "title": "Gravity Example",
-            "text": "Shows how to simulate gravity with velocity variables and conditionals for ground collision!",
+            "text": "Example of simulating gravity with velocity variables and conditionals for ground collision!",
             "tags": [
                 "math",
                 "variables",
@@ -7166,7 +7166,7 @@
         "starter-sound-graph": {
             "id": "starter-sound-graph",
             "title": "Sound Graph",
-            "text": "Shows how to visualize microphone input as a graph using pen blocks, loudness sensing, and math operators",
+            "text": "Example of visualizing microphone input as a graph using pen blocks, loudness sensing, and math operators",
             "tags": [
                 "math",
                 "pen",
@@ -7184,7 +7184,7 @@
         "starter-math-game": {
             "id": "starter-math-game",
             "title": "Math Game",
-            "text": "Shows how to make a quiz with random number variables, ask blocks for input, and if-else to check answers!",
+            "text": "Example of making a quiz with random number variables, ask blocks for input, and if-else to check answers!",
             "tags": [
                 "math",
                 "variables",
@@ -7203,7 +7203,7 @@
         "starter-circuit": {
             "id": "starter-circuit",
             "title": "Circuit Simulation",
-            "text": "Shows how to use draggable sprites, color-touching detection, and boolean logic to simulate a circuit!",
+            "text": "Example of using draggable sprites, color-touching detection, and boolean logic to simulate a circuit!",
             "tags": [
                 "math",
                 "sensing",
@@ -7240,7 +7240,7 @@
         "starter-text-speech": {
             "id": "starter-text-speech",
             "title": "Text to Speech",
-            "text": "Shows how to make your characters speak out loud",
+            "text": "Example of making your characters speak out loud",
             "tags": [
                 "extensions",
                 "sound",
@@ -7258,7 +7258,7 @@
         "starter-pen-flower": {
             "id": "starter-pen-flower",
             "title": "Pen Flower",
-            "text": "Shows how to use nested repeat loops and pen blocks to draw a colorful pattern of rotating squares!",
+            "text": "Example of using nested repeat loops and pen blocks to draw a colorful pattern of rotating squares!",
             "tags": [
                 "extensions",
                 "pen",
@@ -7276,7 +7276,7 @@
         "starter-musical-droplets": {
             "id": "starter-musical-droplets",
             "title": "Musical Droplets",
-            "text": "Shows how to use clones, the Music extension, and math to turn mouse position into musical notes!",
+            "text": "Example of using clones, the Music extension, and math to turn mouse position into musical notes!",
             "tags": [
                 "extensions",
                 "music",
@@ -7295,7 +7295,7 @@
         "starter-translate": {
             "id": "starter-translate",
             "title": "Translate This!",
-            "text": "Shows how to use the Translate extension to make characters speak in different languages!",
+            "text": "Example of using the Translate extension to make characters speak in different languages!",
             "tags": [
                 "extensions",
                 "looks",
@@ -7312,7 +7312,7 @@
         "starter-face-filter": {
             "id": "starter-face-filter",
             "title": "Face Filter",
-            "text": "Shows how to use the Face Sensing extension to make hats and glasses follow your face in real time!",
+            "text": "Example of using the Face Sensing extension to make hats and glasses follow your face in real time!",
             "tags": [
                 "extensions",
                 "sensing",
@@ -7329,7 +7329,7 @@
         "starter-greeting-card": {
             "id": "starter-greeting-card",
             "title": "Greeting Card",
-            "text": "Shows how to make an interactive card with backdrop switches, glide animations, and sound effects!",
+            "text": "Example of making an interactive card with backdrop switches, glide animations, and sound effects!",
             "tags": [
                 "kindness",
                 "events",
@@ -7348,7 +7348,7 @@
         "starter-quiz": {
             "id": "starter-quiz",
             "title": "Community Quiz",
-            "text": "Shows how to build a quiz with custom blocks, ask-and-wait input, if-else logic, and Text-to-Speech!",
+            "text": "Example of building a quiz with custom blocks, ask-and-wait input, if-else logic, and Text-to-Speech!",
             "tags": [
                 "kindness",
                 "myblocks",
@@ -7366,7 +7366,7 @@
         "starter-trophy": {
             "id": "starter-trophy",
             "title": "Small Wins Trophy",
-            "text": "Shows how to click on sprite parts to cycle through costumes and design a custom award!",
+            "text": "Example of clicking on sprite parts to cycle through costumes and design a custom award!",
             "tags": [
                 "kindness",
                 "looks",
@@ -7384,7 +7384,7 @@
         "starter-kindness": {
             "id": "starter-kindness",
             "title": "Acts of Kindness",
-            "text": "Shows how to pick a random item from a list using  the pick random block",
+            "text": "Example of picking a random item from a list using the pick random block",
             "tags": [
                 "kindness",
                 "data",
@@ -7402,7 +7402,7 @@
         "starter-paper-plane": {
             "id": "starter-paper-plane",
             "title": "Paper Plane Tutorial",
-            "text": "Shows how to make a step-by-step guide with broadcasts, repeat-until loops, and costume switching!",
+            "text": "Example of making a step-by-step guide with broadcasts, repeat-until loops, and costume switching!",
             "tags": [
                 "kindness",
                 "control",
