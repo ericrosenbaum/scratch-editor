@@ -8,7 +8,7 @@ const catMeta = id => CATEGORIES.find(c => c.id === id) || {label: id, knownGap:
 export const formatReport = (results, baseline) => {
     const lines = [];
     lines.push(`Song-Maker eval — run ${results.runId}`);
-    lines.push(`provider=magenta  samples=${results.samples}  judge=${results.judge ? 'on' : 'off'}` +
+    lines.push(`provider=${results.provider || 'magenta'}  samples=${results.samples}  judge=${results.judge ? 'on' : 'off'}` +
         (baseline ? `  (vs baseline ${baseline.runId || baseline.generatedAt || ''})` : ''));
     lines.push('');
 

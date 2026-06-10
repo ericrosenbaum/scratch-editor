@@ -201,7 +201,8 @@ const buildConfig = baseConfig.clone()
             guistandalone: './src/playground/standalone.jsx',
             blocksonly: './src/playground/blocks-only.jsx',
             compatibilitytesting: './src/playground/compatibility-testing.jsx',
-            player: './src/playground/player.jsx'
+            player: './src/playground/player.jsx',
+            songeval: './src/playground/song-eval.jsx'
         },
         output: {
             path: path.resolve(__dirname, 'build'),
@@ -246,6 +247,13 @@ const buildConfig = baseConfig.clone()
         filename: 'player.html',
         template: 'src/playground/index.ejs',
         title: 'Scratch 3.0 GUI: Player Example'
+    }))
+    .addPlugin(new HtmlWebpackPlugin({
+        ...commonHtmlWebpackPluginOptions,
+        chunks: ['songeval'],
+        filename: 'song-eval.html',
+        template: 'src/playground/index.ejs',
+        title: 'Song-Maker Eval (Gemma 4 on-device)'
     }))
     .addPlugin(new CopyWebpackPlugin({
         patterns: [

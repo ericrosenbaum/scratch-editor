@@ -82,6 +82,11 @@ const main = async () => {
         await runEval(flags);
         break;
     }
+    case 'run-browser': {
+        const {runBrowserEval} = await import('./commands/run-browser.mjs');
+        await runBrowserEval(flags);
+        break;
+    }
     case 'help':
     case undefined:
         process.stdout.write(
@@ -89,7 +94,12 @@ const main = async () => {
             '  fetch-checkpoints           pre-download model checkpoints\n' +
             '  seeds [--force]             generate seed songs via Opus\n' +
             '  goldens [--force]           generate golden outputs via Opus\n' +
-            '  run [--baseline] [--judge] [--samples N] [--only <id>] [--category <id>]\n'
+            '  run [--baseline] [--judge] [--samples N] [--only <id>] [--category <id>]\n' +
+            '  run-browser                 run on-device Gemma 4 via a real Chrome (CDP)\n' +
+            '      [--smoke]                 warm up + print one raw generated song\n' +
+            '      [--baseline] [--judge] [--samples N] [--only <id>] [--category <id>]\n' +
+            '      [--resume <runId>] [--cdp <url>] [--page <url>] [--verbose]\n' +
+            '      prereq: launch Chrome with --remote-debugging-port=9222 and run `npm start`\n'
         );
         break;
     default:

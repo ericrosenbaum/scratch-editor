@@ -13,6 +13,7 @@ export const PATHS = {
     goldens: path.join(HERE, 'goldens'),
     baselines: path.join(HERE, 'baselines'),
     baselineFile: path.join(HERE, 'baselines', 'magenta.baseline.json'),
+    gemma4BaselineFile: path.join(HERE, 'baselines', 'gemma4.baseline.json'),
     weights: path.join(HERE, 'scoring', 'weights.json'),
     results: path.join(HERE, 'results'),
     checkpoints: path.join(HERE, 'checkpoints')
@@ -49,3 +50,8 @@ export const JUDGE_PROVIDER_ID = 'anthropic-opus';
 
 // The provider under test.
 export const SUT_PROVIDER_ID = 'magenta';
+
+// The on-device, browser-only provider (driven via run-browser over a real
+// Chrome — see commands/run-browser.mjs). MediaPipe LlmInference needs real
+// WebGPU, so it can't share the Node `run` path.
+export const GEMMA4_PROVIDER_ID = 'gemma4';

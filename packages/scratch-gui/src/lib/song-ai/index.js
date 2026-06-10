@@ -149,7 +149,10 @@ const editTrackWithPrompt = async ({prompt, editParams, song, trackIndex, signal
         '',
         'Full song JSON:',
         '```json',
-        JSON.stringify(cleanSong, null, 2),
+        // Compact (no indent): pretty-printing ~doubles the embedded-song token
+        // count, pushing small on-device models (Gemma 4 E2B, 8k ctx) over their
+        // limit. The model doesn't need the whitespace.
+        JSON.stringify(cleanSong),
         '```',
         '',
         'Edit request:',
@@ -252,7 +255,9 @@ const generateTrackWithPrompt = async ({prompt, song, kind, signal, providerId} 
         '',
         'Existing song JSON:',
         '```json',
-        JSON.stringify(cleanSong, null, 2),
+        // Compact (no indent) to keep the embedded song within small on-device
+        // context windows — see editTrackWithPrompt above.
+        JSON.stringify(cleanSong),
         '```',
         '',
         'Description of the new track:',

@@ -1,0 +1,971 @@
+{
+  "runId": "2026-06-10T14-29-34-258Z",
+  "provider": "gemma4",
+  "samples": 3,
+  "judge": true,
+  "weightsHash": "ccae4c2b858253e401166a1b2d8db0d5f2837739210ac446796a4ef3072ead16",
+  "cases": [
+    {
+      "id": "gen-boss-battle-rock-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.683133909726843,
+      "best": 0.683133909726843,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.6875,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.3200000008703999,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 0.58580162075057,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.601691041132876
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 45,
+        "promptAdherence": 40,
+        "similarityToGolden": 35,
+        "rationale": "Notes are in key (E pentatonic minor) but the line is static whole-note roots with no rhythmic drive, lacking the \"heavy driving\" groove the prompt asks for. Also uses instr=1 (not a bass timbre) and sits an octave high for a bass line."
+      }
+    },
+    {
+      "id": "gen-dance-party-loop-drum",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 1,
+      "best": 1,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": null,
+        "harmonicAlignment": null,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 1,
+        "registerMatch": null,
+        "rhythmGridAlignment": 1,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 1
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 1
+      },
+      "judge": {
+        "musicality": 45,
+        "promptAdherence": 40,
+        "similarityToGolden": 35,
+        "rationale": "The candidate establishes a steady repeating 4-step pattern that's rhythmically consistent, but it's overly mechanical with no variation, fills, or syncopation—lacking the funky, danceable feel the prompt requested. The golden uses hats/kick/snare interplay with ghost notes and end-of-phrase fills, giving it real groove the candidate misses."
+      }
+    },
+    {
+      "id": "gen-lofi-study-loop-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.7149902933832838,
+      "best": 0.7149902933832839,
+      "std": 1.1102230246251565e-16,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.3333333351111112,
+        "registerMatch": 0.15624999999999997,
+        "rhythmGridAlignment": 1,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6889822365046138
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.15624999999999997
+      },
+      "judge": {
+        "musicality": 25,
+        "promptAdherence": 20,
+        "similarityToGolden": 15,
+        "rationale": "The candidate is just a single repeated A3 note on every 8th step — not a chord/pad at all, and the instrument (1) isn't a warm pad. It stays in key but provides no harmonic motion or warmth."
+      }
+    },
+    {
+      "id": "gen-nursery-singalong-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.7787048674677743,
+      "best": 0.7787048674677743,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4666666666666666,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.9333333336177777,
+        "registerMatch": 0.16571428571428545,
+        "rhythmGridAlignment": 0.9284766908852594,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6403438613108445
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.16571428571428545
+      },
+      "judge": {
+        "musicality": 55,
+        "promptAdherence": 65,
+        "similarityToGolden": 50,
+        "rationale": "Stays in C pentatonic and is simple/singable for a child, but it's very repetitive with little phrase shape or contour compared to the golden's arching melody. Rhythm is monotone quarter notes, lacking groove variety."
+      }
+    },
+    {
+      "id": "gen-platformer-chiptune-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.7702522610692758,
+      "best": 0.7702522610692758,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.75,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.2580645176607701,
+        "registerMatch": 0.7754032258064519,
+        "rhythmGridAlignment": 0.6782890575760282,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.45724709939935354
+      },
+      "weakest": {
+        "name": "noteDensityRatio",
+        "value": 0.2580645176607701
+      },
+      "judge": {
+        "musicality": 35,
+        "promptAdherence": 30,
+        "similarityToGolden": 20,
+        "rationale": "The candidate stays in C major but is a very repetitive, blocky arpeggio with long whole-note durations—not catchy, not lead-like, and uses instr=1 (piano) rather than an 8-bit timbre. It also only fills half the 64-step length, lacking the rhythmic groove and melodic shape of the golden reference."
+      }
+    },
+    {
+      "id": "gen-racing-game-drive-drum",
+      "category": "single-track-gen",
+      "error": "Model did not return a track."
+    },
+    {
+      "id": "gen-sad-story-piano-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.7440050082840456,
+      "best": 0.7440050082840456,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.8750000005,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 0.8741572761215378,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.4502806039037915
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 45,
+        "promptAdherence": 35,
+        "similarityToGolden": 30,
+        "rationale": "The candidate stays in A minor's note palette but sits in a very low bass register (F2-A2) with long, blocky durations, which reads more like a bass drone than a gentle melancholy piano melody. It lacks the lyrical contour and upper-register phrasing of the golden reference."
+      }
+    },
+    {
+      "id": "gen-spooky-maze-instrument",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.6724418370994574,
+      "best": 0.6724418370994574,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4375,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.516129033257024,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 0.7058823529411765,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5430576158647793
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 35,
+        "promptAdherence": 10,
+        "similarityToGolden": 10,
+        "rationale": "The candidate uses a low piano (instr=1) in A3-F3 range with slow whole/half notes — the opposite of a \"creepy high music-box countermelody.\" It's in key but lacks the bright high register, celesta/music-box timbre, and active melodic motion the request and reference call for."
+      }
+    },
+    {
+      "id": "gen-underwater-ambient-synth",
+      "category": "single-track-gen",
+      "knownGap": false,
+      "mean": 0.7634212239900893,
+      "best": 0.7634212239900893,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.7500000010000001,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 1,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.8800032533116954
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 45,
+        "promptAdherence": 55,
+        "similarityToGolden": 40,
+        "rationale": "The long sustained chords do create a floating pad feel at the right tempo, but the voicings are dense clusters (D-F-G-A and E-F-G-A#) that sound dissonant rather than the open, consonant triadic stacks of the reference. It stays in D minor mostly but the A#3 is out of key."
+      }
+    },
+    {
+      "id": "edit-boss-battle-rock-vary",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.8205413297021419,
+      "best": 0.8205413297021418,
+      "std": 1.1102230246251565e-16,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5333333333333333,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.545454545983471,
+        "registerMatch": 0.885365418894831,
+        "rhythmGridAlignment": 0.9208207948054987,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.7476098053146889
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.5333333333333333
+      },
+      "judge": {
+        "musicality": 62,
+        "promptAdherence": 28,
+        "similarityToGolden": 40,
+        "rationale": "The candidate is actually sparser and uses longer durations than the original riff, which is the opposite of \"bolder, busier.\" It stays coherent in E pentatonic minor but fails the core ask for more density and energy."
+      }
+    },
+    {
+      "id": "edit-dance-party-loop-continue",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.27190623599525904,
+      "best": 0.27190623599525904,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": null,
+        "harmonicAlignment": null,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.16666666747474757,
+        "registerMatch": null,
+        "rhythmGridAlignment": 0.8902447276352312,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.25
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 25,
+        "promptAdherence": 20,
+        "similarityToGolden": 15,
+        "rationale": "The candidate is only sparse kick hits with no snare, hat, or melodic continuation, providing little sense of groove or natural continuation compared to the rich golden pattern."
+      }
+    },
+    {
+      "id": "edit-lofi-study-loop-vary",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.845327339278279,
+      "best": 0.845327339278279,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.3461538461538461,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.8846153848994082,
+        "registerMatch": 0.9384615384615387,
+        "rhythmGridAlignment": 0.9719984046699189,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.8172226362374029
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.3461538461538461
+      },
+      "judge": {
+        "musicality": 45,
+        "promptAdherence": 40,
+        "similarityToGolden": 50,
+        "rationale": "The candidate stacks many simultaneous notes a step apart (F5+G5, A4+A#4, C5+D5), creating harsh dissonant clusters rather than a subtle melodic variation. It follows the golden's contour but turns a single-line melody into clashing dyads, which doesn't fit a \"subtle variation\" request."
+      }
+    },
+    {
+      "id": "edit-nursery-singalong-vary",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.7713164696323901,
+      "best": 0.7713164696323902,
+      "std": 1.1102230246251565e-16,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.43478260869565216,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.54761904830839,
+        "registerMatch": 0.6527950310559011,
+        "rhythmGridAlignment": 0.8839045181646227,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.690827073368608
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.43478260869565216
+      },
+      "judge": {
+        "musicality": 35,
+        "promptAdherence": 20,
+        "similarityToGolden": 25,
+        "rationale": "The candidate is a monotonous C-D-E loop with uniform rhythm and limited range; it lacks the playful syncopation, contour, and variation suggested by the request and shown in the golden."
+      }
+    },
+    {
+      "id": "edit-platformer-chiptune-continue",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.5803403699896976,
+      "best": 0.5803403699896976,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.39393939393939387,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.970588235349481,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 0.9788275821572708,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.7635533983281326
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 35,
+        "promptAdherence": 50,
+        "similarityToGolden": 25,
+        "rationale": "The candidate does fill the full 64-step loop with continuous notes, satisfying the extension request, but it's written in a very low bass register (C2-C3) which is unusual for a synth melody and lacks the melodic shape, phrasing, and contour of the golden reference. Note overlaps at the end (56:C2:4 colliding with 57:D2) suggest sloppy construction."
+      }
+    },
+    {
+      "id": "edit-racing-game-drive-continue",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.6825446464816501,
+      "best": 0.6825446464816503,
+      "std": 1.1102230246251565e-16,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.3636363636363636,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.32352941303806226,
+        "registerMatch": 0.3765734265734266,
+        "rhythmGridAlignment": 0.7526446627986584,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6283612990847551
+      },
+      "weakest": {
+        "name": "noteDensityRatio",
+        "value": 0.32352941303806226
+      },
+      "judge": {
+        "musicality": 45,
+        "promptAdherence": 35,
+        "similarityToGolden": 25,
+        "rationale": "The candidate is just a monotonic scale-like ascent of long durations, which doesn't feel energetic and discards the original melody rather than extending it. The golden cleverly preserves the melody and adds a fast, climbing 16th-note flourish at the end for true energy."
+      }
+    },
+    {
+      "id": "edit-sad-story-piano-vary",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.7844381071628289,
+      "best": 0.7844381071628288,
+      "std": 1.1102230246251565e-16,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.625,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.4210526335290859,
+        "registerMatch": 0.610586124401914,
+        "rhythmGridAlignment": 0.9341987329938274,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5746227374795472
+      },
+      "weakest": {
+        "name": "noteDensityRatio",
+        "value": 0.4210526335290859
+      },
+      "judge": {
+        "musicality": 55,
+        "promptAdherence": 50,
+        "similarityToGolden": 40,
+        "rationale": "The candidate maintains a gentle pace and stays in A minor, but it's overly sparse and static compared to the golden, with repeated notes and large gaps that feel like a simplification rather than a meaningful variation of the melody."
+      }
+    },
+    {
+      "id": "edit-spooky-maze-continue",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.6431784072965047,
+      "best": 0.6431784072965047,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5625,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.44444444543209877,
+        "registerMatch": 0.9788194444444444,
+        "rhythmGridAlignment": 0.9922778767136679,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6983339827371147
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 62,
+        "promptAdherence": 40,
+        "similarityToGolden": 55,
+        "rationale": "The chord progression (Am - Fmaj - Gmaj - A with b9) outlines a fittingly spooky minor harmony, but the candidate just holds static block chords for 16 steps each rather than developing the motif as requested. The golden version actually develops rhythm and varies voicings over the loop, while the candidate is essentially a pad."
+      }
+    },
+    {
+      "id": "edit-underwater-ambient-vary",
+      "category": "single-track-edit",
+      "knownGap": false,
+      "mean": 0.6573664536398353,
+      "best": 0.6573664536398353,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5714285714285714,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.5833333355555556,
+        "registerMatch": 0.8942927170868349,
+        "rhythmGridAlignment": 1,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.7430438460943091
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 62,
+        "promptAdherence": 68,
+        "similarityToGolden": 55,
+        "rationale": "The candidate uses sparse, sustained notes at a slow tempo, which fits a calm reinterpretation, but it lacks the harmonic richness of the reference's chordal stacks and feels somewhat disjointed melodically. Pitches stay mostly in D minor, supporting the calm mood, though some leaps reduce smoothness."
+      }
+    },
+    {
+      "id": "song-boss-battle-rock",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.6911094391143422,
+      "best": 0.6911094391143422,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.75,
+        "constraintAdherence": 1,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.8888888890469135,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 0.9425190023141489,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5088115919414594
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 20,
+        "promptAdherence": 18,
+        "similarityToGolden": 12,
+        "rationale": "Candidate is very sparse and short (16 steps) with a mechanical drum cycle and only four sustained synth notes—no driving rock energy, no bass, no riff. It fails to convey an intense boss-fight rock loop compared to the rich golden reference."
+      }
+    },
+    {
+      "id": "song-dance-party-loop",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.6552649749997927,
+      "best": 0.6552649749997927,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5,
+        "constraintAdherence": 1,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.7843137257608612,
+        "registerMatch": 0.2144927536231883,
+        "rhythmGridAlignment": 0.9033485962121492,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.4522598984223019
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 25,
+        "promptAdherence": 20,
+        "similarityToGolden": 15,
+        "rationale": "The drums cycle through d1-d5 mechanically rather than establishing a four-on-the-floor kick pattern, and the synth is just a single repeating G4 note with no funk character, harmony, or bassline. It barely fulfills the request beyond matching tempo/key."
+      }
+    },
+    {
+      "id": "song-epic-cinematic-intro",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.5387732359148372,
+      "best": 0.5387732359148372,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": null,
+        "harmonicAlignment": null,
+        "constraintAdherence": 1,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.45197740350780435,
+        "registerMatch": null,
+        "rhythmGridAlignment": 0.8025168188096261,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.038461538461538464
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 8,
+        "promptAdherence": 10,
+        "similarityToGolden": 5,
+        "rationale": "The candidate is just five sequential drum hits with no harmonic, melodic, or thematic content—nothing cinematic or dramatic about it. It fails to deliver an intro theme in D minor and bears no resemblance to the rich multi-layered reference."
+      }
+    },
+    {
+      "id": "song-lofi-study-loop",
+      "category": "multitrack-song",
+      "error": "Model did not return a song."
+    },
+    {
+      "id": "song-nursery-singalong",
+      "category": "multitrack-song",
+      "error": "Model did not return a song."
+    },
+    {
+      "id": "song-platformer-chiptune",
+      "category": "multitrack-song",
+      "error": "Model did not return a song."
+    },
+    {
+      "id": "song-racing-game-drive",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.695347933475808,
+      "best": 0.695347933475808,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5,
+        "constraintAdherence": 1,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.9187500001299999,
+        "registerMatch": 0.48838755566551223,
+        "rhythmGridAlignment": 0.892378448710396,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5322694276046699
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 35,
+        "promptAdherence": 45,
+        "similarityToGolden": 25,
+        "rationale": "Drums are a mechanical every-step pattern lacking a clear backbeat groove, and the lone synth plays sparse arpeggio notes with no bass or harmony layer. It hits the tempo/key but lacks the driving energy and multitrack richness of the reference."
+      }
+    },
+    {
+      "id": "song-spooky-maze",
+      "category": "multitrack-song",
+      "knownGap": false,
+      "mean": 0.6197399090731962,
+      "best": 0.6197399090731962,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.6666666666666666,
+        "constraintAdherence": 1,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.3289473695512465,
+        "registerMatch": 0.10434782608695653,
+        "rhythmGridAlignment": 0.8115430901355564,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5764042735636354
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 35,
+        "promptAdherence": 45,
+        "similarityToGolden": 30,
+        "rationale": "The synth bass outlines A minor-ish tones which gives a vaguely dark feel, but the relentless every-step drum pattern cycling d1-d5 is busy and mechanical rather than eerie/suspenseful. Lacks the sparse melodic hits, sustained chords, and atmospheric pacing the golden uses to evoke spookiness."
+      }
+    },
+    {
+      "id": "harm-epic-cinematic-intro",
+      "category": "harmonize",
+      "knownGap": true,
+      "mean": 0.517781645772941,
+      "best": 0.517781645772941,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.5,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.41666666822222237,
+        "registerMatch": 0.029999999999999694,
+        "rhythmGridAlignment": 1,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.48618459913032175
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 35,
+        "promptAdherence": 10,
+        "similarityToGolden": 15,
+        "rationale": "The candidate is a single-note line in a high register, not a chord/harmony accompaniment as requested. While the notes (F, G, E) are diatonic to D minor, there are no stacked chord tones supporting the melody."
+      }
+    },
+    {
+      "id": "harm-lofi-study-loop",
+      "category": "harmonize",
+      "knownGap": true,
+      "mean": 0.517877102726076,
+      "best": 0.517877102726076,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4666666666666666,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.46875000106250003,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 1,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.5344566158058599
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 35,
+        "promptAdherence": 20,
+        "similarityToGolden": 15,
+        "rationale": "The candidate is a single-note line oscillating between C5 and D5, not a chord/harmony accompaniment. While the notes are mostly in D minor, it fails to provide stacked chord tones supporting the melody as requested."
+      }
+    },
+    {
+      "id": "harm-nursery-singalong",
+      "category": "harmonize",
+      "knownGap": true,
+      "mean": 0.5605623986535414,
+      "best": 0.5605623986535414,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4705882352941176,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 0,
+        "noteDensityRatio": 0.7083333341111112,
+        "registerMatch": 0.101225490196078,
+        "rhythmGridAlignment": 0.9557790087219501,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6187844177740418
+      },
+      "weakest": {
+        "name": "trackCountKindMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 45,
+        "promptAdherence": 15,
+        "similarityToGolden": 15,
+        "rationale": "The request was for a chord/harmony accompaniment, but the candidate produced a single-note melodic line in a high register rather than stacked chord tones. While the notes fit the C pentatonic key, it doesn't function as harmony supporting another track."
+      }
+    },
+    {
+      "id": "harm-sad-story-piano",
+      "category": "harmonize",
+      "knownGap": true,
+      "mean": 0.6527688757745665,
+      "best": 0.6527688757745665,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.35294117647058826,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 1,
+        "registerMatch": 0,
+        "rhythmGridAlignment": 0.13199475199298905,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.40332501808372473
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0
+      },
+      "judge": {
+        "musicality": 40,
+        "promptAdherence": 25,
+        "similarityToGolden": 20,
+        "rationale": "The candidate is a single-note line in the same register as a melody rather than a chordal/harmonic accompaniment—no stacked chord tones are present. While notes are diatonic to A minor, it fails the core request to add chords supporting the melody, unlike the golden which provides clear two-note harmonies."
+      }
+    },
+    {
+      "id": "harm-spooky-maze",
+      "category": "harmonize",
+      "knownGap": true,
+      "mean": 0.7449987004303141,
+      "best": 0.7449987004303141,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.45,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.7407407413552812,
+        "registerMatch": 0.0466344605475042,
+        "rhythmGridAlignment": 1,
+        "infillBoundaryContinuity": null,
+        "goldenSimilarity": 0.6348545336927578
+      },
+      "weakest": {
+        "name": "registerMatch",
+        "value": 0.0466344605475042
+      },
+      "judge": {
+        "musicality": 55,
+        "promptAdherence": 65,
+        "similarityToGolden": 45,
+        "rationale": "The candidate provides diatonic chord tones in A minor (Am7, Fmaj7), which fit the key, but the progression is static and ends on F rather than resolving, and the overlapping 16-beat chords at steps 48 and 52 create a muddy collision. Less rhythmic variety and harmonic motion than the golden reference."
+      }
+    },
+    {
+      "id": "infill-epic-cinematic-intro",
+      "category": "infill",
+      "knownGap": true,
+      "mean": 0.8730460096894842,
+      "best": 0.8730460096894842,
+      "std": 0,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.411764705882353,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.9444444446419752,
+        "registerMatch": 0.9270074696545284,
+        "rhythmGridAlignment": 0.9764451163157655,
+        "infillBoundaryContinuity": 0.9791666666666666,
+        "goldenSimilarity": 0.8195004445006667
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.411764705882353
+      },
+      "judge": {
+        "musicality": 68,
+        "promptAdherence": 72,
+        "similarityToGolden": 60,
+        "rationale": "The infill stays diatonic to D minor and bridges the two halves acceptably, but it overwrites/diverges from the existing second half (steps 40+) more than needed and is rhythmically blockier than the reference's flowing line."
+      }
+    },
+    {
+      "id": "infill-lofi-study-loop",
+      "category": "infill",
+      "knownGap": true,
+      "mean": 0.8449428917779617,
+      "best": 0.8449428917779616,
+      "std": 1.1102230246251565e-16,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.1875,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.9411764708096886,
+        "registerMatch": 0.9847426470588232,
+        "rhythmGridAlignment": 0.9961473712924414,
+        "infillBoundaryContinuity": 0.9583333333333334,
+        "goldenSimilarity": 0.9128580677214634
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.1875
+      },
+      "judge": {
+        "musicality": 75,
+        "promptAdherence": 80,
+        "similarityToGolden": 70,
+        "rationale": "The candidate fills steps 12-19 with notes that stay in D minor and connect the two halves reasonably, though the contour (A#4 up to D5 down to C5) is less graceful than the golden's stepwise descent. Note that 18:C5:4 overlaps the boundary at step 22 but doesn't clash with following material at 24."
+      }
+    },
+    {
+      "id": "infill-nursery-singalong",
+      "category": "infill",
+      "knownGap": true,
+      "mean": 0.8721760696276121,
+      "best": 0.872176069627612,
+      "std": 1.1102230246251565e-16,
+      "n": 3,
+      "perMetricMean": {
+        "scaleConformance": 1,
+        "harmonicAlignment": 0.4000000000000001,
+        "constraintAdherence": null,
+        "trackCountKindMatch": 1,
+        "noteDensityRatio": 0.9090909093553718,
+        "registerMatch": 0.9797727272727274,
+        "rhythmGridAlignment": 0.9934800715262958,
+        "infillBoundaryContinuity": 0.8750000000000001,
+        "goldenSimilarity": 0.947876556379574
+      },
+      "weakest": {
+        "name": "harmonicAlignment",
+        "value": 0.4000000000000001
+      },
+      "judge": {
+        "musicality": 75,
+        "promptAdherence": 80,
+        "similarityToGolden": 70,
+        "rationale": "The infill stays in C pentatonic and connects the halves acceptably, though it's less melodically interesting than the golden's arch shape (which peaks on G5). The candidate stays low and lacks a clear melodic contour in the middle."
+      }
+    },
+    {
+      "id": "infill-platformer-chiptune",
+      "category": "infill",
+      "error": "Model did not return an edited track."
+    }
+  ],
+  "categories": [
+    {
+      "id": "single-track-gen",
+      "label": "Single-track generation",
+      "knownGap": false,
+      "mean": 0.765868675127596,
+      "nCases": 8
+    },
+    {
+      "id": "single-track-edit",
+      "label": "Single-track edit (continue/vary)",
+      "knownGap": false,
+      "mean": 0.6729954843531762,
+      "nCases": 9
+    },
+    {
+      "id": "multitrack-song",
+      "label": "Multitrack song",
+      "knownGap": false,
+      "mean": 0.6400470985155953,
+      "nCases": 5
+    },
+    {
+      "id": "harmonize",
+      "label": "Harmonization (Coconet)",
+      "knownGap": true,
+      "mean": 0.5987977446714878,
+      "nCases": 5
+    },
+    {
+      "id": "infill",
+      "label": "Infill (Coconet)",
+      "knownGap": true,
+      "mean": 0.8633883236983526,
+      "nCases": 3
+    }
+  ]
+}

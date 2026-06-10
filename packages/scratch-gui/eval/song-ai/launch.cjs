@@ -47,8 +47,14 @@ const main = () => {
         target: 'node18',
         outfile,
         logLevel: 'error',
-        // Reached only via a dynamic import inside an uncalled provider path.
-        external: ['@mediapipe/tasks-genai']
+        external: [
+            // Reached only via a dynamic import inside an uncalled provider path.
+            '@mediapipe/tasks-genai',
+            // run-browser drives Gemma 4 in a real Chrome; Playwright is a Node
+            // lib with its own binaries, so require it at runtime, don't bundle.
+            'playwright-core',
+            'playwright'
+        ]
     });
 
     // The bundle loses import.meta.url, so hand it the source dir explicitly.
