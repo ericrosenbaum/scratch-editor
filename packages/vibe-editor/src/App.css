@@ -1,0 +1,84 @@
+.vibe-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.vibe-topbar {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--vibe-primary), var(--vibe-motion-blue));
+  color: #fff;
+}
+
+.vibe-logo {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.vibe-tagline {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.vibe-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 240px minmax(520px, 1fr) 340px;
+  gap: 12px;
+  padding: 12px;
+  min-height: 0;
+}
+
+.vibe-col-tree,
+.vibe-col-chat {
+  min-height: 0;
+}
+
+.vibe-col-center {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.vibe-editor-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--vibe-panel);
+  border-radius: var(--vibe-radius-lg);
+  box-shadow: var(--vibe-shadow);
+  overflow: hidden;
+  min-height: 220px;
+}
+
+.vibe-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--vibe-border);
+  background: var(--vibe-panel-alt);
+}
+
+.vibe-tabs button {
+  border: none;
+  background: none;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vibe-text-muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+}
+
+.vibe-tabs button.active {
+  color: var(--vibe-primary);
+  border-bottom-color: var(--vibe-primary);
+}
+
+.vibe-tab-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}

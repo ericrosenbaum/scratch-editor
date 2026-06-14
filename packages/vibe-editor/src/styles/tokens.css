@@ -1,0 +1,44 @@
+/* Design tokens mirrored from scratch-gui's palette so the prototype feels at home
+   next to Scratch (rounded corners, the familiar blues/purples, soft borders). */
+:root {
+  --vibe-motion-blue: #4c97ff;
+  --vibe-primary: #855cd6; /* "vibe" purple, akin to Scratch's extension purple */
+  --vibe-primary-dark: #714eb6;
+  --vibe-looks-purple: #9966ff;
+  --vibe-control-orange: #ffab19;
+  --vibe-sound-magenta: #cf63cf;
+  --vibe-green: #0fbd8c;
+  --vibe-red: #ff6680;
+
+  --vibe-text: #575e75;
+  --vibe-text-muted: #8d97b0;
+  --vibe-bg: #e9f1fc;
+  --vibe-panel: #ffffff;
+  --vibe-panel-alt: #f9f9fb;
+  --vibe-border: #d9d9e3;
+  --vibe-border-strong: #c4c4d1;
+
+  --vibe-radius: 8px;
+  --vibe-radius-lg: 12px;
+  --vibe-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+
+  --vibe-font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --vibe-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--vibe-font);
+  color: var(--vibe-text);
+  background: var(--vibe-bg);
+}

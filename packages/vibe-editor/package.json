@@ -1,0 +1,42 @@
+{
+  "name": "@scratch/vibe-editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Scratch-inspired vibe-coding prototype: direct-manipulation media editing combined with AI-generated JavaScript running on a simplified lifecycle runtime.",
+  "license": "AGPL-3.0-only",
+  "author": "Scratch Foundation",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "clean": "rimraf dist",
+    "lint": "eslint && prettier --check .",
+    "format": "prettier --write . && eslint --fix",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "eslint": "9.39.4",
+    "eslint-config-scratch": "14.0.13",
+    "globals": "16.5.0",
+    "jsdom": "^25.0.1",
+    "prettier": "3.8.1",
+    "rimraf": "6.1.2",
+    "typescript": "5.9.3",
+    "vite": "npm:rolldown-vite@7.3.1",
+    "vitest": "4.1.1"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@7.3.1"
+  }
+}

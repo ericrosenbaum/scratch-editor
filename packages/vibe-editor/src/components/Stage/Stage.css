@@ -1,0 +1,67 @@
+.vibe-stage {
+  display: flex;
+  flex-direction: column;
+  background: var(--vibe-panel);
+  border-radius: var(--vibe-radius-lg);
+  box-shadow: var(--vibe-shadow);
+  overflow: hidden;
+}
+
+.vibe-stage-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--vibe-border);
+  background: var(--vibe-panel-alt);
+}
+
+.vibe-stage-controls button {
+  border: none;
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vibe-flag {
+  background: var(--vibe-green);
+  color: #fff;
+}
+
+.vibe-stop {
+  background: var(--vibe-red);
+  color: #fff;
+}
+
+.vibe-stage-controls button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.vibe-stage-status {
+  font-size: 12px;
+  color: var(--vibe-text-muted);
+  margin-left: auto;
+}
+
+.vibe-stage-canvas-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: repeating-linear-gradient(45deg, #fbfbfd, #fbfbfd 10px, #f4f4f8 10px, #f4f4f8 20px);
+}
+
+.vibe-stage-canvas {
+  width: 480px;
+  height: 360px;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid var(--vibe-border);
+  border-radius: var(--vibe-radius);
+}
