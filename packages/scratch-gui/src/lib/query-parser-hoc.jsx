@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import queryString from 'query-string';
 import {connect} from 'react-redux';
 
-import {detectTutorialId} from './tutorial-from-url';
+import {detectTutorialId, detectMicroworldId} from './tutorial-from-url';
 
 import {activateDeck} from '../reducers/cards';
+import {startMicroworld} from '../reducers/microworlds';
 import {openTipsLibrary} from '../reducers/modals';
 
 /* Higher Order Component to get parameters from the URL query string and initialize redux state
@@ -17,6 +18,10 @@ const QueryParserHOC = function (WrappedComponent) {
         constructor (props) {
             super(props);
             const queryParams = queryString.parse(location.search);
+            const microworldId = detectMicroworldId(queryParams);
+            if (microworldId) {
+                this.props.onStartMicroworld(microworldId);
+            }
             const tutorialId = detectTutorialId(queryParams);
             if (tutorialId) {
                 if (tutorialId === 'all') {
@@ -35,6 +40,7 @@ const QueryParserHOC = function (WrappedComponent) {
         render () {
             const {
                 onOpenTipsLibrary,
+                onStartMicroworld,
                 onUpdateReduxDeck,
                 ...componentProps
             } = this.props;
@@ -47,11 +53,15 @@ const QueryParserHOC = function (WrappedComponent) {
     }
     QueryParserComponent.propTypes = {
         onOpenTipsLibrary: PropTypes.func,
+        onStartMicroworld: PropTypes.func,
         onUpdateReduxDeck: PropTypes.func
     };
     const mapDispatchToProps = dispatch => ({
         onOpenTipsLibrary: () => {
             dispatch(openTipsLibrary());
+        },
+        onStartMicroworld: worldId => {
+            dispatch(startMicroworld(worldId));
         },
         onUpdateReduxDeck: tutorialId => {
             dispatch(activateDeck(tutorialId));

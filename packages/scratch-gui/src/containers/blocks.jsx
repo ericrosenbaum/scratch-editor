@@ -2,6 +2,8 @@ import bindAll from 'lodash.bindall';
 import debounce from 'lodash.debounce';
 import defaultsDeep from 'lodash.defaultsdeep';
 import makeToolboxXML from '../lib/make-toolbox-xml';
+import filterToolboxXML from '../lib/microworlds/filter-toolbox';
+import {getPalette} from '../lib/microworlds';
 import PropTypes from 'prop-types';
 import React from 'react';
 import VMScratchBlocks from '../lib/blocks';
@@ -198,6 +200,7 @@ class Blocks extends React.Component {
             this.props.customProceduresVisible !== nextProps.customProceduresVisible ||
             this.props.locale !== nextProps.locale ||
             this.props.anyModalVisible !== nextProps.anyModalVisible ||
+            this.props.microworldsPalette !== nextProps.microworldsPalette ||
             this.props.stageSize !== nextProps.stageSize
         );
     }
@@ -205,6 +208,14 @@ class Blocks extends React.Component {
         // If any modals are open, call hideChaff to close z-indexed field editors
         if (this.props.anyModalVisible && !prevProps.anyModalVisible) {
             this.ScratchBlocks.hideChaff();
+        }
+
+        // When the Microworld step changes the allowed palette, rebuild the toolbox.
+        if (this.props.microworldsPalette !== prevProps.microworldsPalette) {
+            const toolboxXML = this.getToolboxXML();
+            if (toolboxXML) {
+                this.props.updateToolboxState(toolboxXML);
+            }
         }
 
         // Only rerender the toolbox when the blocks are visible and the xml is
@@ -429,12 +440,17 @@ class Blocks extends React.Component {
                 this.props.vm.runtime.getBlocksXML(target),
                 this.props.colorMode
             );
-            return makeToolboxXML(false, target.isStage, target.id, dynamicBlocksXML,
+            const toolboxXML = makeToolboxXML(false, target.isStage, target.id, dynamicBlocksXML,
                 targetCostumes[targetCostumes.length - 1].name,
                 stageCostumes[stageCostumes.length - 1].name,
                 targetSounds.length > 0 ? targetSounds[targetSounds.length - 1].name : '',
                 getColorsForMode(this.props.colorMode)
             );
+            // During a Microworld step, restrict the palette to the allowed blocks.
+            if (this.props.microworldsPalette) {
+                return filterToolboxXML(toolboxXML, this.props.microworldsPalette);
+            }
+            return toolboxXML;
         } catch {
             return null;
         }
@@ -744,6 +760,7 @@ Blocks.propTypes = {
     isRtl: PropTypes.bool,
     isVisible: PropTypes.bool,
     locale: PropTypes.string.isRequired,
+    microworldsPalette: PropTypes.arrayOf(PropTypes.string),
     messages: PropTypes.objectOf(PropTypes.string),
     onActivateColorPicker: PropTypes.func,
     onActivateCustomProcedures: PropTypes.func,
@@ -810,6 +827,7 @@ const mapStateToProps = state => ({
     isRtl: state.locales.isRtl,
     locale: state.locales.locale,
     messages: state.locales.messages,
+    microworldsPalette: getPalette(state.scratchGui.microworlds),
     toolboxXML: state.scratchGui.toolbox.toolboxXML,
     customProceduresVisible: state.scratchGui.customProcedures.active,
     workspaceMetrics: state.scratchGui.workspaceMetrics,

@@ -181,6 +181,11 @@
     flex-direction: column;
 }
 
+/* Hide editor chrome (e.g. the tab bar) while a Microworld wizard is active */
+.microworlds-hidden {
+    display: none;
+}
+
 .tab-panel {
     position: relative;
     flex-grow: 1;

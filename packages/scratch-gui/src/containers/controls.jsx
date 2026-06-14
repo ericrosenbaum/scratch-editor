@@ -5,6 +5,7 @@ import VM from '@scratch/scratch-vm';
 import {connect} from 'react-redux';
 
 import ControlsComponent from '../components/controls/controls.jsx';
+import {getReveal} from '../lib/microworlds';
 
 class Controls extends React.Component {
     constructor (props) {
@@ -32,6 +33,7 @@ class Controls extends React.Component {
     render () {
         const {
             vm,
+            hideRunButtons,
             isStarted,
             projectRunning,
             turbo,
@@ -41,6 +43,7 @@ class Controls extends React.Component {
             <ControlsComponent
                 {...props}
                 active={projectRunning}
+                hideRunButtons={hideRunButtons}
                 turbo={turbo}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onStopAllClick={this.handleStopAllClick}
@@ -50,6 +53,7 @@ class Controls extends React.Component {
 }
 
 Controls.propTypes = {
+    hideRunButtons: PropTypes.bool,
     isStarted: PropTypes.bool.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
@@ -57,6 +61,8 @@ Controls.propTypes = {
 };
 
 const mapStateToProps = state => ({
+    // During a Microworld, hide the run buttons until the green-flag step reveals them.
+    hideRunButtons: state.scratchGui.microworlds.active && !getReveal(state.scratchGui.microworlds).greenFlag,
     isStarted: state.scratchGui.vmStatus.running,
     projectRunning: state.scratchGui.vmStatus.running,
     turbo: state.scratchGui.vmStatus.turbo

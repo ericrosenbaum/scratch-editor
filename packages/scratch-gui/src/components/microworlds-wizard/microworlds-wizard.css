@@ -1,0 +1,143 @@
+@import "../../css/units.css";
+@import "../../css/colors.css";
+@import "../../css/z-index.css";
+
+.wizard-container {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc($space * 3);
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    z-index: $z-index-card;
+}
+
+.card {
+    position: relative;
+    pointer-events: auto;
+    box-sizing: border-box;
+    width: 26rem;
+    max-width: calc(100vw - 2rem);
+    padding: calc($space * 2);
+    background-color: $ui-white;
+    border: 1px solid $ui-black-transparent;
+    border-radius: calc($space * 1.5);
+    box-shadow: 0 2px 16px hsla(0, 0%, 0%, 0.25);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: $text-primary;
+}
+
+.skip-button {
+    position: absolute;
+    top: calc($space * 1.25);
+    right: calc($space * 1.5);
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: $text-primary-transparent;
+}
+
+.skip-button:hover {
+    color: $text-primary;
+}
+
+.prompt {
+    font-size: 1.125rem;
+    font-weight: bold;
+    line-height: 1.3;
+    margin-right: calc($space * 3); /* leave room for the Skip button */
+}
+
+.hint {
+    margin-top: calc($space / 2);
+    font-size: 0.875rem;
+    color: $text-primary-transparent;
+}
+
+.choices {
+    margin-top: calc($space * 1.5);
+}
+
+.choices-label {
+    font-size: 0.8125rem;
+    margin-bottom: calc($space / 2);
+}
+
+.choice-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space;
+}
+
+.choice-button {
+    cursor: pointer;
+    padding: calc($space / 2) $space;
+    font-size: 0.875rem;
+    color: $motion-primary;
+    background-color: $ui-white;
+    border: 1px solid $motion-primary;
+    border-radius: calc($space * 2);
+}
+
+.choice-button:hover {
+    background-color: $ui-primary;
+}
+
+.choice-button-selected {
+    color: $ui-white;
+    background-color: $motion-primary;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: calc($space * 2);
+}
+
+.pips {
+    display: flex;
+    gap: calc($space / 2);
+}
+
+.pip {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: $ui-tertiary;
+}
+
+.pip-active {
+    background-color: $motion-primary;
+}
+
+.pip-done {
+    background-color: $motion-tertiary;
+}
+
+.next-button {
+    cursor: pointer;
+    padding: calc($space / 2) calc($space * 2);
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: $ui-white;
+    background-color: $motion-primary;
+    border: none;
+    border-radius: calc($space * 2);
+}
+
+.next-button:hover {
+    background-color: $motion-tertiary;
+}
+
+.next-button-disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.next-button-disabled:hover {
+    background-color: $motion-primary;
+}

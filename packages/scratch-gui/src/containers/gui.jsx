@@ -29,6 +29,7 @@ import {
 
 import {setPlatform} from '../reducers/platform';
 import {setDynamicAssets} from '../reducers/dynamic-assets';
+import {getReveal} from '../lib/microworlds';
 
 import FontLoaderHOC from '../lib/font-loader-hoc.jsx';
 import LocalizationHOC from '../lib/localization-hoc.jsx';
@@ -177,6 +178,8 @@ GUI.defaultProps = {
 
 const mapStateToProps = (state, ownProps) => {
     const loadingState = state.scratchGui.projectState.loadingState;
+    const microworldsActive = state.scratchGui.microworlds.active;
+    const microworldsReveal = getReveal(state.scratchGui.microworlds);
     return {
         storage: state.scratchGui.config.storage,
         activeTabIndex: state.scratchGui.editorTab.activeTabIndex,
@@ -195,6 +198,8 @@ const mapStateToProps = (state, ownProps) => {
         isRtl: state.locales.isRtl,
         isShowingProject: getIsShowingProject(loadingState),
         loadingStateVisible: state.scratchGui.modals.loadingProject,
+        microworldsActive,
+        microworldsHideTargetPane: microworldsActive && !microworldsReveal.spritePane,
         platform: ownProps.platform,
         projectId: state.scratchGui.projectState.projectId,
         soundsTabVisible: state.scratchGui.editorTab.activeTabIndex === SOUNDS_TAB_INDEX,

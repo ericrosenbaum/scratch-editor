@@ -27,6 +27,7 @@ import ExtensionsButton from '../extension-button/extension-button.jsx';
 import WebGlModal from '../../containers/webgl-modal.jsx';
 import TipsLibrary from '../../containers/tips-library.jsx';
 import Cards from '../../containers/cards.jsx';
+import MicroworldsWizard from '../../containers/microworlds-wizard.jsx';
 import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
@@ -161,6 +162,8 @@ const GUIComponent = props => {
         logo,
         manuallySaveThumbnails,
         menuBarHidden,
+        microworldsActive,
+        microworldsHideTargetPane,
         renderLogin,
         onClickAbout,
         onClickAccountNav,
@@ -308,6 +311,9 @@ const GUIComponent = props => {
                     {cardsVisible ? (
                         <Cards />
                     ) : null}
+                    {microworldsActive ? (
+                        <MicroworldsWizard vm={vm} />
+                    ) : null}
                     {alertsVisible ? (
                         <Alerts className={styles.alertsContainer} />
                     ) : null}
@@ -333,7 +339,7 @@ const GUIComponent = props => {
                             onRequestClose={onRequestCloseBackdropLibrary}
                         />
                     ) : null}
-                    {!menuBarHidden && <MenuBar
+                    {!menuBarHidden && !microworldsActive && <MenuBar
                         ariaRole="banner"
                         ariaLabel={intl.formatMessage(ariaMessages.menuBar)}
                         accountNavOpen={accountNavOpen}
@@ -404,6 +410,9 @@ const GUIComponent = props => {
                                 <Box
                                     role="region"
                                     aria-label={intl.formatMessage(ariaMessages.tabList)}
+                                    className={classNames({
+                                        [styles.microworldsHidden]: microworldsActive
+                                    })}
                                 >
                                     <TabList
                                         className={tabClassNames.tabList}
@@ -490,10 +499,12 @@ const GUIComponent = props => {
                                             colorMode={colorMode}
                                         />
                                     </Box>
-                                    <ExtensionsButton
-                                        intl={intl}
-                                        onExtensionButtonClick={onExtensionButtonClick}
-                                    />
+                                    {microworldsActive ? null : (
+                                        <ExtensionsButton
+                                            intl={intl}
+                                            onExtensionButtonClick={onExtensionButtonClick}
+                                        />
+                                    )}
                                     <Box className={styles.watermark}>
                                         <Watermark />
                                     </Box>
@@ -523,7 +534,7 @@ const GUIComponent = props => {
                                         /> : null}
                                 </TabPanel>
                             </Tabs>
-                            {backpackVisible && backpackConfigured ? (
+                            {backpackVisible && backpackConfigured && !microworldsActive ? (
                                 <Backpack
                                     host={backpackHost}
                                     ariaRole="region"
@@ -547,19 +558,21 @@ const GUIComponent = props => {
                                 ariaRole="region"
                                 ariaLabel={intl.formatMessage(ariaMessages.stage)}
                             />
-                            <Box
-                                className={styles.targetWrapper}
-                                role="region"
-                                aria-label={intl.formatMessage(ariaMessages.targetPane)}
-                                element="section"
-                            >
-                                <TargetPane
-                                    stageSize={stageSize}
-                                    vm={vm}
-                                    onNewSpriteClick={onNewSpriteClick}
-                                    onNewBackdropClick={onNewLibraryBackdropClick}
-                                />
-                            </Box>
+                            {microworldsHideTargetPane ? null : (
+                                <Box
+                                    className={styles.targetWrapper}
+                                    role="region"
+                                    aria-label={intl.formatMessage(ariaMessages.targetPane)}
+                                    element="section"
+                                >
+                                    <TargetPane
+                                        stageSize={stageSize}
+                                        vm={vm}
+                                        onNewSpriteClick={onNewSpriteClick}
+                                        onNewBackdropClick={onNewLibraryBackdropClick}
+                                    />
+                                </Box>
+                            )}
                         </Box>
                     </Box>
                     <DragLayer />
@@ -615,6 +628,8 @@ GUIComponent.propTypes = {
     logo: PropTypes.string,
     manuallySaveThumbnails: PropTypes.bool,
     menuBarHidden: PropTypes.bool,
+    microworldsActive: PropTypes.bool,
+    microworldsHideTargetPane: PropTypes.bool,
     onActivateCostumesTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
     onActivateTab: PropTypes.func,

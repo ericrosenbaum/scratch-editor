@@ -4,6 +4,7 @@
  */
 
 import tutorials from './libraries/decks/index.jsx';
+import {getMicroworld} from './microworlds';
 import analytics from './analytics';
 
 /**
@@ -43,6 +44,21 @@ const detectTutorialId = queryParams => {
     return getDeckIdFromUrlId(tutorialID);
 };
 
+/**
+ * Check if there's a microworld id provided as a query parameter in the URL
+ * (e.g. `?microworld=intro`). Returns the id or null if not present/known.
+ * @param {object} queryParams the results of parsing the query string
+ * @returns {?string} the requested microworld id, or null
+ */
+const detectMicroworldId = queryParams => {
+    const microworldId = Array.isArray(queryParams.microworld) ?
+        queryParams.microworld[0] :
+        queryParams.microworld;
+    if (typeof microworldId === 'undefined') return null;
+    return getMicroworld(microworldId) ? microworldId : null;
+};
+
 export {
-    detectTutorialId
+    detectTutorialId,
+    detectMicroworldId
 };
