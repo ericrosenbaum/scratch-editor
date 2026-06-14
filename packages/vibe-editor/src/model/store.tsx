@@ -35,7 +35,16 @@ export type EditorAction =
   | { type: 'RENAME_NODE'; id: string; name: string }
   | { type: 'DELETE_NODE'; id: string }
   | { type: 'SET_SPRITE_CODE'; id: string; code: GeneratedCode }
-  | { type: 'UPDATE_COSTUME'; spriteId: string; costumeId: string; data: string; dataFormat?: string }
+  | {
+      type: 'UPDATE_COSTUME'
+      spriteId: string
+      costumeId: string
+      data: string
+      dataFormat?: string
+      rotationCenterX?: number
+      rotationCenterY?: number
+    }
+  | { type: 'RENAME_COSTUME'; spriteId: string; costumeId: string; name: string }
 
 const reducer = (state: EditorState, action: EditorAction): EditorState => {
   switch (action.type) {
@@ -120,8 +129,31 @@ const reducer = (state: EditorState, action: EditorAction): EditorState => {
               ...node,
               costumes: node.costumes.map((costume) =>
                 costume.id === action.costumeId
-                  ? { ...costume, data: action.data, dataFormat: action.dataFormat ?? costume.dataFormat }
+                  ? {
+                      ...costume,
+                      data: action.data,
+                      dataFormat: action.dataFormat ?? costume.dataFormat,
+                      rotationCenterX: action.rotationCenterX ?? costume.rotationCenterX,
+                      rotationCenterY: action.rotationCenterY ?? costume.rotationCenterY,
+                    }
                   : costume,
+              ),
+            }
+          }),
+        },
+      }
+
+    case 'RENAME_COSTUME':
+      return {
+        ...state,
+        project: {
+          ...state.project,
+          roots: updateNode(state.project.roots, action.spriteId, (node) => {
+            if (!isSprite(node)) return node
+            return {
+              ...node,
+              costumes: node.costumes.map((costume) =>
+                costume.id === action.costumeId ? { ...costume, name: action.name } : costume,
               ),
             }
           }),

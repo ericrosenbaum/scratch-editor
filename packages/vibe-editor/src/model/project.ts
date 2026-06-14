@@ -22,6 +22,9 @@ export interface Asset {
   data: string
   /** Short format hint, e.g. `svg`, `png`, `wav`. */
   dataFormat: string
+  /** Costume rotation center (in the costume's own coordinate space). Used by the paint editor. */
+  rotationCenterX?: number
+  rotationCenterY?: number
 }
 
 /** Generated behavior for a sprite: the JS source and the summary produced alongside it. */
@@ -95,6 +98,9 @@ export const makeCostume = (name: string, fill: string, accent?: string): Asset 
   kind: 'costume',
   data: makeCostumeSvg(fill, accent),
   dataFormat: 'svg',
+  // makeCostumeSvg uses an 80x80 viewBox, so the center is (40, 40).
+  rotationCenterX: 40,
+  rotationCenterY: 40,
 })
 
 export interface CreateSpriteOptions {

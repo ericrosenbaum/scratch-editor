@@ -16,7 +16,7 @@ running on a small, purpose-built runtime.
   returns JavaScript plus a human-readable summary; changes are applied to the sprite
   and hot-swapped into the runtime while it runs.
 - **Code view** — the generated summary plus the editable JavaScript source.
-- **Paint editor** — a minimal direct-manipulation costume editor (brush/eraser/color).
+- **Paint editor** — the real **scratch-paint** editor, embedded and lazy-loaded.
 
 ## How generated code works
 
@@ -47,9 +47,22 @@ The generator is hidden behind the `CodeGenerator` interface
 ([`src/codegen/types.ts`](src/codegen/types.ts)). Replacing the mock with a real
 LLM-backed implementation requires no other changes.
 
-The paint editor is the approved fallback for embedding `scratch-paint`; it keeps a
-narrow "selected costume in / updated costume out" contract so the richer editor can be
-dropped in later.
+### scratch-paint embed
+
+The paint tab embeds the real [`scratch-paint`](https://github.com/scratchfoundation/scratch-paint)
+`<PaintEditor>` (`src/paint/scratch-paint-editor.tsx`), wrapped in its required Redux
+store (`ScratchPaintReducer`) + `IntlProvider`, mirroring how scratch-gui mounts it.
+`PaintEditorPanel` adapts between our lightweight `Asset` model (a costume is a data URL
++ format) and scratch-paint's `image`/`imageFormat` in, `onUpdateImage` out contract.
+
+Two integration notes:
+
+- It's **lazy-loaded** (`React.lazy` + dynamic `import`) so paper.js / canvas are only
+  evaluated in the browser when the paint tab is opened — never in the jsdom test path.
+- `scratch-paint`'s `package.json` sets `"browser": "./src/index.js"`, which would make
+  vite bundle its raw source (PostCSS simple-vars + CSS modules — a toolchain we don't
+  reproduce). `vite.config.ts` aliases `scratch-paint` to its prebuilt UMD
+  (`dist/scratch-paint.js`), which injects its own compiled CSS at runtime.
 
 ## Commands
 
