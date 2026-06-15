@@ -1,5 +1,8 @@
 /// <reference types="vitest/config" />
+import { createRequire } from 'node:module'
 import { defineConfig } from 'vite'
+
+const require = createRequire(import.meta.url)
 
 // This package is a React app, not a library. We rely on the bundler's built-in
 // transform (rolldown-vite/oxc) with automatic JSX driven by tsconfig's "jsx":
@@ -13,7 +16,9 @@ export default defineConfig({
       // vite bundle its raw source (PostCSS simple-vars + CSS modules — a toolchain we
       // don't reproduce). Point at the prebuilt UMD bundle instead (what scratch-gui's
       // webpack effectively uses); it injects its own compiled CSS at runtime.
-      'scratch-paint': new URL('./node_modules/scratch-paint/dist/scratch-paint.js', import.meta.url).pathname,
+      // Resolve via require.resolve so it works whether scratch-paint lives in this
+      // package's node_modules or is hoisted to the workspace root.
+      'scratch-paint': require.resolve('scratch-paint/dist/scratch-paint.js'),
     },
   },
   server: {
