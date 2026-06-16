@@ -304,7 +304,7 @@ body .alerts-container {
     align-items: stretch; /* the card stretches to the editor row's width */
     width: max-content;
     max-width: 100%;
-    gap: calc($space * 2.5);
+    gap: calc($space * 2.75); /* match the workspace-to-stage gap */
 }
 
 /* The editor row, compact: workspace beside stage, tops aligned. */
@@ -324,10 +324,10 @@ body .alerts-container {
    left, so we widen the inner workspace by that much and shift it left under
    the clipped card window — leaving a clean canvas where blocks just appear. */
 .microworlds-body .editor-wrapper {
-    flex: 0 0 24rem;
-    width: 24rem;
-    height: 22.5rem; /* 360px — matches the standard stage canvas */
-    margin-top: $stage-menu-height; /* align card top with the stage canvas top */
+    flex: 0 0 30rem;
+    width: 30rem; /* ~= stage width, and wide enough for the top bar on one row */
+    /* span the stage menu strip + the stage canvas, top-aligned with the strip */
+    height: calc(22.5rem + $stage-menu-height);
     overflow: hidden;
     border: 1px solid $ui-black-transparent;
     border-radius: $space;
@@ -337,8 +337,8 @@ body .alerts-container {
 }
 
 .microworlds-body .blocks-wrapper {
-    flex: 0 0 calc(24rem + 250px);
-    width: calc(24rem + 250px);
+    flex: 0 0 calc(30rem + 250px);
+    width: calc(30rem + 250px);
     margin-left: -250px; /* hide the reserved flyout area off the left edge */
     background-color: $ui-white;
 }

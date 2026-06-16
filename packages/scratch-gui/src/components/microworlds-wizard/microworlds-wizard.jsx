@@ -3,19 +3,20 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import styles from './microworlds-wizard.css';
+import fingerTapIcon from './blocks-finger-tap.png';
 
-/* Arrow-only "Next" glyph (no text), matching the design. */
-const NextArrow = () => (
+/* Chevron glyph for the round "Next" button. */
+const Chevron = () => (
     <svg
-        width="26"
-        height="26"
+        width="22"
+        height="22"
         viewBox="0 0 24 24"
+        fill="none"
         aria-hidden="true"
     >
         <path
-            d="M8,5 L16,12 L8,19"
-            fill="none"
-            stroke="#fff"
+            d="M9 5l7 7-7 7"
+            stroke="currentColor"
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -23,7 +24,76 @@ const NextArrow = () => (
     </svg>
 );
 
-/* Translucent demo cursors for the drag "Show me" hint. */
+/* Speaker glyph for the read-aloud button. */
+const SpeakerIcon = () => (
+    <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+    >
+        <path
+            d="M4 9v6h3.5L13 19V5L7.5 9H4z"
+            fill="currentColor"
+        />
+        <path
+            d="M16.5 8.5a4 4 0 0 1 0 7M19 6a7.5 7.5 0 0 1 0 12"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            fill="none"
+        />
+    </svg>
+);
+
+/* Read-aloud button: speaks the instruction via the browser's speech
+   synthesis and pulses while speaking. Tap again to stop. */
+const SpeakButton = ({text}) => {
+    const [on, setOn] = React.useState(false);
+
+    // Stop any in-progress speech when the step's text changes or on unmount.
+    React.useEffect(() => {
+        setOn(false);
+        return () => {
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+        };
+    }, [text]);
+
+    const speak = React.useCallback(() => {
+        const synth = window.speechSynthesis;
+        if (!synth) return;
+        synth.cancel();
+        if (on) {
+            setOn(false);
+            return;
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95;
+        utterance.pitch = 1.1;
+        utterance.onend = () => setOn(false);
+        utterance.onerror = () => setOn(false);
+        setOn(true);
+        synth.speak(utterance);
+    }, [on, text]);
+
+    return (
+        <button
+            className={classNames(styles.btnSpeak, {[styles.btnSpeakOn]: on})}
+            onClick={speak}
+            aria-label="Read instruction aloud"
+            title="Read aloud"
+        >
+            <SpeakerIcon />
+        </button>
+    );
+};
+
+SpeakButton.propTypes = {
+    text: PropTypes.string
+};
+
+/* Translucent demo cursors for the "Show me" hint. */
 const CursorArrow = () => (
     <svg
         width="20"
@@ -66,15 +136,22 @@ const CursorGrab = () => (
 
 const LOOP_MS = 3400;
 const EASE = 'cubic-bezier(0.25, 0.1, 0.25, 1)';
+const tr = (x, y) => `translate(${x}px, ${y}px)`;
+const centerOf = el => {
+    const r = el.getBoundingClientRect();
+    return {x: r.left + (r.width / 2), y: r.top + (r.height / 2)};
+};
 
-/* "Show me" drag hint: a translucent cursor glides to the loose `block`, grabs
-   it, and drags a ghost copy onto the `anchor` block (above/below it), looping.
-   Positions are measured live from the real Blockly blocks. */
-const GhostCursor = ({block, anchor, placement, color}) => {
+/* "Show me" cursor: a translucent pointer that always starts at the Show me
+   button, then either taps a click `target` (with a ripple) or grabs the loose
+   `dragHint.block` and drags a ghost copy onto the anchor. Loops. Positions are
+   measured live from the real editor elements. */
+const ShowMeCursor = ({originRef, dragHint, clickTarget}) => {
     const cursorRef = React.useRef(null);
     const arrowRef = React.useRef(null);
     const grabRef = React.useRef(null);
     const ghostRef = React.useRef(null);
+    const rippleRef = React.useRef(null);
 
     React.useLayoutEffect(() => {
         let anims = [];
@@ -83,71 +160,115 @@ const GhostCursor = ({block, anchor, placement, color}) => {
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         const start = () => {
-            const dragEl = document.querySelector(block);
-            const anchorEl = document.querySelector(anchor);
             const cursor = cursorRef.current;
-            const ghost = ghostRef.current;
-            if (!dragEl || !anchorEl || !cursor || !ghost) {
+            const origin = originRef.current;
+            if (!cursor || !origin) {
                 retry = setTimeout(start, 150);
                 return;
             }
-            const d = dragEl.getBoundingClientRect();
-            const a = anchorEl.getBoundingClientRect();
-            const w = d.width;
-            const h = d.height;
-            ghost.style.width = `${w}px`;
-            ghost.style.height = `${h}px`;
-            ghost.style.backgroundColor = color;
+            const from = centerOf(origin);
+            const opts = {duration: LOOP_MS, iterations: Infinity, easing: EASE};
 
-            // Cursor grabs the block near its center; the ghost copy tracks the
-            // cursor minus that grab offset so it lands meshed with the anchor.
-            const grab = {x: d.left + (w / 2), y: d.top + (h / 2)};
-            const rest = {x: grab.x + 52, y: grab.y + 46};
-            const tl = placement === 'below' ?
-                {x: a.left, y: a.bottom - 6} :
-                {x: a.left, y: (a.top - h) + 6};
-            const drop = {x: tl.x + (w / 2), y: tl.y + (h / 2)};
-            const tr = (x, y) => `translate(${x}px, ${y}px)`;
+            if (dragHint) {
+                const dragEl = document.querySelector(dragHint.block);
+                const anchorEl = document.querySelector(dragHint.anchor);
+                const ghost = ghostRef.current;
+                if (!dragEl || !anchorEl || !ghost) {
+                    retry = setTimeout(start, 150);
+                    return;
+                }
+                const d = dragEl.getBoundingClientRect();
+                const a = anchorEl.getBoundingClientRect();
+                const w = d.width;
+                const h = d.height;
+                ghost.style.width = `${w}px`;
+                ghost.style.height = `${h}px`;
+                ghost.style.backgroundColor = dragHint.color;
 
-            if (reduce) {
-                // No motion: park the cursor + ghost at the connection point.
-                cursor.style.transform = tr(drop.x, drop.y);
-                cursor.style.opacity = 1;
-                if (grabRef.current) grabRef.current.style.opacity = 1;
-                if (arrowRef.current) arrowRef.current.style.opacity = 0;
-                ghost.style.transform = tr(tl.x, tl.y);
-                ghost.style.opacity = 0.5;
+                // Cursor grabs the block near its center; the ghost copy tracks
+                // the cursor so it lands meshed with the anchor.
+                const grab = {x: d.left + (w / 2), y: d.top + (h / 2)};
+                const tl = dragHint.placement === 'below' ?
+                    {x: a.left, y: a.bottom - 6} :
+                    {x: a.left, y: (a.top - h) + 6};
+                const drop = {x: tl.x + (w / 2), y: tl.y + (h / 2)};
+
+                if (reduce) {
+                    cursor.style.transform = tr(drop.x, drop.y);
+                    cursor.style.opacity = 1;
+                    grabRef.current.style.opacity = 1;
+                    arrowRef.current.style.opacity = 0;
+                    ghost.style.transform = tr(tl.x, tl.y);
+                    ghost.style.opacity = 0.5;
+                    return;
+                }
+
+                anims.push(cursor.animate([
+                    {transform: tr(from.x, from.y), opacity: 0, offset: 0},
+                    {transform: tr(from.x, from.y), opacity: 1, offset: 0.08},
+                    {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.28},
+                    {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.36},
+                    {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.64},
+                    {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.76},
+                    {transform: tr(drop.x, drop.y), opacity: 0, offset: 0.88},
+                    {transform: tr(from.x, from.y), opacity: 0, offset: 1}
+                ], opts));
+                anims.push(ghost.animate([
+                    {transform: tr(d.left, d.top), opacity: 0, offset: 0},
+                    {transform: tr(d.left, d.top), opacity: 0, offset: 0.32},
+                    {transform: tr(d.left, d.top), opacity: 0.5, offset: 0.36},
+                    {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.64},
+                    {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.76},
+                    {transform: tr(tl.x, tl.y), opacity: 0, offset: 0.86},
+                    {transform: tr(d.left, d.top), opacity: 0, offset: 1}
+                ], opts));
+                anims.push(arrowRef.current.animate([
+                    {opacity: 1, offset: 0}, {opacity: 1, offset: 0.28},
+                    {opacity: 0, offset: 0.34}, {opacity: 0, offset: 1}
+                ], opts));
+                anims.push(grabRef.current.animate([
+                    {opacity: 0, offset: 0}, {opacity: 0, offset: 0.28},
+                    {opacity: 1, offset: 0.34}, {opacity: 1, offset: 0.76},
+                    {opacity: 0, offset: 0.86}, {opacity: 0, offset: 1}
+                ], opts));
                 return;
             }
 
-            const opts = {duration: LOOP_MS, iterations: Infinity, easing: EASE};
+            // ---- click mode: glide to the target and tap it ----
+            const targetEl = clickTarget && document.querySelector(clickTarget);
+            const ripple = rippleRef.current;
+            if (!targetEl || !ripple) {
+                retry = setTimeout(start, 150);
+                return;
+            }
+            const to = centerOf(targetEl);
+            ripple.style.left = `${to.x}px`;
+            ripple.style.top = `${to.y}px`;
+            grabRef.current.style.opacity = 0; // click uses the arrow pointer only
+            arrowRef.current.style.opacity = 1;
+
+            if (reduce) {
+                cursor.style.transform = tr(to.x, to.y);
+                cursor.style.opacity = 1;
+                return;
+            }
+
             anims.push(cursor.animate([
-                {transform: tr(rest.x, rest.y), opacity: 0, offset: 0},
-                {transform: tr(rest.x, rest.y), opacity: 0, offset: 0.08},
-                {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.16},
-                {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.24},
-                {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.58},
-                {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.72},
-                {transform: tr(drop.x, drop.y), opacity: 0, offset: 0.84},
-                {transform: tr(rest.x, rest.y), opacity: 0, offset: 1}
+                {transform: tr(from.x, from.y), opacity: 0, offset: 0},
+                {transform: tr(from.x, from.y), opacity: 1, offset: 0.08},
+                {transform: tr(to.x, to.y), opacity: 1, offset: 0.36},
+                {transform: tr(to.x, to.y + 3), opacity: 1, offset: 0.44},
+                {transform: tr(to.x, to.y), opacity: 1, offset: 0.52},
+                {transform: tr(to.x, to.y), opacity: 1, offset: 0.78},
+                {transform: tr(to.x, to.y), opacity: 0, offset: 0.9},
+                {transform: tr(from.x, from.y), opacity: 0, offset: 1}
             ], opts));
-            anims.push(ghost.animate([
-                {transform: tr(d.left, d.top), opacity: 0, offset: 0},
-                {transform: tr(d.left, d.top), opacity: 0, offset: 0.2},
-                {transform: tr(d.left, d.top), opacity: 0.5, offset: 0.24},
-                {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.58},
-                {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.72},
-                {transform: tr(tl.x, tl.y), opacity: 0, offset: 0.82},
-                {transform: tr(d.left, d.top), opacity: 0, offset: 1}
-            ], opts));
-            anims.push(arrowRef.current.animate([
-                {opacity: 1, offset: 0}, {opacity: 1, offset: 0.16},
-                {opacity: 0, offset: 0.22}, {opacity: 0, offset: 1}
-            ], opts));
-            anims.push(grabRef.current.animate([
-                {opacity: 0, offset: 0}, {opacity: 0, offset: 0.16},
-                {opacity: 1, offset: 0.22}, {opacity: 1, offset: 0.72},
-                {opacity: 0, offset: 0.82}, {opacity: 0, offset: 1}
+            anims.push(ripple.animate([
+                {transform: 'translate(-50%, -50%) scale(0.3)', opacity: 0, offset: 0},
+                {transform: 'translate(-50%, -50%) scale(0.3)', opacity: 0, offset: 0.42},
+                {transform: 'translate(-50%, -50%) scale(0.5)', opacity: 0.65, offset: 0.46},
+                {transform: 'translate(-50%, -50%) scale(1.5)', opacity: 0, offset: 0.64},
+                {transform: 'translate(-50%, -50%) scale(1.5)', opacity: 0, offset: 1}
             ], opts));
         };
 
@@ -163,14 +284,20 @@ const GhostCursor = ({block, anchor, placement, color}) => {
             window.removeEventListener('resize', onResize);
             anims.forEach(an => an.cancel());
         };
-    }, [block, anchor, placement, color]);
+    }, [originRef, dragHint, clickTarget]);
 
     return (
         <div className={styles.ghostLayer}>
-            <div
-                className={styles.ghostBlock}
-                ref={ghostRef}
-            />
+            {dragHint ?
+                <div
+                    className={styles.ghostBlock}
+                    ref={ghostRef}
+                /> :
+                <div
+                    className={styles.ripple}
+                    ref={rippleRef}
+                />
+            }
             <div
                 className={styles.ghostCursor}
                 ref={cursorRef}
@@ -188,69 +315,37 @@ const GhostCursor = ({block, anchor, placement, color}) => {
     );
 };
 
-GhostCursor.propTypes = {
-    anchor: PropTypes.string.isRequired,
-    block: PropTypes.string.isRequired,
-    color: PropTypes.string,
-    placement: PropTypes.oneOf(['above', 'below']).isRequired
-};
-
-/* "Show me" spotlight: dims the editor and cuts a hole around the element
-   matched by `selector` (a giant box-shadow makes the surrounding dim layer). */
-const Spotlight = ({selector}) => {
-    const [rect, setRect] = React.useState(null);
-    React.useLayoutEffect(() => {
-        const measure = () => {
-            const el = selector && document.querySelector(selector);
-            if (!el) {
-                setRect(null);
-                return;
-            }
-            const r = el.getBoundingClientRect();
-            setRect({left: r.left, top: r.top, width: r.width, height: r.height});
-        };
-        measure();
-        // Re-measure shortly after mount in case Blockly is still laying out.
-        const timer = setTimeout(measure, 60);
-        window.addEventListener('resize', measure);
-        return () => {
-            clearTimeout(timer);
-            window.removeEventListener('resize', measure);
-        };
-    }, [selector]);
-    if (!rect) return null;
-    const pad = 8;
-    return (
-        <div
-            className={styles.spotlightHole}
-            style={{
-                left: rect.left - pad,
-                top: rect.top - pad,
-                width: rect.width + (pad * 2),
-                height: rect.height + (pad * 2)
-            }}
-        />
-    );
-};
-
-Spotlight.propTypes = {
-    selector: PropTypes.string
+ShowMeCursor.propTypes = {
+    clickTarget: PropTypes.string,
+    dragHint: PropTypes.shape({
+        anchor: PropTypes.string,
+        block: PropTypes.string,
+        color: PropTypes.string,
+        placement: PropTypes.oneOf(['above', 'below'])
+    }),
+    originRef: PropTypes.shape({current: PropTypes.any})
 };
 
 const MicroworldsWizard = props => {
     const {
         canAdvance,
+        clickTarget,
         dragHint,
         isLastStep,
+        isRunning,
         onGoToStep,
         onNext,
         prompt,
-        spotlight,
         stepCount,
         stepIndex
     } = props;
 
     const [showMe, setShowMe] = React.useState(false);
+    const showMeRef = React.useRef(null);
+
+    // No point demonstrating while the code is running or once the step's
+    // action (e.g. snapping the blocks together) is already done.
+    const showMeDisabled = isRunning || canAdvance;
 
     // Hide the hint whenever the step changes or its action is completed.
     React.useEffect(() => setShowMe(false), [stepIndex]);
@@ -278,66 +373,77 @@ const MicroworldsWizard = props => {
 
     return (
         <div className={styles.wizardContainer}>
-            <div className={styles.card}>
-                <div className={styles.prompt}>{prompt}</div>
+            <div className={styles.tutBar}>
+                <img
+                    className={styles.ftIll}
+                    src={fingerTapIcon}
+                    alt=""
+                    draggable={false}
+                />
+                <div className={styles.tutTitle}>{prompt}</div>
+
+                <SpeakButton text={prompt} />
 
                 <button
-                    className={styles.showMeButton}
+                    ref={showMeRef}
+                    className={classNames(styles.btnShow, {
+                        [styles.btnShowDisabled]: showMeDisabled
+                    })}
+                    disabled={showMeDisabled}
                     onClick={handleShowMe}
                 >
                     {'Show me'}
                 </button>
 
-                <div className={styles.footer}>
-                    <div className={styles.pips}>
-                        {Array.from({length: stepCount}).map((_, index) => (
-                            <button
-                                key={index}
-                                className={classNames(styles.pip, {
-                                    [styles.pipActive]: index === stepIndex
-                                })}
-                                data-step={index}
-                                onClick={handlePipClick}
-                                aria-label={`Go to step ${index + 1}`}
-                            />
-                        ))}
-                    </div>
-                    <div className={styles.actions}>
+                <span className={styles.grow} />
+
+                <div className={styles.stepDots}>
+                    {Array.from({length: stepCount}).map((_, index) => (
                         <button
-                            className={classNames(styles.nextButton, {
-                                [styles.nextButtonDisabled]: !canAdvance
+                            key={index}
+                            className={classNames(styles.dot, {
+                                [styles.dotOn]: index === stepIndex
                             })}
-                            disabled={!canAdvance}
-                            onClick={onNext}
-                            aria-label={isLastStep ? 'Finish' : 'Next'}
-                        >
-                            <NextArrow />
-                        </button>
-                        <button
-                            className={styles.skipButton}
-                            onClick={onNext}
-                        >
-                            {'Skip'}
-                        </button>
-                    </div>
+                            data-step={index}
+                            onClick={handlePipClick}
+                            aria-label={`Go to step ${index + 1}`}
+                        />
+                    ))}
                 </div>
+
+                <button
+                    className={styles.skipLink}
+                    onClick={onNext}
+                >
+                    {'Skip'}
+                </button>
+
+                <button
+                    className={classNames(styles.btnNext, {
+                        [styles.btnNextDisabled]: !canAdvance
+                    })}
+                    disabled={!canAdvance}
+                    onClick={onNext}
+                    aria-label={isLastStep ? 'Finish' : 'Next'}
+                >
+                    <Chevron />
+                </button>
             </div>
 
-            {showMe && dragHint ? (
-                <GhostCursor
-                    block={dragHint.block}
-                    anchor={dragHint.anchor}
-                    placement={dragHint.placement}
-                    color={dragHint.color}
+            {showMe && (dragHint || clickTarget) ? (
+                <ShowMeCursor
+                    originRef={showMeRef}
+                    dragHint={dragHint}
+                    clickTarget={clickTarget}
                 />
             ) : null}
-            {showMe && !dragHint && spotlight ? <Spotlight selector={spotlight} /> : null}
         </div>
     );
 };
 
 MicroworldsWizard.propTypes = {
     canAdvance: PropTypes.bool,
+    clickTarget: PropTypes.string,
     dragHint: PropTypes.shape({
         anchor: PropTypes.string,
         block: PropTypes.string,
@@ -345,10 +451,10 @@ MicroworldsWizard.propTypes = {
         placement: PropTypes.oneOf(['above', 'below'])
     }),
     isLastStep: PropTypes.bool,
+    isRunning: PropTypes.bool,
     onGoToStep: PropTypes.func.isRequired,
     onNext: PropTypes.func.isRequired,
     prompt: PropTypes.string.isRequired,
-    spotlight: PropTypes.string,
     stepCount: PropTypes.number.isRequired,
     stepIndex: PropTypes.number.isRequired
 };

@@ -7,7 +7,7 @@
  *                   toolbox is visually hidden during the intro, but the palette
  *                   is kept so the filtered toolbox stays minimal.
  *   - `preload`:    a preloaded block stack seeded onto the sprite
- *   - `spotlight`:  CSS selector the "Show me" hint highlights (click/flag steps)
+ *   - `clickTarget`: CSS selector the "Show me" cursor taps (click/flag steps)
  *   - `dragHint`:   {block, anchor, placement, color} for the animated drag
  *                   "Show me" cursor on drag-to-connect steps
  *   - `advanceOn`:  the signal that lets the user move to the next step
@@ -21,13 +21,13 @@
 
 import {
     buildSayStack,
-    buildLooseSays,
-    buildConnectedSays,
+    buildLooseStack,
+    buildConnectedStack,
     buildHatPlusStack,
     buildFullStack,
     HAT_ID,
     SAY_ID,
-    SAY_B_ID
+    GLIDE_ID
 } from './blocks';
 
 const MESSAGE = 'Hello!';
@@ -43,7 +43,7 @@ const intro = {
             reveal: {blocks: true},
             palette: ['looks_sayforsecs'],
             preload: () => buildSayStack({withHat: false, message: MESSAGE, secs: 2}),
-            spotlight: `[data-id="${SAY_ID}"]`,
+            clickTarget: `[data-id="${SAY_ID}"]`,
             advanceOn: 'scriptGlow'
         },
         {
@@ -51,25 +51,25 @@ const intro = {
             id: 'drag-stack',
             prompt: 'Drag the blocks together to make a stack',
             reveal: {blocks: true},
-            palette: ['looks_sayforsecs'],
-            preload: () => buildLooseSays({message: MESSAGE, secs: 2}),
+            palette: ['looks_sayforsecs', 'motion_glideto'],
+            preload: () => buildLooseStack({message: MESSAGE, secs: 2}),
             dragHint: {
-                block: `[data-id="${SAY_B_ID}"]`,
+                block: `[data-id="${GLIDE_ID}"]`,
                 anchor: `[data-id="${SAY_ID}"]`,
                 placement: 'below',
-                color: '#9966FF' // looks (say)
+                color: '#4C97FF' // motion (glide)
             },
             advanceOn: 'blocksConnected',
-            connection: {parent: SAY_ID, child: SAY_B_ID}
+            connection: {parent: SAY_ID, child: GLIDE_ID}
         },
         {
             // Blocks run from top to bottom, one after another.
             id: 'click-stack',
             prompt: 'Click the blocks to run them in order',
             reveal: {blocks: true},
-            palette: ['looks_sayforsecs'],
-            preload: () => buildConnectedSays({message: MESSAGE, secs: 2}),
-            spotlight: `[data-id="${SAY_ID}"]`,
+            palette: ['looks_sayforsecs', 'motion_glideto'],
+            preload: () => buildConnectedStack({message: MESSAGE, secs: 2}),
+            clickTarget: `[data-id="${SAY_ID}"]`,
             advanceOn: 'scriptGlow'
         },
         {
@@ -77,7 +77,7 @@ const intro = {
             id: 'connect-hat',
             prompt: 'Connect the green flag block to your stack',
             reveal: {blocks: true},
-            palette: ['event_whenflagclicked', 'looks_sayforsecs'],
+            palette: ['event_whenflagclicked', 'looks_sayforsecs', 'motion_glideto'],
             preload: () => buildHatPlusStack({message: MESSAGE, secs: 2}),
             dragHint: {
                 block: `[data-id="${HAT_ID}"]`,
@@ -93,9 +93,9 @@ const intro = {
             id: 'click-flag',
             prompt: 'Click the green flag to run your code',
             reveal: {blocks: true, greenFlag: true},
-            palette: ['event_whenflagclicked', 'looks_sayforsecs'],
+            palette: ['event_whenflagclicked', 'looks_sayforsecs', 'motion_glideto'],
             preload: () => buildFullStack({message: MESSAGE, secs: 2}),
-            spotlight: '[class*="green-flag"]',
+            clickTarget: '[class*="green-flag"]',
             advanceOn: 'greenFlag'
         }
     ]

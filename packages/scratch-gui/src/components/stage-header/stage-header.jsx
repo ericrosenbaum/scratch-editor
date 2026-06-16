@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import {FormattedMessage, defineMessages, useIntl} from 'react-intl';
 import PropTypes from 'prop-types';
 import React, {useCallback} from 'react';
@@ -163,7 +164,11 @@ const StageHeaderComponent = function (props) {
             );
         header = (
             <Box className={styles.stageHeaderWrapper}>
-                <Box className={styles.stageMenuWrapper}>
+                <Box
+                    className={classNames(styles.stageMenuWrapper, {
+                        [styles.stageMenuWrapperMicroworlds]: microworldsActive
+                    })}
+                >
                     <Controls vm={vm} />
                     {/* Hide the stage-size toggle, full-screen and thumbnail
                         controls during the Microworld intro. */}

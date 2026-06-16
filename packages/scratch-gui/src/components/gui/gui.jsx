@@ -389,6 +389,9 @@ const GUIComponent = props => {
                                 [styles.microworldsStack]: microworldsActive
                             })}
                         >
+                            {microworldsActive ? (
+                                <MicroworldsWizard vm={vm} />
+                            ) : null}
                             <Box
                                 className={classNames(boxStyles, styles.flexWrapper, {
                                     [styles.microworldsBody]: microworldsActive
@@ -588,9 +591,6 @@ const GUIComponent = props => {
                                     )}
                                 </Box>
                             </Box>
-                            {microworldsActive ? (
-                                <MicroworldsWizard vm={vm} />
-                            ) : null}
                         </div>
                     </div>
                     <DragLayer />

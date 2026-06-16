@@ -29,8 +29,6 @@ class MicroworldsWizard extends React.Component {
         this.state = {canAdvance: false};
         // The step index whose side effects have already been applied.
         this.processedStep = -1;
-        // Top block ids of the wizard's currently preloaded stack(s), for removal.
-        this.preloadedTopBlockIds = [];
         // Baselines captured on step entry, used by the "added" gates.
         this.blockBaseline = 0;
         this.spriteBaseline = 0;
@@ -75,16 +73,19 @@ class MicroworldsWizard extends React.Component {
         this.processedStep = stepIndex;
 
         if (step.preload) {
-            const blocks = step.preload();
-            // Remove any previously preloaded wizard stacks (deleting a top block
-            // removes its whole connected stack and shadows).
-            this.preloadedTopBlockIds.forEach(id => {
-                if (vm.editingTarget.blocks._blocks[id]) {
-                    vm.editingTarget.blocks.deleteBlock(id);
-                }
-            });
-            blocks.forEach(block => vm.editingTarget.blocks.createBlock(block));
-            this.preloadedTopBlockIds = blocks.filter(block => block.topLevel).map(block => block.id);
+            const targetBlocks = vm.editingTarget.blocks;
+            // Clear every wizard block (all use the `mw_` prefix) before
+            // reseeding. If the user has rearranged a block, the old top-block
+            // ids no longer describe the live graph, so a stale block could
+            // survive — and since createBlock is a no-op on an existing id, the
+            // re-created stack would inherit a dangling/cyclic `next` (which then
+            // overflows the stack when the workspace is serialized to XML).
+            Object.keys(targetBlocks._blocks)
+                .filter(id => id.startsWith('mw_'))
+                .forEach(id => {
+                    if (targetBlocks._blocks[id]) targetBlocks.deleteBlock(id);
+                });
+            step.preload().forEach(block => targetBlocks.createBlock(block));
             vm.refreshWorkspace();
         }
 
@@ -148,10 +149,11 @@ class MicroworldsWizard extends React.Component {
         return (
             <MicroworldsWizardComponent
                 canAdvance={this.state.canAdvance}
+                clickTarget={step.clickTarget}
                 dragHint={step.dragHint}
                 isLastStep={isLastStep}
+                isRunning={this.props.isRunning}
                 prompt={step.prompt}
-                spotlight={step.spotlight}
                 stepCount={stepCount}
                 stepIndex={stepIndex}
                 onGoToStep={this.props.onGoToStep}
@@ -163,6 +165,7 @@ class MicroworldsWizard extends React.Component {
 
 MicroworldsWizard.propTypes = {
     isLastStep: PropTypes.bool,
+    isRunning: PropTypes.bool,
     onFinish: PropTypes.func.isRequired,
     onGoToStep: PropTypes.func.isRequired,
     onNextStep: PropTypes.func.isRequired,
@@ -175,7 +178,7 @@ MicroworldsWizard.propTypes = {
             child: PropTypes.string
         }),
         dragHint: PropTypes.object,
-        spotlight: PropTypes.string,
+        clickTarget: PropTypes.string,
         preload: PropTypes.func
     }),
     stepCount: PropTypes.number,
@@ -191,7 +194,8 @@ const mapStateToProps = state => {
         step,
         stepIndex: mwState.step,
         stepCount,
-        isLastStep: mwState.step === stepCount - 1
+        isLastStep: mwState.step === stepCount - 1,
+        isRunning: state.scratchGui.vmStatus.running
     };
 };
 

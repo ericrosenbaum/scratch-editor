@@ -13,10 +13,10 @@ const HAT_ID = 'mw_hat';
 const SAY_ID = 'mw_say';
 const SAY_MSG_ID = 'mw_say_msg';
 const SAY_SECS_ID = 'mw_say_secs';
-// Second "say" block, used by the drag-to-connect steps.
-const SAY_B_ID = 'mw_say_b';
-const SAY_B_MSG_ID = 'mw_say_b_msg';
-const SAY_B_SECS_ID = 'mw_say_b_secs';
+// "glide () secs to (random position)" — the second block in the stack.
+const GLIDE_ID = 'mw_glide';
+const GLIDE_SECS_ID = 'mw_glide_secs';
+const GLIDE_MENU_ID = 'mw_glide_menu';
 
 /**
  * Build a `say ... for ... seconds` block plus its two shadow inputs.
@@ -143,73 +143,118 @@ const buildSayA = opts => buildSayForSecs({
     id: SAY_ID, msgId: SAY_MSG_ID, secsId: SAY_SECS_ID, secs: 2, ...opts
 });
 
-// The second say block, used by the drag-to-connect steps.
-const buildSayB = opts => buildSayForSecs({
-    id: SAY_B_ID, msgId: SAY_B_MSG_ID, secsId: SAY_B_SECS_ID, secs: 2, ...opts
-});
+/**
+ * Build a `glide () secs to (random position)` block plus its shadow inputs.
+ * This is the second block in the intro stack.
+ * @param {object} [opts] options
+ * @param {number} [opts.secs] seconds to glide
+ * @param {?string} [opts.parent] id of the parent block (null if top level)
+ * @param {?string} [opts.next] id of the block connected below this one
+ * @param {boolean} [opts.topLevel] whether the block sits at the top of a stack
+ * @param {number} [opts.x] workspace x (only used when top level)
+ * @param {number} [opts.y] workspace y (only used when top level)
+ * @returns {Array<object>} the glide block followed by its shadow blocks
+ */
+const buildGlideTo = ({secs = 1, parent, next, topLevel, x, y} = {}) => ([
+    {
+        id: GLIDE_ID,
+        opcode: 'motion_glideto',
+        inputs: {
+            SECS: {name: 'SECS', block: GLIDE_SECS_ID, shadow: GLIDE_SECS_ID},
+            TO: {name: 'TO', block: GLIDE_MENU_ID, shadow: GLIDE_MENU_ID}
+        },
+        fields: {},
+        next: next || null,
+        parent: parent || null,
+        topLevel: Boolean(topLevel),
+        shadow: false,
+        x: topLevel ? x : 0,
+        y: topLevel ? y : 0
+    },
+    {
+        id: GLIDE_SECS_ID,
+        opcode: 'math_number',
+        inputs: {},
+        fields: {NUM: {name: 'NUM', value: `${secs}`}},
+        next: null,
+        parent: GLIDE_ID,
+        topLevel: false,
+        shadow: true
+    },
+    {
+        id: GLIDE_MENU_ID,
+        opcode: 'motion_glideto_menu',
+        inputs: {},
+        fields: {TO: {name: 'TO', value: '_random_'}},
+        next: null,
+        parent: GLIDE_ID,
+        topLevel: false,
+        shadow: true
+    }
+]);
 
 /**
- * Two detached `say` blocks for the drag-to-stack step: the first at the top,
- * the second a couple of block-heights below, unconnected.
+ * A `say` block and a detached `glide` block (the drag-to-stack step): the say
+ * at the top, the glide a couple of block-heights below, unconnected.
  * @param {object} opts options
- * @param {string} opts.message message both blocks say
- * @param {number} [opts.secs] seconds
+ * @param {string} opts.message what the say block says
+ * @param {number} [opts.secs] say seconds
  * @returns {Array<object>} block objects ready for createBlock()
  */
-const buildLooseSays = ({message, secs = 2}) => ([
+const buildLooseStack = ({message, secs = 2}) => ([
     ...buildSayA({message, secs, topLevel: true, x: 28, y: 24}),
-    ...buildSayB({message, secs, topLevel: true, x: 44, y: 116})
+    ...buildGlideTo({topLevel: true, x: 44, y: 116})
 ]);
 
 /**
- * A connected `say -> say` stack.
+ * A connected `say -> glide` stack.
  * @param {object} opts options
- * @param {string} opts.message message both blocks say
- * @param {number} [opts.secs] seconds
+ * @param {string} opts.message what the say block says
+ * @param {number} [opts.secs] say seconds
  * @returns {Array<object>} block objects ready for createBlock()
  */
-const buildConnectedSays = ({message, secs = 2}) => ([
-    ...buildSayA({message, secs, topLevel: true, next: SAY_B_ID, x: 28, y: 40}),
-    ...buildSayB({message, secs, parent: SAY_ID, topLevel: false})
+const buildConnectedStack = ({message, secs = 2}) => ([
+    ...buildSayA({message, secs, topLevel: true, next: GLIDE_ID, x: 28, y: 40}),
+    ...buildGlideTo({parent: SAY_ID})
 ]);
 
 /**
- * A detached green-flag hat above a connected `say -> say` stack.
+ * A detached green-flag hat above a connected `say -> glide` stack.
  * @param {object} opts options
- * @param {string} opts.message message both blocks say
- * @param {number} [opts.secs] seconds
+ * @param {string} opts.message what the say block says
+ * @param {number} [opts.secs] say seconds
  * @returns {Array<object>} block objects ready for createBlock()
  */
 const buildHatPlusStack = ({message, secs = 2}) => ([
     buildHat({x: 28, y: 20}),
-    ...buildSayA({message, secs, topLevel: true, next: SAY_B_ID, x: 28, y: 112}),
-    ...buildSayB({message, secs, parent: SAY_ID, topLevel: false})
+    ...buildSayA({message, secs, topLevel: true, next: GLIDE_ID, x: 28, y: 112}),
+    ...buildGlideTo({parent: SAY_ID})
 ]);
 
 /**
- * The full `hat -> say -> say` stack.
+ * The full `hat -> say -> glide` stack.
  * @param {object} opts options
- * @param {string} opts.message message both blocks say
- * @param {number} [opts.secs] seconds
+ * @param {string} opts.message what the say block says
+ * @param {number} [opts.secs] say seconds
  * @returns {Array<object>} block objects ready for createBlock()
  */
 const buildFullStack = ({message, secs = 2}) => ([
     buildHat({next: SAY_ID, x: 28, y: 28}),
-    ...buildSayA({message, secs, parent: HAT_ID, next: SAY_B_ID, topLevel: false}),
-    ...buildSayB({message, secs, parent: SAY_ID, topLevel: false})
+    ...buildSayA({message, secs, parent: HAT_ID, next: GLIDE_ID, topLevel: false}),
+    ...buildGlideTo({parent: SAY_ID})
 ]);
 
 export {
     buildSayStack,
-    buildLooseSays,
-    buildConnectedSays,
+    buildLooseStack,
+    buildConnectedStack,
     buildHatPlusStack,
     buildFullStack,
     HAT_ID,
     SAY_ID,
     SAY_MSG_ID,
     SAY_SECS_ID,
-    SAY_B_ID,
-    SAY_B_MSG_ID,
-    SAY_B_SECS_ID
+    GLIDE_ID,
+    GLIDE_SECS_ID,
+    GLIDE_MENU_ID
 };
