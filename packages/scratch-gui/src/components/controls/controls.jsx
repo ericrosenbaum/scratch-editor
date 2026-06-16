@@ -26,7 +26,6 @@ const Controls = function (props) {
     const {
         active,
         className,
-        hideRunButtons,
         onGreenFlagClick,
         onStopAllClick,
         turbo,
@@ -38,20 +37,16 @@ const Controls = function (props) {
             className={classNames(styles.controlsContainer, className)}
             {...componentProps}
         >
-            {hideRunButtons ? null : (
-                <React.Fragment>
-                    <GreenFlag
-                        active={active}
-                        title={intl.formatMessage(messages.goTitle)}
-                        onClick={onGreenFlagClick}
-                    />
-                    <StopAll
-                        active={active}
-                        title={intl.formatMessage(messages.stopTitle)}
-                        onClick={onStopAllClick}
-                    />
-                </React.Fragment>
-            )}
+            <GreenFlag
+                active={active}
+                title={intl.formatMessage(messages.goTitle)}
+                onClick={onGreenFlagClick}
+            />
+            <StopAll
+                active={active}
+                title={intl.formatMessage(messages.stopTitle)}
+                onClick={onStopAllClick}
+            />
             {turbo ? (
                 <TurboMode />
             ) : null}
@@ -62,7 +57,6 @@ const Controls = function (props) {
 Controls.propTypes = {
     active: PropTypes.bool,
     className: PropTypes.string,
-    hideRunButtons: PropTypes.bool,
     onGreenFlagClick: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
     turbo: PropTypes.bool

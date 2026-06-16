@@ -133,8 +133,11 @@ const CursorGrab = () => (
     </svg>
 );
 
-const DEMO_MS = 4200;
+const DEMO_MS = 2400;
 const EASE = 'cubic-bezier(0.25, 0.1, 0.25, 1)';
+// Strong ease-in on the final hold->fade segment so the cursor stays put, then
+// snaps away quickly right at the end (rather than fading the whole way).
+const FADE_EASE = 'cubic-bezier(0.85, 0, 1, 1)';
 const tr = (x, y) => `translate(${x}px, ${y}px)`;
 const centerOf = el => {
     const r = el.getBoundingClientRect();
@@ -166,7 +169,9 @@ const ShowMeCursor = ({originRef, dragHint, clickTarget}) => {
                 return;
             }
             const from = centerOf(origin);
-            const opts = {duration: DEMO_MS, iterations: 1, easing: EASE};
+            // Linear timeline so each segment's duration is exactly its offset
+            // span; per-keyframe easing shapes the glide and the final fade.
+            const opts = {duration: DEMO_MS, iterations: 1};
 
             if (dragHint) {
                 const dragEl = document.querySelector(dragHint.block);
@@ -204,28 +209,28 @@ const ShowMeCursor = ({originRef, dragHint, clickTarget}) => {
 
                 anims.push(cursor.animate([
                     {transform: tr(from.x, from.y), opacity: 0, offset: 0},
-                    {transform: tr(from.x, from.y), opacity: 1, offset: 0.1},
-                    {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.32},
-                    {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.42},
-                    {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.78},
-                    {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.92},
+                    {transform: tr(from.x, from.y), opacity: 1, offset: 0.07, easing: EASE},
+                    {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.4},
+                    {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.47, easing: EASE},
+                    {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.83},
+                    {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.88, easing: FADE_EASE},
                     {transform: tr(drop.x, drop.y), opacity: 0, offset: 1}
                 ], opts));
                 anims.push(ghost.animate([
                     {transform: tr(d.left, d.top), opacity: 0, offset: 0},
-                    {transform: tr(d.left, d.top), opacity: 0, offset: 0.38},
-                    {transform: tr(d.left, d.top), opacity: 0.5, offset: 0.42},
-                    {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.78},
-                    {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.92},
+                    {transform: tr(d.left, d.top), opacity: 0, offset: 0.43},
+                    {transform: tr(d.left, d.top), opacity: 0.5, offset: 0.47, easing: EASE},
+                    {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.83},
+                    {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.88, easing: FADE_EASE},
                     {transform: tr(tl.x, tl.y), opacity: 0, offset: 1}
                 ], opts));
                 anims.push(arrowRef.current.animate([
-                    {opacity: 1, offset: 0}, {opacity: 1, offset: 0.32},
-                    {opacity: 0, offset: 0.42}, {opacity: 0, offset: 1}
+                    {opacity: 1, offset: 0}, {opacity: 1, offset: 0.4},
+                    {opacity: 0, offset: 0.47}, {opacity: 0, offset: 1}
                 ], opts));
                 anims.push(grabRef.current.animate([
-                    {opacity: 0, offset: 0}, {opacity: 0, offset: 0.32},
-                    {opacity: 1, offset: 0.42}, {opacity: 1, offset: 1}
+                    {opacity: 0, offset: 0}, {opacity: 0, offset: 0.4},
+                    {opacity: 1, offset: 0.47}, {opacity: 1, offset: 1}
                 ], opts));
                 return;
             }
@@ -251,18 +256,17 @@ const ShowMeCursor = ({originRef, dragHint, clickTarget}) => {
 
             anims.push(cursor.animate([
                 {transform: tr(from.x, from.y), opacity: 0, offset: 0},
-                {transform: tr(from.x, from.y), opacity: 1, offset: 0.1},
-                {transform: tr(to.x, to.y), opacity: 1, offset: 0.44},
-                {transform: tr(to.x, to.y + 3), opacity: 1, offset: 0.52},
-                {transform: tr(to.x, to.y), opacity: 1, offset: 0.6},
-                {transform: tr(to.x, to.y), opacity: 1, offset: 0.92},
+                {transform: tr(from.x, from.y), opacity: 1, offset: 0.07, easing: EASE},
+                {transform: tr(to.x, to.y), opacity: 1, offset: 0.72},
+                {transform: tr(to.x, to.y + 4), opacity: 1, offset: 0.8},
+                {transform: tr(to.x, to.y), opacity: 1, offset: 0.86, easing: FADE_EASE},
                 {transform: tr(to.x, to.y), opacity: 0, offset: 1}
             ], opts));
             anims.push(ripple.animate([
                 {transform: 'translate(-50%, -50%) scale(0.3)', opacity: 0, offset: 0},
-                {transform: 'translate(-50%, -50%) scale(0.3)', opacity: 0, offset: 0.48},
-                {transform: 'translate(-50%, -50%) scale(0.5)', opacity: 0.65, offset: 0.52},
-                {transform: 'translate(-50%, -50%) scale(1.5)', opacity: 0, offset: 0.72},
+                {transform: 'translate(-50%, -50%) scale(0.3)', opacity: 0, offset: 0.72},
+                {transform: 'translate(-50%, -50%) scale(0.5)', opacity: 0.65, offset: 0.8},
+                {transform: 'translate(-50%, -50%) scale(1.5)', opacity: 0, offset: 0.96},
                 {transform: 'translate(-50%, -50%) scale(1.5)', opacity: 0, offset: 1}
             ], opts));
         };
