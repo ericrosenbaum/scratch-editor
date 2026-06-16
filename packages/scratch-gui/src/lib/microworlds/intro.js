@@ -97,6 +97,17 @@ const intro = {
             preload: () => buildFullStack({message: MESSAGE, secs: 2}),
             clickTarget: '[class*="green-flag"]',
             advanceOn: 'greenFlag'
+        },
+        {
+            // A project can have more than one sprite. Reveal a simplified
+            // sprite pane and let the user add one from the library.
+            id: 'add-sprite',
+            prompt: 'Now let’s add another sprite',
+            reveal: {blocks: true, greenFlag: true, spritePane: true},
+            palette: ['event_whenflagclicked', 'looks_sayforsecs', 'motion_glideto'],
+            preload: () => buildFullStack({message: MESSAGE, secs: 2}),
+            clickTarget: '[class*="sprite-selector_add-button"]',
+            advanceOn: 'spriteAdded'
         }
     ]
 };

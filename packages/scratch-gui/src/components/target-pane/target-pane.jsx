@@ -20,6 +20,7 @@ const TargetPane = ({
     editingTarget,
     fileInputRef,
     hoveredTarget,
+    microworldsActive,
     spriteLibraryVisible,
     onActivateBlocksTab,
     onChangeSpriteDirection,
@@ -57,6 +58,7 @@ const TargetPane = ({
         <SpriteSelectorComponent
             editingTarget={editingTarget}
             hoveredTarget={hoveredTarget}
+            microworldsActive={microworldsActive}
             raised={raiseSprites}
             selectedId={editingTarget}
             spriteFileInput={fileInputRef}
@@ -81,7 +83,7 @@ const TargetPane = ({
             onSurpriseSpriteClick={onSurpriseSpriteClick}
         />
         <div className={styles.stageSelectorWrapper}>
-            {stage.id && <StageSelector
+            {!microworldsActive && stage.id && <StageSelector
                 asset={
                     stage.costume &&
                     stage.costume.asset
@@ -135,6 +137,7 @@ TargetPane.propTypes = {
         hoveredSprite: PropTypes.string,
         receivedBlocks: PropTypes.bool
     }),
+    microworldsActive: PropTypes.bool,
     onActivateBlocksTab: PropTypes.func.isRequired,
     onChangeSpriteDirection: PropTypes.func,
     onChangeSpriteName: PropTypes.func,

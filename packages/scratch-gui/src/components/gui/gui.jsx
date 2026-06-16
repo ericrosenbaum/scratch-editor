@@ -394,7 +394,9 @@ const GUIComponent = props => {
                             ) : null}
                             <Box
                                 className={classNames(boxStyles, styles.flexWrapper, {
-                                    [styles.microworldsBody]: microworldsActive
+                                    [styles.microworldsBody]: microworldsActive,
+                                    [styles.microworldsBodyWithSprites]:
+                                        microworldsActive && !microworldsHideTargetPane
                                 })}
                             >
                                 <Box

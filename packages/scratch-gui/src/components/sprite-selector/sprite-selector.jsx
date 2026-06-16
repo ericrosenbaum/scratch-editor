@@ -44,6 +44,7 @@ const SpriteSelectorComponent = function (props) {
     const {
         editingTarget,
         hoveredTarget,
+        microworldsActive,
         onChangeSpriteDirection,
         onChangeSpriteName,
         onChangeSpriteRotationStyle,
@@ -81,24 +82,29 @@ const SpriteSelectorComponent = function (props) {
             {...componentProps}
         >
 
-            <SpriteInfo
-                direction={selectedSprite.direction}
-                disabled={spriteInfoDisabled}
-                name={selectedSprite.name}
-                rotationStyle={selectedSprite.rotationStyle}
-                size={selectedSprite.size}
-                stageSize={stageSize}
-                visible={selectedSprite.visible}
-                x={selectedSprite.x}
-                y={selectedSprite.y}
-                onChangeDirection={onChangeSpriteDirection}
-                onChangeName={onChangeSpriteName}
-                onChangeRotationStyle={onChangeSpriteRotationStyle}
-                onChangeSize={onChangeSpriteSize}
-                onChangeVisibility={onChangeSpriteVisibility}
-                onChangeX={onChangeSpriteX}
-                onChangeY={onChangeSpriteY}
-            />
+            {/* The Microworld intro shows a stripped-down pane: no sprite-info
+                row, no extra add-button options — just the sprites and a button
+                that opens the sprite library. */}
+            {microworldsActive ? null : (
+                <SpriteInfo
+                    direction={selectedSprite.direction}
+                    disabled={spriteInfoDisabled}
+                    name={selectedSprite.name}
+                    rotationStyle={selectedSprite.rotationStyle}
+                    size={selectedSprite.size}
+                    stageSize={stageSize}
+                    visible={selectedSprite.visible}
+                    x={selectedSprite.x}
+                    y={selectedSprite.y}
+                    onChangeDirection={onChangeSpriteDirection}
+                    onChangeName={onChangeSpriteName}
+                    onChangeRotationStyle={onChangeSpriteRotationStyle}
+                    onChangeSize={onChangeSpriteSize}
+                    onChangeVisibility={onChangeSpriteVisibility}
+                    onChangeX={onChangeSpriteX}
+                    onChangeY={onChangeSpriteY}
+                />
+            )}
 
             <SpriteList
                 editingTarget={editingTarget}
@@ -115,7 +121,7 @@ const SpriteSelectorComponent = function (props) {
             <ActionMenu
                 className={styles.addButton}
                 img={spriteIcon}
-                moreButtons={[
+                moreButtons={microworldsActive ? [] : [
                     {
                         title: intl.formatMessage(messages.addSpriteFromFile),
                         img: fileUploadIcon,
@@ -152,6 +158,7 @@ SpriteSelectorComponent.propTypes = {
         hoveredSprite: PropTypes.string,
         receivedBlocks: PropTypes.bool
     }),
+    microworldsActive: PropTypes.bool,
     onChangeSpriteDirection: PropTypes.func,
     onChangeSpriteName: PropTypes.func,
     onChangeSpriteRotationStyle: PropTypes.func,

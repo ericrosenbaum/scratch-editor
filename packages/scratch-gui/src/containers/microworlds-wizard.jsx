@@ -152,7 +152,6 @@ class MicroworldsWizard extends React.Component {
                 clickTarget={step.clickTarget}
                 dragHint={step.dragHint}
                 isLastStep={isLastStep}
-                isRunning={this.props.isRunning}
                 prompt={step.prompt}
                 stepCount={stepCount}
                 stepIndex={stepIndex}
@@ -165,7 +164,6 @@ class MicroworldsWizard extends React.Component {
 
 MicroworldsWizard.propTypes = {
     isLastStep: PropTypes.bool,
-    isRunning: PropTypes.bool,
     onFinish: PropTypes.func.isRequired,
     onGoToStep: PropTypes.func.isRequired,
     onNextStep: PropTypes.func.isRequired,
@@ -194,8 +192,7 @@ const mapStateToProps = state => {
         step,
         stepIndex: mwState.step,
         stepCount,
-        isLastStep: mwState.step === stepCount - 1,
-        isRunning: state.scratchGui.vmStatus.running
+        isLastStep: mwState.step === stepCount - 1
     };
 };
 

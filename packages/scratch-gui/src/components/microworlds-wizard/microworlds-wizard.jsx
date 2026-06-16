@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import styles from './microworlds-wizard.css';
-import fingerTapIcon from './blocks-finger-tap.png';
 
 /* Chevron glyph for the round "Next" button. */
 const Chevron = () => (
@@ -96,8 +95,8 @@ SpeakButton.propTypes = {
 /* Translucent demo cursors for the "Show me" hint. */
 const CursorArrow = () => (
     <svg
-        width="20"
-        height="20"
+        width="36"
+        height="36"
         viewBox="0 0 24 24"
         style={{display: 'block'}}
         aria-hidden="true"
@@ -118,8 +117,8 @@ const GRAB_PATH = 'M10 17 V12.5 a1.8 1.8 0 0 1 3.6 0 V11 a1.8 1.8 0 0 1 3.6 0 ' 
 
 const CursorGrab = () => (
     <svg
-        width="28"
-        height="28"
+        width="50"
+        height="50"
         viewBox="0 0 32 32"
         style={{display: 'block'}}
         aria-hidden="true"
@@ -134,7 +133,7 @@ const CursorGrab = () => (
     </svg>
 );
 
-const LOOP_MS = 3400;
+const DEMO_MS = 4200;
 const EASE = 'cubic-bezier(0.25, 0.1, 0.25, 1)';
 const tr = (x, y) => `translate(${x}px, ${y}px)`;
 const centerOf = el => {
@@ -144,8 +143,8 @@ const centerOf = el => {
 
 /* "Show me" cursor: a translucent pointer that always starts at the Show me
    button, then either taps a click `target` (with a ripple) or grabs the loose
-   `dragHint.block` and drags a ghost copy onto the anchor. Loops. Positions are
-   measured live from the real editor elements. */
+   `dragHint.block` and drags a ghost copy onto the anchor. Plays once. Positions
+   are measured live from the real editor elements. */
 const ShowMeCursor = ({originRef, dragHint, clickTarget}) => {
     const cursorRef = React.useRef(null);
     const arrowRef = React.useRef(null);
@@ -167,7 +166,7 @@ const ShowMeCursor = ({originRef, dragHint, clickTarget}) => {
                 return;
             }
             const from = centerOf(origin);
-            const opts = {duration: LOOP_MS, iterations: Infinity, easing: EASE};
+            const opts = {duration: DEMO_MS, iterations: 1, easing: EASE};
 
             if (dragHint) {
                 const dragEl = document.querySelector(dragHint.block);
@@ -205,31 +204,28 @@ const ShowMeCursor = ({originRef, dragHint, clickTarget}) => {
 
                 anims.push(cursor.animate([
                     {transform: tr(from.x, from.y), opacity: 0, offset: 0},
-                    {transform: tr(from.x, from.y), opacity: 1, offset: 0.08},
-                    {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.28},
-                    {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.36},
-                    {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.64},
-                    {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.76},
-                    {transform: tr(drop.x, drop.y), opacity: 0, offset: 0.88},
-                    {transform: tr(from.x, from.y), opacity: 0, offset: 1}
+                    {transform: tr(from.x, from.y), opacity: 1, offset: 0.1},
+                    {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.32},
+                    {transform: tr(grab.x, grab.y), opacity: 1, offset: 0.42},
+                    {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.78},
+                    {transform: tr(drop.x, drop.y), opacity: 1, offset: 0.92},
+                    {transform: tr(drop.x, drop.y), opacity: 0, offset: 1}
                 ], opts));
                 anims.push(ghost.animate([
                     {transform: tr(d.left, d.top), opacity: 0, offset: 0},
-                    {transform: tr(d.left, d.top), opacity: 0, offset: 0.32},
-                    {transform: tr(d.left, d.top), opacity: 0.5, offset: 0.36},
-                    {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.64},
-                    {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.76},
-                    {transform: tr(tl.x, tl.y), opacity: 0, offset: 0.86},
-                    {transform: tr(d.left, d.top), opacity: 0, offset: 1}
+                    {transform: tr(d.left, d.top), opacity: 0, offset: 0.38},
+                    {transform: tr(d.left, d.top), opacity: 0.5, offset: 0.42},
+                    {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.78},
+                    {transform: tr(tl.x, tl.y), opacity: 0.5, offset: 0.92},
+                    {transform: tr(tl.x, tl.y), opacity: 0, offset: 1}
                 ], opts));
                 anims.push(arrowRef.current.animate([
-                    {opacity: 1, offset: 0}, {opacity: 1, offset: 0.28},
-                    {opacity: 0, offset: 0.34}, {opacity: 0, offset: 1}
+                    {opacity: 1, offset: 0}, {opacity: 1, offset: 0.32},
+                    {opacity: 0, offset: 0.42}, {opacity: 0, offset: 1}
                 ], opts));
                 anims.push(grabRef.current.animate([
-                    {opacity: 0, offset: 0}, {opacity: 0, offset: 0.28},
-                    {opacity: 1, offset: 0.34}, {opacity: 1, offset: 0.76},
-                    {opacity: 0, offset: 0.86}, {opacity: 0, offset: 1}
+                    {opacity: 0, offset: 0}, {opacity: 0, offset: 0.32},
+                    {opacity: 1, offset: 0.42}, {opacity: 1, offset: 1}
                 ], opts));
                 return;
             }
@@ -255,19 +251,18 @@ const ShowMeCursor = ({originRef, dragHint, clickTarget}) => {
 
             anims.push(cursor.animate([
                 {transform: tr(from.x, from.y), opacity: 0, offset: 0},
-                {transform: tr(from.x, from.y), opacity: 1, offset: 0.08},
-                {transform: tr(to.x, to.y), opacity: 1, offset: 0.36},
-                {transform: tr(to.x, to.y + 3), opacity: 1, offset: 0.44},
-                {transform: tr(to.x, to.y), opacity: 1, offset: 0.52},
-                {transform: tr(to.x, to.y), opacity: 1, offset: 0.78},
-                {transform: tr(to.x, to.y), opacity: 0, offset: 0.9},
-                {transform: tr(from.x, from.y), opacity: 0, offset: 1}
+                {transform: tr(from.x, from.y), opacity: 1, offset: 0.1},
+                {transform: tr(to.x, to.y), opacity: 1, offset: 0.44},
+                {transform: tr(to.x, to.y + 3), opacity: 1, offset: 0.52},
+                {transform: tr(to.x, to.y), opacity: 1, offset: 0.6},
+                {transform: tr(to.x, to.y), opacity: 1, offset: 0.92},
+                {transform: tr(to.x, to.y), opacity: 0, offset: 1}
             ], opts));
             anims.push(ripple.animate([
                 {transform: 'translate(-50%, -50%) scale(0.3)', opacity: 0, offset: 0},
-                {transform: 'translate(-50%, -50%) scale(0.3)', opacity: 0, offset: 0.42},
-                {transform: 'translate(-50%, -50%) scale(0.5)', opacity: 0.65, offset: 0.46},
-                {transform: 'translate(-50%, -50%) scale(1.5)', opacity: 0, offset: 0.64},
+                {transform: 'translate(-50%, -50%) scale(0.3)', opacity: 0, offset: 0.48},
+                {transform: 'translate(-50%, -50%) scale(0.5)', opacity: 0.65, offset: 0.52},
+                {transform: 'translate(-50%, -50%) scale(1.5)', opacity: 0, offset: 0.72},
                 {transform: 'translate(-50%, -50%) scale(1.5)', opacity: 0, offset: 1}
             ], opts));
         };
@@ -332,7 +327,6 @@ const MicroworldsWizard = props => {
         clickTarget,
         dragHint,
         isLastStep,
-        isRunning,
         onGoToStep,
         onNext,
         prompt,
@@ -343,9 +337,8 @@ const MicroworldsWizard = props => {
     const [showMe, setShowMe] = React.useState(false);
     const showMeRef = React.useRef(null);
 
-    // No point demonstrating while the code is running or once the step's
-    // action (e.g. snapping the blocks together) is already done.
-    const showMeDisabled = isRunning || canAdvance;
+    // "Show me" is only locked out while its (one-shot) demo is playing.
+    const showMeDisabled = showMe;
 
     // Hide the hint whenever the step changes or its action is completed.
     React.useEffect(() => setShowMe(false), [stepIndex]);
@@ -353,14 +346,17 @@ const MicroworldsWizard = props => {
         if (canAdvance) setShowMe(false);
     }, [canAdvance]);
 
-    // Dismiss the hint as soon as the user interacts (deferred a tick so the
-    // press that opened it doesn't immediately close it).
+    // The cursor demo runs once: dismiss it when it finishes, or as soon as the
+    // user interacts (the press that opened it is deferred a tick so it doesn't
+    // immediately close).
     React.useEffect(() => {
         if (!showMe) return;
         const dismiss = () => setShowMe(false);
-        const id = setTimeout(() => document.addEventListener('pointerdown', dismiss), 0);
+        const doneId = setTimeout(dismiss, DEMO_MS);
+        const clickId = setTimeout(() => document.addEventListener('pointerdown', dismiss), 0);
         return () => {
-            clearTimeout(id);
+            clearTimeout(doneId);
+            clearTimeout(clickId);
             document.removeEventListener('pointerdown', dismiss);
         };
     }, [showMe]);
@@ -374,15 +370,9 @@ const MicroworldsWizard = props => {
     return (
         <div className={styles.wizardContainer}>
             <div className={styles.tutBar}>
-                <img
-                    className={styles.ftIll}
-                    src={fingerTapIcon}
-                    alt=""
-                    draggable={false}
-                />
-                <div className={styles.tutTitle}>{prompt}</div>
-
                 <SpeakButton text={prompt} />
+
+                <div className={styles.tutTitle}>{prompt}</div>
 
                 <button
                     ref={showMeRef}
@@ -412,17 +402,7 @@ const MicroworldsWizard = props => {
                 </div>
 
                 <button
-                    className={styles.skipLink}
-                    onClick={onNext}
-                >
-                    {'Skip'}
-                </button>
-
-                <button
-                    className={classNames(styles.btnNext, {
-                        [styles.btnNextDisabled]: !canAdvance
-                    })}
-                    disabled={!canAdvance}
+                    className={styles.btnNext}
                     onClick={onNext}
                     aria-label={isLastStep ? 'Finish' : 'Next'}
                 >
@@ -451,7 +431,6 @@ MicroworldsWizard.propTypes = {
         placement: PropTypes.oneOf(['above', 'below'])
     }),
     isLastStep: PropTypes.bool,
-    isRunning: PropTypes.bool,
     onGoToStep: PropTypes.func.isRequired,
     onNext: PropTypes.func.isRequired,
     prompt: PropTypes.string.isRequired,

@@ -33,7 +33,7 @@
 .stage-menu-wrapper-microworlds {
     padding-left: $space;
     padding-right: $space;
-    background-color: hsla(0, 0%, 100%, 0.55);
+    background-color: $ui-white;
     border: 1px solid hsl(213, 35%, 92%);
     border-radius: calc($space * 1.25);
 }
