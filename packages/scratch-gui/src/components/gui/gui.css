@@ -373,6 +373,23 @@ body .alerts-container {
     padding-top: calc($space * 1.75);
 }
 
+/* Until the "add a sprite" step the sprite pane is present (so the layout
+   stays consistent) but shown as a plain gray placeholder: its contents are
+   hidden and it is non-interactive. */
+.microworlds-target-inactive {
+    pointer-events: none;
+}
+
+.microworlds-layout .microworlds-target-inactive :global([class*="sprite-selector_sprite-selector"]) {
+    background-color: $ui-primary; /* blend into the page background */
+    box-shadow: none;
+}
+
+.microworlds-target-inactive :global([class*="sprite-selector_scroll-wrapper"]),
+.microworlds-target-inactive :global([class*="sprite-selector_add-button"]) {
+    visibility: hidden;
+}
+
 .microworlds-layout :global([class*="sprite-selector_sprite-selector"]) {
     margin: 0;
     background-color: $ui-white;
@@ -383,6 +400,14 @@ body .alerts-container {
 
 .microworlds-layout :global([class*="sprite-selector_scroll-wrapper"]) {
     height: 100%;
+}
+
+/* Keep the sprite tile at the exact proportions it has in the normal editor.
+   The default per-row width calc grows with the container, so the wider intro
+   pane would otherwise stretch the tile; the height already matches (4rem). */
+.microworlds-layout :global([class*="sprite-selector_sprite-wrapper"]) {
+    width: 4.375rem; /* 70px — the editor's standard tile width */
+    max-width: 4.375rem;
 }
 
 /* No backdrop selector or per-sprite delete buttons in the intro. */

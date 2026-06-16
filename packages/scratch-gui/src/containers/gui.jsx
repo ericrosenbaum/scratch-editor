@@ -199,7 +199,7 @@ const mapStateToProps = (state, ownProps) => {
         isShowingProject: getIsShowingProject(loadingState),
         loadingStateVisible: state.scratchGui.modals.loadingProject,
         microworldsActive,
-        microworldsHideTargetPane: microworldsActive && !microworldsReveal.spritePane,
+        microworldsSpritePaneInactive: microworldsActive && !microworldsReveal.spritePane,
         platform: ownProps.platform,
         projectId: state.scratchGui.projectState.projectId,
         soundsTabVisible: state.scratchGui.editorTab.activeTabIndex === SOUNDS_TAB_INDEX,

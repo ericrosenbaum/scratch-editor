@@ -163,7 +163,7 @@ const GUIComponent = props => {
         manuallySaveThumbnails,
         menuBarHidden,
         microworldsActive,
-        microworldsHideTargetPane,
+        microworldsSpritePaneInactive,
         renderLogin,
         onClickAbout,
         onClickAccountNav,
@@ -395,8 +395,7 @@ const GUIComponent = props => {
                             <Box
                                 className={classNames(boxStyles, styles.flexWrapper, {
                                     [styles.microworldsBody]: microworldsActive,
-                                    [styles.microworldsBodyWithSprites]:
-                                        microworldsActive && !microworldsHideTargetPane
+                                    [styles.microworldsBodyWithSprites]: microworldsActive
                                 })}
                             >
                                 <Box
@@ -576,21 +575,22 @@ const GUIComponent = props => {
                                         ariaRole="region"
                                         ariaLabel={intl.formatMessage(ariaMessages.stage)}
                                     />
-                                    {microworldsHideTargetPane ? null : (
-                                        <Box
-                                            className={styles.targetWrapper}
-                                            role="region"
-                                            aria-label={intl.formatMessage(ariaMessages.targetPane)}
-                                            element="section"
-                                        >
-                                            <TargetPane
-                                                stageSize={stageSize}
-                                                vm={vm}
-                                                onNewSpriteClick={onNewSpriteClick}
-                                                onNewBackdropClick={onNewLibraryBackdropClick}
-                                            />
-                                        </Box>
-                                    )}
+                                    <Box
+                                        className={classNames(styles.targetWrapper, {
+                                            [styles.microworldsTargetInactive]:
+                                                microworldsSpritePaneInactive
+                                        })}
+                                        role="region"
+                                        aria-label={intl.formatMessage(ariaMessages.targetPane)}
+                                        element="section"
+                                    >
+                                        <TargetPane
+                                            stageSize={stageSize}
+                                            vm={vm}
+                                            onNewSpriteClick={onNewSpriteClick}
+                                            onNewBackdropClick={onNewLibraryBackdropClick}
+                                        />
+                                    </Box>
                                 </Box>
                             </Box>
                         </div>
@@ -649,7 +649,7 @@ GUIComponent.propTypes = {
     manuallySaveThumbnails: PropTypes.bool,
     menuBarHidden: PropTypes.bool,
     microworldsActive: PropTypes.bool,
-    microworldsHideTargetPane: PropTypes.bool,
+    microworldsSpritePaneInactive: PropTypes.bool,
     onActivateCostumesTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
     onActivateTab: PropTypes.func,
