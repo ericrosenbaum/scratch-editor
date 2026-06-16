@@ -256,6 +256,7 @@ const GUIComponent = props => {
         const boxStyles = classNames(styles.bodyWrapper, {
             [styles.bodyWrapperWithoutMenuBar]: menuBarHidden
         });
+        const blocksMedia = `${basePath}static/${colorModeMap[colorMode].blocksMediaFolder}/`;
 
         return isPlayerOnly ? (
             <StageWrapper
@@ -310,9 +311,6 @@ const GUIComponent = props => {
                     ) : null}
                     {cardsVisible ? (
                         <Cards />
-                    ) : null}
-                    {microworldsActive ? (
-                        <MicroworldsWizard vm={vm} />
                     ) : null}
                     {alertsVisible ? (
                         <Alerts className={styles.alertsContainer} />
@@ -381,200 +379,220 @@ const GUIComponent = props => {
                         username={username}
                         accountMenuOptions={accountMenuOptions}
                     />}
-                    <Box className={classNames(boxStyles, styles.flexWrapper)}>
-                        <Box
-                            role="main"
-                            aria-label={intl.formatMessage(ariaMessages.editor)}
-                            className={styles.editorWrapper}
-                            element="main"
+                    <div
+                        className={classNames(styles.bodyLayout, {
+                            [styles.microworldsLayout]: microworldsActive
+                        })}
+                    >
+                        <div
+                            className={classNames(styles.bodyStack, {
+                                [styles.microworldsStack]: microworldsActive
+                            })}
                         >
-                            <Tabs
-                                forceRenderTabPanel
-                                className={tabClassNames.tabs}
-                                selectedIndex={activeTabIndex}
-                                selectedTabClassName={tabClassNames.tabSelected}
-                                selectedTabPanelClassName={tabClassNames.tabPanelSelected}
-                                onSelect={onActivateTab}
-
-                                // TODO: focusTabOnClick should be true for accessibility, but currently conflicts
-                                // with nudge operations in the paint editor. We'll likely need to manage focus
-                                // differently within the paint editor before we can turn this back on.
-                                // Repro steps:
-                                // 1. Click the Costumes tab
-                                // 2. Select something in the paint editor (say, the cat's face)
-                                // 3. Press the left or right arrow key
-                                // Desired behavior: the face should nudge left or right
-                                // Actual behavior: the Code or Sounds tab is now focused
-                                focusTabOnClick={false}
+                            <Box
+                                className={classNames(boxStyles, styles.flexWrapper, {
+                                    [styles.microworldsBody]: microworldsActive
+                                })}
                             >
                                 <Box
-                                    role="region"
-                                    aria-label={intl.formatMessage(ariaMessages.tabList)}
-                                    className={classNames({
-                                        [styles.microworldsHidden]: microworldsActive
-                                    })}
+                                    role="main"
+                                    aria-label={intl.formatMessage(ariaMessages.editor)}
+                                    className={styles.editorWrapper}
+                                    element="main"
                                 >
-                                    <TabList
-                                        className={tabClassNames.tabList}
-                                        role="tablist"
+                                    <Tabs
+                                        forceRenderTabPanel
+                                        className={tabClassNames.tabs}
+                                        selectedIndex={activeTabIndex}
+                                        selectedTabClassName={tabClassNames.tabSelected}
+                                        selectedTabPanelClassName={tabClassNames.tabPanelSelected}
+                                        onSelect={onActivateTab}
+
+                                        // TODO: focusTabOnClick should be true for a11y, but currently conflicts
+                                        // with nudge operations in the paint editor. We'll likely need to manage focus
+                                        // differently within the paint editor before we can turn this back on.
+                                        // Repro steps:
+                                        // 1. Click the Costumes tab
+                                        // 2. Select something in the paint editor (say, the cat's face)
+                                        // 3. Press the left or right arrow key
+                                        // Desired behavior: the face should nudge left or right
+                                        // Actual behavior: the Code or Sounds tab is now focused
+                                        focusTabOnClick={false}
                                     >
-                                        <Tab
-                                            className={tabClassNames.tab}
-                                            tabIndex="0"
-                                            role="tab"
+                                        <Box
+                                            role="region"
+                                            aria-label={intl.formatMessage(ariaMessages.tabList)}
+                                            className={classNames({
+                                                [styles.microworldsHidden]: microworldsActive
+                                            })}
                                         >
-                                            <img
-                                                draggable={false}
-                                                src={codeIcon}
-                                            />
-                                            <FormattedMessage
-                                                defaultMessage="Code"
-                                                description="Button to get to the code panel"
-                                                id="gui.gui.codeTab"
-                                            />
-                                        </Tab>
-                                        <Tab
-                                            className={tabClassNames.tab}
-                                            onClick={onActivateCostumesTab}
-                                            role="tab"
-                                            tabIndex="0"
+                                            <TabList
+                                                className={tabClassNames.tabList}
+                                                role="tablist"
+                                            >
+                                                <Tab
+                                                    className={tabClassNames.tab}
+                                                    tabIndex="0"
+                                                    role="tab"
+                                                >
+                                                    <img
+                                                        draggable={false}
+                                                        src={codeIcon}
+                                                    />
+                                                    <FormattedMessage
+                                                        defaultMessage="Code"
+                                                        description="Button to get to the code panel"
+                                                        id="gui.gui.codeTab"
+                                                    />
+                                                </Tab>
+                                                <Tab
+                                                    className={tabClassNames.tab}
+                                                    onClick={onActivateCostumesTab}
+                                                    role="tab"
+                                                    tabIndex="0"
+                                                >
+                                                    <img
+                                                        draggable={false}
+                                                        src={costumesIcon}
+                                                    />
+                                                    {targetIsStage ? (
+                                                        <FormattedMessage
+                                                            defaultMessage="Backdrops"
+                                                            description="Button to get to the backdrops panel"
+                                                            id="gui.gui.backdropsTab"
+                                                        />
+                                                    ) : (
+                                                        <FormattedMessage
+                                                            defaultMessage="Costumes"
+                                                            description="Button to get to the costumes panel"
+                                                            id="gui.gui.costumesTab"
+                                                        />
+                                                    )}
+                                                </Tab>
+                                                <Tab
+                                                    className={tabClassNames.tab}
+                                                    onClick={onActivateSoundsTab}
+                                                    role="tab"
+                                                    tabIndex="0"
+                                                >
+                                                    <img
+                                                        draggable={false}
+                                                        src={soundsIcon}
+                                                    />
+                                                    <FormattedMessage
+                                                        defaultMessage="Sounds"
+                                                        description="Button to get to the sounds panel"
+                                                        id="gui.gui.soundsTab"
+                                                    />
+                                                </Tab>
+                                            </TabList>
+                                        </Box>
+                                        <TabPanel
+                                            className={tabClassNames.tabPanel}
+                                            role="tabpanel"
                                         >
-                                            <img
-                                                draggable={false}
-                                                src={costumesIcon}
-                                            />
-                                            {targetIsStage ? (
-                                                <FormattedMessage
-                                                    defaultMessage="Backdrops"
-                                                    description="Button to get to the backdrops panel"
-                                                    id="gui.gui.backdropsTab"
+                                            <Box
+                                                className={styles.blocksWrapper}
+                                                role="region"
+                                                aria-label={intl.formatMessage(ariaMessages.codePanel)}
+                                                element="section"
+                                            >
+                                                <Blocks
+                                                    key={`${blocksId}/${colorMode}/${theme}`}
+                                                    canUseCloud={canUseCloud}
+                                                    grow={1}
+                                                    isVisible={blocksTabVisible}
+                                                    options={{
+                                                        media: blocksMedia
+                                                    }}
+                                                    stageSize={stageSize}
+                                                    theme={theme}
+                                                    vm={vm}
+                                                    colorMode={colorMode}
                                                 />
-                                            ) : (
-                                                <FormattedMessage
-                                                    defaultMessage="Costumes"
-                                                    description="Button to get to the costumes panel"
-                                                    id="gui.gui.costumesTab"
+                                            </Box>
+                                            {microworldsActive ? null : (
+                                                <ExtensionsButton
+                                                    intl={intl}
+                                                    onExtensionButtonClick={onExtensionButtonClick}
                                                 />
                                             )}
-                                        </Tab>
-                                        <Tab
-                                            className={tabClassNames.tab}
-                                            onClick={onActivateSoundsTab}
-                                            role="tab"
-                                            tabIndex="0"
+                                            <Box className={styles.watermark}>
+                                                <Watermark />
+                                            </Box>
+                                        </TabPanel>
+                                        <TabPanel
+                                            className={tabClassNames.tabPanel}
+                                            role="tabpanel"
                                         >
-                                            <img
-                                                draggable={false}
-                                                src={soundsIcon}
-                                            />
-                                            <FormattedMessage
-                                                defaultMessage="Sounds"
-                                                description="Button to get to the sounds panel"
-                                                id="gui.gui.soundsTab"
-                                            />
-                                        </Tab>
-                                    </TabList>
-                                </Box>
-                                <TabPanel
-                                    className={tabClassNames.tabPanel}
-                                    role="tabpanel"
-                                >
-                                    <Box
-                                        className={styles.blocksWrapper}
-                                        role="region"
-                                        aria-label={intl.formatMessage(ariaMessages.codePanel)}
-                                        element="section"
-                                    >
-                                        <Blocks
-                                            key={`${blocksId}/${colorMode}/${theme}`}
-                                            canUseCloud={canUseCloud}
-                                            grow={1}
-                                            isVisible={blocksTabVisible}
-                                            options={{
-                                                media: `${basePath}static/${colorModeMap[colorMode].blocksMediaFolder}/`
-                                            }}
-                                            stageSize={stageSize}
-                                            theme={theme}
-                                            vm={vm}
-                                            colorMode={colorMode}
-                                        />
-                                    </Box>
-                                    {microworldsActive ? null : (
-                                        <ExtensionsButton
-                                            intl={intl}
-                                            onExtensionButtonClick={onExtensionButtonClick}
-                                        />
-                                    )}
-                                    <Box className={styles.watermark}>
-                                        <Watermark />
-                                    </Box>
-                                </TabPanel>
-                                <TabPanel
-                                    className={tabClassNames.tabPanel}
-                                    role="tabpanel"
-                                >
-                                    {costumesTabVisible ? <CostumeTab
-                                        ariaLabel={targetIsStage ? intl.formatMessage(ariaMessages.backdropsPanel) :
-                                            intl.formatMessage(ariaMessages.costumesPanel)}
-                                        ariaRole="region"
-                                        vm={vm}
-                                        onNewLibraryBackdropClick={onNewLibraryBackdropClick}
-                                        onNewLibraryCostumeClick={onNewLibraryCostumeClick}
-                                    /> : null}
-                                </TabPanel>
-                                <TabPanel
-                                    className={tabClassNames.tabPanel}
-                                    role="tabpanel"
-                                >
-                                    {soundsTabVisible ?
-                                        <SoundTab
-                                            ariaLabel={intl.formatMessage(ariaMessages.soundsPanel)}
+                                            {costumesTabVisible ? <CostumeTab
+                                                ariaLabel={targetIsStage ?
+                                                    intl.formatMessage(ariaMessages.backdropsPanel) :
+                                                    intl.formatMessage(ariaMessages.costumesPanel)}
+                                                ariaRole="region"
+                                                vm={vm}
+                                                onNewLibraryBackdropClick={onNewLibraryBackdropClick}
+                                                onNewLibraryCostumeClick={onNewLibraryCostumeClick}
+                                            /> : null}
+                                        </TabPanel>
+                                        <TabPanel
+                                            className={tabClassNames.tabPanel}
+                                            role="tabpanel"
+                                        >
+                                            {soundsTabVisible ?
+                                                <SoundTab
+                                                    ariaLabel={intl.formatMessage(ariaMessages.soundsPanel)}
+                                                    ariaRole="region"
+                                                    vm={vm}
+                                                /> : null}
+                                        </TabPanel>
+                                    </Tabs>
+                                    {backpackVisible && backpackConfigured && !microworldsActive ? (
+                                        <Backpack
+                                            host={backpackHost}
                                             ariaRole="region"
-                                            vm={vm}
-                                        /> : null}
-                                </TabPanel>
-                            </Tabs>
-                            {backpackVisible && backpackConfigured && !microworldsActive ? (
-                                <Backpack
-                                    host={backpackHost}
-                                    ariaRole="region"
-                                    ariaLabel={intl.formatMessage(ariaMessages.backpack)}
-                                />
-                            ) : null}
-                        </Box>
+                                            ariaLabel={intl.formatMessage(ariaMessages.backpack)}
+                                        />
+                                    ) : null}
+                                </Box>
 
-                        <Box
-                            role="complementary"
-                            aria-label={intl.formatMessage(ariaMessages.stageAndTarget)}
-                            className={classNames(styles.stageAndTargetWrapper, styles[stageSize])}
-                            element="aside"
-                        >
-                            <StageWrapper
-                                isFullScreen={isFullScreen}
-                                isRendererSupported={isRendererSupported}
-                                isRtl={isRtl}
-                                stageSize={stageSize}
-                                vm={vm}
-                                ariaRole="region"
-                                ariaLabel={intl.formatMessage(ariaMessages.stage)}
-                            />
-                            {microworldsHideTargetPane ? null : (
                                 <Box
-                                    className={styles.targetWrapper}
-                                    role="region"
-                                    aria-label={intl.formatMessage(ariaMessages.targetPane)}
-                                    element="section"
+                                    role="complementary"
+                                    aria-label={intl.formatMessage(ariaMessages.stageAndTarget)}
+                                    className={classNames(styles.stageAndTargetWrapper, styles[stageSize])}
+                                    element="aside"
                                 >
-                                    <TargetPane
+                                    <StageWrapper
+                                        isFullScreen={isFullScreen}
+                                        isRendererSupported={isRendererSupported}
+                                        isRtl={isRtl}
                                         stageSize={stageSize}
                                         vm={vm}
-                                        onNewSpriteClick={onNewSpriteClick}
-                                        onNewBackdropClick={onNewLibraryBackdropClick}
+                                        ariaRole="region"
+                                        ariaLabel={intl.formatMessage(ariaMessages.stage)}
                                     />
+                                    {microworldsHideTargetPane ? null : (
+                                        <Box
+                                            className={styles.targetWrapper}
+                                            role="region"
+                                            aria-label={intl.formatMessage(ariaMessages.targetPane)}
+                                            element="section"
+                                        >
+                                            <TargetPane
+                                                stageSize={stageSize}
+                                                vm={vm}
+                                                onNewSpriteClick={onNewSpriteClick}
+                                                onNewBackdropClick={onNewLibraryBackdropClick}
+                                            />
+                                        </Box>
+                                    )}
                                 </Box>
-                            )}
-                        </Box>
-                    </Box>
+                            </Box>
+                            {microworldsActive ? (
+                                <MicroworldsWizard vm={vm} />
+                            ) : null}
+                        </div>
+                    </div>
                     <DragLayer />
                 </Box>
             </ModalFocusProvider>

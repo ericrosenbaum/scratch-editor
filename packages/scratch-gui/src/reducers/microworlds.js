@@ -3,6 +3,7 @@ import {getStepCount} from '../lib/microworlds';
 const START = 'scratch-gui/microworlds/START';
 const NEXT_STEP = 'scratch-gui/microworlds/NEXT_STEP';
 const PREV_STEP = 'scratch-gui/microworlds/PREV_STEP';
+const SET_STEP = 'scratch-gui/microworlds/SET_STEP';
 const SET_CHOICE = 'scratch-gui/microworlds/SET_CHOICE';
 const FINISH = 'scratch-gui/microworlds/FINISH';
 const EXIT = 'scratch-gui/microworlds/EXIT';
@@ -37,6 +38,12 @@ const reducer = function (state, action) {
     case PREV_STEP:
         if (!state.active || state.step <= 0) return state;
         return Object.assign({}, state, {step: state.step - 1});
+    case SET_STEP: {
+        if (!state.active) return state;
+        const lastStep = getStepCount(state) - 1;
+        const step = Math.max(0, Math.min(action.step, lastStep));
+        return Object.assign({}, state, {step});
+    }
     case SET_CHOICE:
         return Object.assign({}, state, {
             choices: Object.assign({}, state.choices, {[action.key]: action.value})
@@ -53,6 +60,7 @@ const reducer = function (state, action) {
 const startMicroworld = worldId => ({type: START, worldId});
 const microworldNextStep = () => ({type: NEXT_STEP});
 const microworldPrevStep = () => ({type: PREV_STEP});
+const microworldSetStep = step => ({type: SET_STEP, step});
 const setMicroworldChoice = (key, value) => ({type: SET_CHOICE, key, value});
 const finishMicroworld = () => ({type: FINISH});
 const exitMicroworld = () => ({type: EXIT});
@@ -63,6 +71,7 @@ export {
     startMicroworld,
     microworldNextStep,
     microworldPrevStep,
+    microworldSetStep,
     setMicroworldChoice,
     finishMicroworld,
     exitMicroworld

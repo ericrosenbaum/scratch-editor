@@ -1,69 +1,102 @@
 /**
  * @file The single "intro" Microworld definition.
  *
- * A Microworld is a strict-but-choice-driven sequence of steps. Each step
- * declares:
- *   - `reveal`:   which editor chrome is visible during the step
- *   - `palette`:  the block opcodes allowed in the toolbox (null = all)
- *   - `preload`:  an optional preloaded block stack to seed onto the sprite
- *   - `choices`:  optional choice buttons that preserve user agency
- *   - `advanceOn`: the signal that lets the user move to the next step
+ * A Microworld is a short, guided sequence of first-steps. Each step declares:
+ *   - `reveal`:     which editor chrome is visible during the step
+ *   - `palette`:    the block opcodes allowed in the toolbox (null = all). The
+ *                   toolbox is visually hidden during the intro, but the palette
+ *                   is kept so the filtered toolbox stays minimal.
+ *   - `preload`:    a preloaded block stack seeded onto the sprite
+ *   - `spotlight`:  CSS selector the "Show me" hint highlights (click/flag steps)
+ *   - `dragHint`:   {block, anchor, placement, color} for the animated drag
+ *                   "Show me" cursor on drag-to-connect steps
+ *   - `advanceOn`:  the signal that lets the user move to the next step
+ *                   ('scriptGlow' | 'greenFlag' | 'blocksConnected')
+ *   - `connection`: for 'blocksConnected' steps, the expected `parent.next ===
+ *                   child` connection (matched in either direction)
  *
  * Text is intentionally minimal to reduce information overload for new users.
  * Prototype scope: English-only strings (no i18n yet).
  */
 
-import {buildSayStack} from './blocks';
+import {
+    buildSayStack,
+    buildLooseSays,
+    buildConnectedSays,
+    buildHatPlusStack,
+    buildFullStack,
+    HAT_ID,
+    SAY_ID,
+    SAY_B_ID
+} from './blocks';
+
+const MESSAGE = 'Hello!';
 
 const intro = {
     id: 'intro',
     name: 'Get started',
     steps: [
         {
-            // Confusion #1: you can click a block to run it.
+            // You can click a block to run it.
             id: 'click-to-run',
-            prompt: 'Click the block to make the cat talk.',
-            hint: 'A single click runs a block right away.',
+            prompt: 'Click the say block to try it',
             reveal: {blocks: true},
             palette: ['looks_sayforsecs'],
-            preload: () => buildSayStack({withHat: false, message: 'Hello!', secs: 2}),
-            choices: {
-                label: 'What should the cat say?',
-                options: [
-                    {label: 'Hello!', value: 'Hello!'},
-                    {label: 'Hi there!', value: 'Hi there!'},
-                    {label: 'Meow!', value: 'Meow!'}
-                ]
-            },
+            preload: () => buildSayStack({withHat: false, message: MESSAGE, secs: 2}),
+            spotlight: `[data-id="${SAY_ID}"]`,
             advanceOn: 'scriptGlow'
         },
         {
-            // Confusion #2: the green flag runs a whole stack.
-            id: 'green-flag',
-            prompt: 'Now click the green flag to run your code.',
-            hint: 'The green flag starts every stack at once.',
+            // A second block connects below the first to make a stack.
+            id: 'drag-stack',
+            prompt: 'Drag the blocks together to make a stack',
+            reveal: {blocks: true},
+            palette: ['looks_sayforsecs'],
+            preload: () => buildLooseSays({message: MESSAGE, secs: 2}),
+            dragHint: {
+                block: `[data-id="${SAY_B_ID}"]`,
+                anchor: `[data-id="${SAY_ID}"]`,
+                placement: 'below',
+                color: '#9966FF' // looks (say)
+            },
+            advanceOn: 'blocksConnected',
+            connection: {parent: SAY_ID, child: SAY_B_ID}
+        },
+        {
+            // Blocks run from top to bottom, one after another.
+            id: 'click-stack',
+            prompt: 'Click the blocks to run them in order',
+            reveal: {blocks: true},
+            palette: ['looks_sayforsecs'],
+            preload: () => buildConnectedSays({message: MESSAGE, secs: 2}),
+            spotlight: `[data-id="${SAY_ID}"]`,
+            advanceOn: 'scriptGlow'
+        },
+        {
+            // A green-flag hat connects on top of the stack.
+            id: 'connect-hat',
+            prompt: 'Connect the green flag block to your stack',
+            reveal: {blocks: true},
+            palette: ['event_whenflagclicked', 'looks_sayforsecs'],
+            preload: () => buildHatPlusStack({message: MESSAGE, secs: 2}),
+            dragHint: {
+                block: `[data-id="${HAT_ID}"]`,
+                anchor: `[data-id="${SAY_ID}"]`,
+                placement: 'above',
+                color: '#FFBF00' // events (hat)
+            },
+            advanceOn: 'blocksConnected',
+            connection: {parent: HAT_ID, child: SAY_ID}
+        },
+        {
+            // The green flag runs the whole stack.
+            id: 'click-flag',
+            prompt: 'Click the green flag to run your code',
             reveal: {blocks: true, greenFlag: true},
             palette: ['event_whenflagclicked', 'looks_sayforsecs'],
-            preload: () => buildSayStack({withHat: true, message: 'Hello!', secs: 2}),
+            preload: () => buildFullStack({message: MESSAGE, secs: 2}),
+            spotlight: '[class*="green-flag"]',
             advanceOn: 'greenFlag'
-        },
-        {
-            // Confusion #3: a second block runs after the first (sequence).
-            id: 'second-block',
-            prompt: 'Snap another "say" block under the first one, then click the green flag.',
-            hint: 'Blocks run from top to bottom, one after another.',
-            reveal: {blocks: true, greenFlag: true},
-            palette: ['event_whenflagclicked', 'looks_sayforsecs'],
-            advanceOn: 'blocksAdded'
-        },
-        {
-            // Confusion #4: a new sprite has its own code that also runs.
-            id: 'add-sprite',
-            prompt: 'Add a new sprite. Each sprite has its own code.',
-            hint: 'Use the add-sprite button below the stage.',
-            reveal: {blocks: true, greenFlag: true, spritePane: true},
-            palette: ['event_whenflagclicked', 'looks_sayforsecs', 'motion_movesteps'],
-            advanceOn: 'spriteAdded'
         }
     ]
 };

@@ -2,142 +2,214 @@
 @import "../../css/colors.css";
 @import "../../css/z-index.css";
 
+/* In-flow card that sits below the compact editor row, matching its width. */
 .wizard-container {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc($space * 3);
     display: flex;
     justify-content: center;
-    pointer-events: none;
-    z-index: $z-index-card;
+    width: 100%;
 }
 
 .card {
     position: relative;
-    pointer-events: auto;
+    z-index: $z-index-card;
     box-sizing: border-box;
-    width: 26rem;
-    max-width: calc(100vw - 2rem);
-    padding: calc($space * 2);
+    width: 100%;
+    padding: calc($space * 2.5) calc($space * 3);
     background-color: $ui-white;
-    border: 1px solid $ui-black-transparent;
-    border-radius: calc($space * 1.5);
-    box-shadow: 0 2px 16px hsla(0, 0%, 0%, 0.25);
+    border-radius: $space;
+    box-shadow: 0 1px 3px hsla(225, 22%, 23%, 0.08), 0 4px 12px hsla(225, 22%, 23%, 0.06);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: $text-primary;
-}
-
-.skip-button {
-    position: absolute;
-    top: calc($space * 1.25);
-    right: calc($space * 1.5);
-    border: none;
-    background: none;
-    padding: 0;
-    cursor: pointer;
-    font-size: 0.75rem;
-    color: $text-primary-transparent;
-}
-
-.skip-button:hover {
-    color: $text-primary;
+    display: flex;
+    flex-direction: column;
+    gap: calc($space * 2);
 }
 
 .prompt {
-    font-size: 1.125rem;
+    font-size: 1rem; /* 16px — legible and consistent with blocks/bubbles */
     font-weight: bold;
     line-height: 1.3;
-    margin-right: calc($space * 3); /* leave room for the Skip button */
+    color: hsl(225, 21%, 23%); /* darker headline ink (#2E3447) */
+    text-wrap: pretty;
 }
 
-.hint {
-    margin-top: calc($space / 2);
-    font-size: 0.875rem;
-    color: $text-primary-transparent;
-}
-
-.choices {
-    margin-top: calc($space * 1.5);
-}
-
-.choices-label {
-    font-size: 0.8125rem;
-    margin-bottom: calc($space / 2);
-}
-
-.choice-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $space;
-}
-
-.choice-button {
+/* "Show me" pill */
+.show-me-button {
+    align-self: flex-start;
+    border: none;
     cursor: pointer;
-    padding: calc($space / 2) $space;
-    font-size: 0.875rem;
-    color: $motion-primary;
-    background-color: $ui-white;
-    border: 1px solid $motion-primary;
-    border-radius: calc($space * 2);
-}
-
-.choice-button:hover {
-    background-color: $ui-primary;
-}
-
-.choice-button-selected {
+    font-family: inherit;
+    font-size: 1rem; /* match the prompt / block text */
+    font-weight: bold;
     color: $ui-white;
     background-color: $motion-primary;
+    padding: calc($space * 1.125) calc($space * 2.5);
+    border-radius: 999px;
+    box-shadow: 0 2px 6px hsla(215, 100%, 65%, 0.4);
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.show-me-button:hover {
+    background-color: $motion-tertiary;
+}
+
+.show-me-button:active {
+    transform: translateY(1px);
 }
 
 .footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: calc($space * 2);
 }
 
 .pips {
     display: flex;
-    gap: calc($space / 2);
+    gap: calc($space * 1.125);
 }
 
 .pip {
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.5625rem;
+    height: 0.5625rem;
+    padding: 0;
+    border: none;
     border-radius: 50%;
-    background-color: $ui-tertiary;
+    cursor: pointer;
+    background-color: hsl(218, 56%, 86%); /* #C9D6F0 */
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.pip:hover {
+    transform: scale(1.3);
+    background-color: $motion-tertiary;
 }
 
 .pip-active {
     background-color: $motion-primary;
+    transform: scale(1.15);
 }
 
-.pip-done {
-    background-color: $motion-tertiary;
-}
-
-.next-button {
-    cursor: pointer;
-    padding: calc($space / 2) calc($space * 2);
-    font-size: 0.875rem;
-    font-weight: bold;
-    color: $ui-white;
+.pip-active:hover {
     background-color: $motion-primary;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc($space * 0.75);
+}
+
+/* Round, arrow-only Next button */
+.next-button {
+    width: 2.875rem;
+    height: 2.875rem;
+    border-radius: 50%;
     border: none;
-    border-radius: calc($space * 2);
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $motion-primary;
+    box-shadow: 0 2px 6px hsla(215, 100%, 65%, 0.4);
+    transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .next-button:hover {
     background-color: $motion-tertiary;
 }
 
-.next-button-disabled {
-    cursor: default;
-    opacity: 0.5;
+.next-button:active {
+    transform: translateY(1px);
 }
 
+.next-button-disabled,
 .next-button-disabled:hover {
-    background-color: $motion-primary;
+    cursor: not-allowed;
+    background-color: hsl(218, 56%, 86%); /* #C9D6F0 */
+    box-shadow: none;
+}
+
+.next-button-disabled:active {
+    transform: none;
+}
+
+.skip-button {
+    border: none;
+    background: none;
+    padding: calc($space / 4) calc($space * 0.75);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.75rem; /* intentionally smaller than the rest */
+    font-weight: 500;
+    color: $text-primary-transparent;
+    transition: color 0.15s ease;
+}
+
+.skip-button:hover {
+    color: $text-primary;
+    text-decoration: underline;
+}
+
+/* "Show me" spotlight: highlight ring + big shadow dimming everything else. */
+.spotlight-hole {
+    position: fixed;
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: $z-index-card-spotlight;
+    box-shadow:
+        0 0 0 3px hsla(215, 100%, 65%, 0.95),
+        0 0 0 9999px hsla(225, 24%, 21%, 0.55);
+    animation: spotIn 0.22s ease;
+}
+
+@keyframes spotIn {
+    from { transform: scale(1.05); }
+    to { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spotlight-hole {
+        animation: none;
+    }
+}
+
+/* "Show me" drag hint: a translucent cursor + ghost block, animated in JS. */
+.ghost-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: $z-index-card-spotlight;
+}
+
+.ghost-block {
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 6px;
+    opacity: 0;
+    box-shadow: 0 2px 6px hsla(225, 24%, 21%, 0.25);
+    will-change: transform, opacity;
+}
+
+.ghost-cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    filter: drop-shadow(0 1px 2px hsla(0, 0%, 0%, 0.25));
+    will-change: transform, opacity;
+}
+
+.gc-arrow {
+    position: absolute;
+    left: -3px;
+    top: -1px;
+}
+
+.gc-grab {
+    position: absolute;
+    left: -13px;
+    top: -7px;
 }

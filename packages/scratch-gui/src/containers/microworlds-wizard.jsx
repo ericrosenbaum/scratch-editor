@@ -5,14 +5,12 @@ import VM from '@scratch/scratch-vm';
 import {connect} from 'react-redux';
 
 import MicroworldsWizardComponent from '../components/microworlds-wizard/microworlds-wizard.jsx';
-import {SAY_MSG_ID} from '../lib/microworlds/blocks';
 import {getCurrentStep, getStepCount} from '../lib/microworlds';
 import {activateDeck} from '../reducers/cards';
 import {
     microworldNextStep,
-    setMicroworldChoice,
-    finishMicroworld,
-    exitMicroworld
+    microworldSetStep,
+    finishMicroworld
 } from '../reducers/microworlds';
 
 // Deck shown after the wizard finishes, dropping the user into the full editor.
@@ -23,8 +21,6 @@ class MicroworldsWizard extends React.Component {
         super(props);
         bindAll(this, [
             'handleNext',
-            'handleChoose',
-            'handleExit',
             'handleScriptGlow',
             'handleGreenFlag',
             'handleProjectChanged',
@@ -33,8 +29,8 @@ class MicroworldsWizard extends React.Component {
         this.state = {canAdvance: false};
         // The step index whose side effects have already been applied.
         this.processedStep = -1;
-        // Top block id of the wizard's currently preloaded stack (for removal).
-        this.preloadedTopBlockId = null;
+        // Top block ids of the wizard's currently preloaded stack(s), for removal.
+        this.preloadedTopBlockIds = [];
         // Baselines captured on step entry, used by the "added" gates.
         this.blockBaseline = 0;
         this.spriteBaseline = 0;
@@ -66,7 +62,7 @@ class MicroworldsWizard extends React.Component {
     }
     /**
      * Apply the side effects for the current step exactly once: preload blocks,
-     * apply any saved choice, capture gate baselines, and reset the gate.
+     * capture gate baselines, and reset the gate.
      */
     processStepIfNeeded () {
         const {vm, step, stepIndex} = this.props;
@@ -80,14 +76,15 @@ class MicroworldsWizard extends React.Component {
 
         if (step.preload) {
             const blocks = step.preload();
-            // Replace any previously preloaded wizard stack.
-            if (this.preloadedTopBlockId &&
-                vm.editingTarget.blocks._blocks[this.preloadedTopBlockId]) {
-                vm.editingTarget.blocks.deleteBlock(this.preloadedTopBlockId);
-            }
+            // Remove any previously preloaded wizard stacks (deleting a top block
+            // removes its whole connected stack and shadows).
+            this.preloadedTopBlockIds.forEach(id => {
+                if (vm.editingTarget.blocks._blocks[id]) {
+                    vm.editingTarget.blocks.deleteBlock(id);
+                }
+            });
             blocks.forEach(block => vm.editingTarget.blocks.createBlock(block));
-            this.preloadedTopBlockId = blocks[0].id;
-            this.applyChoice(this.props.savedChoice);
+            this.preloadedTopBlockIds = blocks.filter(block => block.topLevel).map(block => block.id);
             vm.refreshWorkspace();
         }
 
@@ -95,13 +92,19 @@ class MicroworldsWizard extends React.Component {
         this.spriteBaseline = this.countSprites();
         this.setState({canAdvance: false});
     }
-    applyChoice (value) {
-        const {vm} = this.props;
-        if (!value || !vm.editingTarget) return;
-        const msgBlock = vm.editingTarget.blocks._blocks[SAY_MSG_ID];
-        if (msgBlock && msgBlock.fields.TEXT) {
-            msgBlock.fields.TEXT.value = value;
-        }
+    /**
+     * Whether the two blocks named by a step's `connection` are now joined in a
+     * single stack (matched in either direction).
+     * @param {?object} connection {parent, child} block ids
+     * @returns {boolean} true when connected
+     */
+    isConnected (connection) {
+        if (!connection || !this.props.vm.editingTarget) return false;
+        const blocks = this.props.vm.editingTarget.blocks._blocks;
+        const {parent, child} = connection;
+        const p = blocks[parent];
+        const c = blocks[child];
+        return Boolean((p && p.next === child) || (c && c.next === parent));
     }
     handleScriptGlow () {
         if (this.props.step && this.props.step.advanceOn === 'scriptGlow') {
@@ -114,21 +117,23 @@ class MicroworldsWizard extends React.Component {
         }
     }
     handleProjectChanged () {
-        if (this.props.step && this.props.step.advanceOn === 'blocksAdded' &&
-            this.countBlocks() > this.blockBaseline) {
+        const {step} = this.props;
+        if (!step) return;
+        if (step.advanceOn === 'blocksAdded' && this.countBlocks() > this.blockBaseline) {
+            this.setState({canAdvance: true});
+        }
+        if (step.advanceOn === 'blocksConnected' && this.isConnected(step.connection)) {
             this.setState({canAdvance: true});
         }
     }
     handleTargetsUpdate () {
+        // The editing target may not have existed when we first tried to
+        // preload (project still loading); retry now that targets are ready.
+        this.processStepIfNeeded();
         if (this.props.step && this.props.step.advanceOn === 'spriteAdded' &&
             this.countSprites() > this.spriteBaseline) {
             this.setState({canAdvance: true});
         }
-    }
-    handleChoose (value) {
-        this.props.onSetChoice(this.props.step.id, value);
-        this.applyChoice(value);
-        this.props.vm.refreshWorkspace();
     }
     handleNext () {
         if (this.props.isLastStep) {
@@ -137,24 +142,19 @@ class MicroworldsWizard extends React.Component {
             this.props.onNextStep();
         }
     }
-    handleExit () {
-        this.props.onExit();
-    }
     render () {
-        const {step, stepIndex, stepCount, isLastStep, savedChoice} = this.props;
+        const {step, stepIndex, stepCount, isLastStep} = this.props;
         if (!step) return null;
         return (
             <MicroworldsWizardComponent
                 canAdvance={this.state.canAdvance}
-                choices={step.choices || null}
-                hint={step.hint}
+                dragHint={step.dragHint}
                 isLastStep={isLastStep}
                 prompt={step.prompt}
-                selectedChoice={savedChoice}
+                spotlight={step.spotlight}
                 stepCount={stepCount}
                 stepIndex={stepIndex}
-                onChoose={this.handleChoose}
-                onExit={this.handleExit}
+                onGoToStep={this.props.onGoToStep}
                 onNext={this.handleNext}
             />
         );
@@ -163,17 +163,19 @@ class MicroworldsWizard extends React.Component {
 
 MicroworldsWizard.propTypes = {
     isLastStep: PropTypes.bool,
-    onExit: PropTypes.func.isRequired,
     onFinish: PropTypes.func.isRequired,
+    onGoToStep: PropTypes.func.isRequired,
     onNextStep: PropTypes.func.isRequired,
-    onSetChoice: PropTypes.func.isRequired,
-    savedChoice: PropTypes.string,
     step: PropTypes.shape({
         id: PropTypes.string,
         prompt: PropTypes.string,
-        hint: PropTypes.string,
         advanceOn: PropTypes.string,
-        choices: PropTypes.object,
+        connection: PropTypes.shape({
+            parent: PropTypes.string,
+            child: PropTypes.string
+        }),
+        dragHint: PropTypes.object,
+        spotlight: PropTypes.string,
         preload: PropTypes.func
     }),
     stepCount: PropTypes.number,
@@ -189,19 +191,17 @@ const mapStateToProps = state => {
         step,
         stepIndex: mwState.step,
         stepCount,
-        isLastStep: mwState.step === stepCount - 1,
-        savedChoice: (step && mwState.choices[step.id]) || null
+        isLastStep: mwState.step === stepCount - 1
     };
 };
 
 const mapDispatchToProps = dispatch => ({
     onNextStep: () => dispatch(microworldNextStep()),
-    onSetChoice: (key, value) => dispatch(setMicroworldChoice(key, value)),
+    onGoToStep: step => dispatch(microworldSetStep(step)),
     onFinish: () => {
         dispatch(finishMicroworld());
         dispatch(activateDeck(FOLLOW_UP_DECK_ID));
-    },
-    onExit: () => dispatch(exitMicroworld())
+    }
 });
 
 export default connect(

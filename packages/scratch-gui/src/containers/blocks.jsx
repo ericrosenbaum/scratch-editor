@@ -43,6 +43,10 @@ import {
     SOUNDS_TAB_INDEX
 } from '../reducers/editor-tab';
 
+// Block zoom used inside the Microworld intro, where blocks should read at a
+// size comparable to the wizard card text and the (standard) stage's bubbles.
+const MICROWORLD_BLOCK_SCALE = 0.9;
+
 const addFunctionListener = (object, property, callback) => {
     const oldFn = object[property];
     object[property] = function (...args) {
@@ -513,6 +517,16 @@ class Blocks extends React.Component {
                 this.workspace.addChangeListener(
                     this.toolboxUpdateChangeListener
                 );
+                // In a Microworld the toolbox is hidden and the workspace is
+                // tiny, so center the preloaded blocks instead of relying on
+                // saved scroll. This only runs on workspace reloads (preloads),
+                // not on user clicks/drags, so it won't fight interaction.
+                if (this.props.microworldsActive && this.workspace.scrollCenter) {
+                    if (this.workspace.setScale) {
+                        this.workspace.setScale(MICROWORLD_BLOCK_SCALE);
+                    }
+                    this.workspace.scrollCenter();
+                }
             });
         });
     }
@@ -760,6 +774,7 @@ Blocks.propTypes = {
     isRtl: PropTypes.bool,
     isVisible: PropTypes.bool,
     locale: PropTypes.string.isRequired,
+    microworldsActive: PropTypes.bool,
     microworldsPalette: PropTypes.arrayOf(PropTypes.string),
     messages: PropTypes.objectOf(PropTypes.string),
     onActivateColorPicker: PropTypes.func,
@@ -827,6 +842,7 @@ const mapStateToProps = state => ({
     isRtl: state.locales.isRtl,
     locale: state.locales.locale,
     messages: state.locales.messages,
+    microworldsActive: state.scratchGui.microworlds.active,
     microworldsPalette: getPalette(state.scratchGui.microworlds),
     toolboxXML: state.scratchGui.toolbox.toolboxXML,
     customProceduresVisible: state.scratchGui.customProcedures.active,

@@ -60,6 +60,7 @@ const StageHeaderComponent = function (props) {
         isFullScreen,
         isPlayerOnly,
         manuallySaveThumbnails,
+        microworldsActive,
         onKeyPress,
         onSetStageLarge,
         onSetStageSmall,
@@ -164,32 +165,36 @@ const StageHeaderComponent = function (props) {
             <Box className={styles.stageHeaderWrapper}>
                 <Box className={styles.stageMenuWrapper}>
                     <Controls vm={vm} />
-                    <div className={styles.stageSizeRow}>
-                        {stageControls}
-                        <div className={styles.rightSection}>
-                            {manuallySaveThumbnails && (
+                    {/* Hide the stage-size toggle, full-screen and thumbnail
+                        controls during the Microworld intro. */}
+                    {microworldsActive ? null : (
+                        <div className={styles.stageSizeRow}>
+                            {stageControls}
+                            <div className={styles.rightSection}>
+                                {manuallySaveThumbnails && (
+                                    <Button
+                                        aria-label={intl.formatMessage(messages.setThumbnail)}
+                                        className={styles.setThumbnailButton}
+                                        onClick={onUpdateThumbnail}
+                                    >
+                                        <FormattedMessage {...messages.setThumbnail} />
+                                    </Button>
+                                )}
                                 <Button
-                                    aria-label={intl.formatMessage(messages.setThumbnail)}
-                                    className={styles.setThumbnailButton}
-                                    onClick={onUpdateThumbnail}
+                                    className={styles.stageButton}
+                                    onClick={onSetStageFull}
                                 >
-                                    <FormattedMessage {...messages.setThumbnail} />
+                                    <img
+                                        alt={intl.formatMessage(messages.fullStageSizeMessage)}
+                                        className={styles.stageButtonIcon}
+                                        draggable={false}
+                                        src={fullScreenIcon}
+                                        title={intl.formatMessage(messages.fullscreenControl)}
+                                    />
                                 </Button>
-                            )}
-                            <Button
-                                className={styles.stageButton}
-                                onClick={onSetStageFull}
-                            >
-                                <img
-                                    alt={intl.formatMessage(messages.fullStageSizeMessage)}
-                                    className={styles.stageButtonIcon}
-                                    draggable={false}
-                                    src={fullScreenIcon}
-                                    title={intl.formatMessage(messages.fullscreenControl)}
-                                />
-                            </Button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </Box>
             </Box>
         );
@@ -199,6 +204,7 @@ const StageHeaderComponent = function (props) {
 };
 
 const mapStateToProps = state => ({
+    microworldsActive: state.scratchGui.microworlds.active,
     projectId: state.scratchGui.projectState.projectId,
     // This is the button's mode, as opposed to the actual current state
     stageSizeMode: state.scratchGui.stageSize.stageSize
@@ -208,6 +214,7 @@ StageHeaderComponent.propTypes = {
     isFullScreen: PropTypes.bool.isRequired,
     isPlayerOnly: PropTypes.bool.isRequired,
     manuallySaveThumbnails: PropTypes.bool,
+    microworldsActive: PropTypes.bool,
     onKeyPress: PropTypes.func.isRequired,
     onSetStageFull: PropTypes.func.isRequired,
     onSetStageLarge: PropTypes.func.isRequired,
