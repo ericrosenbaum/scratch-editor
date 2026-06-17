@@ -91,11 +91,14 @@ const intro = {
         {
             // The green flag runs the whole stack.
             id: 'click-flag',
-            prompt: 'Click the green flag to run your code',
+            prompt: 'Click the green flag button to run your code',
             reveal: {blocks: true, greenFlag: true},
             palette: ['event_whenflagclicked', 'looks_sayforsecs', 'motion_glideto'],
             preload: () => buildFullStack({message: MESSAGE, secs: 2}),
             clickTarget: '[class*="green-flag"]',
+            // Pulse the green flag button until it's clicked, to draw the eye to
+            // it (the only off-card control this intro asks the user to press).
+            pulseTarget: '[class*="green-flag"]',
             advanceOn: 'greenFlag'
         },
         {

@@ -4,7 +4,7 @@ import React from 'react';
 
 import styles from './microworlds-wizard.css';
 
-/* Chevron glyph for the round "Next" button. */
+/* Chevron glyph for the quiet "Next" button. */
 const Chevron = () => (
     <svg
         width="22"
@@ -14,12 +14,26 @@ const Chevron = () => (
         aria-hidden="true"
     >
         <path
-            d="M9 5l7 7-7 7"
+            d="M9 6l6 6-6 6"
             stroke="currentColor"
-            strokeWidth="3"
+            strokeWidth="2.2"
             strokeLinecap="round"
             strokeLinejoin="round"
         />
+    </svg>
+);
+
+/* Play glyph that leads the "Show me" button. */
+const PlayIcon = () => (
+    <svg
+        className={styles.showGlyph}
+        width="17"
+        height="17"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+    >
+        <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14z" />
     </svg>
 );
 
@@ -30,19 +44,14 @@ const SpeakerIcon = () => (
         height="22"
         viewBox="0 0 24 24"
         fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         aria-hidden="true"
     >
-        <path
-            d="M4 9v6h3.5L13 19V5L7.5 9H4z"
-            fill="currentColor"
-        />
-        <path
-            d="M16.5 8.5a4 4 0 0 1 0 7M19 6a7.5 7.5 0 0 1 0 12"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            fill="none"
-        />
+        <path d="M11 5 6 9H2v6h4l5 4z" />
+        <path d="M15.5 8.5a5 5 0 0 1 0 7" />
     </svg>
 );
 
@@ -325,21 +334,135 @@ ShowMeCursor.propTypes = {
     originRef: PropTypes.shape({current: PropTypes.any})
 };
 
+/* A pulsing ring drawn over an off-card control (the green flag) to draw the
+   eye to it. The ring is sized and positioned from the live element, so it
+   tracks the button across layout/resize. Rendered only while the step is
+   waiting on that button; it unmounts (and the pulse stops) the moment the
+   action is done. pointer-events are off so the button stays clickable. */
+const PulseHighlight = ({target}) => {
+    const ringRef = React.useRef(null);
+
+    React.useLayoutEffect(() => {
+        let retry = null;
+        const place = () => {
+            const ring = ringRef.current;
+            const el = target && document.querySelector(target);
+            if (!ring || !el) {
+                retry = setTimeout(place, 150);
+                return;
+            }
+            const r = el.getBoundingClientRect();
+            ring.style.left = `${r.left + (r.width / 2)}px`;
+            ring.style.top = `${r.top + (r.height / 2)}px`;
+            ring.style.width = `${r.width}px`;
+            ring.style.height = `${r.height}px`;
+        };
+        place();
+        window.addEventListener('resize', place);
+        return () => {
+            if (retry) clearTimeout(retry);
+            window.removeEventListener('resize', place);
+        };
+    }, [target]);
+
+    return (
+        <div className={styles.pulseLayer}>
+            <div
+                className={styles.pulseRing}
+                ref={ringRef}
+                aria-hidden="true"
+            />
+        </div>
+    );
+};
+
+PulseHighlight.propTypes = {
+    target: PropTypes.string
+};
+
+/* A tiny upward confetti burst, played once over the just-completed segment
+   during the pause before the next step appears. Each piece is a small square
+   in a Scratch block-category color that pops up, spins, and fades. The burst
+   is biased upward so it reads cleanly within the card's clipped bottom edge. */
+const CONFETTI_MS = 1000;
+const CONFETTI_PIECES = [
+    {tx: -38, ty: -30, rot: -170, size: 6, color: '#4C97FF'}, // motion blue
+    {tx: -26, ty: -46, rot: 150, size: 5, color: '#CF63CF'}, // sound magenta
+    {tx: -14, ty: -58, rot: -110, size: 7, color: '#59C059'}, // operators green
+    {tx: -3, ty: -44, rot: 80, size: 4, color: '#FFBF00'}, // events yellow
+    {tx: 8, ty: -56, rot: 160, size: 6, color: '#9966FF'}, // looks purple
+    {tx: 19, ty: -49, rot: -130, size: 5, color: '#4C97FF'},
+    {tx: 30, ty: -52, rot: 100, size: 6, color: '#FFAB19'}, // control orange
+    {tx: 40, ty: -33, rot: -90, size: 4, color: '#59C059'},
+    {tx: -34, ty: -22, rot: 60, size: 4, color: '#FFBF00'},
+    {tx: 24, ty: -26, rot: -150, size: 5, color: '#CF63CF'}
+];
+
+const Confetti = ({index, count}) => (
+    <div
+        className={styles.confetti}
+        style={{left: `${((index + 0.5) / count) * 100}%`}}
+        aria-hidden="true"
+    >
+        {CONFETTI_PIECES.map((p, i) => (
+            <span
+                key={i}
+                className={styles.confettiPiece}
+                style={{
+                    '--tx': `${p.tx}px`,
+                    '--ty': `${p.ty}px`,
+                    '--rot': `${p.rot}deg`,
+                    'width': `${p.size}px`,
+                    'height': `${p.size}px`,
+                    'backgroundColor': p.color,
+                    'animationDelay': `${(i % 4) * 25}ms`
+                }}
+            />
+        ))}
+    </div>
+);
+
+Confetti.propTypes = {
+    count: PropTypes.number,
+    index: PropTypes.number
+};
+
 const MicroworldsWizard = props => {
     const {
         canAdvance,
+        celebrate,
         clickTarget,
         dragHint,
         isLastStep,
         onGoToStep,
         onNext,
         prompt,
+        pulseTarget,
         stepCount,
         stepIndex
     } = props;
 
     const [showMe, setShowMe] = React.useState(false);
     const showMeRef = React.useRef(null);
+
+    // Confetti burst for the just-completed segment. The segment index is
+    // captured on the rising edge of `celebrate` so the burst stays pinned to
+    // that segment even as the wizard advances out from under it a moment later.
+    const [burstStep, setBurstStep] = React.useState(null);
+    const celebratingRef = React.useRef(false);
+    React.useEffect(() => {
+        if (celebrate && !celebratingRef.current) {
+            celebratingRef.current = true;
+            setBurstStep(stepIndex);
+        } else if (!celebrate) {
+            celebratingRef.current = false;
+        }
+    }, [celebrate, stepIndex]);
+    React.useEffect(() => {
+        if (burstStep === null) return;
+        const id = setTimeout(() => setBurstStep(null), CONFETTI_MS);
+        return () => clearTimeout(id);
+    }, [burstStep]);
 
     // "Show me" is only locked out while its (one-shot) demo is playing.
     const showMeDisabled = showMe;
@@ -373,30 +496,41 @@ const MicroworldsWizard = props => {
 
     return (
         <div className={styles.wizardContainer}>
-            <div className={styles.tutBar}>
-                <SpeakButton text={prompt} />
+            <div className={styles.card}>
+                <div className={styles.row}>
+                    <SpeakButton text={prompt} />
 
-                <div className={styles.tutTitle}>{prompt}</div>
+                    <h2 className={styles.instr}>{prompt}</h2>
 
-                <button
-                    ref={showMeRef}
-                    className={classNames(styles.btnShow, {
-                        [styles.btnShowDisabled]: showMeDisabled
-                    })}
-                    disabled={showMeDisabled}
-                    onClick={handleShowMe}
-                >
-                    {'Show me'}
-                </button>
+                    <button
+                        ref={showMeRef}
+                        className={classNames(styles.btnShow, {
+                            [styles.btnShowDisabled]: showMeDisabled
+                        })}
+                        disabled={showMeDisabled}
+                        onClick={handleShowMe}
+                    >
+                        <PlayIcon />
+                        {'Show me'}
+                    </button>
 
-                <span className={styles.grow} />
+                    <button
+                        className={styles.btnNext}
+                        onClick={onNext}
+                        aria-label={isLastStep ? 'Finish' : 'Next'}
+                    >
+                        <Chevron />
+                    </button>
+                </div>
 
-                <div className={styles.stepDots}>
+                {/* Segmented progress, flush along the bottom edge: one segment
+                    per step, filled up to and including the current step. */}
+                <div className={styles.segments}>
                     {Array.from({length: stepCount}).map((_, index) => (
                         <button
                             key={index}
-                            className={classNames(styles.dot, {
-                                [styles.dotOn]: index === stepIndex
+                            className={classNames(styles.segment, {
+                                [styles.segmentOn]: index <= stepIndex
                             })}
                             data-step={index}
                             onClick={handlePipClick}
@@ -405,14 +539,18 @@ const MicroworldsWizard = props => {
                     ))}
                 </div>
 
-                <button
-                    className={styles.btnNext}
-                    onClick={onNext}
-                    aria-label={isLastStep ? 'Finish' : 'Next'}
-                >
-                    <Chevron />
-                </button>
+                {burstStep !== null && burstStep < stepCount ? (
+                    <Confetti
+                        key={burstStep}
+                        index={burstStep}
+                        count={stepCount}
+                    />
+                ) : null}
             </div>
+
+            {pulseTarget && !canAdvance ? (
+                <PulseHighlight target={pulseTarget} />
+            ) : null}
 
             {showMe && (dragHint || clickTarget) ? (
                 <ShowMeCursor
@@ -427,6 +565,7 @@ const MicroworldsWizard = props => {
 
 MicroworldsWizard.propTypes = {
     canAdvance: PropTypes.bool,
+    celebrate: PropTypes.bool,
     clickTarget: PropTypes.string,
     dragHint: PropTypes.shape({
         anchor: PropTypes.string,
@@ -438,6 +577,7 @@ MicroworldsWizard.propTypes = {
     onGoToStep: PropTypes.func.isRequired,
     onNext: PropTypes.func.isRequired,
     prompt: PropTypes.string.isRequired,
+    pulseTarget: PropTypes.string,
     stepCount: PropTypes.number.isRequired,
     stepIndex: PropTypes.number.isRequired
 };

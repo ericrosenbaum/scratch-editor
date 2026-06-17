@@ -20,6 +20,11 @@ const FOLLOW_UP_DECK_ID = 'intro-move-sayhello';
 // (the say bubble, the snapped blocks, the new sprite) before advancing.
 const AUTO_ADVANCE_MS = 1200;
 
+// Steps whose action runs the project (clicking a block, the green flag) wait
+// for that code to finish before advancing. If a thread never actually starts,
+// fall back to advancing after this long so the wizard can't stall.
+const NO_RUN_FALLBACK_MS = 1000;
+
 class MicroworldsWizard extends React.Component {
     constructor (props) {
         super(props);
@@ -28,13 +33,25 @@ class MicroworldsWizard extends React.Component {
             'handleScriptGlow',
             'handleGreenFlag',
             'handleProjectChanged',
-            'handleTargetsUpdate'
+            'handleTargetsUpdate',
+            'handleRunStart',
+            'handleRunStop'
         ]);
-        this.state = {canAdvance: false};
+        // `canAdvance` latches once the step's task is done; `celebrate` flips on
+        // only for the pre-advance pause, which is when the confetti burst plays.
+        this.state = {canAdvance: false, celebrate: false};
         // The step index whose side effects have already been applied.
         this.processedStep = -1;
+        // Whether the current step's advance condition has already been met
+        // (latched so a gate that fires repeatedly only advances once).
+        this.gateSatisfied = false;
         // Pending auto-advance timer (set when a step's task is completed).
         this.advanceTimeout = null;
+        // For code-running steps: true while we're waiting for the project to
+        // finish (PROJECT_RUN_STOP) before starting the advance countdown.
+        this.awaitingRunStop = false;
+        // Fallback timer for code-running steps whose script never starts.
+        this.runStartTimeout = null;
         // Baselines captured on step entry, used by the "added" gates.
         this.blockBaseline = 0;
         this.spriteBaseline = 0;
@@ -45,6 +62,8 @@ class MicroworldsWizard extends React.Component {
         vm.on('PROJECT_START', this.handleGreenFlag);
         vm.on('PROJECT_CHANGED', this.handleProjectChanged);
         vm.on('targetsUpdate', this.handleTargetsUpdate);
+        vm.on('PROJECT_RUN_START', this.handleRunStart);
+        vm.on('PROJECT_RUN_STOP', this.handleRunStop);
         this.processStepIfNeeded();
     }
     componentDidUpdate () {
@@ -56,16 +75,54 @@ class MicroworldsWizard extends React.Component {
         vm.removeListener('PROJECT_START', this.handleGreenFlag);
         vm.removeListener('PROJECT_CHANGED', this.handleProjectChanged);
         vm.removeListener('targetsUpdate', this.handleTargetsUpdate);
+        vm.removeListener('PROJECT_RUN_START', this.handleRunStart);
+        vm.removeListener('PROJECT_RUN_STOP', this.handleRunStop);
         this.clearAdvance();
     }
     /**
-     * Mark the current step's task as complete: reveal the result, then advance
-     * to the next step after a short pause. Called once per step (guarded by the
-     * pending timer) from whichever gate the step uses.
+     * Whether the current step's action runs the project (clicking a block, the
+     * green flag). Those steps must wait for that code to finish before
+     * advancing; gates that only rearrange blocks or add a sprite do not.
+     * @returns {boolean} true when completing the step runs code
+     */
+    stepRunsCode () {
+        const {step} = this.props;
+        return Boolean(step && (step.advanceOn === 'scriptGlow' || step.advanceOn === 'greenFlag'));
+    }
+    /**
+     * Mark the current step's task as complete: reveal the result, then advance.
+     * Latched per step so a gate that fires repeatedly only advances once. For
+     * code-running steps we hold off the advance until the script finishes
+     * (PROJECT_RUN_STOP) so we never cut a say bubble/glide short or reseed the
+     * next step mid-run.
      */
     markCanAdvance () {
-        if (this.advanceTimeout) return;
+        if (this.gateSatisfied) return;
+        this.gateSatisfied = true;
         this.setState({canAdvance: true});
+        if (this.stepRunsCode()) {
+            this.awaitingRunStop = true;
+            // Guard against a step whose script never starts a thread: advance
+            // anyway after a short wait so the wizard can't get stuck.
+            this.runStartTimeout = setTimeout(() => {
+                this.runStartTimeout = null;
+                if (this.awaitingRunStop) {
+                    this.awaitingRunStop = false;
+                    this.scheduleAdvance();
+                }
+            }, NO_RUN_FALLBACK_MS);
+        } else {
+            this.scheduleAdvance();
+        }
+    }
+    /**
+     * Start the brief pause before advancing so the result stays visible.
+     */
+    scheduleAdvance () {
+        if (this.advanceTimeout) return;
+        // The pause before the next step appears — celebrate the completed step
+        // for its duration.
+        this.setState({celebrate: true});
         this.advanceTimeout = setTimeout(() => {
             this.advanceTimeout = null;
             this.handleNext();
@@ -76,6 +133,11 @@ class MicroworldsWizard extends React.Component {
             clearTimeout(this.advanceTimeout);
             this.advanceTimeout = null;
         }
+        if (this.runStartTimeout) {
+            clearTimeout(this.runStartTimeout);
+            this.runStartTimeout = null;
+        }
+        this.awaitingRunStop = false;
     }
     countBlocks () {
         const target = this.props.vm.editingTarget;
@@ -117,8 +179,9 @@ class MicroworldsWizard extends React.Component {
 
         this.blockBaseline = this.countBlocks();
         this.spriteBaseline = this.countSprites();
+        this.gateSatisfied = false;
         this.clearAdvance();
-        this.setState({canAdvance: false});
+        this.setState({canAdvance: false, celebrate: false});
     }
     /**
      * Whether the two blocks named by a step's `connection` are now joined in a
@@ -154,6 +217,22 @@ class MicroworldsWizard extends React.Component {
             this.markCanAdvance();
         }
     }
+    handleRunStart () {
+        // The step's script has actually started, so the no-run fallback is no
+        // longer needed; PROJECT_RUN_STOP will drive the advance once it ends.
+        if (this.awaitingRunStop && this.runStartTimeout) {
+            clearTimeout(this.runStartTimeout);
+            this.runStartTimeout = null;
+        }
+    }
+    handleRunStop () {
+        // The code that completed this step has finished — now start the pause
+        // before advancing.
+        if (this.awaitingRunStop) {
+            this.awaitingRunStop = false;
+            this.scheduleAdvance();
+        }
+    }
     handleTargetsUpdate () {
         // The editing target may not have existed when we first tried to
         // preload (project still loading); retry now that targets are ready.
@@ -177,10 +256,12 @@ class MicroworldsWizard extends React.Component {
         return (
             <MicroworldsWizardComponent
                 canAdvance={this.state.canAdvance}
+                celebrate={this.state.celebrate}
                 clickTarget={step.clickTarget}
                 dragHint={step.dragHint}
                 isLastStep={isLastStep}
                 prompt={step.prompt}
+                pulseTarget={step.pulseTarget}
                 stepCount={stepCount}
                 stepIndex={stepIndex}
                 onGoToStep={this.props.onGoToStep}
@@ -205,6 +286,7 @@ MicroworldsWizard.propTypes = {
         }),
         dragHint: PropTypes.object,
         clickTarget: PropTypes.string,
+        pulseTarget: PropTypes.string,
         preload: PropTypes.func
     }),
     stepCount: PropTypes.number,
