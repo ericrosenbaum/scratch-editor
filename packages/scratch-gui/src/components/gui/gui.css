@@ -304,7 +304,7 @@ body .alerts-container {
     align-items: stretch; /* the card stretches to the editor row's width */
     width: max-content;
     max-width: 100%;
-    gap: calc($space * 2.75); /* match the workspace-to-stage gap */
+    gap: calc($space * 1.75); /* match the workspace-to-stage & stage-to-sprite gaps */
 }
 
 /* The editor row, compact: workspace beside stage, tops aligned. */
@@ -314,7 +314,10 @@ body .alerts-container {
     height: auto;
     overflow: visible;
     background: transparent;
-    column-gap: calc($space * 2.75);
+    /* The stage column is inset by the stage-and-target-wrapper's $space side
+       padding, so this gap plus that padding equals the 1.75*$space gap used
+       between the stage and the sprite pane below it. */
+    column-gap: calc($space * 0.75);
     align-items: flex-start;
 }
 
@@ -374,14 +377,14 @@ body .alerts-container {
 }
 
 /* Until the "add a sprite" step the sprite pane is present (so the layout
-   stays consistent) but shown as a plain gray placeholder: its contents are
+   stays consistent) but shown as a plain white placeholder: its contents are
    hidden and it is non-interactive. */
 .microworlds-target-inactive {
     pointer-events: none;
 }
 
 .microworlds-layout .microworlds-target-inactive :global([class*="sprite-selector_sprite-selector"]) {
-    background-color: $ui-primary; /* blend into the page background */
+    background-color: $ui-white;
     box-shadow: none;
 }
 

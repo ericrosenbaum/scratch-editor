@@ -16,6 +16,10 @@ import {
 // Deck shown after the wizard finishes, dropping the user into the full editor.
 const FOLLOW_UP_DECK_ID = 'intro-move-sayhello';
 
+// Once a step's task is completed, pause briefly so the result is visible
+// (the say bubble, the snapped blocks, the new sprite) before advancing.
+const AUTO_ADVANCE_MS = 1200;
+
 class MicroworldsWizard extends React.Component {
     constructor (props) {
         super(props);
@@ -29,6 +33,8 @@ class MicroworldsWizard extends React.Component {
         this.state = {canAdvance: false};
         // The step index whose side effects have already been applied.
         this.processedStep = -1;
+        // Pending auto-advance timer (set when a step's task is completed).
+        this.advanceTimeout = null;
         // Baselines captured on step entry, used by the "added" gates.
         this.blockBaseline = 0;
         this.spriteBaseline = 0;
@@ -50,6 +56,26 @@ class MicroworldsWizard extends React.Component {
         vm.removeListener('PROJECT_START', this.handleGreenFlag);
         vm.removeListener('PROJECT_CHANGED', this.handleProjectChanged);
         vm.removeListener('targetsUpdate', this.handleTargetsUpdate);
+        this.clearAdvance();
+    }
+    /**
+     * Mark the current step's task as complete: reveal the result, then advance
+     * to the next step after a short pause. Called once per step (guarded by the
+     * pending timer) from whichever gate the step uses.
+     */
+    markCanAdvance () {
+        if (this.advanceTimeout) return;
+        this.setState({canAdvance: true});
+        this.advanceTimeout = setTimeout(() => {
+            this.advanceTimeout = null;
+            this.handleNext();
+        }, AUTO_ADVANCE_MS);
+    }
+    clearAdvance () {
+        if (this.advanceTimeout) {
+            clearTimeout(this.advanceTimeout);
+            this.advanceTimeout = null;
+        }
     }
     countBlocks () {
         const target = this.props.vm.editingTarget;
@@ -91,6 +117,7 @@ class MicroworldsWizard extends React.Component {
 
         this.blockBaseline = this.countBlocks();
         this.spriteBaseline = this.countSprites();
+        this.clearAdvance();
         this.setState({canAdvance: false});
     }
     /**
@@ -109,22 +136,22 @@ class MicroworldsWizard extends React.Component {
     }
     handleScriptGlow () {
         if (this.props.step && this.props.step.advanceOn === 'scriptGlow') {
-            this.setState({canAdvance: true});
+            this.markCanAdvance();
         }
     }
     handleGreenFlag () {
         if (this.props.step && this.props.step.advanceOn === 'greenFlag') {
-            this.setState({canAdvance: true});
+            this.markCanAdvance();
         }
     }
     handleProjectChanged () {
         const {step} = this.props;
         if (!step) return;
         if (step.advanceOn === 'blocksAdded' && this.countBlocks() > this.blockBaseline) {
-            this.setState({canAdvance: true});
+            this.markCanAdvance();
         }
         if (step.advanceOn === 'blocksConnected' && this.isConnected(step.connection)) {
-            this.setState({canAdvance: true});
+            this.markCanAdvance();
         }
     }
     handleTargetsUpdate () {
@@ -133,10 +160,11 @@ class MicroworldsWizard extends React.Component {
         this.processStepIfNeeded();
         if (this.props.step && this.props.step.advanceOn === 'spriteAdded' &&
             this.countSprites() > this.spriteBaseline) {
-            this.setState({canAdvance: true});
+            this.markCanAdvance();
         }
     }
     handleNext () {
+        this.clearAdvance();
         if (this.props.isLastStep) {
             this.props.onFinish();
         } else {
