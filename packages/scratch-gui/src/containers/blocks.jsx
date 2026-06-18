@@ -48,6 +48,10 @@ import {
 // size comparable to the wizard card text and the (standard) stage's bubbles.
 const MICROWORLD_BLOCK_SCALE = 0.9;
 
+// macOS treats ctrl+click as a right-click. Mirror Blockly's own right-click
+// detection so the Microworld context-menu suppression matches its behavior.
+const isMac = /Mac/i.test((typeof navigator !== 'undefined' && navigator.platform) || '');
+
 const addFunctionListener = (object, property, callback) => {
     const oldFn = object[property];
     object[property] = function (...args) {
@@ -84,6 +88,7 @@ class Blocks extends React.Component {
             'onBlockGlowOff',
             'handleProjectRunStart',
             'handleProjectRunStop',
+            'handleBlocksContextMenu',
             'handleMonitorsUpdate',
             'handleExtensionAdded',
             'handleBlocksInfoUpdate',
@@ -132,6 +137,17 @@ class Blocks extends React.Component {
             }
         );
         this.workspace = this.ScratchBlocks.inject(this.blocks, workspaceConfig);
+
+        // Inside the Microworlds intro wizard, suppress every Blockly context
+        // menu (block right-click, workspace canvas right-click, comment
+        // right-click). Blockly opens its menu from the right-click pointerdown
+        // gesture, so intercept in the capture phase — before that gesture can
+        // start — rather than on the contextmenu event. Normal left-click
+        // interaction (clicking and dragging blocks) is left untouched, and
+        // outside the wizard the handler is an immediate no-op.
+        this.blocks.addEventListener('pointerdown', this.handleBlocksContextMenu, true);
+        this.blocks.addEventListener('contextmenu', this.handleBlocksContextMenu, true);
+
         this.workspace.registerToolboxCategoryCallback(
             'VARIABLE',
             this.ScratchBlocks.ScratchVariables.getVariablesCategory
@@ -258,6 +274,10 @@ class Blocks extends React.Component {
     }
     componentWillUnmount () {
         this.detachVM();
+        if (this.blocks) {
+            this.blocks.removeEventListener('pointerdown', this.handleBlocksContextMenu, true);
+            this.blocks.removeEventListener('contextmenu', this.handleBlocksContextMenu, true);
+        }
         // Hide any open field editor and move Blockly focus to the workspace
         // root before disposing. Without this, BlockSvg.dispose() detects the
         // focused element is inside a block and schedules a stale
@@ -448,6 +468,19 @@ class Blocks extends React.Component {
     }
     handleProjectRunStop () {
         if (this.runHighlighter) this.runHighlighter.stop();
+    }
+    handleBlocksContextMenu (e) {
+        // Only intervene inside the Microworlds intro wizard.
+        if (!this.props.microworldsActive) return;
+        // For pointerdown, only swallow the right-click gesture (button 2, or
+        // ctrl+click on macOS); let normal left clicks/drags through. The
+        // contextmenu event is always a context-menu trigger, so swallow it
+        // outright to also keep the native browser menu from appearing.
+        if (e.type === 'pointerdown' && !(e.button === 2 || (isMac && e.ctrlKey))) {
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
     }
     onVisualReport (data) {
         this.ScratchBlocks.reportValue(data.id, data.value);

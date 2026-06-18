@@ -167,7 +167,7 @@ class SpriteSelectorItem extends React.PureComponent {
             <SpriteSelectorItemComponent
                 componentRef={this.setRef}
                 costumeURL={this.getCostumeData()}
-                preventContextMenu={this.dragRecognizer.gestureInProgress()}
+                preventContextMenu={this.props.microworldsActive || this.dragRecognizer.gestureInProgress()}
                 onClick={this.handleClick}
                 onDeleteButtonClick={onDeleteButtonClick ? this.handleDeleteButtonClick : null}
                 onDuplicateButtonClick={onDuplicateButtonClick ? this.handleDuplicate : null}
@@ -192,6 +192,7 @@ SpriteSelectorItem.propTypes = {
     dragging: PropTypes.bool,
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     index: PropTypes.number,
+    microworldsActive: PropTypes.bool,
     name: PropTypes.string,
     onClick: PropTypes.func,
     onDeleteButtonClick: PropTypes.func,
@@ -210,6 +211,7 @@ const mapStateToProps = (state, {id}) => ({
     dragging: state.scratchGui.assetDrag.dragging,
     receivedBlocks: state.scratchGui.hoveredTarget.receivedBlocks &&
             state.scratchGui.hoveredTarget.sprite === id,
+    microworldsActive: state.scratchGui.microworlds.active,
     vm: state.scratchGui.vm
 });
 const mapDispatchToProps = dispatch => ({
