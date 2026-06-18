@@ -4,6 +4,7 @@ import defaultsDeep from 'lodash.defaultsdeep';
 import makeToolboxXML from '../lib/make-toolbox-xml';
 import filterToolboxXML from '../lib/microworlds/filter-toolbox';
 import {getPalette} from '../lib/microworlds';
+import RunHighlighter from '../lib/microworlds/run-highlight';
 import PropTypes from 'prop-types';
 import React from 'react';
 import VMScratchBlocks from '../lib/blocks';
@@ -81,6 +82,8 @@ class Blocks extends React.Component {
             'onScriptGlowOff',
             'onBlockGlowOn',
             'onBlockGlowOff',
+            'handleProjectRunStart',
+            'handleProjectRunStop',
             'handleMonitorsUpdate',
             'handleExtensionAdded',
             'handleBlocksInfoUpdate',
@@ -353,6 +356,10 @@ class Blocks extends React.Component {
         this.props.vm.addListener('SCRIPT_GLOW_OFF', this.onScriptGlowOff);
         this.props.vm.addListener('BLOCK_GLOW_ON', this.onBlockGlowOn);
         this.props.vm.addListener('BLOCK_GLOW_OFF', this.onBlockGlowOff);
+        // Microworlds intro: pulse each block as it runs (in addition to the
+        // standard yellow stack outline). No-op outside the wizard.
+        this.props.vm.addListener('PROJECT_RUN_START', this.handleProjectRunStart);
+        this.props.vm.addListener('PROJECT_RUN_STOP', this.handleProjectRunStop);
         this.props.vm.addListener('VISUAL_REPORT', this.onVisualReport);
         this.props.vm.addListener('workspaceUpdate', this.onWorkspaceUpdate);
         this.props.vm.addListener('targetsUpdate', this.onTargetsUpdate);
@@ -367,6 +374,12 @@ class Blocks extends React.Component {
         this.props.vm.removeListener('SCRIPT_GLOW_OFF', this.onScriptGlowOff);
         this.props.vm.removeListener('BLOCK_GLOW_ON', this.onBlockGlowOn);
         this.props.vm.removeListener('BLOCK_GLOW_OFF', this.onBlockGlowOff);
+        this.props.vm.removeListener('PROJECT_RUN_START', this.handleProjectRunStart);
+        this.props.vm.removeListener('PROJECT_RUN_STOP', this.handleProjectRunStop);
+        if (this.runHighlighter) {
+            this.runHighlighter.stop();
+            this.runHighlighter = null;
+        }
         this.props.vm.removeListener('VISUAL_REPORT', this.onVisualReport);
         this.props.vm.removeListener('workspaceUpdate', this.onWorkspaceUpdate);
         this.props.vm.removeListener('targetsUpdate', this.onTargetsUpdate);
@@ -424,6 +437,17 @@ class Blocks extends React.Component {
     }
     onBlockGlowOff (/* data */) {
         // No-op, support may be added in the future
+    }
+    handleProjectRunStart () {
+        // Only pulse individual blocks inside the Microworlds intro wizard.
+        if (!this.props.microworldsActive) return;
+        if (!this.runHighlighter) {
+            this.runHighlighter = new RunHighlighter(this.props.vm, () => this.workspace);
+        }
+        this.runHighlighter.start();
+    }
+    handleProjectRunStop () {
+        if (this.runHighlighter) this.runHighlighter.stop();
     }
     onVisualReport (data) {
         this.ScratchBlocks.reportValue(data.id, data.value);
