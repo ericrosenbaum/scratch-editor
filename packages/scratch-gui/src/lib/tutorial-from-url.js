@@ -45,17 +45,18 @@ const detectTutorialId = queryParams => {
 };
 
 /**
- * Check if there's a microworld id provided as a query parameter in the URL
- * (e.g. `?microworld=intro`). Returns the id or null if not present/known.
+ * Check if the mini editor intro wizard is requested via a query parameter in
+ * the URL (e.g. `?mini-editor-intro=true`). Returns the `intro` microworld id
+ * when enabled, or null otherwise.
  * @param {object} queryParams the results of parsing the query string
  * @returns {?string} the requested microworld id, or null
  */
 const detectMicroworldId = queryParams => {
-    const microworldId = Array.isArray(queryParams.microworld) ?
-        queryParams.microworld[0] :
-        queryParams.microworld;
-    if (typeof microworldId === 'undefined') return null;
-    return getMicroworld(microworldId) ? microworldId : null;
+    const value = Array.isArray(queryParams['mini-editor-intro']) ?
+        queryParams['mini-editor-intro'][0] :
+        queryParams['mini-editor-intro'];
+    if (typeof value === 'undefined' || value === 'false') return null;
+    return getMicroworld('intro') ? 'intro' : null;
 };
 
 export {
