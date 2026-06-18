@@ -259,6 +259,7 @@ class MicroworldsWizard extends React.Component {
                 celebrate={this.state.celebrate}
                 clickTarget={step.clickTarget}
                 dragHint={step.dragHint}
+                finishLabel={step.finishLabel}
                 isLastStep={isLastStep}
                 prompt={step.prompt}
                 pulseTarget={step.pulseTarget}
@@ -287,7 +288,8 @@ MicroworldsWizard.propTypes = {
         dragHint: PropTypes.object,
         clickTarget: PropTypes.string,
         pulseTarget: PropTypes.string,
-        preload: PropTypes.func
+        preload: PropTypes.func,
+        finishLabel: PropTypes.string
     }),
     stepCount: PropTypes.number,
     stepIndex: PropTypes.number,

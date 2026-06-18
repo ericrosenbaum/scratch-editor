@@ -14,6 +14,9 @@
  *                   ('scriptGlow' | 'greenFlag' | 'blocksConnected')
  *   - `connection`: for 'blocksConnected' steps, the expected `parent.next ===
  *                   child` connection (matched in either direction)
+ *   - `finishLabel`: for the final, taskless handoff step, the label of the
+ *                   call-to-action button that opens the full editor (a step
+ *                   with no `advanceOn` waits for this button instead of a gate)
  *
  * Text is intentionally minimal to reduce information overload for new users.
  * Prototype scope: English-only strings (no i18n yet).
@@ -111,6 +114,17 @@ const intro = {
             preload: () => buildFullStack({message: MESSAGE, secs: 2}),
             clickTarget: '[class*="sprite-selector_add-button"]',
             advanceOn: 'spriteAdded'
+        },
+        {
+            // Handoff: celebrate, then let the user open the full editor
+            // themselves. No preload (keep the learner's work) and no advanceOn
+            // (button-only finish); reveal matches the prior step so nothing
+            // hides on entry.
+            id: 'all-set',
+            prompt: 'You did it! Ready to make your own?',
+            reveal: {blocks: true, greenFlag: true, spritePane: true},
+            palette: ['event_whenflagclicked', 'looks_sayforsecs', 'motion_glideto'],
+            finishLabel: 'Open the editor'
         }
     ]
 };

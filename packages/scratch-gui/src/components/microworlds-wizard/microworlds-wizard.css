@@ -122,6 +122,39 @@
     flex: none;
 }
 
+/* finish — the filled counterpart of "Show me"; the call-to-action that opens
+   the full editor on the final, taskless step. */
+.btn-finish {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    border: 2px solid $motion-primary;
+    background: $motion-primary;
+    color: $ui-white;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 18px;
+    padding: 11px 26px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-finish:hover {
+    background-color: hsl(215, 100%, 58%); /* motion-primary, darkened */
+    border-color: hsl(215, 100%, 58%);
+}
+
+.btn-finish:active {
+    transform: translateY(1px);
+}
+
+.finish-arrow {
+    font-size: 20px;
+    line-height: 1;
+}
+
 /* next — a quiet ghost chevron (variation 07) */
 .btn-next {
     flex: none;

@@ -433,6 +433,7 @@ const MicroworldsWizard = props => {
         celebrate,
         clickTarget,
         dragHint,
+        finishLabel,
         isLastStep,
         onGoToStep,
         onNext,
@@ -463,6 +464,13 @@ const MicroworldsWizard = props => {
         const id = setTimeout(() => setBurstStep(null), CONFETTI_MS);
         return () => clearTimeout(id);
     }, [burstStep]);
+
+    // The final, taskless handoff step has no advance gate, so it never fires
+    // the celebrate-driven burst above. Pop one burst on arrival so the finish
+    // card feels celebratory.
+    React.useEffect(() => {
+        if (isLastStep) setBurstStep(stepIndex);
+    }, [isLastStep, stepIndex]);
 
     // "Show me" is only locked out while its (one-shot) demo is playing.
     const showMeDisabled = showMe;
@@ -502,25 +510,44 @@ const MicroworldsWizard = props => {
 
                     <h2 className={styles.instr}>{prompt}</h2>
 
-                    <button
-                        ref={showMeRef}
-                        className={classNames(styles.btnShow, {
-                            [styles.btnShowDisabled]: showMeDisabled
-                        })}
-                        disabled={showMeDisabled}
-                        onClick={handleShowMe}
-                    >
-                        <PlayIcon />
-                        {'Show me'}
-                    </button>
+                    {/* "Show me" only appears on steps with a demoable task. */}
+                    {clickTarget || dragHint ? (
+                        <button
+                            ref={showMeRef}
+                            className={classNames(styles.btnShow, {
+                                [styles.btnShowDisabled]: showMeDisabled
+                            })}
+                            disabled={showMeDisabled}
+                            onClick={handleShowMe}
+                        >
+                            <PlayIcon />
+                            {'Show me'}
+                        </button>
+                    ) : null}
 
-                    <button
-                        className={styles.btnNext}
-                        onClick={onNext}
-                        aria-label={isLastStep ? 'Finish' : 'Next'}
-                    >
-                        <Chevron />
-                    </button>
+                    {/* The final step has no task: its filled call-to-action
+                        button opens the full editor. Other steps keep the quiet
+                        ghost chevron. */}
+                    {isLastStep ? (
+                        <button
+                            className={styles.btnFinish}
+                            onClick={onNext}
+                        >
+                            {finishLabel || 'Open the editor'}
+                            <span
+                                className={styles.finishArrow}
+                                aria-hidden="true"
+                            >{'→'}</span>
+                        </button>
+                    ) : (
+                        <button
+                            className={styles.btnNext}
+                            onClick={onNext}
+                            aria-label="Next"
+                        >
+                            <Chevron />
+                        </button>
+                    )}
                 </div>
 
                 {/* Segmented progress, flush along the bottom edge: one segment
@@ -573,6 +600,7 @@ MicroworldsWizard.propTypes = {
         color: PropTypes.string,
         placement: PropTypes.oneOf(['above', 'below'])
     }),
+    finishLabel: PropTypes.string,
     isLastStep: PropTypes.bool,
     onGoToStep: PropTypes.func.isRequired,
     onNext: PropTypes.func.isRequired,
