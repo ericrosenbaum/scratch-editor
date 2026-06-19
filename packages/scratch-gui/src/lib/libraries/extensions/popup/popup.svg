@@ -1,0 +1,20 @@
+<svg width="300" height="225" viewBox="0 0 300 225" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="225" fill="#f3eafb"/>
+  <!-- back wall -->
+  <rect x="30" y="24" width="240" height="150" rx="8" fill="#e3d3f4"/>
+  <!-- a flat drawing popping up into a 3D slab (extruded standee) -->
+  <g>
+    <!-- side / thickness -->
+    <polygon points="150,60 186,78 186,168 150,150" fill="#7a4fb0"/>
+    <!-- top edge -->
+    <polygon points="114,42 150,60 186,78 150,60" fill="#9966cc"/>
+    <!-- front face with a little face drawn on it -->
+    <polygon points="114,42 150,60 150,150 114,132" fill="#9966cc"/>
+    <circle cx="128" cy="84" r="6" fill="#fff"/>
+    <circle cx="128" cy="84" r="3" fill="#3b2a55"/>
+    <path d="M122 108 q10 12 20 2" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </g>
+  <!-- orbit arrow -->
+  <path d="M210 196 a60 22 0 1 1 -120 0" fill="none" stroke="#7a4fb0" stroke-width="6" stroke-linecap="round" stroke-dasharray="2 14"/>
+  <polygon points="210,188 222,196 208,204" fill="#7a4fb0"/>
+</svg>

@@ -7,6 +7,9 @@ import musicInsetIconURL from './music/music-small.svg';
 import penIconURL from './pen/pen.png';
 import penInsetIconURL from './pen/pen-small.svg';
 
+import popupIconURL from './popup/popup.svg';
+import popupInsetIconURL from './popup/popup-small.svg';
+
 import videoSensingIconURL from './videoSensing/video-sensing.png';
 import videoSensingInsetIconURL from './videoSensing/video-sensing-small.svg';
 
@@ -86,6 +89,26 @@ export default [
                 defaultMessage="Draw with your sprites."
                 description="Description for the 'Pen' extension"
                 id="gui.extension.pen.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="3D Pop-Up"
+                description="Name for the '3D Pop-Up' extension"
+                id="gui.extension.popup.name"
+            />
+        ),
+        extensionId: 'popup',
+        iconURL: popupIconURL,
+        insetIconURL: popupInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Pop your project into 3D."
+                description="Description for the '3D Pop-Up' extension"
+                id="gui.extension.popup.description"
             />
         ),
         featured: true

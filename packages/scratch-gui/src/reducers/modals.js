@@ -12,6 +12,7 @@ const MODAL_SPRITE_LIBRARY = 'spriteLibrary';
 const MODAL_SOUND_RECORDER = 'soundRecorder';
 const MODAL_CONNECTION = 'connectionModal';
 const MODAL_TIPS_LIBRARY = 'tipsLibrary';
+const MODAL_POPUP_EXAMPLES = 'popupExamplesModal';
 
 const initialState = {
     [MODAL_BACKDROP_LIBRARY]: false,
@@ -24,7 +25,9 @@ const initialState = {
     [MODAL_SPRITE_LIBRARY]: false,
     [MODAL_SOUND_RECORDER]: false,
     [MODAL_CONNECTION]: false,
-    [MODAL_TIPS_LIBRARY]: false
+    [MODAL_TIPS_LIBRARY]: false,
+    // The 3D Pop-Up welcome modal opens on GUI load.
+    [MODAL_POPUP_EXAMPLES]: true
 };
 
 const reducer = function (state, action) {
@@ -87,6 +90,9 @@ const openConnectionModal = function () {
 const openTipsLibrary = function () {
     return openModal(MODAL_TIPS_LIBRARY);
 };
+const openPopupExamplesModal = function () {
+    return openModal(MODAL_POPUP_EXAMPLES);
+};
 const closeBackdropLibrary = function () {
     return closeModal(MODAL_BACKDROP_LIBRARY);
 };
@@ -120,6 +126,9 @@ const closeTipsLibrary = function () {
 const closeConnectionModal = function () {
     return closeModal(MODAL_CONNECTION);
 };
+const closePopupExamplesModal = function () {
+    return closeModal(MODAL_POPUP_EXAMPLES);
+};
 export {
     reducer as default,
     initialState as modalsInitialState,
@@ -134,6 +143,7 @@ export {
     openTelemetryModal,
     openTipsLibrary,
     openConnectionModal,
+    openPopupExamplesModal,
     closeBackdropLibrary,
     closeCostumeLibrary,
     closeDebugModal,
@@ -144,5 +154,6 @@ export {
     closeSoundRecorder,
     closeTelemetryModal,
     closeTipsLibrary,
-    closeConnectionModal
+    closeConnectionModal,
+    closePopupExamplesModal
 };

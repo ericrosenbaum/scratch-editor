@@ -1,5 +1,6 @@
 // @ts-check
 const {test, expect} = require('@playwright/test');
+const {dismissExamplesModal} = require('./popup-helpers');
 
 // Regression tests for hover feedback during block drags.
 //
@@ -37,6 +38,7 @@ const startBlockDrag = async function (page) {
 
 test('stage selector scales when a block is dragged over it', async ({page}) => {
     await page.goto('index.html');
+    await dismissExamplesModal(page);
 
     const stageSelector = page.locator('[class*="stage-selector_stage-selector"]').first();
     await expect(stageSelector).toBeVisible();
@@ -76,6 +78,7 @@ test('stage selector scales when a block is dragged over it', async ({page}) => 
 
 test('sprite tile scales when a block is dragged over it', async ({page}) => {
     await page.goto('index.html');
+    await dismissExamplesModal(page);
 
     // The editing target's tile doesn't get .raised, so we need a
     // second sprite. Duplicate Sprite1 by right-clicking it.
