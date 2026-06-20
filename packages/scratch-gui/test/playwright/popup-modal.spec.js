@@ -19,12 +19,15 @@ test('3D Pop-Up: welcome modal opens on GUI load with the example projects', asy
     await page.goto('index.html');
     await expect(page.getByText('Backpack', {exact: true})).toBeVisible();
 
-    // The welcome modal opens on load, showing the three examples.
+    // The welcome modal opens on load, showing the six examples.
     await expect(page.getByText('Open an example to get started:', {exact: false})).toBeVisible();
-    await expect(page.getByTestId('popup-example')).toHaveCount(3);
+    await expect(page.getByTestId('popup-example')).toHaveCount(6);
     await expect(page.getByText('Pop-Up Card', {exact: true})).toBeVisible();
     await expect(page.getByText('Fish Tank', {exact: true})).toBeVisible();
     await expect(page.getByText('Build a Forest', {exact: true})).toBeVisible();
+    await expect(page.getByText('Space Flyer', {exact: true})).toBeVisible();
+    await expect(page.getByText('Jump!', {exact: true})).toBeVisible();
+    await expect(page.getByText('Magic Garden', {exact: true})).toBeVisible();
     await page.screenshot({path: path.join(SHOTS, 'modal.png')});
 
     // Choosing an example dismisses the modal.

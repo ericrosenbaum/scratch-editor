@@ -1,8 +1,11 @@
 /* eslint-disable */
-// Generates the three 3D Pop-Up example projects shown in the welcome modal:
+// Generates the 3D Pop-Up example projects shown in the welcome modal:
 //   popup-example-1.sb3  Pop-Up Card     (depth + drag camera)
-//   popup-example-2.sb3  Fish Tank       (auto-spin + swimming clones-free fish)
-//   popup-example-3.sb3  Build a Forest  (click to stamp 3D trees)
+//   popup-example-2.sb3  Fish Tank       (auto-spin + swimming fish)
+//   popup-example-3.sb3  Build a Forest  (stamps a row of 3D trees)
+//   popup-example-4.sb3  Space Flyer     (arrow keys fly in x + depth)
+//   popup-example-5.sb3  Jump!           (arrow keys walk, space jumps)
+//   popup-example-6.sb3  Magic Garden    (arrow keys move, space stamps flowers)
 //
 // Run: node src/components/popup-examples-modal/starters/make-popup-examples.js
 
@@ -63,8 +66,12 @@ const stamp = () => ({op: 'popup_stampInThreeD'});
 const move = v => ({op: 'motion_movesteps', inputs: {STEPS: num(v)}});
 const bounce = () => ({op: 'motion_ifonedgebounce'});
 const changeX = v => ({op: 'motion_changexby', inputs: {DX: num(v)}});
+const changeY = v => ({op: 'motion_changeyby', inputs: {DY: num(v)}});
 const gotoXY = (x, y) => ({op: 'motion_gotoxy', inputs: {X: num(x), Y: num(y)}});
+const changeDepth = v => ({op: 'popup_changeDepth', inputs: {AMOUNT: num(v)}});
 const forever = (...sub) => ({op: 'control_forever', sub});
+const repeatN = (times, ...sub) => ({op: 'control_repeat', inputs: {TIMES: num(times)}, sub});
+const whenKey = (key, ...specs) => [{op: 'event_whenkeypressed', fields: {KEY_OPTION: [key, null]}}, ...specs];
 
 // ---- asset helpers ----------------------------------------------------------
 const costume = (name, svg, rcx, rcy) => ({
@@ -157,6 +164,37 @@ const grassBgSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="480" heig
   <circle cx="86" cy="74" r="34" fill="#fff1a8"/>
   <rect y="250" width="480" height="110" fill="#86d35d"/></svg>`);
 
+const rocketSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="60" height="100" viewBox="0 0 60 100">
+  <polygon points="30,2 47,34 13,34" fill="#e6e9ed" stroke="#9aa0a6" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="14" y="31" width="32" height="46" rx="7" fill="#f7f8fa" stroke="#9aa0a6" stroke-width="3"/>
+  <circle cx="30" cy="50" r="7" fill="#4aa3ff" stroke="#1c6fd0" stroke-width="3"/>
+  <polygon points="14,60 2,84 14,76" fill="#ff5252" stroke="#b71c1c" stroke-width="2"/>
+  <polygon points="46,60 58,84 46,76" fill="#ff5252" stroke="#b71c1c" stroke-width="2"/>
+  <polygon points="22,77 38,77 30,97" fill="#ffb300"/></svg>`);
+const spaceBgSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360">
+  <rect width="480" height="360" fill="#0a0a2a"/>
+  <g fill="#ffffff"><circle cx="60" cy="60" r="2"/><circle cx="200" cy="120" r="1.5"/><circle cx="380" cy="80" r="2"/>
+  <circle cx="120" cy="260" r="1.5"/><circle cx="300" cy="300" r="2"/><circle cx="430" cy="220" r="1.5"/>
+  <circle cx="250" cy="40" r="1.5"/><circle cx="80" cy="190" r="1.5"/><circle cx="350" cy="170" r="2"/></g></svg>`);
+
+const hopperSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+  <circle cx="40" cy="42" r="34" fill="#6ec6ff" stroke="#1c6fd0" stroke-width="4"/>
+  <circle cx="30" cy="36" r="6" fill="#fff"/><circle cx="50" cy="36" r="6" fill="#fff"/>
+  <circle cx="31" cy="37" r="3" fill="#222"/><circle cx="51" cy="37" r="3" fill="#222"/>
+  <path d="M28 52 q12 12 24 0" stroke="#1c6fd0" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`);
+
+const flowerSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="60" height="120" viewBox="0 0 60 120">
+  <rect x="27" y="48" width="6" height="68" fill="#2e8b3d"/>
+  <ellipse cx="14" cy="66" rx="12" ry="6" fill="#2e8b3d"/>
+  <g fill="#ff5fa2" stroke="#c2305c" stroke-width="2">
+  <circle cx="30" cy="14" r="11"/><circle cx="14" cy="26" r="11"/><circle cx="46" cy="26" r="11"/>
+  <circle cx="20" cy="44" r="11"/><circle cx="40" cy="44" r="11"/></g>
+  <circle cx="30" cy="30" r="10" fill="#ffd23f" stroke="#d99a00" stroke-width="2"/></svg>`);
+const gardenBgSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360">
+  <rect width="480" height="360" fill="#fbe6ff"/>
+  <rect y="252" width="480" height="108" fill="#9be08a"/>
+  <rect y="252" width="480" height="8" fill="#7fcf6f"/></svg>`);
+
 // ---- example 1: Pop-Up Card -------------------------------------------------
 const card = [
     stage(cardBgSVG, buildScript({}, flag(setSky('sunset'), setCamera('drag')), 30, 30)),
@@ -203,7 +241,55 @@ const forest = [
     })
 ];
 
+// ---- example 4: Space Flyer (keyboard: x + depth) ---------------------------
+const rocketBlocks = {};
+buildScript(rocketBlocks, flag(setThickness(16), gotoXY(0, 0), setDepth(0)), 30, 30);
+buildScript(rocketBlocks, whenKey('right arrow', changeX(18)), 30, 150);
+buildScript(rocketBlocks, whenKey('left arrow', changeX(-18)), 30, 230);
+buildScript(rocketBlocks, whenKey('up arrow', changeDepth(25)), 30, 310);
+buildScript(rocketBlocks, whenKey('down arrow', changeDepth(-25)), 30, 390);
+const spaceFlyer = [
+    stage(spaceBgSVG, buildScript({}, flag(setSky('space'), setCamera('drag')), 30, 30)),
+    sprite({
+        name: 'Rocket', svg: rocketSVG, rcx: 30, rcy: 50, x: 0, y: 0, size: 90, layer: 1,
+        blocks: rocketBlocks
+    })
+];
+
+// ---- example 5: Jump! (keyboard: walk + jump via change y) -------------------
+const hopperBlocks = {};
+buildScript(hopperBlocks, flag(setThickness(24), gotoXY(0, -90)), 30, 30);
+buildScript(hopperBlocks, whenKey('right arrow', changeX(22)), 30, 150);
+buildScript(hopperBlocks, whenKey('left arrow', changeX(-22)), 30, 230);
+buildScript(hopperBlocks, whenKey('space', repeatN(8, changeY(16)), repeatN(8, changeY(-16))), 30, 310);
+const jumper = [
+    stage(grassBgSVG, buildScript({}, flag(setSky('day'), setCamera('drag')), 30, 30)),
+    sprite({
+        name: 'Hopper', svg: hopperSVG, rcx: 40, rcy: 40, x: 0, y: -90, size: 110, layer: 1,
+        blocks: hopperBlocks
+    })
+];
+
+// ---- example 6: Magic Garden (keyboard: move + space stamps) -----------------
+const flowerBlocks = {};
+buildScript(flowerBlocks, flag(setThickness(14), gotoXY(0, -40), setDepth(0)), 30, 30);
+buildScript(flowerBlocks, whenKey('right arrow', changeX(24)), 30, 150);
+buildScript(flowerBlocks, whenKey('left arrow', changeX(-24)), 30, 230);
+buildScript(flowerBlocks, whenKey('up arrow', changeDepth(28)), 30, 310);
+buildScript(flowerBlocks, whenKey('down arrow', changeDepth(-28)), 30, 390);
+buildScript(flowerBlocks, whenKey('space', stamp()), 30, 470);
+const garden = [
+    stage(gardenBgSVG, buildScript({}, flag(setSky('dream'), setCamera('drag')), 30, 30)),
+    sprite({
+        name: 'Flower', svg: flowerSVG, rcx: 30, rcy: 60, x: 0, y: -40, size: 80, layer: 1,
+        blocks: flowerBlocks
+    })
+];
+
 Promise.resolve()
     .then(() => writeProject('popup-example-1.sb3', card))
     .then(() => writeProject('popup-example-2.sb3', tank))
-    .then(() => writeProject('popup-example-3.sb3', forest));
+    .then(() => writeProject('popup-example-3.sb3', forest))
+    .then(() => writeProject('popup-example-4.sb3', spaceFlyer))
+    .then(() => writeProject('popup-example-5.sb3', jumper))
+    .then(() => writeProject('popup-example-6.sb3', garden));
