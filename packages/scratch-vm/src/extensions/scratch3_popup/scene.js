@@ -2,6 +2,15 @@ const THREE = require('three');
 const Clone = require('../../util/clone');
 const StageLayering = require('../../engine/stage-layering');
 
+// Shared +z axis, used as the normal of the (backdrop-parallel) sprite-drag plane.
+const VEC_Z = new THREE.Vector3(0, 0, 1);
+
+// Monotonic id used to give every effect-patched material a unique program cache key.
+// three.js's default cache key is `onBeforeCompile.toString()`, which is identical for
+// all of our patched materials; without a unique key they would share one compiled
+// program (and so one set of effect uniforms), making every sprite show the same effect.
+let effectMaterialSeq = 0;
+
 /**
  * Key under which a target's Pop-Up state is stored.
  * @type {string}
@@ -12,11 +21,15 @@ const STATE_KEY = 'Scratch.popup';
  * Default per-target Pop-Up state.
  *   thickness - how far the drawing is extruded (in stage units).
  *   depth     - where along the in/out axis the object sits (stage units; + = into the page).
+ *   tilt      - rotation about the X axis (degrees), tipping the card forward/back.
+ *   spin      - rotation about the Y axis (degrees), turning the card left/right.
  * @type {object}
  */
 const DEFAULT_STATE = {
     thickness: 20,
-    depth: 0
+    depth: 0,
+    tilt: 0,
+    spin: 0
 };
 
 /**
@@ -30,6 +43,9 @@ const getPopupState = target => {
         state = Clone.simple(DEFAULT_STATE);
         target.setCustomState(STATE_KEY, state);
     }
+    // Backfill keys added after a project may have been saved with older state.
+    if (!Number.isFinite(state.tilt)) state.tilt = 0;
+    if (!Number.isFinite(state.spin)) state.spin = 0;
     return state;
 };
 
@@ -56,6 +72,9 @@ const AUTO_SPIN = 0.006;
 const DRAG_ROT = 0.008;
 const DRAG_HEIGHT = 0.6;
 const DRAG_HEIGHT_RANGE = {min: -40, max: 340};
+// A press-and-release that moves less than this (in stage units) counts as a click
+// (fires the sprite's "when this sprite clicked" hat) rather than a drag.
+const CLICK_THRESHOLD = 6;
 // Costumes are rasterized to an alpha mask (capped to this size) to extract the
 // silhouette outline. This works identically for bitmap and vector costumes.
 const MASK_MAX = 160;
@@ -78,6 +97,55 @@ const SKY = {
     dream: ['#ffd1f5', '#ddc6ff', '#c2e7ff'],
     storybook: ['#f7e8c4', '#f1d6a2', '#e6bd84']
 };
+
+// GLSL injected into the costume materials to reproduce Scratch's graphic effects in
+// 3D. Declarations + helper functions go at the top of the fragment shader; the body
+// runs just after the colour-space conversion (so it operates in gamma space, like
+// scratch-render). Only ghost, brightness and colour are supported; the helper
+// functions are ported verbatim from scratch-render's sprite.frag.
+const EFFECT_SHADER_HEADER = `
+uniform float u_ghost;
+uniform float u_brightness;
+uniform float u_color;
+const float popupEps = 1e-3;
+vec3 popupRGB2HSV (vec3 rgb) {
+    const vec4 hueOffsets = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    vec4 temp1 = rgb.b > rgb.g ? vec4(rgb.bg, hueOffsets.wz) : vec4(rgb.gb, hueOffsets.xy);
+    vec4 temp2 = rgb.r > temp1.x ? vec4(rgb.r, temp1.yzx) : vec4(temp1.xyw, rgb.r);
+    float m = min(temp2.y, temp2.w);
+    float c = temp2.x - m;
+    return vec3(abs(temp2.z + (temp2.w - temp2.y) / (6.0 * c + popupEps)), c / (temp2.x + popupEps), temp2.x);
+}
+vec3 popupHue2RGB (float hue) {
+    float r = abs(hue * 6.0 - 3.0) - 1.0;
+    float g = 2.0 - abs(hue * 6.0 - 2.0);
+    float b = 2.0 - abs(hue * 6.0 - 4.0);
+    return clamp(vec3(r, g, b), 0.0, 1.0);
+}
+vec3 popupHSV2RGB (vec3 hsv) {
+    vec3 rgb = popupHue2RGB(hsv.x);
+    float c = hsv.z * hsv.y;
+    return (rgb * c) + hsv.z - c;
+}
+`;
+const EFFECT_SHADER_BODY = `
+{
+#ifdef POPUP_COLOR_BRIGHT
+    if (u_color != 0.0) {
+        vec3 hsv = popupRGB2HSV(gl_FragColor.rgb);
+        const float minLightness = 0.11 / 2.0;
+        const float minSaturation = 0.09;
+        if (hsv.z < minLightness) hsv = vec3(0.0, 1.0, minLightness);
+        else if (hsv.y < minSaturation) hsv = vec3(0.0, minSaturation, hsv.z);
+        hsv.x = mod(hsv.x + u_color, 1.0);
+        if (hsv.x < 0.0) hsv.x += 1.0;
+        gl_FragColor.rgb = popupHSV2RGB(hsv);
+    }
+    gl_FragColor.rgb = clamp(gl_FragColor.rgb + vec3(u_brightness), vec3(0.0), vec3(1.0));
+#endif
+    gl_FragColor.a *= u_ghost;
+}
+`;
 
 /**
  * Manages a self-contained three.js scene that turns the current sprites into
@@ -103,9 +171,22 @@ class PopupScene {
         this._mode = 'front';
         this._angle = 0;
         this._camHeight = CAM_HEIGHT;
-        this._dragging = false;
         this._lastDragX = 0;
         this._lastDragY = 0;
+
+        // Pointer interaction: a raycaster for hit-testing sprites, reusable scratch
+        // objects, and the per-gesture state machine driven by _handlePointer.
+        this._raycaster = new THREE.Raycaster();
+        this._ndc = new THREE.Vector2();
+        this._dragPlane = new THREE.Plane();
+        this._dragHit = new THREE.Vector3();
+        this._dragOffset = new THREE.Vector2();
+        this._pointerDown = false; // previous frame's mouse-down state (edge detection)
+        this._gesture = null; // null | 'camera' | 'sprite'
+        this._dragTarget = null; // Target currently being sprite-dragged
+        this._pressTarget = null; // Target the press landed on (for click detection)
+        this._pressX = 0;
+        this._pressY = 0;
 
         // targetId -> {group, materials, texture, costumeId, thickness, loadToken}
         this._meshes = new Map();
@@ -208,7 +289,8 @@ class PopupScene {
         this._init();
         if (!this.inited) return;
         this.active = true;
-        this._dragging = false;
+        this._pointerDown = false;
+        this._endGesture();
         this._hideSprites(true);
         this._renderer.updateDrawableVisible(this._drawableId, true);
         if (this._raf === null) {
@@ -225,6 +307,9 @@ class PopupScene {
             cancelAnimationFrame(this._raf);
             this._raf = null;
         }
+        // Release any in-progress sprite drag and reset the pointer state machine.
+        this._endGesture();
+        this._pointerDown = false;
         if (this.inited) {
             this._renderer.updateDrawableVisible(this._drawableId, false);
         }
@@ -292,6 +377,7 @@ class PopupScene {
 
         this._ensureBackWall();
         this._syncMeshes();
+        this._handlePointer();
         this._updateCamera();
         this._three.render(this._scene, this._camera);
 
@@ -304,14 +390,12 @@ class PopupScene {
     }
 
     /**
-     * Position the camera: auto-spin in 'orbit' mode, or follow stage drags in
-     * 'drag' mode. Always looks at the centre of the stage.
+     * Position the camera: auto-spin in 'orbit' mode. The 'drag' orbit is driven by
+     * _handlePointer (so it can yield to sprite dragging). Always looks at the centre.
      */
     _updateCamera () {
         if (this._mode === 'orbit') {
             this._angle += AUTO_SPIN;
-        } else if (this._mode === 'drag') {
-            this._applyDrag();
         }
         this._camera.position.set(
             Math.sin(this._angle) * CAM_RADIUS,
@@ -322,29 +406,152 @@ class PopupScene {
     }
 
     /**
-     * In drag mode, orbit the camera by how far the pointer is dragged across the
-     * stage (read from the VM's mouse device, so no DOM access is needed).
+     * Per-frame pointer state machine, read from the VM's mouse device (no DOM).
+     * A press either grabs a sprite (drag it in a plane parallel to the backdrop) or,
+     * on empty space in 'drag' mode, orbits the camera. A press-and-release that barely
+     * moves fires the sprite's "when this sprite clicked" hat. Sprite drag and camera
+     * orbit are mutually exclusive within one gesture, so orbiting still works whenever
+     * the press misses every sprite. Sprite click/drag work in both 'orbit' and 'drag'.
      * @private
      */
-    _applyDrag () {
+    _handlePointer () {
         const mouse = this.runtime.ioDevices && this.runtime.ioDevices.mouse;
         if (!mouse) return;
-        if (mouse.getIsDown()) {
-            const x = mouse.getScratchX();
-            const y = mouse.getScratchY();
-            if (this._dragging) {
-                this._angle -= (x - this._lastDragX) * DRAG_ROT;
-                this._camHeight = Math.max(
-                    DRAG_HEIGHT_RANGE.min,
-                    Math.min(DRAG_HEIGHT_RANGE.max, this._camHeight + ((y - this._lastDragY) * DRAG_HEIGHT))
-                );
+        const down = mouse.getIsDown();
+        const sx = mouse.getScratchX();
+        const sy = mouse.getScratchY();
+
+        if (down && !this._pointerDown) {
+            // Press edge: decide the gesture.
+            const hit = this._raycastTarget(sx, sy);
+            this._pressTarget = hit ? hit.target : null;
+            this._pressX = sx;
+            this._pressY = sy;
+            if (hit && hit.target.draggable) {
+                this._beginSpriteDrag(hit.target, sx, sy);
+            } else if (!hit && this._mode === 'drag') {
+                this._gesture = 'camera';
+                this._lastDragX = sx;
+                this._lastDragY = sy;
+            } else {
+                this._gesture = null;
             }
-            this._dragging = true;
-            this._lastDragX = x;
-            this._lastDragY = y;
-        } else {
-            this._dragging = false;
+        } else if (down && this._pointerDown) {
+            // Held: advance the active gesture.
+            if (this._gesture === 'sprite' && this._dragTarget) {
+                this._dragSpriteTo(sx, sy);
+            } else if (this._gesture === 'camera') {
+                this._orbitBy(sx, sy);
+            }
+        } else if (!down && this._pointerDown) {
+            // Release edge: a barely-moved press on a sprite counts as a click.
+            const moved = Math.hypot(sx - this._pressX, sy - this._pressY);
+            if (this._pressTarget && moved < CLICK_THRESHOLD) {
+                this.runtime.startHats('event_whenthisspriteclicked', null, this._pressTarget);
+            }
+            this._endGesture();
         }
+
+        this._pointerDown = down;
+    }
+
+    /**
+     * Cast a ray from the stage-space pointer through the camera and return the nearest
+     * visible sprite hit (mapped back to its Target), or null.
+     * @param {number} sx - pointer x in Scratch units (-240..240).
+     * @param {number} sy - pointer y in Scratch units (-180..180, up positive).
+     * @returns {?{target: Target, point: THREE.Vector3}} the nearest hit, or null.
+     * @private
+     */
+    _raycastTarget (sx, sy) {
+        // Scratch coords map straight to NDC; the camera's 4:3 aspect matches the stage.
+        this._ndc.set(sx / 240, sy / 180);
+        this._raycaster.setFromCamera(this._ndc, this._camera);
+        const groups = [];
+        for (const entry of this._meshes.values()) {
+            if (entry.group.visible) groups.push(entry.group);
+        }
+        const hits = this._raycaster.intersectObjects(groups, true);
+        for (const h of hits) {
+            let obj = h.object;
+            while (obj && typeof obj.userData.targetId === 'undefined') obj = obj.parent;
+            if (!obj) continue;
+            const target = this.runtime.targets.find(t => t.id === obj.userData.targetId);
+            if (target) return {target, point: h.point};
+        }
+        return null;
+    }
+
+    /**
+     * Begin dragging a sprite. The drag is constrained to a plane parallel to the
+     * backdrop through the sprite's current depth, so depth stays fixed.
+     * @param {Target} target - the sprite being grabbed.
+     * @param {number} sx - pointer x in Scratch units.
+     * @param {number} sy - pointer y in Scratch units.
+     * @private
+     */
+    _beginSpriteDrag (target, sx, sy) {
+        this._gesture = 'sprite';
+        this._dragTarget = target;
+        const entry = this._meshes.get(target.id);
+        const z = entry ? entry.group.position.z : 0; // = -(depth)
+        // Plane with normal +z through world-z = z: normal·p + constant = 0 => constant = -z.
+        this._dragPlane.set(VEC_Z, -z);
+        this._ndc.set(sx / 240, sy / 180);
+        this._raycaster.setFromCamera(this._ndc, this._camera);
+        if (this._raycaster.ray.intersectPlane(this._dragPlane, this._dragHit)) {
+            this._dragOffset.set(target.x - this._dragHit.x, target.y - this._dragHit.y);
+        } else {
+            this._dragOffset.set(0, 0);
+        }
+        target.startDrag();
+    }
+
+    /**
+     * Move the dragged sprite to follow the pointer within its drag plane.
+     * @param {number} sx - pointer x in Scratch units.
+     * @param {number} sy - pointer y in Scratch units.
+     * @private
+     */
+    _dragSpriteTo (sx, sy) {
+        this._ndc.set(sx / 240, sy / 180);
+        this._raycaster.setFromCamera(this._ndc, this._camera);
+        if (this._raycaster.ray.intersectPlane(this._dragPlane, this._dragHit)) {
+            // force=true so the move bypasses the dragging guard in setXY.
+            this._dragTarget.setXY(
+                this._dragHit.x + this._dragOffset.x,
+                this._dragHit.y + this._dragOffset.y,
+                true
+            );
+        }
+    }
+
+    /**
+     * Orbit the camera by how far the pointer moved since the last frame (the same
+     * sensitivity as before; just gated by the 'camera' gesture now).
+     * @param {number} sx - pointer x in Scratch units.
+     * @param {number} sy - pointer y in Scratch units.
+     * @private
+     */
+    _orbitBy (sx, sy) {
+        this._angle -= (sx - this._lastDragX) * DRAG_ROT;
+        this._camHeight = Math.max(
+            DRAG_HEIGHT_RANGE.min,
+            Math.min(DRAG_HEIGHT_RANGE.max, this._camHeight + ((sy - this._lastDragY) * DRAG_HEIGHT))
+        );
+        this._lastDragX = sx;
+        this._lastDragY = sy;
+    }
+
+    /**
+     * End the current pointer gesture, releasing any dragged sprite.
+     * @private
+     */
+    _endGesture () {
+        if (this._dragTarget) this._dragTarget.stopDrag();
+        this._dragTarget = null;
+        this._pressTarget = null;
+        this._gesture = null;
     }
 
     /**
@@ -428,10 +635,13 @@ class PopupScene {
                 group: new THREE.Group(),
                 materials: [],
                 textures: [],
+                effectUniforms: null,
                 costumeId: null,
                 thickness: -1,
                 loadToken: 0
             };
+            // Tag the group so a raycast hit can be mapped back to its target.
+            entry.group.userData.targetId = target.id;
             this._scene.add(entry.group);
             this._meshes.set(target.id, entry);
         }
@@ -451,19 +661,25 @@ class PopupScene {
 
         // Apply the sprite's direction, honouring its rotation style. "all around"
         // rotates in the wall plane (about z); "left-right" flips to face the other
-        // way (about y); "don't rotate" stays upright.
+        // way (about y); "don't rotate" stays upright. On top of that, the Pop-Up
+        // tilt (about x) and spin (about y) rotate the card in 3D.
         const dir = Number.isFinite(target.direction) ? target.direction : 90;
         const style = target.rotationStyle;
-        let rotY = 0;
+        let flipY = 0;
         let rotZ = 0;
         if (style === 'left-right') {
-            if (Math.sin(dir * (Math.PI / 180)) < 0) rotY = Math.PI;
+            if (Math.sin(dir * (Math.PI / 180)) < 0) flipY = Math.PI;
         } else if (style !== "don't rotate") {
             rotZ = (90 - dir) * (Math.PI / 180);
         }
-        entry.group.rotation.set(0, rotY, rotZ);
+        const DEG = Math.PI / 180;
+        const tilt = (state.tilt || 0) * DEG; // about x
+        const spin = (state.spin || 0) * DEG; // about y (adds to the left-right flip)
+        entry.group.rotation.set(tilt, flipY + spin, rotZ);
 
         entry.group.visible = target.visible !== false;
+
+        this._applyEffects(entry, target);
     }
 
     /**
@@ -526,6 +742,7 @@ class PopupScene {
         for (const mesh of built.meshes) entry.group.add(mesh);
         entry.materials = built.materials;
         entry.textures = built.textures;
+        entry.effectUniforms = built.effectUniforms;
         return true;
     }
 
@@ -594,10 +811,17 @@ class PopupScene {
         back.position.z = -th / 2;
         back.rotation.y = Math.PI;
 
+        // Graphic effects: full colour/brightness/ghost on the textured faces, ghost
+        // only on the (vertex-coloured) side walls.
+        const edgeFx = this._patchEffectMaterial(edgeMat, false);
+        const faceFx = this._patchEffectMaterial(faceMat, true);
+        const backFx = this._patchEffectMaterial(backMat, true);
+
         return {
             meshes: [sideMesh, front, back],
             materials: [edgeMat, faceMat, backMat],
-            textures: [tex, backTex]
+            textures: [tex, backTex],
+            effectUniforms: [edgeFx, faceFx, backFx]
         };
     }
 
@@ -658,6 +882,76 @@ class PopupScene {
     }
 
     /**
+     * Give a material live ghost/brightness/color uniforms by injecting GLSL via
+     * onBeforeCompile, and return the shared uniforms object (also stashed on the
+     * material). Updating a uniform's `.value` later takes effect immediately.
+     * @param {THREE.Material} material - the material to patch.
+     * @param {boolean} withColorBright - true for textured faces (color + brightness +
+     *   ghost); false for the side walls (ghost only).
+     * @returns {object} the {u_ghost, u_brightness, u_color} uniforms object.
+     * @private
+     */
+    _patchEffectMaterial (material, withColorBright) {
+        const uniforms = {
+            u_ghost: {value: 1},
+            u_brightness: {value: 0},
+            u_color: {value: 0}
+        };
+        material.transparent = true; // ghost fades via alpha
+        material.userData.popupUniforms = uniforms;
+        material.onBeforeCompile = shader => {
+            shader.uniforms.u_ghost = uniforms.u_ghost;
+            shader.uniforms.u_brightness = uniforms.u_brightness;
+            shader.uniforms.u_color = uniforms.u_color;
+            const define = withColorBright ? '#define POPUP_COLOR_BRIGHT\n' : '';
+            const body = `#include <colorspace_fragment>${EFFECT_SHADER_BODY}`;
+            const patched = shader.fragmentShader.replace('#include <colorspace_fragment>', body);
+            shader.fragmentShader = `${define}${EFFECT_SHADER_HEADER}${patched}`;
+        };
+        // A unique cache key per material so each compiles its own program and keeps its
+        // own effect uniforms (see effectMaterialSeq above).
+        const cacheKey = `popup${effectMaterialSeq++}`;
+        material.customProgramCacheKey = () => cacheKey;
+        material.needsUpdate = true;
+        return uniforms;
+    }
+
+    /**
+     * Convert a target's Scratch effect values to the shader uniform values (matching
+     * scratch-render's ShaderManager conversions). Only ghost, brightness and colour
+     * are used.
+     * @param {object} effects - a target's effects object (may be undefined).
+     * @returns {{ghost: number, brightness: number, color: number}} uniform values.
+     * @private
+     */
+    _effectValues (effects) {
+        const fx = effects || {};
+        const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+        return {
+            ghost: 1 - (clamp(fx.ghost || 0, 0, 100) / 100),
+            brightness: clamp(fx.brightness || 0, -100, 100) / 100,
+            color: ((((fx.color || 0) / 200) % 1) + 1) % 1
+        };
+    }
+
+    /**
+     * Push a target's current graphic effects into its patched materials.
+     * @param {object} entry - the mesh bookkeeping entry.
+     * @param {Target} target - the sprite whose effects to read.
+     * @private
+     */
+    _applyEffects (entry, target) {
+        if (!entry.effectUniforms) return;
+        const v = this._effectValues(target.effects);
+        for (const u of entry.effectUniforms) {
+            if (!u) continue;
+            u.u_ghost.value = v.ghost;
+            u.u_brightness.value = v.brightness;
+            u.u_color.value = v.color;
+        }
+    }
+
+    /**
      * Fallback for bitmap costumes (or if extrusion fails): a thin textured slab.
      * @param {object} entry - the mesh bookkeeping entry.
      * @param {number} w - native costume width in stage units.
@@ -673,6 +967,9 @@ class PopupScene {
         const edge = new THREE.MeshBasicMaterial({color: EDGE_COLOR});
         entry.materials = [face, edge];
         entry.textures = [tex];
+        const faceFx = this._patchEffectMaterial(face, true);
+        const edgeFx = this._patchEffectMaterial(edge, false);
+        entry.effectUniforms = [faceFx, edgeFx];
 
         // BoxGeometry material group order: +x, -x, +y, -y, +z (front), -z (back).
         const mesh = new THREE.Mesh(geo, [edge, edge, edge, edge, face, face]);
@@ -721,6 +1018,14 @@ class PopupScene {
                 tex.dispose();
                 return;
             }
+            // Freeze the sprite's current graphic effects onto the stamp.
+            const fx = this._effectValues(target.effects);
+            for (const u of built.effectUniforms) {
+                if (!u) continue;
+                u.u_ghost.value = fx.ghost;
+                u.u_brightness.value = fx.brightness;
+                u.u_color.value = fx.color;
+            }
             const group = new THREE.Group();
             for (const mesh of built.meshes) group.add(mesh);
             group.position.set(px, py, pz);
@@ -744,6 +1049,33 @@ class PopupScene {
         }
         this._stamps = [];
         if (this._renderer) this.runtime.requestRedraw();
+    }
+
+    /**
+     * Test whether the asking sprite's 3D shape overlaps any visible, non-self,
+     * non-dragged clone of the named sprite, using world-space axis-aligned bounding
+     * boxes. Only meaningful while the 3D view is active.
+     * @param {Target} asking - the sprite running the block.
+     * @param {string} spriteName - the other sprite's name.
+     * @returns {boolean} true if their bounding boxes overlap in 3D.
+     */
+    isTouching3D (asking, spriteName) {
+        const askEntry = this._meshes.get(asking.id);
+        if (!askEntry || !askEntry.group.visible) return false;
+        const other = this.runtime.getSpriteTargetByName(spriteName);
+        if (!other || !other.sprite) return false;
+
+        const a = new THREE.Box3().setFromObject(askEntry.group);
+        if (a.isEmpty()) return false;
+        const b = new THREE.Box3();
+        for (const clone of other.sprite.clones) {
+            if (clone === asking || clone.dragging) continue;
+            const entry = this._meshes.get(clone.id);
+            if (!entry || !entry.group.visible) continue;
+            b.setFromObject(entry.group);
+            if (!b.isEmpty() && a.intersectsBox(b)) return true;
+        }
+        return false;
     }
 
     /**
@@ -782,6 +1114,7 @@ class PopupScene {
             if (tex && tex.dispose) tex.dispose();
         }
         entry.textures = [];
+        entry.effectUniforms = null;
     }
 
     /**

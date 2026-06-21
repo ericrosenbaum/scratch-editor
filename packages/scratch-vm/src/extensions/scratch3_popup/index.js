@@ -192,6 +192,116 @@ class Scratch3PopupBlocks {
                 },
                 '---',
                 {
+                    opcode: 'setTilt',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.setTilt',
+                        default: 'tilt to [ANGLE]',
+                        description: 'Set this sprite\'s rotation about the X axis (tip forward/back)'
+                    }),
+                    arguments: {
+                        ANGLE: {
+                            type: ArgumentType.ANGLE,
+                            defaultValue: 0
+                        }
+                    }
+                },
+                {
+                    opcode: 'changeTilt',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.changeTilt',
+                        default: 'tilt by [ANGLE]',
+                        description: 'Change this sprite\'s rotation about the X axis'
+                    }),
+                    arguments: {
+                        ANGLE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 15
+                        }
+                    }
+                },
+                {
+                    opcode: 'setSpin',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.setSpin',
+                        default: 'spin to [ANGLE]',
+                        description: 'Set this sprite\'s rotation about the Y axis (turn left/right)'
+                    }),
+                    arguments: {
+                        ANGLE: {
+                            type: ArgumentType.ANGLE,
+                            defaultValue: 0
+                        }
+                    }
+                },
+                {
+                    opcode: 'changeSpin',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.changeSpin',
+                        default: 'spin by [ANGLE]',
+                        description: 'Change this sprite\'s rotation about the Y axis'
+                    }),
+                    arguments: {
+                        ANGLE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 15
+                        }
+                    }
+                },
+                {
+                    opcode: 'getTilt',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'popup.tilt',
+                        default: 'tilt',
+                        description: 'Reporter: this sprite\'s tilt (rotation about X)'
+                    })
+                },
+                {
+                    opcode: 'getSpin',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'popup.spin',
+                        default: 'spin',
+                        description: 'Reporter: this sprite\'s spin (rotation about Y)'
+                    })
+                },
+                {
+                    opcode: 'move3D',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.move3D',
+                        default: 'move [STEPS] steps in 3D',
+                        description: 'Move this sprite along its 3D heading (spin + tilt)'
+                    }),
+                    arguments: {
+                        STEPS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 10
+                        }
+                    }
+                },
+                '---',
+                {
+                    opcode: 'touchingSprite',
+                    blockType: BlockType.BOOLEAN,
+                    text: formatMessage({
+                        id: 'popup.touchingSprite',
+                        default: 'touching [SPRITE] in 3D?',
+                        description: 'Whether this sprite overlaps another sprite in 3D'
+                    }),
+                    arguments: {
+                        SPRITE: {
+                            type: ArgumentType.STRING,
+                            menu: 'spriteMenu'
+                        }
+                    }
+                },
+                '---',
+                {
                     opcode: 'stampInThreeD',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -243,9 +353,28 @@ class Scratch3PopupBlocks {
                 sky: {
                     acceptReporters: false,
                     items: this._skyMenu()
+                },
+                spriteMenu: {
+                    acceptReporters: true,
+                    items: '_spriteMenu'
                 }
             }
         };
+    }
+
+    /**
+     * Dynamic menu of the current sprite names (one per sprite, excluding the stage
+     * and clones). Called by the editor each time the menu opens.
+     * @returns {Array<object>} menu items.
+     * @private
+     */
+    _spriteMenu () {
+        const names = [];
+        for (const target of this.runtime.targets) {
+            if (target.isStage || !target.isOriginal || !target.sprite) continue;
+            names.push({text: target.sprite.name, value: target.sprite.name});
+        }
+        return names.length ? names : [{text: '', value: '_none_'}];
     }
 
     /**
@@ -286,6 +415,9 @@ class Scratch3PopupBlocks {
             state = Clone.simple(DEFAULT_STATE);
             target.setCustomState(STATE_KEY, state);
         }
+        // Backfill keys added after a project may have been saved with older state.
+        if (!Number.isFinite(state.tilt)) state.tilt = 0;
+        if (!Number.isFinite(state.spin)) state.spin = 0;
         return state;
     }
 
@@ -393,6 +525,108 @@ class Scratch3PopupBlocks {
             THICKNESS_RANGE.max
         );
         this._visualChange();
+    }
+
+    /**
+     * `tilt to [ANGLE]` - set rotation about the X axis.
+     * @param {object} args - the block arguments.
+     * @param {object} util - block utility (provides the current target).
+     */
+    setTilt (args, util) {
+        this._getState(util.target).tilt = MathUtil.wrapClamp(Cast.toNumber(args.ANGLE), -180, 180);
+        this._visualChange();
+    }
+
+    /**
+     * `tilt by [ANGLE]` - change rotation about the X axis.
+     * @param {object} args - the block arguments.
+     * @param {object} util - block utility (provides the current target).
+     */
+    changeTilt (args, util) {
+        const state = this._getState(util.target);
+        state.tilt = MathUtil.wrapClamp(state.tilt + Cast.toNumber(args.ANGLE), -180, 180);
+        this._visualChange();
+    }
+
+    /**
+     * `tilt` reporter.
+     * @param {object} args - the block arguments (unused).
+     * @param {object} util - block utility (provides the current target).
+     * @returns {number} the target's tilt.
+     */
+    getTilt (args, util) {
+        return this._getState(util.target).tilt;
+    }
+
+    /**
+     * `spin to [ANGLE]` - set rotation about the Y axis.
+     * @param {object} args - the block arguments.
+     * @param {object} util - block utility (provides the current target).
+     */
+    setSpin (args, util) {
+        this._getState(util.target).spin = MathUtil.wrapClamp(Cast.toNumber(args.ANGLE), -180, 180);
+        this._visualChange();
+    }
+
+    /**
+     * `spin by [ANGLE]` - change rotation about the Y axis.
+     * @param {object} args - the block arguments.
+     * @param {object} util - block utility (provides the current target).
+     */
+    changeSpin (args, util) {
+        const state = this._getState(util.target);
+        state.spin = MathUtil.wrapClamp(state.spin + Cast.toNumber(args.ANGLE), -180, 180);
+        this._visualChange();
+    }
+
+    /**
+     * `spin` reporter.
+     * @param {object} args - the block arguments (unused).
+     * @param {object} util - block utility (provides the current target).
+     * @returns {number} the target's spin.
+     */
+    getSpin (args, util) {
+        return this._getState(util.target).spin;
+    }
+
+    /**
+     * `move [STEPS] steps in 3D` - move along the sprite's 3D heading. The heading
+     * is built from spin (yaw, about Y) and tilt (pitch, about X): at rest the sprite
+     * faces the camera (out of the page); spin steers it horizontally and tilt steers
+     * it vertically/in-out.
+     * @param {object} args - the block arguments.
+     * @param {object} util - block utility (provides the current target).
+     */
+    move3D (args, util) {
+        const target = util.target;
+        const state = this._getState(target);
+        const steps = Cast.toNumber(args.STEPS);
+        const yaw = MathUtil.degToRad(state.spin);
+        const pitch = MathUtil.degToRad(state.tilt);
+        const fx = Math.sin(yaw) * Math.cos(pitch); // horizontal (stage x)
+        const fy = -Math.sin(pitch); // vertical (stage y)
+        const fz = Math.cos(yaw) * Math.cos(pitch); // toward the camera (+world z)
+        target.setXY(target.x + (steps * fx), target.y + (steps * fy));
+        // World +z (toward the camera) means a smaller depth, since the group's z is
+        // set to -(depth) in the scene.
+        state.depth = MathUtil.clamp(state.depth - (steps * fz), DEPTH_RANGE.min, DEPTH_RANGE.max);
+        this._visualChange();
+    }
+
+    /**
+     * `touching [SPRITE] in 3D?` - true if this sprite overlaps the named sprite in 3D.
+     * While the 3D view is active this tests real 3D overlap; in the flat view it falls
+     * back to the normal 2D touching test so the block still works.
+     * @param {object} args - the block arguments.
+     * @param {object} util - block utility (provides the current target).
+     * @returns {boolean} whether the sprites overlap.
+     */
+    touchingSprite (args, util) {
+        const name = Cast.toString(args.SPRITE);
+        if (this._scene.active) {
+            return this._scene.isTouching3D(util.target, name);
+        }
+        return util.target.isTouchingObject(name);
     }
 
     /**
