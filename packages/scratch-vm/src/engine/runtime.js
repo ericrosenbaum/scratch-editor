@@ -248,6 +248,19 @@ class Runtime extends EventEmitter {
         this._hats = {};
 
         /**
+         * Community-authored "JS-powered block" libraries installed in this project.
+         * @type {Array.<object>}
+         */
+        this._customLibraries = [];
+
+        /**
+         * Per-library encapsulated data stores for JS-powered blocks, keyed by
+         * library id. Cleared on green flag / stop; never serialized.
+         * @type {Object.<string, object>}
+         */
+        this._jsBlockStores = {};
+
+        /**
          * A list of script block IDs that were glowing during the previous frame.
          * @type {!Array.<!string>}
          */
@@ -1578,6 +1591,91 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Install (or update) a community-authored "JS-powered block" library: register
+     * its blocks so they appear in the palette and dispatch to a sandboxed
+     * interpreter. The library is project data (it round-trips through the .sb3),
+     * not a built-in extension module.
+     * @param {object} library - the library {id, name, color1/2/3, blocks[]}.
+     */
+    installCustomLibrary (library) {
+        // Lazy-require so the interpreter is only loaded when a library is used.
+        const LibraryRegistrar = require('../extension-support/js-blocks/library-registrar');
+        library.id = LibraryRegistrar.sanitizeId(library.id);
+        const existingIndex = this._customLibraries.findIndex(lib => lib.id === library.id);
+        if (existingIndex === -1) {
+            this._customLibraries.push(library);
+        } else {
+            this._customLibraries[existingIndex] = library;
+        }
+        // Fresh data store for the (re)installed library.
+        this._jsBlockStores[library.id] = {};
+        LibraryRegistrar.register(this, library);
+    }
+
+    /**
+     * Remove a previously-installed JS-powered block library.
+     * @param {string} libraryId - the library id to remove.
+     */
+    uninstallCustomLibrary (libraryId) {
+        this._customLibraries = this._customLibraries.filter(lib => lib.id !== libraryId);
+        delete this._jsBlockStores[libraryId];
+        this._blockInfo = this._blockInfo.filter(category => category.id !== libraryId);
+        const prefix = `${libraryId}_`;
+        for (const opcode of Object.keys(this._primitives)) {
+            if (opcode.startsWith(prefix)) delete this._primitives[opcode];
+        }
+        for (const opcode of Object.keys(this._hats)) {
+            if (opcode.startsWith(prefix)) delete this._hats[opcode];
+        }
+        this.emit(Runtime.TOOLBOX_EXTENSIONS_NEED_UPDATE);
+    }
+
+    /**
+     * @returns {Array.<object>} the installed JS-powered block libraries.
+     */
+    getCustomLibraries () {
+        return this._customLibraries;
+    }
+
+    /**
+     * Get the encapsulated data store for a JS-powered block library, creating it
+     * if needed. This store is private to the library and never touches Scratch
+     * variables/lists.
+     * @param {string} libraryId - the owning library id.
+     * @returns {object} the mutable store object.
+     */
+    getJsBlockStore (libraryId) {
+        let store = this._jsBlockStores[libraryId];
+        if (!store) {
+            store = this._jsBlockStores[libraryId] = {};
+        }
+        return store;
+    }
+
+    /**
+     * Clear all JS-powered block library data stores (on green flag / stop).
+     */
+    clearJsBlockStores () {
+        for (const libraryId of Object.keys(this._jsBlockStores)) {
+            this._jsBlockStores[libraryId] = {};
+        }
+    }
+
+    /**
+     * Surface a non-fatal error from a JS-powered block without throwing into the
+     * sequencer.
+     * @param {object} library - the owning library.
+     * @param {object} libBlock - the block that errored.
+     * @param {Error|string} error - the failure.
+     */
+    emitJsBlockError (library, libBlock, error) {
+        const message = error && error.message ? error.message : String(error);
+        log.warn(`JS block "${libBlock && libBlock.opcode}" in library ` +
+            `"${library && library.id}": ${message}`);
+        this.emit('JS_BLOCK_ERROR', {library, block: libBlock, message});
+    }
+
+    /**
      * Retrieve the function associated with the given opcode.
      * @param {!string} opcode The opcode to look up.
      * @returns {Function} The function which implements the opcode.
@@ -2098,6 +2196,10 @@ class Runtime extends EventEmitter {
     stopAll () {
         // Emit stop event to allow blocks to clean up any state.
         this.emit(Runtime.PROJECT_STOP_ALL);
+
+        // Reset the encapsulated data stores of JS-powered block libraries. This
+        // also covers the green flag, which calls stopAll() before starting.
+        this.clearJsBlockStores();
 
         // Dispose all clones.
         const newTargets = [];

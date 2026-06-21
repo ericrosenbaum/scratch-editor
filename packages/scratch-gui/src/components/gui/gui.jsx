@@ -30,6 +30,8 @@ import Cards from '../../containers/cards.jsx';
 import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
+import LibraryManager from '../../containers/library-manager.jsx';
+import LibraryBlockEditor from '../../containers/library-block-editor.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
@@ -142,6 +144,8 @@ const GUIComponent = props => {
         canUseCloud,
         children,
         connectionModalVisible,
+        jsLibraryManagerVisible,
+        jsBlockEditorVisible,
         costumeLibraryVisible,
         costumesTabVisible,
         debugModalVisible,
@@ -312,6 +316,12 @@ const GUIComponent = props => {
                             useExternalPeripheralList={useExternalPeripheralList}
                             vm={vm}
                         />
+                    ) : null}
+                    {jsLibraryManagerVisible ? (
+                        <LibraryManager />
+                    ) : null}
+                    {jsBlockEditorVisible ? (
+                        <LibraryBlockEditor />
                     ) : null}
                     {costumeLibraryVisible ? (
                         <CostumeLibrary
@@ -603,6 +613,8 @@ GUIComponent.propTypes = {
     canUseCloud: PropTypes.bool,
     cardsVisible: PropTypes.bool,
     children: PropTypes.node,
+    jsLibraryManagerVisible: PropTypes.bool,
+    jsBlockEditorVisible: PropTypes.bool,
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
     debugModalVisible: PropTypes.bool,

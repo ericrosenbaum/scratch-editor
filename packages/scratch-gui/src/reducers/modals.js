@@ -12,6 +12,8 @@ const MODAL_SPRITE_LIBRARY = 'spriteLibrary';
 const MODAL_SOUND_RECORDER = 'soundRecorder';
 const MODAL_CONNECTION = 'connectionModal';
 const MODAL_TIPS_LIBRARY = 'tipsLibrary';
+const MODAL_JS_LIBRARY_MANAGER = 'jsLibraryManager';
+const MODAL_JS_BLOCK_EDITOR = 'jsBlockEditor';
 
 const initialState = {
     [MODAL_BACKDROP_LIBRARY]: false,
@@ -24,7 +26,9 @@ const initialState = {
     [MODAL_SPRITE_LIBRARY]: false,
     [MODAL_SOUND_RECORDER]: false,
     [MODAL_CONNECTION]: false,
-    [MODAL_TIPS_LIBRARY]: false
+    [MODAL_TIPS_LIBRARY]: false,
+    [MODAL_JS_LIBRARY_MANAGER]: false,
+    [MODAL_JS_BLOCK_EDITOR]: false
 };
 
 const reducer = function (state, action) {
@@ -87,6 +91,18 @@ const openConnectionModal = function () {
 const openTipsLibrary = function () {
     return openModal(MODAL_TIPS_LIBRARY);
 };
+const openJsLibraryManager = function () {
+    return openModal(MODAL_JS_LIBRARY_MANAGER);
+};
+const closeJsLibraryManager = function () {
+    return closeModal(MODAL_JS_LIBRARY_MANAGER);
+};
+const openJsBlockEditor = function () {
+    return openModal(MODAL_JS_BLOCK_EDITOR);
+};
+const closeJsBlockEditor = function () {
+    return closeModal(MODAL_JS_BLOCK_EDITOR);
+};
 const closeBackdropLibrary = function () {
     return closeModal(MODAL_BACKDROP_LIBRARY);
 };
@@ -134,6 +150,10 @@ export {
     openTelemetryModal,
     openTipsLibrary,
     openConnectionModal,
+    openJsLibraryManager,
+    closeJsLibraryManager,
+    openJsBlockEditor,
+    closeJsBlockEditor,
     closeBackdropLibrary,
     closeCostumeLibrary,
     closeDebugModal,

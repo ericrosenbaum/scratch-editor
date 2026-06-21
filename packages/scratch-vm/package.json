@@ -73,6 +73,7 @@
     "format-message": "6.2.4",
     "htmlparser2": "3.10.1",
     "immutable": "3.8.3",
+    "js-interpreter": "^6.0.2",
     "jszip": "3.10.1",
     "scratch-audio": "2.0.268",
     "scratch-parser": "6.0.0",

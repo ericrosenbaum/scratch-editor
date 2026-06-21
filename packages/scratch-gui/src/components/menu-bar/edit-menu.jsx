@@ -12,6 +12,7 @@ import useMenuNavigation from '../../hooks/use-menu-navigation';
 import dropdownCaret from './dropdown-caret.svg';
 import DeletionRestorer from '../../containers/deletion-restorer.jsx';
 import TurboMode from '../../containers/turbo-mode.jsx';
+import {openJsLibraryManager} from '../../reducers/modals';
 
 const editMenuAriaMessage = defineMessage({
     id: 'gui.aria.editMenu',
@@ -22,6 +23,7 @@ const editMenuAriaMessage = defineMessage({
 const EditMenu = ({
     isRtl,
     onRestoreOption,
+    onOpenJsLibraryManager,
     restoreOptionMessage,
     depth
 }) => {
@@ -99,6 +101,19 @@ const EditMenu = ({
                         </MenuItem>
                     )}</TurboMode>
                 </MenuSection>
+                <MenuSection>
+                    <MenuItem
+                        isDataMenuItem
+                        onParentKeyDown={handleKeyDownOpenMenu}
+                        onClick={onOpenJsLibraryManager}
+                    >
+                        <FormattedMessage
+                            defaultMessage="My Block Libraries…"
+                            description="Menu bar item that opens the JS-powered block libraries manager"
+                            id="gui.menuBar.jsBlockLibraries"
+                        />
+                    </MenuItem>
+                </MenuSection>
             </MenuBarMenu>
         </button>
     );
@@ -108,6 +123,7 @@ EditMenu.propTypes = {
     isRtl: PropTypes.bool,
     restoreOptionMessage: PropTypes.func.isRequired,
     onRestoreOption: PropTypes.func.isRequired,
+    onOpenJsLibraryManager: PropTypes.func.isRequired,
     depth: PropTypes.number
 };
 
@@ -115,6 +131,11 @@ const mapStateToProps = state => ({
     isRtl: state.locales.isRtl
 });
 
+const mapDispatchToProps = dispatch => ({
+    onOpenJsLibraryManager: () => dispatch(openJsLibraryManager())
+});
+
 export default connect(
-    mapStateToProps
+    mapStateToProps,
+    mapDispatchToProps
 )(EditMenu);

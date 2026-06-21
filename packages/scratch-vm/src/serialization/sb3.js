@@ -16,6 +16,7 @@ const uid = require('../util/uid');
 const MathUtil = require('../util/math-util');
 const StringUtil = require('../util/string-util');
 const VariableUtil = require('../util/variable-util');
+const {serializeLibrary, deserializeLibrary} = require('../extension-support/js-blocks/library-serialization');
 
 const {loadCostume} = require('../import/load-costume.js');
 const {loadSound} = require('../import/load-sound.js');
@@ -652,6 +653,13 @@ const serialize = function (runtime, targetId) {
 
     // Assemble extension list
     obj.extensions = Array.from(extensions);
+
+    // Assemble community-authored JS-powered block libraries (project data).
+    const customLibraries = (typeof runtime.getCustomLibraries === 'function' &&
+        runtime.getCustomLibraries()) || [];
+    if (customLibraries.length > 0) {
+        obj.customLibraries = customLibraries.map(serializeLibrary);
+    }
 
     // Assemble metadata
     const meta = Object.create(null);
@@ -1451,6 +1459,18 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         runtime.origin = json.meta.origin;
     } else {
         runtime.origin = null;
+    }
+
+    // Install community-authored JS-powered block libraries before parsing target
+    // blocks, so their primitives and palette categories exist when blocks resolve.
+    if (Array.isArray(json.customLibraries) && typeof runtime.installCustomLibrary === 'function') {
+        for (const libraryJson of json.customLibraries) {
+            try {
+                runtime.installCustomLibrary(deserializeLibrary(libraryJson));
+            } catch (e) {
+                log.error('Failed to install custom JS block library:', e);
+            }
+        }
     }
 
     // First keep track of the current target order in the json,

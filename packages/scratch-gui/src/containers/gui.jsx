@@ -196,6 +196,8 @@ const mapStateToProps = (state, ownProps) => {
         isPlayerOnly: state.scratchGui.mode.isPlayerOnly,
         isRtl: state.locales.isRtl,
         isShowingProject: getIsShowingProject(loadingState),
+        jsLibraryManagerVisible: state.scratchGui.modals.jsLibraryManager,
+        jsBlockEditorVisible: state.scratchGui.modals.jsBlockEditor,
         loadingStateVisible: state.scratchGui.modals.loadingProject,
         platform: ownProps.platform,
         projectId: state.scratchGui.projectState.projectId,

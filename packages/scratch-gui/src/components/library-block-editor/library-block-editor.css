@@ -1,0 +1,72 @@
+@import "../../css/colors.css";
+
+.modal-content {
+    width: 720px;
+    max-width: 90vw;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1rem;
+}
+
+.help {
+    margin: 0;
+    font-size: 0.85rem;
+    color: $text-primary;
+    opacity: 0.8;
+}
+
+.editor-wrap {
+    height: 360px;
+    max-height: 50vh;
+}
+
+.status-row {
+    display: flex;
+    align-items: center;
+    min-height: 1.5rem;
+}
+
+.status-error {
+    color: $error-light;
+    font-weight: bold;
+}
+
+.status-ok {
+    color: $data-primary;
+    font-weight: bold;
+}
+
+.button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.cancel-button,
+.ok-button {
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid $ui-black-transparent;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.cancel-button {
+    background: $ui-white;
+    color: $text-primary;
+}
+
+.ok-button {
+    background: $motion-primary;
+    color: $ui-white;
+    border-color: $motion-primary;
+}
+
+.ok-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

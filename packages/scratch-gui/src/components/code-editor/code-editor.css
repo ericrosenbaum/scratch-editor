@@ -1,0 +1,16 @@
+.editor {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--ui-black-transparent, hsla(0, 0%, 0%, 0.15));
+    border-radius: 0.5rem;
+    background: var(--ui-white, hsla(0, 100%, 100%, 1));
+}
+
+.editor :global(.cm-editor) {
+    height: 100%;
+}
+
+.editor :global(.cm-editor.cm-focused) {
+    outline: none;
+}

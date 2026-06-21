@@ -1348,6 +1348,33 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
+     * Install or update a community-authored JS-powered block library, then mark
+     * the project changed so it is saved. Registering the library emits
+     * EXTENSION_ADDED, which the GUI uses to add the palette category.
+     * @param {object} library - the library {id, name, color1/2/3, blocks[]}.
+     */
+    addCustomLibrary (library) {
+        this.runtime.installCustomLibrary(library);
+        this.runtime.emitProjectChanged();
+    }
+
+    /**
+     * Remove a JS-powered block library by id.
+     * @param {string} libraryId - the library id to remove.
+     */
+    deleteCustomLibrary (libraryId) {
+        this.runtime.uninstallCustomLibrary(libraryId);
+        this.runtime.emitProjectChanged();
+    }
+
+    /**
+     * @returns {Array.<object>} the installed JS-powered block libraries.
+     */
+    getCustomLibraries () {
+        return this.runtime.getCustomLibraries();
+    }
+
+    /**
      * Emit metadata about available targets.
      * An editor UI could use this to display a list of targets and show
      * the currently editing one.

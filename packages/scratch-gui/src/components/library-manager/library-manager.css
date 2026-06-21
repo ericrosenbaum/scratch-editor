@@ -1,0 +1,148 @@
+@import "../../css/colors.css";
+
+.modal-content {
+    width: 640px;
+    max-width: 90vw;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.intro {
+    margin: 0;
+    font-size: 0.9rem;
+    color: $text-primary;
+}
+
+.examples-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid $ui-black-transparent;
+}
+
+.examples-label {
+    font-size: 0.8rem;
+    color: $text-primary;
+    opacity: 0.7;
+    margin-right: 0.25rem;
+}
+
+.empty,
+.empty-blocks {
+    color: $text-primary;
+    opacity: 0.6;
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+.library-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.library {
+    border: 1px solid $ui-black-transparent;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    background: $ui-primary;
+}
+
+.library-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.swatch {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.25rem;
+    flex-shrink: 0;
+}
+
+.library-name {
+    font-weight: bold;
+    flex-grow: 1;
+}
+
+.library-actions,
+.block-actions {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.block-list {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.block-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.block-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    background: $ui-primary;
+    color: $motion-primary;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    flex-shrink: 0;
+}
+
+.block-label {
+    flex-grow: 1;
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+.primary-button {
+    padding: 0.4rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid $motion-primary;
+    background: $motion-primary;
+    color: $ui-white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 0.5rem;
+}
+
+.secondary-button,
+.small-button,
+.small-button-danger {
+    padding: 0.3rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid $ui-black-transparent;
+    background: $ui-white;
+    color: $text-primary;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.small-button-danger {
+    color: $error-light;
+}
