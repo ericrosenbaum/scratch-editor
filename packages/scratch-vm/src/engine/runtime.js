@@ -261,6 +261,13 @@ class Runtime extends EventEmitter {
         this._jsBlockStores = {};
 
         /**
+         * Pending JS-powered block `Scratch.onStop` cleanup handlers, keyed by
+         * "<libraryId>:<opcode>" so a looping block only registers one.
+         * @type {Map.<string, object>}
+         */
+        this._jsStopHandlers = new Map();
+
+        /**
          * A list of script block IDs that were glowing during the previous frame.
          * @type {!Array.<!string>}
          */
@@ -1662,6 +1669,34 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Register a JS-powered block's `Scratch.onStop` cleanup. Keyed by
+     * library+opcode so a block in a loop only keeps its most recent handler.
+     * @param {object} library - the owning library.
+     * @param {object} libBlock - the block.
+     * @param {object} runner - the JsBlockRunner holding the handler.
+     */
+    registerJsStopHandler (library, libBlock, runner) {
+        this._jsStopHandlers.set(`${library.id}:${libBlock.opcode}`, runner);
+    }
+
+    /**
+     * Run and clear all pending JS-powered block onStop cleanup handlers.
+     * @private
+     */
+    _runJsStopHandlers () {
+        if (this._jsStopHandlers.size === 0) return;
+        const runners = Array.from(this._jsStopHandlers.values());
+        this._jsStopHandlers.clear();
+        for (const runner of runners) {
+            try {
+                runner.runStopHandler();
+            } catch (e) {
+                log.warn('JS block onStop handler failed:', e);
+            }
+        }
+    }
+
+    /**
      * Surface a non-fatal error from a JS-powered block without throwing into the
      * sequencer.
      * @param {object} library - the owning library.
@@ -2197,8 +2232,10 @@ class Runtime extends EventEmitter {
         // Emit stop event to allow blocks to clean up any state.
         this.emit(Runtime.PROJECT_STOP_ALL);
 
-        // Reset the encapsulated data stores of JS-powered block libraries. This
-        // also covers the green flag, which calls stopAll() before starting.
+        // Run any JS-powered block onStop cleanup handlers, then reset the
+        // encapsulated data stores. This also covers the green flag, which calls
+        // stopAll() before starting.
+        this._runJsStopHandlers();
         this.clearJsBlockStores();
 
         // Dispose all clones.

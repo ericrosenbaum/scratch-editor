@@ -1,31 +1,25 @@
 import {buildLibraryBlock} from './library-model';
 
 /**
- * @file Built-in example libraries for JS-powered blocks, one per "high ceiling"
- * family. Each block is authored as a full document (header + JS); they are
- * compiled on demand through the same static-analysis path as user blocks. The
- * manager offers these so people can see what JS blocks make possible and tinker.
+ * @file Built-in example libraries for JS-powered blocks. Each library is paired
+ * with an example project (see ./projects) that does something clearly outside
+ * vanilla Scratch's reach — reading pixel colors, reading sound samples, real
+ * string manipulation, and true 2D grids — while staying simple and playful.
+ * Blocks are authored as documents and compiled through the same static-analysis
+ * path as user blocks.
  */
 
 /* eslint-disable @stylistic/indent */
 // Block documents are multi-line template literals; their interior lines are the
 // authored text and must not be re-indented by the linter.
 
-/** A. Strings & text — word games, mad-libs, secret messages. */
-const STRINGS = {
-    name: 'Strings',
+/** Text — ciphers and word play (Secret Decoder Ring project). */
+const TEXT = {
+    name: 'Text',
     color1: '#59C059',
     color2: '#46B946',
     color3: '#389438',
     docs: [
-`---
-type: reporter
-text: "join {a} and {b}"
-inputs:
-  a: text = "hello "
-  b: text = "world"
----
-return Scratch.args.a + Scratch.args.b;`,
 `---
 type: reporter
 text: "{s} backwards"
@@ -35,18 +29,28 @@ inputs:
 return Scratch.text.reverse(Scratch.args.s);`,
 `---
 type: reporter
+text: "shift letters of {s} by {n}"
+inputs:
+  s: text = "hello"
+  n: number = 3
+---
+var s = Scratch.args.s;
+var n = ((Scratch.args.n % 26) + 26) % 26;
+var out = "";
+for (var i = 0; i < s.length; i++) {
+  var c = s.charCodeAt(i);
+  if (c >= 65 && c <= 90) out += String.fromCharCode(((c - 65 + n) % 26) + 65);
+  else if (c >= 97 && c <= 122) out += String.fromCharCode(((c - 97 + n) % 26) + 97);
+  else out += s.charAt(i);
+}
+return out;`,
+`---
+type: reporter
 text: "uppercase {s}"
 inputs:
   s: text = "hello"
 ---
 return Scratch.text.upper(Scratch.args.s);`,
-`---
-type: reporter
-text: "letters in {s}"
-inputs:
-  s: text = "scratch"
----
-return Scratch.args.s.length;`,
 `---
 type: reporter
 text: "word {n} of {s}"
@@ -68,138 +72,137 @@ return Scratch.text.contains(Scratch.args.s, Scratch.args.sub);`
     ]
 };
 
-/** B. Data structures — maps: leaderboards, board games, lookups. */
-const DATA_STRUCTURES = {
-    name: 'Maps',
+/** Grids — true 2D arrays (Game of Life project). */
+const GRIDS = {
+    name: 'Grids',
     color1: '#FF8C1A',
     color2: '#FF8000',
     color3: '#DB6E00',
     docs: [
 `---
 type: command
-text: "new map {name}"
+text: "new grid {name} size {n}"
 inputs:
-  name: text = "scores"
+  name: text = "world"
+  n: number = 10
 ---
-Scratch.data.newMap(Scratch.args.name);`,
+Scratch.data.new2DArray(Scratch.args.name, Scratch.args.n, Scratch.args.n, 0);`,
 `---
 type: command
-text: "set {key} in {name} to {value}"
+text: "randomize grid {name} size {n}"
 inputs:
-  key: text = "alice"
-  name: text = "scores"
-  value: text = "10"
+  name: text = "world"
+  n: number = 10
 ---
-Scratch.data.mapSet(Scratch.args.name, Scratch.args.key, Scratch.args.value);`,
+var name = Scratch.args.name;
+var n = Scratch.args.n;
+Scratch.data.new2DArray(name, n, n, 0);
+for (var r = 1; r <= n; r++) {
+  for (var c = 1; c <= n; c++) {
+    Scratch.data.setCell(name, r, c, Math.random() < 0.35 ? 1 : 0);
+  }
+}`,
+`---
+type: command
+text: "set grid {name} {r} {c} to {v}"
+inputs:
+  name: text = "world"
+  r: number = 1
+  c: number = 1
+  v: number = 1
+---
+Scratch.data.setCell(Scratch.args.name, Scratch.args.r, Scratch.args.c, Scratch.args.v);`,
 `---
 type: reporter
-text: "{key} in {name}"
+text: "grid {name} {r} {c}"
 inputs:
-  key: text = "alice"
-  name: text = "scores"
+  name: text = "world"
+  r: number = 1
+  c: number = 1
 ---
-return Scratch.data.mapGet(Scratch.args.name, Scratch.args.key);`,
-`---
-type: boolean
-text: "{name} has {key}?"
-inputs:
-  name: text = "scores"
-  key: text = "alice"
----
-return Scratch.data.mapHas(Scratch.args.name, Scratch.args.key);`,
+return Scratch.data.cell(Scratch.args.name, Scratch.args.r, Scratch.args.c);`,
 `---
 type: reporter
-text: "keys of {name}"
+text: "living neighbors in {name} at {r} {c}"
 inputs:
-  name: text = "scores"
+  name: text = "world"
+  r: number = 1
+  c: number = 1
 ---
-return Scratch.data.mapKeys(Scratch.args.name).join(", ");`
+var name = Scratch.args.name;
+var r = Scratch.args.r;
+var c = Scratch.args.c;
+var count = 0;
+for (var dr = -1; dr <= 1; dr++) {
+  for (var dc = -1; dc <= 1; dc++) {
+    if (dr === 0 && dc === 0) continue;
+    if (Number(Scratch.data.cell(name, r + dr, c + dc)) === 1) count++;
+  }
+}
+return count;`,
+`---
+type: command
+text: "copy grid {from} to {to} size {n}"
+inputs:
+  from: text = "next"
+  to: text = "world"
+  n: number = 10
+---
+var from = Scratch.args.from;
+var to = Scratch.args.to;
+var n = Scratch.args.n;
+for (var r = 1; r <= n; r++) {
+  for (var c = 1; c <= n; c++) {
+    Scratch.data.setCell(to, r, c, Scratch.data.cell(from, r, c));
+  }
+}`
     ]
 };
 
-/** C. Dynamic named data — generative / "meta" projects that build their own state. */
-const DYNAMIC = {
-    name: 'Memory',
+/** Pixels — read actual costume/stage colors (Color Chameleon project). */
+const PIXELS = {
+    name: 'Pixels',
     color1: '#9966FF',
     color2: '#855CD6',
     color3: '#774DCB',
     docs: [
 `---
-type: command
-text: "remember {name} as {value}"
+type: reporter
+text: "color at x {x} y {y}"
 inputs:
-  name: text = "score"
-  value: text = "0"
+  x: number = 0
+  y: number = 0
 ---
-Scratch.data.set(Scratch.args.name, Scratch.args.value);`,
-`---
-type: command
-text: "change remembered {name} by {amount}"
-inputs:
-  name: text = "score"
-  amount: number = 1
----
-var cur = Number(Scratch.data.get(Scratch.args.name)) || 0;
-Scratch.data.set(Scratch.args.name, cur + Scratch.args.amount);`,
+return Scratch.colorAtStage(Scratch.args.x, Scratch.args.y);`,
 `---
 type: reporter
-text: "recall {name}"
+text: "my pixel {x} {y}"
 inputs:
-  name: text = "score"
+  x: number = 0
+  y: number = 0
 ---
-return Scratch.data.get(Scratch.args.name);`,
-`---
-type: boolean
-text: "is {name} remembered?"
-inputs:
-  name: text = "score"
----
-return Scratch.data.has(Scratch.args.name);`,
-`---
-type: command
-text: "add {value} to collection {name}"
-inputs:
-  value: text = "apple"
-  name: text = "fruits"
----
-Scratch.data.push(Scratch.args.name, Scratch.args.value);`,
+return Scratch.pixelColor(Scratch.args.x, Scratch.args.y);`,
 `---
 type: reporter
-text: "item {i} of collection {name}"
+text: "red of {color}"
 inputs:
-  i: number = 1
-  name: text = "fruits"
+  color: text = "#ff8800"
 ---
-return Scratch.data.itemAt(Scratch.args.name, Scratch.args.i);`,
+return parseInt(Scratch.args.color.substring(1, 3), 16) || 0;`,
 `---
 type: reporter
-text: "size of collection {name}"
+text: "green of {color}"
 inputs:
-  name: text = "fruits"
+  color: text = "#ff8800"
 ---
-return Scratch.data.length(Scratch.args.name);`
-    ]
-};
-
-/** D. Read VM data — sensing tricks, generative art (all observational). */
-const READ_VM = {
-    name: 'Sensing+',
-    color1: '#4C97FF',
-    color2: '#3373CC',
-    color3: '#2E5EAC',
-    docs: [
+return parseInt(Scratch.args.color.substring(3, 5), 16) || 0;`,
 `---
 type: reporter
-text: "my direction"
+text: "blue of {color}"
 inputs:
+  color: text = "#ff8800"
 ---
-return Scratch.sprite.direction;`,
-`---
-type: reporter
-text: "my size"
-inputs:
----
-return Scratch.sprite.size;`,
+return parseInt(Scratch.args.color.substring(5, 7), 16) || 0;`,
 `---
 type: reporter
 text: "costume width"
@@ -211,30 +214,52 @@ type: reporter
 text: "costume height"
 inputs:
 ---
-return Scratch.sprite.costumeHeight;`,
-`---
-type: reporter
-text: "clones of me"
-inputs:
----
-return Scratch.clone.cloneCount;`,
-`---
-type: boolean
-text: "am I a clone?"
-inputs:
----
-return Scratch.clone.isClone;`,
-`---
-type: reporter
-text: "{name} effect amount"
-inputs:
-  name: text = "ghost"
----
-return Scratch.effects[Scratch.args.name] || 0;`
+return Scratch.sprite.costumeHeight;`
     ]
 };
 
-const FAMILIES = [STRINGS, DATA_STRUCTURES, DYNAMIC, READ_VM];
+/** Sound — read sound samples and loudness (Sound Bars project). */
+const SOUND = {
+    name: 'Sound',
+    color1: '#4C97FF',
+    color2: '#3373CC',
+    color3: '#2E5EAC',
+    docs: [
+`---
+type: reporter
+text: "loudness of sound {n}"
+inputs:
+  n: number = 1
+---
+return Scratch.soundLoudness(Scratch.args.n);`,
+`---
+type: reporter
+text: "seconds in sound {n}"
+inputs:
+  n: number = 1
+---
+return Scratch.soundDuration(Scratch.args.n);`,
+`---
+type: reporter
+text: "samples in sound {n}"
+inputs:
+  n: number = 1
+---
+return Scratch.soundSamples(Scratch.args.n).length;`,
+`---
+type: reporter
+text: "sample {i} of sound {n}"
+inputs:
+  i: number = 1
+  n: number = 1
+---
+var s = Scratch.soundSamples(Scratch.args.n);
+var i = Math.max(1, Math.min(Scratch.args.i, s.length));
+return Math.round(Math.abs(s[i - 1]) * 100);`
+    ]
+};
+
+const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND];
 
 /**
  * Build a fully-compiled example library ready for installCustomLibrary.

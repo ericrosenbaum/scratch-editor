@@ -5,10 +5,24 @@
     max-width: 90vw;
 }
 
+/* Widened when the API reference panel is open. */
+.modal-content-wide {
+    width: 1080px;
+    max-width: 95vw;
+}
+
 .body {
     display: flex;
     flex-direction: column;
     padding: 1.5rem;
+    gap: 1rem;
+    background-color: $ui-white;
+}
+
+.help-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 1rem;
 }
 
@@ -19,9 +33,31 @@
     opacity: 0.8;
 }
 
-.editor-wrap {
+.docs-button {
+    flex-shrink: 0;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid $motion-primary;
+    background: $ui-white;
+    color: $motion-primary;
+    font-weight: bold;
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.work-area {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch;
     height: 360px;
     max-height: 50vh;
+}
+
+.editor-wrap {
+    height: 100%;
+    flex-grow: 1;
+    min-width: 0;
 }
 
 .status-row {

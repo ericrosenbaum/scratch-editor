@@ -83,6 +83,32 @@ ExampleButton.propTypes = {
     onAdd: PropTypes.func
 };
 
+/** A button that loads an example starter project (library + script). */
+class ProjectButton extends React.Component {
+    constructor (props) {
+        super(props);
+        bindAll(this, ['handleClick']);
+    }
+    handleClick () {
+        this.props.onLoad(this.props.project.id);
+    }
+    render () {
+        return (
+            <button
+                className={styles.secondaryButton}
+                title={this.props.project.blurb}
+                data-testid={`js-load-project-${this.props.project.id}`}
+                onClick={this.handleClick}
+            >{this.props.project.name}</button>
+        );
+    }
+}
+
+ProjectButton.propTypes = {
+    project: PropTypes.object,
+    onLoad: PropTypes.func
+};
+
 /** One library card, with bound handlers for its actions. */
 class LibraryCard extends React.Component {
     constructor (props) {
@@ -183,12 +209,23 @@ const LibraryManager = props => (
             </Box>
 
             <Box className={styles.examplesRow}>
-                <span className={styles.examplesLabel}>{'Add an example:'}</span>
+                <span className={styles.examplesLabel}>{'Add an example library:'}</span>
                 {props.examples.map(example => (
                     <ExampleButton
                         key={example.name}
                         name={example.name}
                         onAdd={props.onAddExample}
+                    />
+                ))}
+            </Box>
+
+            <Box className={styles.examplesRow}>
+                <span className={styles.examplesLabel}>{'Load an example project:'}</span>
+                {props.projects.map(project => (
+                    <ProjectButton
+                        key={project.id}
+                        project={project}
+                        onLoad={props.onLoadProject}
                     />
                 ))}
             </Box>
@@ -217,6 +254,8 @@ const LibraryManager = props => (
 LibraryManager.propTypes = {
     examples: PropTypes.arrayOf(PropTypes.object),
     onAddExample: PropTypes.func,
+    projects: PropTypes.arrayOf(PropTypes.object),
+    onLoadProject: PropTypes.func,
     libraries: PropTypes.arrayOf(PropTypes.object),
     onDeleteBlock: PropTypes.func,
     onDeleteLibrary: PropTypes.func,

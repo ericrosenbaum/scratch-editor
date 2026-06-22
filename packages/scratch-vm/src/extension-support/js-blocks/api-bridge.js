@@ -216,6 +216,10 @@ const install = (interp, scope, ctx) => {
         interp.setProperty(Scratch, 'runBranch', interp.createAsyncFunction(resume => {
             ctx.runner.requestBranch(resume);
         }));
+        // Register a cleanup that runs when the project stops (green flag / stop).
+        interp.setProperty(Scratch, 'onStop', interp.createNativeFunction(handler => {
+            ctx.runner.registerStopHandler(handler);
+        }));
     }
 };
 

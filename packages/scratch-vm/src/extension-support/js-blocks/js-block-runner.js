@@ -81,9 +81,13 @@ class JsBlockRunner {
         this.awaitingBranch = false;
         this.branchResume = null;
         this.currentUtil = util;
+        // onStop coordination (see registerStopHandler / runStopHandler).
+        this.globalScope = null;
+        this.stopHandler = null;
 
         const program = wrapSource(libBlock.jsCompiled || '');
         this.interpreter = new Interpreter(program, (interp, scope) => {
+            this.globalScope = scope;
             interp.setProperty(scope, '__scratchReport__', interp.createNativeFunction(value => {
                 this.returnValue = interp.pseudoToNative(value);
             }));
@@ -95,6 +99,36 @@ class JsBlockRunner {
                 args: ApiBridge.coerceArgs(libBlock, argValues)
             });
         });
+    }
+
+    /**
+     * Called from the sandbox when authored JS invokes `Scratch.onStop(fn)`.
+     * Keeps this runner (and its interpreter) alive so the cleanup runs on stop.
+     * @param {*} handlerFn - the interpreter pseudo-function to call on stop.
+     */
+    registerStopHandler (handlerFn) {
+        this.stopHandler = handlerFn;
+        this.runtime.registerJsStopHandler(this.library, this.libBlock, this);
+    }
+
+    /**
+     * Run the registered onStop cleanup once, bounded, when the project stops.
+     * Uses appendCode to invoke the stored pseudo-function after the body finished.
+     */
+    runStopHandler () {
+        if (!this.stopHandler || !this.globalScope) return;
+        const fn = this.stopHandler;
+        this.stopHandler = null;
+        try {
+            this.interpreter.setProperty(this.globalScope, '__scratchStopHandler__', fn);
+            this.interpreter.appendCode('__scratchStopHandler__();');
+            let steps = 0;
+            while (this.interpreter.step()) {
+                if (++steps >= Budget.HAT_CAP) break;
+            }
+        } catch (e) {
+            this._abort(e);
+        }
     }
 
     /**

@@ -113,9 +113,9 @@ test('add a built-in example library and run one of its blocks', async ({page}) 
     await page.getByText('Edit', {exact: true}).click();
     await page.getByText('My Block Libraries…').click();
 
-    // Add the Strings example library.
-    await page.getByTestId('js-add-example-Strings').click();
-    await expect(page.getByTestId('js-library-jslib_ex_strings')).toBeVisible();
+    // Add the Text example library.
+    await page.getByTestId('js-add-example-Text').click();
+    await expect(page.getByTestId('js-library-jslib_ex_text')).toBeVisible();
 
     // Confirm one of its blocks works (reverse "scratch" -> "hctarcs").
     const result = await page.evaluate(() => {
@@ -136,8 +136,8 @@ test('add a built-in example library and run one of its blocks', async ({page}) 
             if (store) break;
         }
         const vm = store.getState().scratchGui.vm;
-        const library = vm.getCustomLibraries().find(l => l.name === 'Strings');
-        if (!library) return {error: 'Strings library not installed'};
+        const library = vm.getCustomLibraries().find(l => l.name === 'Text');
+        if (!library) return {error: 'Text library not installed'};
         const backwards = library.blocks.find(b => b.signature.text.indexOf('backwards') !== -1);
         const opcode = `${library.id}_${backwards.opcode}`;
         const util = {
@@ -151,7 +151,67 @@ test('add a built-in example library and run one of its blocks', async ({page}) 
     });
 
     expect(result.error).toBeUndefined();
-    expect(result.count).toBe(6);
+    expect(result.count).toBe(5);
     expect(result.value).toBe('hctarcs');
     expect(pageErrors, 'uncaught exceptions adding example').toEqual([]);
+});
+
+test('load an example project and run it (Game of Life fills a grid on green flag)', async ({page}) => {
+    const pageErrors = [];
+    page.on('pageerror', err => pageErrors.push(err.stack || err.message || String(err)));
+
+    await page.goto('index.html');
+    await expect(page.getByText('Backpack', {exact: true})).toBeVisible({timeout: 30000});
+
+    await page.getByText('Edit', {exact: true}).click();
+    await page.getByText('My Block Libraries…').click();
+    await page.getByTestId('js-load-project-game-of-life').click();
+
+    // The manager closes; the library is installed and the script is injected.
+    const setup = await page.evaluate(() => {
+        const nodes = document.querySelectorAll('*');
+        let store = null;
+        for (const el of nodes) {
+            const key = Object.keys(el).find(k => k.startsWith('__reactFiber'));
+            if (!key) continue;
+            let fiber = el[key];
+            while (fiber) {
+                if (fiber.memoizedProps && fiber.memoizedProps.store &&
+                    fiber.memoizedProps.store.getState) {
+                    store = fiber.memoizedProps.store;
+                    break;
+                }
+                fiber = fiber.return;
+            }
+            if (store) break;
+        }
+        window.__vmForTest = store.getState().scratchGui.vm;
+        const vm = window.__vmForTest;
+        const hasLib = vm.getCustomLibraries().some(l => l.name === 'Grids');
+        const blocks = vm.editingTarget.blocks._blocks;
+        const usesGridBlock = Object.keys(blocks).some(id => blocks[id].opcode.indexOf('jslib_ex_grids') === 0);
+        vm.greenFlag();
+        return {hasLib, usesGridBlock};
+    });
+    expect(setup.hasLib).toBe(true);
+    expect(setup.usesGridBlock).toBe(true);
+
+    // Let the script run a few frames, then check the grid was randomized.
+    await page.waitForTimeout(800);
+    const grid = await page.evaluate(() => {
+        const vm = window.__vmForTest;
+        const store = vm.runtime.getJsBlockStore('jslib_ex_grids');
+        const world = store && store.world;
+        let live = 0;
+        if (world) {
+            for (let r = 0; r < world.length; r++) {
+                for (let c = 0; c < world[r].length; c++) live += Number(world[r][c]);
+            }
+        }
+        return {rows: world ? world.length : 0, cols: world && world[0] ? world[0].length : 0, live};
+    });
+    expect(grid.rows).toBe(8);
+    expect(grid.cols).toBe(8);
+    expect(grid.live).toBeGreaterThan(0); // randomize actually populated cells
+    expect(pageErrors, 'uncaught exceptions running project').toEqual([]);
 });

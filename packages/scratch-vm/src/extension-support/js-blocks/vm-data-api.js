@@ -232,6 +232,104 @@ const readSoundSamples = (target, indexOrName) => {
 };
 
 /**
+ * Format an r,g,b triple (0-255) as a #rrggbb hex string.
+ * @param {number} r - red.
+ * @param {number} g - green.
+ * @param {number} b - blue.
+ * @returns {string} hex color.
+ */
+const rgbToHex = (r, g, b) => {
+    const h = n => {
+        const clamped = Math.max(0, Math.min(255, Math.round(n)));
+        return (clamped < 16 ? '0' : '') + clamped.toString(16);
+    };
+    return `#${h(r)}${h(g)}${h(b)}`;
+};
+
+/**
+ * Resolve a sound and return its decoded AudioBuffer (browser only).
+ * @param {Target} target - the rendered target.
+ * @param {number|string} indexOrName - which sound.
+ * @returns {?AudioBuffer} the buffer, or null when unavailable.
+ */
+const getSoundBuffer = (target, indexOrName) => {
+    const sounds = (target && target.sprite && target.sprite.sounds) || [];
+    let idx;
+    if (typeof indexOrName === 'number' || /^\d+$/.test(String(indexOrName))) {
+        idx = Math.round(Number(indexOrName)) - 1;
+    } else {
+        idx = sounds.findIndex(s => s.name === indexOrName);
+    }
+    const sound = sounds[idx];
+    const soundBank = target && target.sprite && target.sprite.soundBank;
+    if (sound && soundBank && soundBank.getSoundPlayer) {
+        try {
+            const player = soundBank.getSoundPlayer(sound.soundId);
+            return player && player.buffer && player.buffer.getChannelData ? player.buffer : null;
+        } catch (e) {
+            return null;
+        }
+    }
+    return null;
+};
+
+/**
+ * RMS loudness of a sound, scaled 0-100. 0 when unavailable.
+ * @param {Target} target - the rendered target.
+ * @param {number|string} indexOrName - which sound.
+ * @returns {number} loudness 0-100.
+ */
+const readSoundLoudness = (target, indexOrName) => {
+    const buffer = getSoundBuffer(target, indexOrName);
+    if (!buffer) return 0;
+    const channel = buffer.getChannelData(0);
+    const step = Math.max(1, Math.floor(channel.length / 4000));
+    let sum = 0;
+    let count = 0;
+    for (let i = 0; i < channel.length; i += step) {
+        sum += channel[i] * channel[i];
+        count++;
+    }
+    return count ? Math.min(100, Math.sqrt(sum / count) * 100) : 0;
+};
+
+/**
+ * Duration of a sound in seconds. 0 when unavailable.
+ * @param {Target} target - the rendered target.
+ * @param {number|string} indexOrName - which sound.
+ * @returns {number} seconds.
+ */
+const readSoundDuration = (target, indexOrName) => {
+    const buffer = getSoundBuffer(target, indexOrName);
+    return buffer ? buffer.duration : 0;
+};
+
+/**
+ * Color of the rendered stage at a Scratch coordinate, as #rrggbb (best effort;
+ * requires the renderer with a displayed canvas). '#000000' when unavailable.
+ * @param {Runtime} runtime - the VM runtime.
+ * @param {number} scratchX - Scratch x (-240..240).
+ * @param {number} scratchY - Scratch y (-180..180).
+ * @returns {string} hex color.
+ */
+const readStageColor = (runtime, scratchX, scratchY) => {
+    const renderer = runtime && runtime.renderer;
+    const canvas = renderer && (renderer.canvas || (renderer.gl && renderer.gl.canvas));
+    if (!renderer || !canvas || !renderer.extractColor || !canvas.clientWidth) {
+        return '#000000';
+    }
+    try {
+        const clientX = canvas.clientWidth * ((scratchX / 480) + 0.5);
+        const clientY = canvas.clientHeight * (0.5 - (scratchY / 360));
+        const result = renderer.extractColor(clientX, clientY, 1);
+        const c = result && result.color;
+        return c ? rgbToHex(c.r, c.g, c.b) : '#000000';
+    } catch (e) {
+        return '#000000';
+    }
+};
+
+/**
  * Install the read-only VM data accessors onto the `Scratch` global.
  * @param {Interpreter} interp - the interpreter.
  * @param {object} Scratch - the pseudo `Scratch` object.
@@ -259,10 +357,27 @@ const install = (interp, Scratch, ctx) => {
         return clock ? clock.projectTimer() : 0;
     });
 
+    const native = v => interp.pseudoToNative(v);
     const fn = (name, impl) => interp.setProperty(Scratch, name, interp.createNativeFunction(impl));
-    fn('costumeSVG', indexOrName => toPseudo(readCostumeSVG(target, interp.pseudoToNative(indexOrName))));
+    fn('costumeSVG', indexOrName => toPseudo(readCostumeSVG(target, native(indexOrName))));
     fn('costumePixels', () => toPseudo(readCurrentPixels(target)));
-    fn('soundSamples', indexOrName => toPseudo(readSoundSamples(target, interp.pseudoToNative(indexOrName))));
+    fn('soundSamples', indexOrName => toPseudo(readSoundSamples(target, native(indexOrName))));
+    fn('soundLoudness', indexOrName => readSoundLoudness(target, native(indexOrName)));
+    fn('soundDuration', indexOrName => readSoundDuration(target, native(indexOrName)));
+    fn('colorAtStage', (x, y) => toPseudo(readStageColor(runtime, native(x), native(y))));
+
+    // pixelColor reads the sprite's own rendered costume pixels; cache the
+    // extraction for the duration of this block call (it can be large).
+    let cachedPixels = null;
+    fn('pixelColor', (x, y) => {
+        if (!cachedPixels) cachedPixels = readCurrentPixels(target);
+        const px = Math.floor(native(x));
+        const py = Math.floor(native(y));
+        const {width, height, data} = cachedPixels;
+        if (px < 0 || py < 0 || px >= width || py >= height) return '#000000';
+        const i = ((py * width) + px) * 4;
+        return rgbToHex(data[i], data[i + 1], data[i + 2]);
+    });
 };
 
 module.exports = {

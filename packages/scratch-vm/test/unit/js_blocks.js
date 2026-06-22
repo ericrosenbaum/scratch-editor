@@ -236,47 +236,72 @@ const API_LIBRARY = {
     name: 'API Lib',
     color1: '#9966FF',
     blocks: [
-        {opcode: 'liveX', type: 'reporter', signature: {text: 'live x', arguments: {}},
+        {opcode: 'liveX',
+            type: 'reporter',
+            signature: {text: 'live x', arguments: {}},
             jsCompiled: 'Scratch.changeX(5); return Scratch.sprite.x;'},
-        {opcode: 'ghostAmt', type: 'reporter', signature: {text: 'ghost', arguments: {}},
+        {opcode: 'ghostAmt',
+            type: 'reporter',
+            signature: {text: 'ghost', arguments: {}},
             jsCompiled: 'return Scratch.effects.ghost;'},
-        {opcode: 'costName', type: 'reporter', signature: {text: 'costume name', arguments: {}},
+        {opcode: 'costName',
+            type: 'reporter',
+            signature: {text: 'costume name', arguments: {}},
             jsCompiled: 'return Scratch.sprite.costumeName;'},
-        {opcode: 'firstIsVector', type: 'boolean', signature: {text: 'costume 1 is vector?', arguments: {}},
+        {opcode: 'firstIsVector',
+            type: 'boolean',
+            signature: {text: 'costume 1 is vector?', arguments: {}},
             jsCompiled: 'return Scratch.costumes[0].isVector;'},
-        {opcode: 'pushItem', type: 'command',
+        {opcode: 'pushItem',
+            type: 'command',
             signature: {text: 'push [v]', arguments: {v: {type: 'text', defaultValue: 'a'}}},
             jsCompiled: 'Scratch.data.push("q", Scratch.args.v);'},
-        {opcode: 'listLen', type: 'reporter', signature: {text: 'list length', arguments: {}},
+        {opcode: 'listLen',
+            type: 'reporter',
+            signature: {text: 'list length', arguments: {}},
             jsCompiled: 'return Scratch.data.length("q");'},
-        {opcode: 'itemAt', type: 'reporter',
+        {opcode: 'itemAt',
+            type: 'reporter',
             signature: {text: 'item [i]', arguments: {i: {type: 'number', defaultValue: 1}}},
             jsCompiled: 'return Scratch.data.itemAt("q", Scratch.args.i);'},
-        {opcode: 'makeGrid', type: 'command', signature: {text: 'make grid', arguments: {}},
+        {opcode: 'makeGrid',
+            type: 'command',
+            signature: {text: 'make grid', arguments: {}},
             jsCompiled: 'Scratch.data.new2DArray("g", 3, 3, 0);'},
-        {opcode: 'setCell', type: 'command',
-            signature: {text: 'set [r] [c] [v]', arguments: {
-                r: {type: 'number', defaultValue: 1}, c: {type: 'number', defaultValue: 1},
-                v: {type: 'number', defaultValue: 0}}},
+        {opcode: 'setCell',
+            type: 'command',
+            signature: {text: 'set [r] [c] [v]',
+                arguments: {
+                    r: {type: 'number', defaultValue: 1},
+                    c: {type: 'number', defaultValue: 1},
+                    v: {type: 'number', defaultValue: 0}}},
             jsCompiled: 'Scratch.data.setCell("g", Scratch.args.r, Scratch.args.c, Scratch.args.v);'},
-        {opcode: 'getCell', type: 'reporter',
-            signature: {text: 'cell [r] [c]', arguments: {
-                r: {type: 'number', defaultValue: 1}, c: {type: 'number', defaultValue: 1}}},
+        {opcode: 'getCell',
+            type: 'reporter',
+            signature: {text: 'cell [r] [c]',
+                arguments: {
+                    r: {type: 'number', defaultValue: 1}, c: {type: 'number', defaultValue: 1}}},
             jsCompiled: 'return Scratch.data.cell("g", Scratch.args.r, Scratch.args.c);'},
-        {opcode: 'mapPut', type: 'command',
-            signature: {text: 'map [k] [v]', arguments: {
-                k: {type: 'text', defaultValue: 'a'}, v: {type: 'text', defaultValue: '1'}}},
+        {opcode: 'mapPut',
+            type: 'command',
+            signature: {text: 'map [k] [v]',
+                arguments: {
+                    k: {type: 'text', defaultValue: 'a'}, v: {type: 'text', defaultValue: '1'}}},
             jsCompiled: 'Scratch.data.mapSet("m", Scratch.args.k, Scratch.args.v);'},
-        {opcode: 'mapGet', type: 'reporter',
+        {opcode: 'mapGet',
+            type: 'reporter',
             signature: {text: 'map get [k]', arguments: {k: {type: 'text', defaultValue: 'a'}}},
             jsCompiled: 'return Scratch.data.mapGet("m", Scratch.args.k);'},
-        {opcode: 'rev', type: 'reporter',
+        {opcode: 'rev',
+            type: 'reporter',
             signature: {text: 'reverse [s]', arguments: {s: {type: 'text', defaultValue: 'hi'}}},
             jsCompiled: 'return Scratch.text.reverse(Scratch.args.s);'},
-        {opcode: 'setGhost', type: 'command',
+        {opcode: 'setGhost',
+            type: 'command',
             signature: {text: 'set ghost [v]', arguments: {v: {type: 'number', defaultValue: 50}}},
             jsCompiled: 'Scratch.setEffect("ghost", Scratch.args.v);'},
-        {opcode: 'turn', type: 'command',
+        {opcode: 'turn',
+            type: 'command',
             signature: {text: 'turn [n]', arguments: {n: {type: 'number', defaultValue: 15}}},
             jsCompiled: 'Scratch.turnRight(Scratch.args.n);'}
     ]
@@ -293,7 +318,7 @@ test('read accessors are live and snapshot current VM state', t => {
     t.equal(target.x, 5, 'the change actually moved the target');
 
     t.equal(prim['jslib_api_costName']({}, makeUtil(runtime, target, {})), 'costume1', 'reads current costume name');
-    t.equal(prim['jslib_api_firstIsVector']({}, makeUtil(runtime, target, {})), true, 'costume metadata array is readable');
+    t.equal(prim['jslib_api_firstIsVector']({}, makeUtil(runtime, target, {})), true, 'costume metadata readable');
     t.end();
 });
 
@@ -341,6 +366,93 @@ test('text helpers', t => {
     runtime.installCustomLibrary(API_LIBRARY);
     const target = makeTarget();
     t.equal(runtime._primitives['jslib_api_rev']({s: 'scratch'}, makeUtil(runtime, target, {})), 'hctarcs', 'reverse');
+    t.end();
+});
+
+const HARDWARE_LIBRARY = {
+    id: 'jslib_hw',
+    name: 'HW Lib',
+    color1: '#4C97FF',
+    blocks: [
+        {opcode: 'armCleanup',
+            type: 'command',
+            signature: {text: 'arm cleanup', arguments: {}},
+            jsCompiled: 'Scratch.onStop(function () { Scratch.changeX(100); });'},
+        {opcode: 'pixel',
+            type: 'reporter',
+            signature: {text: 'pixel [x] [y]',
+                arguments: {
+                    x: {type: 'number', defaultValue: 0}, y: {type: 'number', defaultValue: 0}}},
+            jsCompiled: 'return Scratch.pixelColor(Scratch.args.x, Scratch.args.y);'},
+        {opcode: 'loud',
+            type: 'reporter',
+            signature: {text: 'loudness of [n]', arguments: {n: {type: 'number', defaultValue: 1}}},
+            jsCompiled: 'return Scratch.soundLoudness(Scratch.args.n);'},
+        {opcode: 'dur',
+            type: 'reporter',
+            signature: {text: 'duration of [n]', arguments: {n: {type: 'number', defaultValue: 1}}},
+            jsCompiled: 'return Scratch.soundDuration(Scratch.args.n);'}
+    ]
+};
+
+/**
+ * A fake target with a renderer (1x1 red costume pixel) and one sound (constant
+ * 0.5 amplitude) so pixel and audio reads can be exercised without a browser.
+ * @returns {object} a fake target.
+ */
+const makeRichTarget = () => {
+    const base = makeTarget();
+    base.drawableID = 0;
+    base.renderer = {
+        extractDrawableScreenSpace: () => ({
+            imageData: {width: 1, height: 1, data: [255, 0, 0, 255]}
+        })
+    };
+    const channel = new Float32Array(1000);
+    channel.fill(0.5);
+    base.sprite.sounds = [{name: 'beep', soundId: 'snd1'}];
+    base.sprite.soundBank = {
+        getSoundPlayer: () => ({buffer: {getChannelData: () => channel, duration: 1.5, length: 1000}})
+    };
+    return base;
+};
+
+test('onStop runs the registered cleanup when the project stops', t => {
+    const runtime = new Runtime();
+    runtime.installCustomLibrary(HARDWARE_LIBRARY);
+    const target = makeTarget();
+
+    runtime._primitives['jslib_hw_armCleanup']({}, makeUtil(runtime, target, {}));
+    t.equal(target.x, 0, 'cleanup has not run yet');
+
+    runtime.stopAll();
+    t.equal(target.x, 100, 'onStop cleanup ran on stop');
+
+    // It only runs once — a second stop does nothing new.
+    target.x = 5;
+    runtime.stopAll();
+    t.equal(target.x, 5, 'handler was cleared after firing');
+    t.end();
+});
+
+test('pixelColor reads the sprite costume pixels', t => {
+    const runtime = new Runtime();
+    runtime.installCustomLibrary(HARDWARE_LIBRARY);
+    const target = makeRichTarget();
+    t.equal(runtime._primitives['jslib_hw_pixel']({x: 0, y: 0}, makeUtil(runtime, target, {})), '#ff0000',
+        'top-left pixel is red');
+    t.equal(runtime._primitives['jslib_hw_pixel']({x: 99, y: 99}, makeUtil(runtime, target, {})), '#000000',
+        'out-of-range pixel is black, never throws');
+    t.end();
+});
+
+test('soundLoudness and soundDuration read decoded audio', t => {
+    const runtime = new Runtime();
+    runtime.installCustomLibrary(HARDWARE_LIBRARY);
+    const target = makeRichTarget();
+    const loud = runtime._primitives['jslib_hw_loud']({n: 1}, makeUtil(runtime, target, {}));
+    t.ok(Math.abs(loud - 50) < 1, `RMS of a 0.5 amplitude tone is ~50 (got ${loud})`);
+    t.equal(runtime._primitives['jslib_hw_dur']({n: 1}, makeUtil(runtime, target, {})), 1.5, 'duration in seconds');
     t.end();
 });
 

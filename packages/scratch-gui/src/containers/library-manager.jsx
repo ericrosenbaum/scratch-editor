@@ -7,6 +7,7 @@ import LibraryManagerComponent from '../components/library-manager/library-manag
 import {createLibrary, defaultDocument, removeBlock} from '../lib/js-blocks/library-model';
 import {downloadLibrary, parseImportedLibrary} from '../lib/js-blocks/library-io';
 import {exampleLibraryList} from '../lib/js-blocks/example-libraries';
+import {projectList, buildProject, PROJECTS} from '../lib/js-blocks/projects';
 import {setLibraries, openBlockEditorState} from '../reducers/js-block-libraries';
 import {openJsBlockEditor, closeJsLibraryManager} from '../reducers/modals';
 
@@ -16,10 +17,11 @@ class LibraryManager extends React.Component {
         bindAll(this, [
             'syncFromVm', 'handleNewLibrary', 'handleDeleteLibrary', 'handleNewBlock',
             'handleEditBlock', 'handleDeleteBlock', 'handleExport', 'handleImport',
-            'handleImportFile', 'handleAddExample', 'handleRequestClose'
+            'handleImportFile', 'handleAddExample', 'handleLoadProject', 'handleRequestClose'
         ]);
         this.fileInput = null;
         this.examples = exampleLibraryList();
+        this.projects = projectList();
     }
     componentDidMount () {
         this.syncFromVm();
@@ -97,6 +99,21 @@ class LibraryManager extends React.Component {
         this.props.vm.addCustomLibrary(example.build());
         this.syncFromVm();
     }
+    handleLoadProject (id) {
+        const project = PROJECTS.find(p => p.id === id);
+        if (!project) return;
+        const built = buildProject(project);
+        if (!built) return;
+        const vm = this.props.vm;
+        vm.addCustomLibrary(built.library);
+        const target = vm.editingTarget;
+        if (target) {
+            built.blocks.forEach(rec => target.blocks.createBlock(rec));
+            vm.refreshWorkspace();
+        }
+        this.syncFromVm();
+        this.props.onRequestClose(); // close so the user sees the new script
+    }
     handleRequestClose () {
         this.props.onRequestClose();
     }
@@ -106,6 +123,8 @@ class LibraryManager extends React.Component {
                 <LibraryManagerComponent
                     examples={this.examples}
                     onAddExample={this.handleAddExample}
+                    projects={this.projects}
+                    onLoadProject={this.handleLoadProject}
                     libraries={this.props.libraries}
                     onDeleteBlock={this.handleDeleteBlock}
                     onDeleteLibrary={this.handleDeleteLibrary}
@@ -138,7 +157,9 @@ LibraryManager.propTypes = {
     vm: PropTypes.shape({
         addCustomLibrary: PropTypes.func,
         deleteCustomLibrary: PropTypes.func,
-        getCustomLibraries: PropTypes.func
+        getCustomLibraries: PropTypes.func,
+        refreshWorkspace: PropTypes.func,
+        editingTarget: PropTypes.object
     })
 };
 

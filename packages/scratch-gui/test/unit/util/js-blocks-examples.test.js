@@ -1,7 +1,7 @@
 import {FAMILIES, buildExampleLibrary} from '../../../src/lib/js-blocks/example-libraries';
 
 describe('example libraries', () => {
-    test.each(FAMILIES.map(f => [f.name, f]))('%s: every block compiles cleanly', (name, family) => {
+    test.each(FAMILIES.map(f => [f.name, f]))('%s: every block compiles cleanly', (familyName, family) => {
         const library = buildExampleLibrary(family);
         // Every authored document must pass static analysis (no dropped blocks).
         expect(library.blocks.length).toBe(family.docs.length);

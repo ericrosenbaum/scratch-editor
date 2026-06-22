@@ -12,6 +12,7 @@
     gap: 1rem;
     max-height: 70vh;
     overflow-y: auto;
+    background-color: $ui-white;
 }
 
 .top-row {
