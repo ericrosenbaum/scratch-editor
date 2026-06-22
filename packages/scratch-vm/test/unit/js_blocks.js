@@ -485,3 +485,192 @@ test('infinite loop yields and is force-stopped — the page cannot freeze', t =
     JsBlockRunner.Budget.HARD_CAP = savedCap;
     t.end();
 });
+
+const CanvasStore = require('../../src/extension-support/js-blocks/canvas-store');
+
+const CANVAS_LIBRARY = {
+    id: 'jslib_canvas',
+    name: 'Canvas Lib',
+    color1: '#CF63CF',
+    blocks: [
+        {opcode: 'setup',
+            type: 'command',
+            signature: {text: 'setup [w] [h]',
+                arguments: {w: {type: 'number', defaultValue: 480}, h: {type: 'number', defaultValue: 360}}},
+            jsCompiled: 'Scratch.canvas.resize(Scratch.args.w, Scratch.args.h);'},
+        {opcode: 'paint',
+            type: 'command',
+            signature: {text: 'paint [x] [y] [color]',
+                arguments: {
+                    x: {type: 'number', defaultValue: 0},
+                    y: {type: 'number', defaultValue: 0},
+                    color: {type: 'text', defaultValue: '#ff0000'}}},
+            jsCompiled: 'Scratch.canvas.setPixel(Scratch.args.x, Scratch.args.y, Scratch.args.color);'},
+        {opcode: 'readR',
+            type: 'reporter',
+            signature: {text: 'red at [x] [y]',
+                arguments: {x: {type: 'number', defaultValue: 0}, y: {type: 'number', defaultValue: 0}}},
+            jsCompiled: 'return Scratch.canvas.getPixel(Scratch.args.x, Scratch.args.y)[0];'},
+        {opcode: 'readA',
+            type: 'reporter',
+            signature: {text: 'alpha at [x] [y]',
+                arguments: {x: {type: 'number', defaultValue: 0}, y: {type: 'number', defaultValue: 0}}},
+            jsCompiled: 'return Scratch.canvas.getPixel(Scratch.args.x, Scratch.args.y)[3];'},
+        {opcode: 'fillGreen',
+            type: 'command',
+            signature: {text: 'fill green', arguments: {}},
+            jsCompiled: 'Scratch.canvas.fill([0, 255, 0]);'},
+        {opcode: 'wipe',
+            type: 'command',
+            signature: {text: 'wipe', arguments: {}},
+            jsCompiled: 'Scratch.canvas.clear();'},
+        {opcode: 'wide',
+            type: 'reporter',
+            signature: {text: 'width', arguments: {}},
+            jsCompiled: 'return Scratch.canvas.width();'}
+    ]
+};
+
+/**
+ * A renderer test double that records the skin/drawable calls the canvas manager
+ * makes, so we can assert it uploads and tears down without a real WebGL context.
+ * @returns {object} a fake renderer.
+ */
+const makeFakeRenderer = () => ({
+    calls: {createBitmapSkin: 0, createDrawable: 0, updateBitmapSkin: 0, destroyDrawable: 0, destroySkin: 0},
+    lastData: null,
+    _skin: 100,
+    _drawable: 200,
+    createBitmapSkin (data) {
+        this.calls.createBitmapSkin++;
+        this.lastData = data;
+        return this._skin++;
+    },
+    createDrawable () {
+        this.calls.createDrawable++;
+        return this._drawable++;
+    },
+    updateDrawableSkinId () {},
+    updateDrawablePosition () {},
+    updateDrawableVisible () {},
+    setDrawableOrder () {},
+    updateBitmapSkin (skinId, data) {
+        this.calls.updateBitmapSkin++;
+        this.lastData = data;
+    },
+    destroyDrawable () {
+        this.calls.destroyDrawable++;
+    },
+    destroySkin () {
+        this.calls.destroySkin++;
+    }
+});
+
+const canvasTarget = id => Object.assign(makeTarget(), {id});
+
+test('parseColor accepts hex strings and rgb(a) arrays, rejects junk', t => {
+    t.same(CanvasStore.parseColor('#ff8800'), [255, 136, 0, 255], 'six-digit hex');
+    t.same(CanvasStore.parseColor('#f80'), [255, 136, 0, 255], 'three-digit hex expands');
+    t.same(CanvasStore.parseColor([10, 20, 30]), [10, 20, 30, 255], 'rgb array defaults alpha');
+    t.same(CanvasStore.parseColor([10, 20, 30, 40]), [10, 20, 30, 40], 'rgba array');
+    t.same(CanvasStore.parseColor([300, -5, 10]), [255, 0, 10, 255], 'channels clamp to 0–255');
+    t.equal(CanvasStore.parseColor('not a color'), null, 'garbage string is null');
+    t.equal(CanvasStore.parseColor(42), null, 'number is null');
+    t.end();
+});
+
+test('canvas writes a CPU buffer and reads it back without a renderer', t => {
+    const runtime = new Runtime(); // no renderer attached
+    runtime.installCustomLibrary(CANVAS_LIBRARY);
+    const target = canvasTarget('spriteA');
+
+    // Starts at the full stage, fully transparent.
+    t.equal(runtime._primitives['jslib_canvas_wide']({}, makeUtil(runtime, target, {})), 480,
+        'default width is the stage');
+    t.equal(runtime._primitives['jslib_canvas_readA']({x: 5, y: 5}, makeUtil(runtime, target, {})), 0,
+        'untouched pixel is transparent');
+
+    runtime._primitives['jslib_canvas_paint']({x: 5, y: 5, color: '#ff0000'}, makeUtil(runtime, target, {}));
+    t.equal(runtime._primitives['jslib_canvas_readR']({x: 5, y: 5}, makeUtil(runtime, target, {})), 255,
+        'painted pixel reads back red');
+    t.equal(runtime._primitives['jslib_canvas_readA']({x: 5, y: 5}, makeUtil(runtime, target, {})), 255,
+        'painted pixel is opaque');
+
+    // Out-of-range reads/writes never throw and report transparent black.
+    t.equal(runtime._primitives['jslib_canvas_readR']({x: 9999, y: 9999}, makeUtil(runtime, target, {})), 0,
+        'out-of-range pixel is 0, never throws');
+    runtime._primitives['jslib_canvas_paint']({x: -1, y: -1, color: '#ffffff'}, makeUtil(runtime, target, {}));
+    t.pass('painting out of range is a safe no-op');
+    t.end();
+});
+
+test('canvas resize clamps to 1–512 and clears, fill and clear work', t => {
+    const runtime = new Runtime();
+    runtime.installCustomLibrary(CANVAS_LIBRARY);
+    const target = canvasTarget('spriteA');
+
+    runtime._primitives['jslib_canvas_setup']({w: 9999, h: 0}, makeUtil(runtime, target, {}));
+    t.equal(runtime._primitives['jslib_canvas_wide']({}, makeUtil(runtime, target, {})), 512, 'width clamps to 512');
+
+    runtime._primitives['jslib_canvas_fillGreen']({}, makeUtil(runtime, target, {}));
+    t.equal(runtime._primitives['jslib_canvas_readR']({x: 0, y: 0}, makeUtil(runtime, target, {})), 0,
+        'fill set red channel 0');
+    t.equal(runtime._primitives['jslib_canvas_readA']({x: 0, y: 0}, makeUtil(runtime, target, {})), 255,
+        'fill (rgb only) is opaque');
+
+    runtime._primitives['jslib_canvas_wipe']({}, makeUtil(runtime, target, {}));
+    t.equal(runtime._primitives['jslib_canvas_readA']({x: 0, y: 0}, makeUtil(runtime, target, {})), 0,
+        'clear makes it transparent');
+    t.end();
+});
+
+test('canvas uploads to the renderer and disposes on stop', t => {
+    const runtime = new Runtime();
+    runtime.renderer = makeFakeRenderer();
+    runtime.installCustomLibrary(CANVAS_LIBRARY);
+    const target = canvasTarget('spriteA');
+
+    runtime._primitives['jslib_canvas_paint']({x: 1, y: 1, color: '#0000ff'}, makeUtil(runtime, target, {}));
+
+    // First flush creates the skin + drawable; later flushes update in place.
+    runtime._jsCanvases.flushDirty();
+    t.equal(runtime.renderer.calls.createBitmapSkin, 1, 'skin created on first flush');
+    t.equal(runtime.renderer.calls.createDrawable, 1, 'drawable created on first flush');
+    t.equal(runtime.renderer.lastData.width, 480, 'uploaded buffer is stage-sized');
+
+    runtime._primitives['jslib_canvas_paint']({x: 2, y: 2, color: '#0000ff'}, makeUtil(runtime, target, {}));
+    runtime._jsCanvases.flushDirty();
+    t.equal(runtime.renderer.calls.createBitmapSkin, 1, 'no second skin created');
+    t.equal(runtime.renderer.calls.updateBitmapSkin, 1, 'buffer re-uploaded in place');
+
+    // A clean flush (nothing drawn) uploads nothing.
+    runtime._jsCanvases.flushDirty();
+    t.equal(runtime.renderer.calls.updateBitmapSkin, 1, 'no upload when buffer is unchanged');
+
+    runtime.stopAll();
+    t.equal(runtime.renderer.calls.destroyDrawable, 1, 'drawable destroyed on stop');
+    t.equal(runtime.renderer.calls.destroySkin, 1, 'skin destroyed on stop');
+    t.equal(runtime._jsCanvases.canvases.size, 0, 'canvas records cleared on stop');
+    t.end();
+});
+
+test('canvas layers are per-(library, sprite) and clean up per target/library', t => {
+    const runtime = new Runtime();
+    runtime.renderer = makeFakeRenderer();
+    runtime.installCustomLibrary(CANVAS_LIBRARY);
+    const spriteA = canvasTarget('spriteA');
+    const spriteB = canvasTarget('spriteB');
+
+    runtime._primitives['jslib_canvas_paint']({x: 0, y: 0, color: '#ff0000'}, makeUtil(runtime, spriteA, {}));
+    runtime._primitives['jslib_canvas_paint']({x: 0, y: 0, color: '#00ff00'}, makeUtil(runtime, spriteB, {}));
+    t.equal(runtime._jsCanvases.canvases.size, 2, 'each sprite gets its own canvas');
+
+    // Deleting one sprite's clone tears down only its canvas.
+    runtime.disposeTarget(spriteA);
+    t.equal(runtime._jsCanvases.canvases.size, 1, 'only the disposed target’s canvas is gone');
+
+    // Uninstalling the library tears down the rest.
+    runtime.uninstallCustomLibrary('jslib_canvas');
+    t.equal(runtime._jsCanvases.canvases.size, 0, 'library uninstall disposes its canvases');
+    t.end();
+});

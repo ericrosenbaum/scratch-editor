@@ -143,6 +143,33 @@ read position over time so the bars "scrub" through the sound.
 
 ---
 
+## 5. Pixel Paint — library: **Canvas**
+
+**What it does:** Hold the mouse button to paint into your own pixel layer; the
+brush color cycles through the rainbow as you draw. A tiny paint program.
+
+**Beyond Scratch:** *writing* arbitrary pixels to the screen. The pen can draw
+lines and stamps, but nothing in vanilla Scratch lets you set individual pixels of
+a layer — and crucially, the sprite's costume asset is never read or modified, so
+the project saves and reopens unchanged. The canvas is a brand-new drawable that
+clears itself on green flag / stop, just like `Scratch.data`.
+
+**Script (Sprite1):**
+```
+when green flag clicked
+forever
+  if <mouse down?>
+    paint at the mouse, size (6) color ( rainbow color ((timer) * (60)) )   // Canvas blocks
+```
+
+**Blocks used:** `paint at the mouse, size () color ()`, `rainbow color ()`, plus
+`set up a () by () canvas`, `clear the canvas`, `fill the canvas with ()`,
+`paint a dot at x () y () size () color ()`. Invites tinkering: drive brush size
+from loudness; clear on a key press; paint a procedural pattern with
+`Scratch.canvas.setPixel` in a loop.
+
+---
+
 ## Notes for the generator
 
 - Each project embeds only its own library in `customLibraries`.

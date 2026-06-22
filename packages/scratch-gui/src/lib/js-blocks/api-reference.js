@@ -69,6 +69,20 @@ const API_REFERENCE = [
         ]
     },
     {
+        section: 'Draw your own layer (Scratch.canvas.*)',
+        entries: [
+            {sig: 'Scratch.canvas.resize(width, height)', desc: 'Make your pixel canvas this size (up to 512×512). It starts as the full stage, fully transparent. Your sprite costume is never touched.'},
+            {sig: 'Scratch.canvas.setPixel(x, y, color)', desc: "Set one pixel. color is [r,g,b] / [r,g,b,a] (0–255) or a hex string like '#ff8800'. (0,0) is the top-left."},
+            {sig: 'Scratch.canvas.getPixel(x, y)', desc: 'Read one pixel back as [r, g, b, a].'},
+            {sig: 'Scratch.canvas.fill(color) / clear()', desc: 'Fill the whole canvas with a color, or clear it to transparent.'},
+            {sig: 'Scratch.canvas.write(flatRGBA)', desc: 'Write a whole [r,g,b,a, r,g,b,a, …] array at once (fast for full-frame drawing).'},
+            {sig: 'Scratch.canvas.width() / height()', desc: 'The current canvas size in pixels.'},
+            {sig: 'Scratch.canvas.goToXY(x, y)', desc: "Move the canvas layer on the stage (Scratch coordinates; it's centered on this point)."},
+            {sig: 'Scratch.canvas.show() / hide() / goToFront() / goToBack()', desc: 'Show or hide the canvas layer, or move it in front of / behind the sprites.'},
+            {sig: 'Scratch.canvas.update()', desc: 'Optional: show your changes immediately. The canvas also refreshes on its own once per frame.'}
+        ]
+    },
+    {
         section: 'Text helpers (Scratch.text.*)',
         entries: [
             {sig: 'Scratch.text.split(s, sep) / join(list, sep)', desc: 'Split a string into a list, or join a list into a string.'},

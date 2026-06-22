@@ -2,6 +2,7 @@ const Cast = require('../../util/cast');
 const MathUtil = require('../../util/math-util');
 const VmDataApi = require('./vm-data-api');
 const DataStore = require('./data-store');
+const CanvasStore = require('./canvas-store');
 
 /**
  * Builds the sandboxed `Scratch` global that authored JS sees. The interpreter's
@@ -13,6 +14,7 @@ const DataStore = require('./data-store');
  *   Scratch.args           - the block's coerced input values (this module)
  *   Scratch.sprite/effects/clone/stage/mouse/timer/costumes/... - read accessors (vm-data-api)
  *   Scratch.data.*         - the encapsulated per-library store (data-store)
+ *   Scratch.canvas.*       - a writable pixel buffer rendered as its own layer (canvas-store)
  *   Scratch.setX/say/... - whitelisted effect setters for command blocks (this module)
  *   Scratch.text.*         - pure string helpers (this module)
  */
@@ -207,6 +209,7 @@ const install = (interp, scope, ctx) => {
     interp.setProperty(Scratch, 'args', interp.nativeToPseudo(ctx.args || {}));
     VmDataApi.install(interp, Scratch, ctx);
     DataStore.install(interp, Scratch, ctx);
+    CanvasStore.install(interp, Scratch, ctx);
     installEffectSetters(interp, Scratch, ctx);
     installTextHelpers(interp, Scratch);
 

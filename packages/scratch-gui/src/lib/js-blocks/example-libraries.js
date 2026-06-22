@@ -4,7 +4,8 @@ import {buildLibraryBlock} from './library-model';
  * @file Built-in example libraries for JS-powered blocks. Each library is paired
  * with an example project (see ./projects) that does something clearly outside
  * vanilla Scratch's reach — reading pixel colors, reading sound samples, real
- * string manipulation, and true 2D grids — while staying simple and playful.
+ * string manipulation, true 2D grids, and drawing into a pixel layer of your
+ * own — while staying simple and playful.
  * Blocks are authored as documents and compiled through the same static-analysis
  * path as user blocks.
  */
@@ -259,7 +260,89 @@ return Math.round(Math.abs(s[i - 1]) * 100);`
     ]
 };
 
-const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND];
+/** Canvas — draw into a pixel layer of your own (Pixel Paint project). */
+const CANVAS = {
+    name: 'Canvas',
+    color1: '#CF63CF',
+    color2: '#C94FC9',
+    color3: '#BD42BD',
+    docs: [
+`---
+type: command
+text: "set up a {w} by {h} canvas"
+inputs:
+  w: number = 480
+  h: number = 360
+---
+Scratch.canvas.resize(Scratch.args.w, Scratch.args.h);`,
+`---
+type: command
+text: "clear the canvas"
+inputs:
+---
+Scratch.canvas.clear();`,
+`---
+type: command
+text: "fill the canvas with {color}"
+inputs:
+  color: text = "#000000"
+---
+Scratch.canvas.fill(Scratch.args.color);`,
+`---
+type: command
+text: "paint a dot at x {x} y {y} size {size} color {color}"
+inputs:
+  x: number = 240
+  y: number = 180
+  size: number = 8
+  color: text = "#ff3355"
+---
+var cx = Math.round(Scratch.args.x);
+var cy = Math.round(Scratch.args.y);
+var rad = Math.max(1, Math.round(Scratch.args.size));
+var color = Scratch.args.color;
+for (var dy = -rad; dy <= rad; dy++) {
+  for (var dx = -rad; dx <= rad; dx++) {
+    if ((dx * dx) + (dy * dy) <= rad * rad) Scratch.canvas.setPixel(cx + dx, cy + dy, color);
+  }
+}`,
+`---
+type: command
+text: "paint at the mouse, size {size} color {color}"
+inputs:
+  size: number = 6
+  color: text = "#ff3355"
+---
+var cx = Math.round(Scratch.mouse.x + 240);
+var cy = Math.round(180 - Scratch.mouse.y);
+var rad = Math.max(1, Math.round(Scratch.args.size));
+var color = Scratch.args.color;
+for (var dy = -rad; dy <= rad; dy++) {
+  for (var dx = -rad; dx <= rad; dx++) {
+    if ((dx * dx) + (dy * dy) <= rad * rad) Scratch.canvas.setPixel(cx + dx, cy + dy, color);
+  }
+}`,
+`---
+type: reporter
+text: "rainbow color {t}"
+inputs:
+  t: number = 0
+---
+var h = ((((Scratch.args.t % 360) + 360) % 360)) / 60;
+var x = 1 - Math.abs((h % 2) - 1);
+var r = 0, g = 0, b = 0;
+if (h < 1) { r = 1; g = x; }
+else if (h < 2) { r = x; g = 1; }
+else if (h < 3) { g = 1; b = x; }
+else if (h < 4) { g = x; b = 1; }
+else if (h < 5) { r = x; b = 1; }
+else { r = 1; b = x; }
+var packed = 0x1000000 + (Math.round(r * 255) << 16) + (Math.round(g * 255) << 8) + Math.round(b * 255);
+return "#" + packed.toString(16).slice(1);`
+    ]
+};
+
+const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND, CANVAS];
 
 /**
  * Build a fully-compiled example library ready for installCustomLibrary.

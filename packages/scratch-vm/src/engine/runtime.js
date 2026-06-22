@@ -261,6 +261,13 @@ class Runtime extends EventEmitter {
         this._jsBlockStores = {};
 
         /**
+         * Manager for `Scratch.canvas` pixel-buffer layers, lazily created the
+         * first time a JS-powered block draws. Null until then.
+         * @type {?JsCanvasManager}
+         */
+        this._jsCanvases = null;
+
+        /**
          * Pending JS-powered block `Scratch.onStop` cleanup handlers, keyed by
          * "<libraryId>:<opcode>" so a looping block only registers one.
          * @type {Map.<string, object>}
@@ -1626,6 +1633,7 @@ class Runtime extends EventEmitter {
     uninstallCustomLibrary (libraryId) {
         this._customLibraries = this._customLibraries.filter(lib => lib.id !== libraryId);
         delete this._jsBlockStores[libraryId];
+        if (this._jsCanvases) this._jsCanvases.disposeForLibrary(libraryId);
         this._blockInfo = this._blockInfo.filter(category => category.id !== libraryId);
         const prefix = `${libraryId}_`;
         for (const opcode of Object.keys(this._primitives)) {
@@ -1666,6 +1674,19 @@ class Runtime extends EventEmitter {
         for (const libraryId of Object.keys(this._jsBlockStores)) {
             this._jsBlockStores[libraryId] = {};
         }
+    }
+
+    /**
+     * Get the `Scratch.canvas` manager, creating it on first use. Holds the
+     * pixel-buffer layers JS-powered blocks draw into; never serialized.
+     * @returns {JsCanvasManager} the manager.
+     */
+    getJsCanvasManager () {
+        if (!this._jsCanvases) {
+            const JsCanvasManager = require('../extension-support/js-blocks/canvas-store').JsCanvasManager;
+            this._jsCanvases = new JsCanvasManager(this);
+        }
+        return this._jsCanvases;
     }
 
     /**
@@ -2168,6 +2189,8 @@ class Runtime extends EventEmitter {
      * @param {!Target} disposingTarget Target to dispose of.
      */
     disposeTarget (disposingTarget) {
+        // Tear down any Scratch.canvas layers this target (e.g. a deleted clone) owned.
+        if (this._jsCanvases) this._jsCanvases.disposeForTarget(disposingTarget.id);
         this.targets = this.targets.filter(target => {
             if (disposingTarget !== target) return true;
             // Allow target to do dispose actions.
@@ -2237,6 +2260,7 @@ class Runtime extends EventEmitter {
         // stopAll() before starting.
         this._runJsStopHandlers();
         this.clearJsBlockStores();
+        if (this._jsCanvases) this._jsCanvases.disposeAll();
 
         // Dispose all clones.
         const newTargets = [];
@@ -2305,6 +2329,9 @@ class Runtime extends EventEmitter {
         // internal purposes.
         this._lastStepDoneThreads = doneThreads;
         if (this.renderer) {
+            // Upload any pixel buffers JS-powered blocks drew into this step, so
+            // their layers are current before we draw.
+            if (this._jsCanvases) this._jsCanvases.flushDirty();
             // @todo: Only render when this.redrawRequested or clones rendered.
             if (this.profiler !== null) {
                 if (rendererDrawProfilerId === -1) {
