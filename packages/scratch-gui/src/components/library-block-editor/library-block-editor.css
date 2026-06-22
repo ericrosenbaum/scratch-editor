@@ -46,6 +46,51 @@
     white-space: nowrap;
 }
 
+.prompt-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+.prompt-input {
+    flex-grow: 1;
+    min-width: 0;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.5rem;
+    border: 1px solid $ui-black-transparent;
+    background: $ui-white;
+    color: $text-primary;
+    font-size: 0.85rem;
+}
+
+.prompt-input:focus {
+    outline: none;
+    border-color: $motion-primary;
+}
+
+.generate-button {
+    flex-shrink: 0;
+    padding: 0.4rem 0.9rem;
+    border-radius: 0.5rem;
+    border: 1px solid $motion-primary;
+    background: $motion-primary;
+    color: $ui-white;
+    font-weight: bold;
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.generate-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.generate-error {
+    color: $error-light;
+    font-size: 0.8rem;
+}
+
 .work-area {
     display: flex;
     gap: 1rem;

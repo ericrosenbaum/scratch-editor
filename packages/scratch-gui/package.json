@@ -129,6 +129,7 @@
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.43.1",
     "@mediapipe/face_detection": "0.4.1646425229",
+    "@mediapipe/tasks-genai": "0.10.27",
     "@microbit/microbit-universal-hex": "0.2.2",
     "@radix-ui/react-context-menu": "2.3.0",
     "@scratch/scratch-paint": "14.1.0",

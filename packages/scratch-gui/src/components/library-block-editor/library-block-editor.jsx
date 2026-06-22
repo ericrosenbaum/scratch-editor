@@ -17,7 +17,7 @@ import styles from './library-block-editor.css';
 class LibraryBlockEditor extends React.Component {
     constructor (props) {
         super(props);
-        bindAll(this, ['handleToggleDocs', 'handleCloseDocs']);
+        bindAll(this, ['handleToggleDocs', 'handleCloseDocs', 'handlePromptChange', 'handlePromptKeyDown']);
         this.state = {docsOpen: false};
     }
     handleToggleDocs () {
@@ -25,6 +25,16 @@ class LibraryBlockEditor extends React.Component {
     }
     handleCloseDocs () {
         this.setState({docsOpen: false});
+    }
+    handlePromptChange (e) {
+        this.props.onPromptChange(e.target.value);
+    }
+    handlePromptKeyDown (e) {
+        // Enter generates; Shift+Enter is left free for any future multi-line use.
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            this.props.onGenerate();
+        }
     }
     render () {
         const props = this.props;
@@ -49,6 +59,35 @@ class LibraryBlockEditor extends React.Component {
                             {this.state.docsOpen ? 'Hide API reference' : '📖 API reference'}
                         </button>
                     </Box>
+
+                    <Box className={styles.promptRow}>
+                        <input
+                            className={styles.promptInput}
+                            type="text"
+                            value={props.promptText}
+                            placeholder="Describe a block to generate, e.g. “a reporter that returns n squared”"
+                            disabled={props.isGenerating}
+                            data-testid="js-block-ai-prompt"
+                            onChange={this.handlePromptChange}
+                            onKeyDown={this.handlePromptKeyDown}
+                        />
+                        <button
+                            className={styles.generateButton}
+                            disabled={props.isGenerating || !props.promptText.trim()}
+                            data-testid="js-block-ai-generate"
+                            onClick={props.onGenerate}
+                        >
+                            {props.isGenerating ? 'Generating…' : '✨ Generate'}
+                        </button>
+                    </Box>
+                    {props.generateError ? (
+                        <Box
+                            className={styles.generateError}
+                            data-testid="js-block-ai-error"
+                        >
+                            {props.generateError}
+                        </Box>
+                    ) : null}
 
                     <Box className={styles.workArea}>
                         <Box className={styles.editorWrap}>
@@ -106,9 +145,14 @@ class LibraryBlockEditor extends React.Component {
 LibraryBlockEditor.propTypes = {
     draft: PropTypes.string,
     errorCount: PropTypes.number,
+    generateError: PropTypes.string,
+    isGenerating: PropTypes.bool,
     lintSource: PropTypes.func,
+    promptText: PropTypes.string,
     onCancel: PropTypes.func,
     onDraftChange: PropTypes.func,
+    onGenerate: PropTypes.func,
+    onPromptChange: PropTypes.func,
     onSave: PropTypes.func
 };
 

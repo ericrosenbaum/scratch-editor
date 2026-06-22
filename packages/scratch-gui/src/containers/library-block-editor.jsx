@@ -6,19 +6,64 @@ import {connect} from 'react-redux';
 import LibraryBlockEditorComponent from '../components/library-block-editor/library-block-editor.jsx';
 import {analyze} from '../lib/js-blocks/static-analysis';
 import {buildLibraryBlock, nextOpcode, upsertBlock} from '../lib/js-blocks/library-model';
+import {buildJsBlockPrompt, stripFences} from '../lib/js-blocks/ai-block-prompt';
+import * as aiModelService from '../lib/ai-model-service';
 import {setLibraries, updateBlockDraft, closeBlockEditorState} from '../reducers/js-block-libraries';
 import {closeJsBlockEditor} from '../reducers/modals';
 
 class LibraryBlockEditor extends React.Component {
     constructor (props) {
         super(props);
-        bindAll(this, ['handleSave', 'handleCancel', 'handleDraftChange', 'lintSource']);
+        bindAll(this, [
+            'handleSave', 'handleCancel', 'handleDraftChange', 'lintSource',
+            'handlePromptChange', 'handleGenerate'
+        ]);
+        this.state = {
+            promptText: '',
+            isGenerating: false,
+            generateError: null
+        };
+    }
+    componentDidMount () {
+        this._mounted = true;
+    }
+    componentWillUnmount () {
+        // Cancel can unmount us mid-generation; guard the async setState.
+        this._mounted = false;
     }
     lintSource (doc) {
         return analyze(doc).diagnostics;
     }
     handleDraftChange (draft) {
         this.props.onDraftChange(draft);
+    }
+    handlePromptChange (promptText) {
+        this.setState({promptText});
+    }
+    async handleGenerate () {
+        const text = this.state.promptText.trim();
+        if (!text || this.state.isGenerating) return;
+        this.setState({isGenerating: true, generateError: null});
+        try {
+            // Lazily load the model the first time the user asks to generate.
+            if (aiModelService.getStatus() !== 'ready') {
+                await aiModelService.init();
+            }
+            if (aiModelService.getStatus() !== 'ready') {
+                throw new Error(
+                    'AI model is unavailable on this device (needs WebGPU). Try a desktop Chrome browser.'
+                );
+            }
+            const response = await aiModelService.generate(buildJsBlockPrompt(text));
+            const doc = stripFences(response);
+            if (this._mounted) this.props.onDraftChange(doc);
+        } catch (err) {
+            const message = err && err.message === 'cancelled' ?
+                'Generation cancelled.' : `Couldn’t generate a block: ${(err && err.message) || err}`;
+            if (this._mounted) this.setState({generateError: message});
+        } finally {
+            if (this._mounted) this.setState({isGenerating: false});
+        }
     }
     handleCancel () {
         this.props.onClose();
@@ -47,9 +92,14 @@ class LibraryBlockEditor extends React.Component {
             <LibraryBlockEditorComponent
                 draft={this.props.editor.draft}
                 errorCount={errorCount}
+                generateError={this.state.generateError}
+                isGenerating={this.state.isGenerating}
                 lintSource={this.lintSource}
+                promptText={this.state.promptText}
                 onCancel={this.handleCancel}
                 onDraftChange={this.handleDraftChange}
+                onGenerate={this.handleGenerate}
+                onPromptChange={this.handlePromptChange}
                 onSave={this.handleSave}
             />
         );
