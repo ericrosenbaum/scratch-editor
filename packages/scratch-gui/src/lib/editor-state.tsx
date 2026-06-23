@@ -7,6 +7,11 @@ import log from './log.js';
 
 interface WindowWithDevtools {
     __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof compose;
+    // Opt-in debug handle to the editor's redux store, used by dev tooling and
+    // automated tests to reach the VM. A harness sets __exposeEditorStore before
+    // load (e.g. via Playwright addInitScript); production never sets it.
+    __exposeEditorStore?: boolean;
+    __editorStore?: Store<unknown>;
 }
 
 const composeEnhancers = (window as WindowWithDevtools).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -110,6 +115,11 @@ export class EditorState {
         }
         const reducer = combineReducers(reducers);
         this.store = createStore(reducer, initialState, enhancer);
+
+        // Expose the store only when a dev/test harness opted in beforehand.
+        if (typeof window !== 'undefined' && (window as WindowWithDevtools).__exposeEditorStore) {
+            (window as WindowWithDevtools).__editorStore = this.store;
+        }
     }
 
     dispatch (action) {
