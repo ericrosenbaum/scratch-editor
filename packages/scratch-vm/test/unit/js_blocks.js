@@ -725,3 +725,26 @@ test('a block declared warp:true enables warp on its stack frame; a normal block
     t.equal(normalRun.frame.warpMode, false, 'a normal block leaves warpMode untouched');
     t.end();
 });
+
+test('reporters reuse their interpreter across many calls and stay correct (past the reuse cap)', t => {
+    const runtime = new Runtime();
+    runtime.installCustomLibrary(TEST_LIBRARY);
+    const target = makeTarget();
+
+    // addNumbers is `return Scratch.args.a + Scratch.args.b;` — call it well past
+    // MAX_REUSES (100) with varying args. Each call reuses or rebuilds the pooled
+    // interpreter; every result must be correct (no stale args from a prior call).
+    let allCorrect = true;
+    for (let i = 0; i < 250; i++) {
+        const got = runtime._primitives['jslib_test_addNumbers']({a: i, b: 1}, makeUtil(runtime, target, {}));
+        if (Number(got) !== i + 1) allCorrect = false;
+    }
+    t.ok(allCorrect, '250 reused reporter calls all returned the right value');
+
+    // Interleave a different block to confirm pools are per-block (no cross-talk).
+    t.equal(runtime._primitives['jslib_test_isBig']({n: 10}, makeUtil(runtime, target, {})), true,
+        'boolean still correct');
+    t.equal(runtime._primitives['jslib_test_addNumbers']({a: 3, b: 4}, makeUtil(runtime, target, {})), 7,
+        'reporter still correct');
+    t.end();
+});

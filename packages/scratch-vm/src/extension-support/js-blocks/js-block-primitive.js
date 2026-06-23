@@ -29,6 +29,11 @@ const isReentrant = type =>
 const makeJsBlockPrimitive = (libBlock, library, runtime) => {
     const reentrant = isReentrant(libBlock.type);
     const warp = Boolean(libBlock.warp);
+    // Non-reentrant blocks (reporters/booleans/hats) build a fresh runner per call,
+    // which is hot in loops. Reuse their interpreters from this per-block pool rather
+    // than constructing one each time (see JsBlockRunner reuse). Re-entrant blocks keep
+    // their single runner in the stack frame, so they don't need (or use) the pool.
+    const pool = reentrant ? null : [];
     return function jsBlockPrimitive (argValues, util) {
         // A block declared `warp: true` ("run without screen refresh") sets warp on
         // its own stack frame; child branch frames inherit it (Thread#pushStack), so a
@@ -42,10 +47,10 @@ const makeJsBlockPrimitive = (libBlock, library, runtime) => {
             runner = util.stackFrame.jsBlock;
             if (!runner) {
                 runner = util.stackFrame.jsBlock =
-                    new JsBlockRunner(libBlock, library, runtime, util, argValues);
+                    new JsBlockRunner(libBlock, library, runtime, util, argValues, null);
             }
         } else {
-            runner = new JsBlockRunner(libBlock, library, runtime, util, argValues);
+            runner = new JsBlockRunner(libBlock, library, runtime, util, argValues, pool);
         }
         return runner.runSlice(util);
     };
