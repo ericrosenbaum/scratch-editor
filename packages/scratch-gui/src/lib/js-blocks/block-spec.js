@@ -199,9 +199,15 @@ const validatePlaceholders = spec => {
     const re = /\{([A-Za-z_][A-Za-z0-9_]*)\}/g;
     let match;
     while ((match = re.exec(spec.text)) !== null) {
-        used.add(match[1]);
-        if (!declared.has(match[1])) {
-            errors.push({line: 0, message: `Label uses {${match[1]}} but no input named "${match[1]}" is declared.`});
+        const name = match[1];
+        if (used.has(name)) {
+            // scratch-blocks can't render two inputs with the same name on one block —
+            // the repeat shows up as a broken/empty field. Make each input appear once.
+            errors.push({line: 0, message: `Label uses {${name}} more than once; each input may appear only once.`});
+        }
+        used.add(name);
+        if (!declared.has(name)) {
+            errors.push({line: 0, message: `Label uses {${name}} but no input named "${name}" is declared.`});
         }
     }
     for (const name of declared) {

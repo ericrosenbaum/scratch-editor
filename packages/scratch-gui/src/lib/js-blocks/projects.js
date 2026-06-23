@@ -252,18 +252,22 @@ const PROJECTS = [
             const setColor = b.block('pen_setPenColorToColor', {parent: setSize.id});
             const colorShadow = b.colour(setColor.id, '#33dd66');
             setColor.input('COLOR', colorShadow, colorShadow);
-            const newWorld = b.block(`${life}_ex0`, {parent: setColor.id}); // new {n} by {n} life world
-            const nShadow = b.num(newWorld.id, 12);
-            newWorld.input('n', nShadow, nShadow);
+            const newWorld = b.block(`${life}_ex0`, {parent: setColor.id}); // new {cols} by {rows} life world
+            const worldCols = b.num(newWorld.id, 12);
+            const worldRows = b.num(newWorld.id, 12);
+            newWorld.input('cols', worldCols, worldCols);
+            newWorld.input('rows', worldRows, worldRows);
             const randomize = b.block(`${life}_ex1`, {parent: newWorld.id}); // randomize the life world
             const forever = b.block('control_forever', {parent: randomize.id});
 
             // forever body: erase all -> walk the grid stamping live cells -> step -> wait
             const clear1 = b.block('pen_clear', {parent: forever.id});
-            const gridLoop = b.block(`${grid}_ex0`, {parent: clear1.id}); // for each cell of an n x n grid
-            const gridN = b.num(gridLoop.id, 12);
+            const gridLoop = b.block(`${grid}_ex0`, {parent: clear1.id}); // for each cell of a cols x rows grid
+            const gridCols = b.num(gridLoop.id, 12);
+            const gridRows = b.num(gridLoop.id, 12);
             const gridSize = b.num(gridLoop.id, 26);
-            gridLoop.input('n', gridN, gridN);
+            gridLoop.input('cols', gridCols, gridCols);
+            gridLoop.input('rows', gridRows, gridRows);
             gridLoop.input('size', gridSize, gridSize);
 
             // grid loop body: if <cell alive> { pen down, pen up } (a dot per living cell)

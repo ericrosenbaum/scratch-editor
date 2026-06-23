@@ -351,21 +351,25 @@ const LIFE = {
     docs: [
 `---
 type: command
-text: "new {n} by {n} life world"
+text: "new {cols} by {rows} life world"
 inputs:
-  n: number = 12
+  cols: number = 12
+  rows: number = 12
 ---
-var n = Math.max(2, Math.round(Scratch.args.n));
-Scratch.data.set("size", n);
-Scratch.data.new2DArray("cells", n, n, 0);`,
+var cols = Math.max(2, Math.round(Scratch.args.cols));
+var rows = Math.max(2, Math.round(Scratch.args.rows));
+Scratch.data.set("cols", cols);
+Scratch.data.set("rows", rows);
+Scratch.data.new2DArray("cells", rows, cols, 0);`,
 `---
 type: command
 text: "randomize the life world"
 inputs:
 ---
-var n = Number(Scratch.data.get("size"));
-for (var r = 1; r <= n; r++) {
-  for (var c = 1; c <= n; c++) {
+var cols = Number(Scratch.data.get("cols"));
+var rows = Number(Scratch.data.get("rows"));
+for (var r = 1; r <= rows; r++) {
+  for (var c = 1; c <= cols; c++) {
     Scratch.data.setCell("cells", r, c, Math.random() < 0.33 ? 1 : 0);
   }
 }`,
@@ -375,17 +379,18 @@ text: "step the life world"
 warp: true
 inputs:
 ---
-var n = Number(Scratch.data.get("size"));
-Scratch.data.new2DArray("next", n, n, 0);
-for (var r = 1; r <= n; r++) {
-  for (var c = 1; c <= n; c++) {
+var cols = Number(Scratch.data.get("cols"));
+var rows = Number(Scratch.data.get("rows"));
+Scratch.data.new2DArray("next", rows, cols, 0);
+for (var r = 1; r <= rows; r++) {
+  for (var c = 1; c <= cols; c++) {
     var live = 0;
     for (var dr = -1; dr <= 1; dr++) {
       for (var dc = -1; dc <= 1; dc++) {
         if (dr === 0 && dc === 0) continue;
         var rr = r + dr;
         var cc = c + dc;
-        if (rr >= 1 && rr <= n && cc >= 1 && cc <= n && Number(Scratch.data.cell("cells", rr, cc)) === 1) live++;
+        if (rr >= 1 && rr <= rows && cc >= 1 && cc <= cols && Number(Scratch.data.cell("cells", rr, cc)) === 1) live++;
       }
     }
     var alive = Number(Scratch.data.cell("cells", r, c)) === 1;
@@ -393,8 +398,8 @@ for (var r = 1; r <= n; r++) {
     Scratch.data.setCell("next", r, c, born ? 1 : 0);
   }
 }
-for (var r2 = 1; r2 <= n; r2++) {
-  for (var c2 = 1; c2 <= n; c2++) {
+for (var r2 = 1; r2 <= rows; r2++) {
+  for (var c2 = 1; c2 <= cols; c2++) {
     Scratch.data.setCell("cells", r2, c2, Scratch.data.cell("next", r2, c2));
   }
 }`,
@@ -408,10 +413,10 @@ inputs:
 return Number(Scratch.data.cell("cells", Scratch.args.row, Scratch.args.col)) === 1;`,
 `---
 type: reporter
-text: "life world size"
+text: "life world columns"
 inputs:
 ---
-return Number(Scratch.data.get("size"));`
+return Number(Scratch.data.get("cols"));`
     ]
 };
 
@@ -424,20 +429,23 @@ const GRID = {
     docs: [
 `---
 type: c-loop
-text: "for each cell of a {n} by {n} grid, {size} apart"
+text: "for each cell of a {cols} by {rows} grid, {size} apart"
 warp: true
 inputs:
-  n: number = 12
+  cols: number = 12
+  rows: number = 12
   size: number = 26
 ---
-var n = Math.max(1, Math.round(Scratch.args.n));
+var cols = Math.max(1, Math.round(Scratch.args.cols));
+var rows = Math.max(1, Math.round(Scratch.args.rows));
 var size = Scratch.args.size;
-var start = -((n - 1) * size) / 2;
-for (var r = 1; r <= n; r++) {
-  for (var c = 1; c <= n; c++) {
+var startX = -((cols - 1) * size) / 2;
+var startY = ((rows - 1) * size) / 2;
+for (var r = 1; r <= rows; r++) {
+  for (var c = 1; c <= cols; c++) {
     Scratch.data.set("col", c);
     Scratch.data.set("row", r);
-    Scratch.goToXY(start + ((c - 1) * size), -(start + ((r - 1) * size)));
+    Scratch.goToXY(startX + ((c - 1) * size), startY - ((r - 1) * size));
     Scratch.runBranch();
   }
 }`,
