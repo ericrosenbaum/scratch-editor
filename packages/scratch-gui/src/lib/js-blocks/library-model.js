@@ -45,6 +45,8 @@ inputs:
   n: number = 4
 ---
 // Run the wrapped blocks n times.
+// Tip: add "warp: true" to the header to run without screen refresh, so the
+// whole loop finishes in one frame (e.g. to draw a grid every frame).
 for (var i = 0; i < Scratch.args.n; i++) {
     Scratch.runBranch();
 }`,

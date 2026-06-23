@@ -96,7 +96,8 @@ const API_REFERENCE = [
         section: 'Control & cleanup',
         entries: [
             {sig: 'Scratch.runBranch()', desc: 'In a C-block, run the wrapped blocks once. Call it in a loop to repeat.'},
-            {sig: 'Scratch.onStop(function () { … })', desc: 'Register cleanup that runs when the project stops or the green flag is pressed.'}
+            {sig: 'Scratch.onStop(function () { … })', desc: 'Register cleanup that runs when the project stops or the green flag is pressed.'},
+            {sig: 'warp: true  (in the block header)', desc: 'Run "without screen refresh": this command/C-block — and everything it wraps with runBranch — finishes in a single frame instead of yielding each pass, even when it moves or draws. It overrides the redraws those blocks request, so e.g. a C-block can stamp a whole grid every frame.'}
         ]
     },
     {
