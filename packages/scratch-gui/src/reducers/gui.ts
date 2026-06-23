@@ -11,6 +11,8 @@ import editorTabReducer, {editorTabInitialState} from './editor-tab';
 import hoveredTargetReducer, {hoveredTargetInitialState} from './hovered-target';
 import menuReducer, {menuInitialState} from './menus';
 import micIndicatorReducer, {micIndicatorInitialState} from './mic-indicator';
+import speechRecognitionReducer, {speechRecognitionInitialState} from './speech-recognition';
+import qaAnalyzingReducer, {qaAnalyzingInitialState} from './qa-analyzing';
 import modalReducer, {modalsInitialState} from './modals';
 import modeReducer, {modeInitialState} from './mode';
 import monitorReducer, {monitorsInitialState} from './monitors';
@@ -53,6 +55,8 @@ const buildInitialState = (config: GUIConfig) => ({
     stageSize: stageSizeInitialState,
     menus: menuInitialState,
     micIndicator: micIndicatorInitialState,
+    speechRecognition: speechRecognitionInitialState,
+    qaAnalyzing: qaAnalyzingInitialState,
     modals: modalsInitialState,
     monitors: monitorsInitialState,
     monitorLayout: monitorLayoutInitialState,
@@ -163,6 +167,8 @@ const guiReducer = combineReducers({
     stageSize: stageSizeReducer,
     menus: menuReducer,
     micIndicator: micIndicatorReducer,
+    speechRecognition: speechRecognitionReducer,
+    qaAnalyzing: qaAnalyzingReducer,
     modals: modalReducer,
     monitors: monitorReducer,
     monitorLayout: monitorLayoutReducer,

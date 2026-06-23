@@ -1,3 +1,35 @@
+@import "../../css/colors.css";
+
 .controls-container {
     display: flex;
+}
+
+/*
+ * Self-contained spinner shown while an extension is working — speech being
+ * transcribed, or the Q&A extension finding an answer. Built as a single
+ * element (rather than reusing components/spinner) so its ring isn't thrown
+ * off by the `.body-wrapper * { box-sizing: border-box }` reset, which can't
+ * reach a shared spinner's ::after pseudo-element.
+ */
+.speech-spinner,
+.qa-spinner {
+    box-sizing: border-box;
+    align-self: center;
+    margin: 0 0.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    border: 0.1875rem solid $extensions-transparent;
+    border-top-color: $extensions-primary;
+    animation: speech-spinner-spin 1.5s cubic-bezier(0.4, 0.1, 0.4, 1) infinite;
+}
+
+@keyframes speech-spinner-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

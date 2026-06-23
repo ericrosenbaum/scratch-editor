@@ -52,6 +52,8 @@ class Controls extends React.Component {
 Controls.propTypes = {
     isStarted: PropTypes.bool.isRequired,
     projectRunning: PropTypes.bool.isRequired,
+    qaAnalyzing: PropTypes.bool,
+    speechAnalyzing: PropTypes.bool,
     turbo: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM)
 };
@@ -59,6 +61,8 @@ Controls.propTypes = {
 const mapStateToProps = state => ({
     isStarted: state.scratchGui.vmStatus.running,
     projectRunning: state.scratchGui.vmStatus.running,
+    qaAnalyzing: state.scratchGui.qaAnalyzing,
+    speechAnalyzing: state.scratchGui.speechRecognition,
     turbo: state.scratchGui.vmStatus.turbo
 });
 // no-op function to prevent dispatch prop being passed to component

@@ -12,6 +12,8 @@ import {setProjectChanged, setProjectUnchanged} from '../reducers/project-change
 import {setRunningState, setTurboState, setStartedState} from '../reducers/vm-status';
 import {showExtensionAlert, showStandardAlert, closeAlertWithId} from '../reducers/alerts';
 import {updateMicIndicator} from '../reducers/mic-indicator';
+import {setSpeechAnalyzing} from '../reducers/speech-recognition';
+import {setQaAnalyzing} from '../reducers/qa-analyzing';
 
 /*
  * Higher Order Component to manage events emitted by the VM
@@ -46,6 +48,8 @@ const vmListenerHOC = function (WrappedComponent) {
             this.props.vm.on('PROJECT_START', this.props.onGreenFlag);
             this.props.vm.on('PERIPHERAL_CONNECTION_LOST_ERROR', this.props.onShowExtensionAlert);
             this.props.vm.on('MIC_LISTENING', this.props.onMicListeningUpdate);
+            this.props.vm.on('SPEECH_RECOGNITION_ANALYZING', this.props.onSpeechAnalyzingUpdate);
+            this.props.vm.on('QA_ANALYZING', this.props.onQaAnalyzingUpdate);
             this.props.vm.on('EXTENSION_DATA_LOADING', this.props.onExtensionDataLoading);
 
         }
@@ -80,6 +84,8 @@ const vmListenerHOC = function (WrappedComponent) {
             this.props.vm.removeListener('PROJECT_START', this.props.onGreenFlag);
             this.props.vm.removeListener('PERIPHERAL_CONNECTION_LOST_ERROR', this.props.onShowExtensionAlert);
             this.props.vm.removeListener('MIC_LISTENING', this.props.onMicListeningUpdate);
+            this.props.vm.removeListener('SPEECH_RECOGNITION_ANALYZING', this.props.onSpeechAnalyzingUpdate);
+            this.props.vm.removeListener('QA_ANALYZING', this.props.onQaAnalyzingUpdate);
             this.props.vm.removeListener('EXTENSION_DATA_LOADING', this.props.onExtensionDataLoading);
 
             if (this.props.attachKeyboardEvents) {
@@ -145,6 +151,8 @@ const vmListenerHOC = function (WrappedComponent) {
                 onKeyDown,
                 onKeyUp,
                 onMicListeningUpdate,
+                onSpeechAnalyzingUpdate,
+                onQaAnalyzingUpdate,
                 onExtensionDataLoading,
                 onMonitorsUpdate,
                 onTargetsUpdate,
@@ -170,6 +178,8 @@ const vmListenerHOC = function (WrappedComponent) {
         onKeyDown: PropTypes.func,
         onKeyUp: PropTypes.func,
         onMicListeningUpdate: PropTypes.func.isRequired,
+        onSpeechAnalyzingUpdate: PropTypes.func.isRequired,
+        onQaAnalyzingUpdate: PropTypes.func.isRequired,
         onMonitorsUpdate: PropTypes.func.isRequired,
         onProjectChanged: PropTypes.func.isRequired,
         onProjectRunStart: PropTypes.func.isRequired,
@@ -227,6 +237,12 @@ const vmListenerHOC = function (WrappedComponent) {
         },
         onMicListeningUpdate: listening => {
             dispatch(updateMicIndicator(listening));
+        },
+        onSpeechAnalyzingUpdate: analyzing => {
+            dispatch(setSpeechAnalyzing(analyzing));
+        },
+        onQaAnalyzingUpdate: analyzing => {
+            dispatch(setQaAnalyzing(analyzing));
         },
         onExtensionDataLoading: loading => {
             if (loading) {

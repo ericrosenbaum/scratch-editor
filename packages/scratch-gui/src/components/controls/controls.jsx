@@ -19,6 +19,16 @@ const messages = defineMessages({
         id: 'gui.controls.stop',
         defaultMessage: 'Stop',
         description: 'Stop button title'
+    },
+    analyzingTitle: {
+        id: 'gui.controls.analyzingSpeech',
+        defaultMessage: 'Analyzing speech…',
+        description: 'Tooltip for the spinner shown while spoken audio is being transcribed'
+    },
+    findingAnswerTitle: {
+        id: 'gui.controls.findingAnswer',
+        defaultMessage: 'Finding answer…',
+        description: 'Tooltip for the spinner shown while the Q&A extension is finding an answer'
     }
 });
 
@@ -28,6 +38,8 @@ const Controls = function (props) {
         className,
         onGreenFlagClick,
         onStopAllClick,
+        qaAnalyzing,
+        speechAnalyzing,
         turbo,
         ...componentProps
     } = props;
@@ -47,6 +59,18 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.stopTitle)}
                 onClick={onStopAllClick}
             />
+            {speechAnalyzing ? (
+                <div
+                    className={styles.speechSpinner}
+                    title={intl.formatMessage(messages.analyzingTitle)}
+                />
+            ) : null}
+            {qaAnalyzing ? (
+                <div
+                    className={styles.qaSpinner}
+                    title={intl.formatMessage(messages.findingAnswerTitle)}
+                />
+            ) : null}
             {turbo ? (
                 <TurboMode />
             ) : null}
@@ -59,11 +83,15 @@ Controls.propTypes = {
     className: PropTypes.string,
     onGreenFlagClick: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
+    qaAnalyzing: PropTypes.bool,
+    speechAnalyzing: PropTypes.bool,
     turbo: PropTypes.bool
 };
 
 Controls.defaultProps = {
     active: false,
+    qaAnalyzing: false,
+    speechAnalyzing: false,
     turbo: false
 };
 

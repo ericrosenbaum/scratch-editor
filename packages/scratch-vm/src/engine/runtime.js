@@ -681,6 +681,22 @@ class Runtime extends EventEmitter {
         return 'MIC_LISTENING';
     }
 
+    /**
+     * Event name to indicate that recorded speech is being analyzed/transcribed.
+     * @constant {string}
+     */
+    static get SPEECH_RECOGNITION_ANALYZING () {
+        return 'SPEECH_RECOGNITION_ANALYZING';
+    }
+
+    /**
+     * Event name to indicate that the Q&A extension is finding an answer.
+     * @constant {string}
+     */
+    static get QA_ANALYZING () {
+        return 'QA_ANALYZING';
+    }
+
     static get EXTENSION_DATA_LOADING () {
         return 'EXTENSION_DATA_LOADING';
     }
@@ -1571,6 +1587,22 @@ class Runtime extends EventEmitter {
      */
     emitMicListening (listening) {
         this.emit(Runtime.MIC_LISTENING, listening);
+    }
+
+    /**
+     * Emit an event to indicate that recorded speech is being analyzed/transcribed.
+     * @param {boolean} analyzing - true if speech is currently being analyzed.
+     */
+    emitSpeechAnalyzing (analyzing) {
+        this.emit(Runtime.SPEECH_RECOGNITION_ANALYZING, analyzing);
+    }
+
+    /**
+     * Emit an event to indicate that the Q&A extension is finding an answer.
+     * @param {boolean} analyzing - true if a Q&A answer is currently being computed.
+     */
+    emitQnaAnalyzing (analyzing) {
+        this.emit(Runtime.QA_ANALYZING, analyzing);
     }
 
     emitExtensionLoading (loading) {
