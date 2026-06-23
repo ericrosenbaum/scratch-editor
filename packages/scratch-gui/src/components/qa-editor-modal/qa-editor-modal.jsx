@@ -9,6 +9,11 @@ import Modal from '../../containers/modal.jsx';
 
 import styles from './qa-editor-modal.css';
 
+// Defaults for the "I don't know" fallback on newly created datasets. Kept in
+// sync with the VM extension (scratch3_qna/index.js).
+const DEFAULT_NO_MATCH_ANSWER = 'Sorry, I don\'t know.';
+const DEFAULT_NO_MATCH_THRESHOLD = 0.55;
+
 class QAEditorModalComponent extends React.Component {
     constructor (props) {
         super(props);
@@ -18,6 +23,8 @@ class QAEditorModalComponent extends React.Component {
             'handleDeleteDataset',
             'handleSelectDataset',
             'handleDatasetNameChange',
+            'handleNoMatchAnswerChange',
+            'handleNoMatchThresholdChange',
             'handleAddPair',
             'handleDeletePair',
             'handleQuestionChange',
@@ -91,11 +98,19 @@ class QAEditorModalComponent extends React.Component {
 
     handleAddDataset (e) {
         if (e) e.stopPropagation();
-        const newDataset = {name: 'New dataset', pairs: []};
-        const newDatasets = [...this.state.localDatasets, newDataset];
+        const newDataset = {
+            name: 'New dataset',
+            pairs: [],
+            noMatchAnswer: DEFAULT_NO_MATCH_ANSWER,
+            noMatchThreshold: DEFAULT_NO_MATCH_THRESHOLD
+        };
+        // Add new datasets at the top of the list and select the new one.
+        this.questionRefs = {};
+        this.answerRefs = {};
+        const newDatasets = [newDataset, ...this.state.localDatasets];
         this.setState({
             localDatasets: newDatasets,
-            selectedIndex: newDatasets.length - 1
+            selectedIndex: 0
         });
     }
 
@@ -120,6 +135,28 @@ class QAEditorModalComponent extends React.Component {
     handleDatasetNameChange (index, newName) {
         const newDatasets = this.state.localDatasets.map((d, i) =>
             i === index ? {...d, name: newName} : d
+        );
+        this.setState({localDatasets: newDatasets});
+    }
+
+    handleNoMatchAnswerChange (value) {
+        const {selectedIndex, localDatasets} = this.state;
+        if (selectedIndex === null) return;
+        const newDatasets = localDatasets.map((d, i) =>
+            i === selectedIndex ? {...d, noMatchAnswer: value} : d
+        );
+        this.setState({localDatasets: newDatasets});
+    }
+
+    handleNoMatchThresholdChange (value) {
+        const {selectedIndex, localDatasets} = this.state;
+        if (selectedIndex === null) return;
+        const parsed = parseFloat(value);
+        // Ignore non-numeric input (e.g. a cleared field) rather than reset.
+        if (isNaN(parsed)) return;
+        const clamped = Math.max(0, Math.min(1, parsed));
+        const newDatasets = localDatasets.map((d, i) =>
+            i === selectedIndex ? {...d, noMatchThreshold: clamped} : d
         );
         this.setState({localDatasets: newDatasets});
     }
@@ -261,6 +298,37 @@ class QAEditorModalComponent extends React.Component {
                                 </div>
                             ) : (
                                 <React.Fragment>
+                                    <div className={styles.noMatchSettings}>
+                                        <label className={styles.noMatchField}>
+                                            <span className={styles.noMatchLabel}>
+                                                {'When I\'m not sure, say:'}
+                                            </span>
+                                            <input
+                                                className={styles.noMatchAnswerInput}
+                                                type="text"
+                                                placeholder="Sorry, I don't know."
+                                                value={selectedDataset.noMatchAnswer || ''}
+                                                onChange={e => this.handleNoMatchAnswerChange(e.target.value)}
+                                            />
+                                        </label>
+                                        <label
+                                            className={styles.noMatchField}
+                                            title={'How close the question must be to a saved one (0–1). ' +
+                                                'Higher means stricter.'}
+                                        >
+                                            <span className={styles.noMatchLabel}>{'Confidence needed:'}</span>
+                                            <input
+                                                className={styles.noMatchThresholdInput}
+                                                type="number"
+                                                min="0"
+                                                max="1"
+                                                step="0.05"
+                                                value={typeof selectedDataset.noMatchThreshold === 'number' ?
+                                                    selectedDataset.noMatchThreshold : DEFAULT_NO_MATCH_THRESHOLD}
+                                                onChange={e => this.handleNoMatchThresholdChange(e.target.value)}
+                                            />
+                                        </label>
+                                    </div>
                                     <div className={styles.pairsPanelHeader}>
                                         <div className={styles.pairsPanelHeaderQuestion}>{'Question'}</div>
                                         <div className={styles.pairsPanelHeaderAnswer}>{'Answer'}</div>
@@ -350,7 +418,9 @@ QAEditorModalComponent.propTypes = {
         pairs: PropTypes.arrayOf(PropTypes.shape({
             question: PropTypes.string.isRequired,
             answer: PropTypes.string.isRequired
-        })).isRequired
+        })).isRequired,
+        noMatchAnswer: PropTypes.string,
+        noMatchThreshold: PropTypes.number
     })).isRequired,
     onSave: PropTypes.func.isRequired
 };

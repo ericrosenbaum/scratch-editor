@@ -49,7 +49,7 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
-import qnaIconURL from './qna/qna.png';
+import qnaIconURL from './qna/qna.svg';
 import qnaInsetIconURL from './qna/qna-small.svg';
 
 import speech2textIconURL from './speech2text/speech.png';
@@ -223,7 +223,8 @@ export default [
             />
         ),
         featured: true,
-        internetConnectionRequired: true
+        internetConnectionRequired: true,
+        hidden: true
     },
     {
         name: (

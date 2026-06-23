@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="372" viewBox="0 0 600 372" fill="none">
+  <rect width="600" height="372" fill="#855CD6"/>
+  <text x="300" y="52" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#ffffff">Q&amp;A</text>
+  <g transform="translate(166 80) scale(0.785)" stroke-miterlimit="10">
+    <path d="M28.3 225.9v-25.5c0-8.3 6.7-15 15-15h182.3c8.3 0 15 6.7 15 15v25.5c0 8.3-6.7 15-15 15H43.3c-8.3 0-15-6.7-15-15z" fill="#fff" stroke="#4d4d4d" stroke-width="11.6859"/>
+    <path d="M53.1 243.6v-63.8c0-14.9 12.1-27 27-27h108.6c14.9 0 27 12.1 27 27v63.8c0 14.9-12.1 27-27 27H80.1c-14.9 0-27-12-27-27z" fill="#fff" stroke="#4d4d4d" stroke-width="11.6859"/>
+    <circle cx="83.1" cy="104.1" r="14.1" fill="#fff" stroke="#4d4d4d" stroke-width="11.6859"/>
+    <circle cx="97.8" cy="200.9" r="8.4" fill="#4d4d4d" stroke="#4d4d4d" stroke-width="11.6859"/>
+    <circle cx="169.7" cy="200.9" r="8.4" fill="#4d4d4d" stroke="#4d4d4d" stroke-width="11.6859"/>
+    <path d="M113 231.4c9 14.1 32.9 13.7 41.6 0" fill="none" stroke="#4d4d4d" stroke-width="11.6859" stroke-linecap="round"/>
+    <path d="M110.1 277.3h48.7v29.2h-48.7z" fill="#fff" stroke="#4d4d4d" stroke-width="11.6859" stroke-linecap="round"/>
+    <path d="m188.6 126.3 33.8-19.3-9 7c34.3 9.6 73.6-.2 90.9-22.6s6.8-50.1-24.2-63.9-72.3-9.4-95.5 10.3c-23.2 19.7-20.6 48.3 5.9 65.9l-1.9 22.6z" fill="#4d4d4d" stroke="#4d4d4d" stroke-width="12" stroke-linejoin="round"/>
+    <circle cx="203.6" cy="67.9" r="8.4" fill="#fff" stroke="#fff" stroke-width="2"/>
+    <circle cx="240.5" cy="67.9" r="8.4" fill="#fff" stroke="#fff" stroke-width="2"/>
+    <circle cx="277.4" cy="67.9" r="8.4" fill="#fff" stroke="#fff" stroke-width="2"/>
+    <path d="M83.1 118.2v34.6" fill="#fff" stroke="#4d4d4d" stroke-width="11.6859"/>
+    <path d="M65.8 306.5h136.1" fill="#fff" stroke="#4d4d4d" stroke-width="11.6859" stroke-linecap="round"/>
+  </g>
+</svg>

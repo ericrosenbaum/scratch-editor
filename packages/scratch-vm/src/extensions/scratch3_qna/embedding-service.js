@@ -288,12 +288,13 @@ function cosineSimilarity (a, b) {
 // ---------------------------------------------------------------------------
 
 /**
- * Returns the element of `candidates` most semantically similar to `input`.
- * The query is prefixed per EmbeddingGemma's training convention; candidates
- * are embedded unprefixed.
+ * Returns the element of `candidates` most semantically similar to `input`,
+ * along with its cosine-similarity score (in [-1, 1], typically [0, 1] for
+ * reasonable candidates). The query is prefixed per EmbeddingGemma's training
+ * convention; candidates are embedded unprefixed.
  * @param {string} input
  * @param {string[]} candidates - non-empty
- * @returns {Promise<string>}
+ * @returns {Promise<{candidate: string, score: number}>}
  */
 function findMostSimilar (input, candidates) {
     console.log(LOG_PREFIX, `findMostSimilar("${input}", [${candidates.length} items])`);
@@ -306,7 +307,7 @@ function findMostSimilar (input, candidates) {
             const top3 = scored.slice(0, 3).map(s => `"${s.candidate}" (${s.score.toFixed(3)})`);
             console.log(LOG_PREFIX, 'Result in', Date.now() - t0, 'ms. Top matches:', top3.join(', '));
             _dispatch('embeddingservice:idle');
-            return scored[0].candidate;
+            return {candidate: scored[0].candidate, score: scored[0].score};
         })
         .catch(err => {
             _dispatch('embeddingservice:idle');

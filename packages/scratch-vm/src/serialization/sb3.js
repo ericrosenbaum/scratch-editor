@@ -33,6 +33,7 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
  * @typedef {object} ImportedExtensionsInfo
  * @property {Set.<string>} extensionIDs - the ID of each extension actually in use by blocks in this project.
  * @property {Map.<string, string>} extensionURLs - map of ID => URL from project metadata. May not match extensionIDs.
+ * @property {object} extensionData - map of extension ID => saved data blob, restored after extensions load.
  */
 
 // Constants used during serialization and deserialization
@@ -652,6 +653,18 @@ const serialize = function (runtime, targetId) {
 
     // Assemble extension list
     obj.extensions = Array.from(extensions);
+
+    // Assemble per-extension saved data for extensions that opt into project
+    // persistence. Such an extension exposes a serialize() method and registers
+    // its instance on the runtime; today only the Q&A extension does this.
+    const extensionData = {};
+    if (extensions.has('qna') && runtime._qnaExtension &&
+            typeof runtime._qnaExtension.serialize === 'function') {
+        extensionData.qna = runtime._qnaExtension.serialize();
+    }
+    if (Object.keys(extensionData).length > 0) {
+        obj.extensionData = extensionData;
+    }
 
     // Assemble metadata
     const meta = Object.create(null);
@@ -1443,7 +1456,10 @@ const replaceUnsafeCharsInVariableIds = function (targets) {
 const deserialize = function (json, runtime, zip, isSingleSprite) {
     const extensions = {
         extensionIDs: new Set(),
-        extensionURLs: new Map()
+        extensionURLs: new Map(),
+        // Per-extension saved data blobs (e.g. Q&A datasets), restored after the
+        // extensions load. See virtual-machine.js installTargets.
+        extensionData: (json && json.extensionData) || {}
     };
 
     // Store the origin field (e.g. project originated at CSFirst) so that we can save it again.

@@ -147,6 +147,12 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on(Runtime.MIC_LISTENING, listening => {
             this.emit(Runtime.MIC_LISTENING, listening);
         });
+        this.runtime.on(Runtime.SPEECH_RECOGNITION_ANALYZING, analyzing => {
+            this.emit(Runtime.SPEECH_RECOGNITION_ANALYZING, analyzing);
+        });
+        this.runtime.on(Runtime.QA_ANALYZING, analyzing => {
+            this.emit(Runtime.QA_ANALYZING, analyzing);
+        });
         this.runtime.on(Runtime.EXTENSION_DATA_LOADING, loading => {
             this.emit(Runtime.EXTENSION_DATA_LOADING, loading);
         });
@@ -568,6 +574,16 @@ class VirtualMachine extends EventEmitter {
                 targets.forEach(target => target.reconcileVariableReferences());
             } else {
                 this.editingTarget.fixUpVariableReferences();
+            }
+
+            // Restore any per-extension saved data now that the extensions are
+            // loaded and the targets/editing target are in place (restoring may
+            // request a blocks update, which reads the editing target). Today
+            // only the Q&A extension persists data (its custom datasets).
+            const extensionData = (extensions && extensions.extensionData) || {};
+            if (extensionData.qna && this.runtime._qnaExtension &&
+                    typeof this.runtime._qnaExtension.deserialize === 'function') {
+                this.runtime._qnaExtension.deserialize(extensionData.qna);
             }
 
             // Update the VM user's knowledge of targets and blocks on the workspace.
