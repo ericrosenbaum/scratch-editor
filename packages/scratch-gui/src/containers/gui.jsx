@@ -163,6 +163,7 @@ GUI.propTypes = {
     shouldStopProject: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
     qnaEditorVisible: PropTypes.bool,
+    starterProjectsVisible: PropTypes.bool,
     username: PropTypes.string,
     userOwnsProject: PropTypes.bool,
     // TODO: Is this unused?
@@ -208,6 +209,7 @@ const mapStateToProps = (state, ownProps) => {
         telemetryModalVisible: state.scratchGui.modals.telemetryModal,
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
         qnaEditorVisible: state.scratchGui.modals.qnaEditor,
+        starterProjectsVisible: state.scratchGui.modals.starterProjects,
         vm: state.scratchGui.vm
     };
 };

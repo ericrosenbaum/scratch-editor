@@ -13,6 +13,7 @@ const MODAL_SOUND_RECORDER = 'soundRecorder';
 const MODAL_CONNECTION = 'connectionModal';
 const MODAL_TIPS_LIBRARY = 'tipsLibrary';
 const MODAL_QNA_EDITOR = 'qnaEditor';
+const MODAL_STARTER_PROJECTS = 'starterProjects';
 
 const initialState = {
     [MODAL_BACKDROP_LIBRARY]: false,
@@ -26,7 +27,10 @@ const initialState = {
     [MODAL_SOUND_RECORDER]: false,
     [MODAL_CONNECTION]: false,
     [MODAL_TIPS_LIBRARY]: false,
-    [MODAL_QNA_EDITOR]: false
+    [MODAL_QNA_EDITOR]: false,
+    // Opens on editor load to welcome users with starter projects for the
+    // Speech to Text and Q&A extensions (mirrors the Hand Sensing modal).
+    [MODAL_STARTER_PROJECTS]: true
 };
 
 const reducer = function (state, action) {
@@ -92,6 +96,9 @@ const openTipsLibrary = function () {
 const openQnaEditor = function () {
     return openModal(MODAL_QNA_EDITOR);
 };
+const openStarterProjectsModal = function () {
+    return openModal(MODAL_STARTER_PROJECTS);
+};
 const closeBackdropLibrary = function () {
     return closeModal(MODAL_BACKDROP_LIBRARY);
 };
@@ -128,6 +135,9 @@ const closeConnectionModal = function () {
 const closeQnaEditor = function () {
     return closeModal(MODAL_QNA_EDITOR);
 };
+const closeStarterProjectsModal = function () {
+    return closeModal(MODAL_STARTER_PROJECTS);
+};
 export {
     reducer as default,
     initialState as modalsInitialState,
@@ -143,6 +153,7 @@ export {
     openTipsLibrary,
     openConnectionModal,
     openQnaEditor,
+    openStarterProjectsModal,
     closeBackdropLibrary,
     closeCostumeLibrary,
     closeDebugModal,
@@ -154,5 +165,6 @@ export {
     closeTelemetryModal,
     closeTipsLibrary,
     closeConnectionModal,
-    closeQnaEditor
+    closeQnaEditor,
+    closeStarterProjectsModal
 };
