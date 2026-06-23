@@ -54,6 +54,11 @@ class Scratch3Speech2TextBlocks {
          */
         this.runtime = runtime;
 
+        // Expose this instance on the runtime (parity with the Q&A extension).
+        // Lets tooling/tests reach the live extension — e.g. to simulate a
+        // transcription result without a microphone.
+        this.runtime._speech2textExtension = this;
+
         /**
          * An array of phrases from the [when I hear] hat blocks.
          * @type {Array}
@@ -192,6 +197,11 @@ class Scratch3Speech2TextBlocks {
         this.runtime.on('PROJECT_STOP_ALL', this._resetListening.bind(this));
         this.runtime.on('PROJECT_START', this._resetEdgeTriggerUtterance.bind(this));
 
+        // Clear the "speech" reporter value when the project starts (green
+        // flag) or stops, so a stale transcription doesn't linger across runs.
+        this.runtime.on('PROJECT_START', this._clearSpeech.bind(this));
+        this.runtime.on('PROJECT_STOP_ALL', this._clearSpeech.bind(this));
+
         // Start loading the Whisper model immediately
         this._initializeWhisper();
     }
@@ -254,6 +264,10 @@ class Scratch3Speech2TextBlocks {
      */
     _onWorkerMessage (event) {
         const {type} = event.data;
+        if (type === 'result' || type === 'error') {
+            // Analysis is finished (whether it succeeded or failed).
+            this.runtime.emitSpeechAnalyzing(false);
+        }
         if (type === 'result') {
             const text = this._normalizeText(event.data.text);
             if (text) {
@@ -315,6 +329,7 @@ class Scratch3Speech2TextBlocks {
      */
     _resetListening () {
         this.runtime.emitMicListening(false);
+        this.runtime.emitSpeechAnalyzing(false);
         this._stopRecording();
         this._resolveSpeechPromises();
     }
@@ -325,6 +340,14 @@ class Scratch3Speech2TextBlocks {
      */
     _resetEdgeTriggerUtterance () {
         this._utteranceForEdgeTrigger = '';
+    }
+
+    /**
+     * Clear the value reported by the "speech" reporter block.
+     * @private
+     */
+    _clearSpeech () {
+        this._currentUtterance = '';
     }
 
     /**
@@ -659,6 +682,9 @@ class Scratch3Speech2TextBlocks {
     _transcribe (audioData) {
         return new Promise(resolve => {
             this._transcriptionResolve = resolve;
+
+            // Recording has stopped; the audio is now being analyzed.
+            this.runtime.emitSpeechAnalyzing(true);
 
             const language = this._getViewerLanguageCode();
             // Transfer the audio buffer to the worker (zero-copy)
