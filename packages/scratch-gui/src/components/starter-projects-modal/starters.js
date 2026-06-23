@@ -10,20 +10,20 @@
 // See starters/README.md.
 
 import magicWordsThumb from './starters/magic-words.png';
-import voiceRacerThumb from './starters/voice-racer.png';
+import mazeStarterThumb from './starters/maze-starter.png';
 import echoParrotThumb from './starters/echo-parrot.png';
 import scratchHelperThumb from './starters/scratch-helper.png';
-import dinoExpertThumb from './starters/dino-expert.png';
-import meetTheCrewThumb from './starters/meet-the-crew.png';
-import talkToTheRobotThumb from './starters/talk-to-the-robot.png';
+import pongWithFaqThumb from './starters/pong-with-faq.png';
+import spaceAdventureThumb from './starters/space-adventure.png';
+import talkToTheAxolotlThumb from './starters/talk-to-the-axolotl.png';
 
 import magicWordsSb3 from './starters/magic-words.sb3';
-import voiceRacerSb3 from './starters/voice-racer.sb3';
+import mazeStarterSb3 from './starters/maze-starter.sb3';
 import echoParrotSb3 from './starters/echo-parrot.sb3';
 import scratchHelperSb3 from './starters/scratch-helper.sb3';
-import dinoExpertSb3 from './starters/dino-expert.sb3';
-import meetTheCrewSb3 from './starters/meet-the-crew.sb3';
-import talkToTheRobotSb3 from './starters/talk-to-the-robot.sb3';
+import pongWithFaqSb3 from './starters/pong-with-faq.sb3';
+import spaceAdventureSb3 from './starters/space-adventure.sb3';
+import talkToTheAxolotlSb3 from './starters/talk-to-the-axolotl.sb3';
 
 // Group ids map to the labeled sections rendered by the modal.
 const SPEECH = 'speech2text';
@@ -40,11 +40,11 @@ const starters = [
         group: SPEECH
     },
     {
-        id: 'voice-racer',
-        title: 'Voice Racer',
-        description: 'Say "go", "stop", and "jump" to drive to the finish.',
-        thumbnail: voiceRacerThumb,
-        sb3: voiceRacerSb3,
+        id: 'maze-starter',
+        title: 'Maze Starter',
+        description: 'Use your voice to steer the ball through the maze to the goal.',
+        thumbnail: mazeStarterThumb,
+        sb3: mazeStarterSb3,
         group: SPEECH
     },
     {
@@ -64,27 +64,27 @@ const starters = [
         group: QNA
     },
     {
-        id: 'dino-expert',
-        title: 'Dino Expert',
-        description: 'Ask the dinosaur facts — then add your own!',
-        thumbnail: dinoExpertThumb,
-        sb3: dinoExpertSb3,
+        id: 'pong-with-faq',
+        title: 'Pong FAQ',
+        description: 'Play Pong, then ask the game questions answered from its FAQ.',
+        thumbnail: pongWithFaqThumb,
+        sb3: pongWithFaqSb3,
         group: QNA
     },
     {
-        id: 'meet-the-crew',
-        title: 'Meet the Crew',
-        description: 'Interview two experts, each with their own answers.',
-        thumbnail: meetTheCrewThumb,
-        sb3: meetTheCrewSb3,
+        id: 'space-adventure',
+        title: 'Space Adventure',
+        description: 'Explore a space station, shuttle, and the Moon by typing what to do.',
+        thumbnail: spaceAdventureThumb,
+        sb3: spaceAdventureSb3,
         group: QNA
     },
     {
-        id: 'talk-to-the-robot',
-        title: 'Talk to the Robot',
-        description: 'Ask a question out loud and the robot answers back.',
-        thumbnail: talkToTheRobotThumb,
-        sb3: talkToTheRobotSb3,
+        id: 'talk-to-the-axolotl',
+        title: 'Talk to the Axolotl',
+        description: 'Ask an axolotl questions out loud and it answers back in its own voice.',
+        thumbnail: talkToTheAxolotlThumb,
+        sb3: talkToTheAxolotlSb3,
         group: BOTH
     }
 ];
