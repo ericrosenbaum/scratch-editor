@@ -8,7 +8,10 @@ describe('example projects', () => {
 
         const blocks = built.blocks;
         const ids = new Set(blocks.map(b => b.id));
-        const libOpcodes = new Set(built.library.blocks.map(b => `${built.library.id}_${b.opcode}`));
+        // A project may pull blocks from more than one library; collect them all.
+        const libOpcodes = new Set();
+        const libIds = built.libraries.map(lib => lib.id);
+        built.libraries.forEach(lib => lib.blocks.forEach(blk => libOpcodes.add(`${lib.id}_${blk.opcode}`)));
 
         // Exactly one top-level green-flag hat.
         const tops = blocks.filter(b => b.topLevel);
@@ -17,8 +20,8 @@ describe('example projects', () => {
 
         let referencesLibraryBlock = false;
         for (const block of blocks) {
-            // Every library opcode used must exist in the library.
-            if (block.opcode.startsWith(built.library.id)) {
+            // Every library opcode used must exist in one of the project's libraries.
+            if (libIds.some(libId => block.opcode.startsWith(`${libId}_`))) {
                 expect(libOpcodes.has(block.opcode)).toBe(true);
                 referencesLibraryBlock = true;
             }

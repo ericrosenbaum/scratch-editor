@@ -342,7 +342,248 @@ return "#" + packed.toString(16).slice(1);`
     ]
 };
 
-const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND, CANVAS];
+/** Life — Conway's Game of Life simulation, rules only (Game of Life with Pen project). */
+const LIFE = {
+    name: 'Life',
+    color1: '#0FBD8C',
+    color2: '#0DA57A',
+    color3: '#0B8E69',
+    docs: [
+`---
+type: command
+text: "new {n} by {n} life world"
+inputs:
+  n: number = 12
+---
+var n = Math.max(2, Math.round(Scratch.args.n));
+Scratch.data.set("size", n);
+Scratch.data.new2DArray("cells", n, n, 0);`,
+`---
+type: command
+text: "randomize the life world"
+inputs:
+---
+var n = Number(Scratch.data.get("size"));
+for (var r = 1; r <= n; r++) {
+  for (var c = 1; c <= n; c++) {
+    Scratch.data.setCell("cells", r, c, Math.random() < 0.33 ? 1 : 0);
+  }
+}`,
+`---
+type: command
+text: "step the life world"
+warp: true
+inputs:
+---
+var n = Number(Scratch.data.get("size"));
+Scratch.data.new2DArray("next", n, n, 0);
+for (var r = 1; r <= n; r++) {
+  for (var c = 1; c <= n; c++) {
+    var live = 0;
+    for (var dr = -1; dr <= 1; dr++) {
+      for (var dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        var rr = r + dr;
+        var cc = c + dc;
+        if (rr >= 1 && rr <= n && cc >= 1 && cc <= n && Number(Scratch.data.cell("cells", rr, cc)) === 1) live++;
+      }
+    }
+    var alive = Number(Scratch.data.cell("cells", r, c)) === 1;
+    var born = (alive && (live === 2 || live === 3)) || (!alive && live === 3);
+    Scratch.data.setCell("next", r, c, born ? 1 : 0);
+  }
+}
+for (var r2 = 1; r2 <= n; r2++) {
+  for (var c2 = 1; c2 <= n; c2++) {
+    Scratch.data.setCell("cells", r2, c2, Scratch.data.cell("next", r2, c2));
+  }
+}`,
+`---
+type: boolean
+text: "life cell {col} {row} is alive?"
+inputs:
+  col: number = 1
+  row: number = 1
+---
+return Number(Scratch.data.cell("cells", Scratch.args.row, Scratch.args.col)) === 1;`,
+`---
+type: reporter
+text: "life world size"
+inputs:
+---
+return Number(Scratch.data.get("size"));`
+    ]
+};
+
+/** Grid — a C block that visits every cell of a grid, positioning the sprite to draw it. */
+const GRID = {
+    name: 'Grid',
+    color1: '#CF8B17',
+    color2: '#B87914',
+    color3: '#A06811',
+    docs: [
+`---
+type: c-loop
+text: "for each cell of a {n} by {n} grid, {size} apart"
+warp: true
+inputs:
+  n: number = 12
+  size: number = 26
+---
+var n = Math.max(1, Math.round(Scratch.args.n));
+var size = Scratch.args.size;
+var start = -((n - 1) * size) / 2;
+for (var r = 1; r <= n; r++) {
+  for (var c = 1; c <= n; c++) {
+    Scratch.data.set("col", c);
+    Scratch.data.set("row", r);
+    Scratch.goToXY(start + ((c - 1) * size), -(start + ((r - 1) * size)));
+    Scratch.runBranch();
+  }
+}`,
+`---
+type: reporter
+text: "grid column"
+inputs:
+---
+return Number(Scratch.data.get("col"));`,
+`---
+type: reporter
+text: "grid row"
+inputs:
+---
+return Number(Scratch.data.get("row"));`
+    ]
+};
+
+/** Image — copy the sprite's rendered costume and redraw it on the canvas, transformed. */
+const IMAGE = {
+    name: 'Image',
+    color1: '#FF4D6A',
+    color2: '#F03355',
+    color3: '#D81E45',
+    docs: [
+`---
+type: command
+text: "stamp my costume, colors inverted, at x {x} y {y}"
+warp: true
+inputs:
+  x: number = -120
+  y: number = 0
+---
+var img = Scratch.costumePixels();
+if (img.width < 1) return;
+var src = img.data;
+Scratch.canvas.resize(img.width, img.height);
+var out = [];
+for (var i = 0; i < src.length; i += 4) {
+  out.push(255 - src[i], 255 - src[i + 1], 255 - src[i + 2], src[i + 3]);
+}
+Scratch.canvas.write(out);
+Scratch.canvas.goToXY(Scratch.args.x, Scratch.args.y);`,
+`---
+type: command
+text: "stamp my costume, grayscale, at x {x} y {y}"
+warp: true
+inputs:
+  x: number = 120
+  y: number = 0
+---
+var img = Scratch.costumePixels();
+if (img.width < 1) return;
+var src = img.data;
+Scratch.canvas.resize(img.width, img.height);
+var out = [];
+for (var i = 0; i < src.length; i += 4) {
+  var g = Math.round((src[i] * 0.3) + (src[i + 1] * 0.59) + (src[i + 2] * 0.11));
+  out.push(g, g, g, src[i + 3]);
+}
+Scratch.canvas.write(out);
+Scratch.canvas.goToXY(Scratch.args.x, Scratch.args.y);`,
+`---
+type: command
+text: "stamp my costume, mirrored, at x {x} y {y}"
+warp: true
+inputs:
+  x: number = 0
+  y: number = 0
+---
+var img = Scratch.costumePixels();
+if (img.width < 1) return;
+var w = img.width;
+var h = img.height;
+var src = img.data;
+Scratch.canvas.resize(w, h);
+var out = new Array(src.length);
+for (var y = 0; y < h; y++) {
+  for (var x = 0; x < w; x++) {
+    var s = ((y * w) + x) * 4;
+    var d = ((y * w) + (w - 1 - x)) * 4;
+    out[d] = src[s];
+    out[d + 1] = src[s + 1];
+    out[d + 2] = src[s + 2];
+    out[d + 3] = src[s + 3];
+  }
+}
+Scratch.canvas.write(out);
+Scratch.canvas.goToXY(Scratch.args.x, Scratch.args.y);`,
+`---
+type: command
+text: "clear the stamp"
+inputs:
+---
+Scratch.canvas.clear();`
+    ]
+};
+
+/** Scope — a real-time sweeping oscilloscope drawn on the canvas (Sound Visualizer project). */
+const SCOPE = {
+    name: 'Scope',
+    color1: '#0FBDBD',
+    color2: '#0DA5A5',
+    color3: '#0B8E8E',
+    docs: [
+`---
+type: command
+text: "show level {v} on the scope"
+warp: true
+inputs:
+  v: number = 0
+---
+var W = 480;
+var H = 180;
+var mid = 90;
+if (Number(Scratch.data.get("ready")) !== 1) {
+  Scratch.canvas.resize(W, H);
+  Scratch.canvas.goToXY(0, 0);
+  Scratch.canvas.fill([10, 12, 28, 255]);
+  Scratch.data.set("x", 0);
+  Scratch.data.set("ready", 1);
+}
+var x = Number(Scratch.data.get("x"));
+var v = Math.max(0, Math.min(100, Scratch.args.v));
+var half = Math.round((v / 100) * (mid - 2));
+for (var y = 0; y < H; y++) {
+  Scratch.canvas.setPixel(x, y, [10, 12, 28, 255]);
+  Scratch.canvas.setPixel((x + 1) % W, y, [44, 48, 78, 255]);
+}
+var col = [60 + Math.round(v * 1.9), 235 - Math.round(v * 1.2), 110, 255];
+for (var d = 0; d <= half; d++) {
+  Scratch.canvas.setPixel(x, mid - d, col);
+  Scratch.canvas.setPixel(x, mid + d, col);
+}
+Scratch.data.set("x", (x + 1) % W);`,
+`---
+type: command
+text: "reset the scope"
+inputs:
+---
+Scratch.canvas.clear();
+Scratch.data.set("ready", 0);`
+    ]
+};
+
+const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND, CANVAS, LIFE, GRID, IMAGE, SCOPE];
 
 /**
  * Build a fully-compiled example library ready for installCustomLibrary.

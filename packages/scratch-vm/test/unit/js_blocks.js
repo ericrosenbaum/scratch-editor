@@ -674,3 +674,54 @@ test('canvas layers are per-(library, sprite) and clean up per target/library', 
     t.equal(runtime._jsCanvases.canvases.size, 0, 'library uninstall disposes its canvases');
     t.end();
 });
+
+const WARP_LIBRARY = {
+    id: 'jslib_warp',
+    name: 'Warp Lib',
+    color1: '#FF8C1A',
+    blocks: [
+        {opcode: 'fast',
+            type: 'command',
+            warp: true,
+            signature: {text: 'fast thing', arguments: {}},
+            jsCompiled: 'Scratch.changeX(1);'},
+        {opcode: 'slow',
+            type: 'command',
+            signature: {text: 'slow thing', arguments: {}},
+            jsCompiled: 'Scratch.changeX(1);'}
+    ]
+};
+
+/**
+ * Build a util whose peekStackFrame returns a single stable frame, so a test can
+ * observe a block flipping warpMode on it.
+ * @param {Runtime} runtime - the runtime.
+ * @param {object} target - a fake target.
+ * @returns {object} {util, frame}.
+ */
+const makeWarpUtil = (runtime, target) => {
+    const frame = {warpMode: false};
+    const util = {
+        runtime,
+        target,
+        stackFrame: frame,
+        thread: {peekStackFrame: () => frame},
+        yield: () => {}
+    };
+    return {util, frame};
+};
+
+test('a block declared warp:true enables warp on its stack frame; a normal block does not', t => {
+    const runtime = new Runtime();
+    runtime.installCustomLibrary(WARP_LIBRARY);
+    const target = makeTarget();
+
+    const warpRun = makeWarpUtil(runtime, target);
+    runtime._primitives['jslib_warp_fast']({}, warpRun.util);
+    t.equal(warpRun.frame.warpMode, true, 'warp block turns on warpMode (no per-iteration screen refresh)');
+
+    const normalRun = makeWarpUtil(runtime, target);
+    runtime._primitives['jslib_warp_slow']({}, normalRun.util);
+    t.equal(normalRun.frame.warpMode, false, 'a normal block leaves warpMode untouched');
+    t.end();
+});

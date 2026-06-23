@@ -37,7 +37,22 @@ const makeBuilder = salt => {
         topLevel: false
     });
     const num = (parent, value) => shadow(parent, 'math_number', 'NUM', value);
+    const posNum = (parent, value) => shadow(parent, 'math_positive_number', 'NUM', value);
     const text = (parent, value) => shadow(parent, 'text', 'TEXT', value);
+    const colour = (parent, value) => {
+        const id = uid();
+        add({
+            id,
+            opcode: 'colour_picker',
+            next: null,
+            parent,
+            inputs: {},
+            fields: {COLOUR: {name: 'COLOUR', value: String(value)}},
+            shadow: true,
+            topLevel: false
+        });
+        return id;
+    };
 
     /**
      * Add a non-shadow block (reporter, command, or hat).
@@ -83,7 +98,7 @@ const makeBuilder = salt => {
         };
     };
 
-    return {blocks, uid, num, text, block};
+    return {blocks, uid, num, posNum, text, colour, block};
 };
 
 /**
@@ -197,7 +212,7 @@ const PROJECTS = [
             const mouseDown = b.block('sensing_mousedown', {parent: ifBlock.id});
             ifBlock.input('CONDITION', mouseDown.id, null);
 
-            const paint = b.block(`${libId}_ex4`, {parent: ifBlock.id}); // paint at the mouse, size {size} color {color}
+            const paint = b.block(`${libId}_ex4`, {parent: ifBlock.id}); // paint at the mouse, size/color
             const sizeShadow = b.num(paint.id, 6);
             paint.input('size', sizeShadow, sizeShadow);
 
@@ -217,23 +232,144 @@ const PROJECTS = [
             forever.input('SUBSTACK', ifBlock.id, null);
             hat.setNext(forever.id);
         }
+    },
+    {
+        id: 'game-of-life-pen',
+        name: 'Game of Life (Pen)',
+        families: ['Life', 'Grid'],
+        extensions: ['pen'],
+        blurb: 'Run Conway’s Life and stamp each living cell with the pen, on a grid the C block walks for you.',
+        build (libs, b) {
+            const life = libs.Life;
+            const grid = libs.Grid;
+
+            const hat = b.block('event_whenflagclicked', {topLevel: true, x: 40, y: 40});
+            const hide = b.block('looks_hide', {parent: hat.id});
+            const clear0 = b.block('pen_clear', {parent: hide.id});
+            const setSize = b.block('pen_setPenSizeTo', {parent: clear0.id});
+            const sizeShadow = b.num(setSize.id, 18);
+            setSize.input('SIZE', sizeShadow, sizeShadow);
+            const setColor = b.block('pen_setPenColorToColor', {parent: setSize.id});
+            const colorShadow = b.colour(setColor.id, '#33dd66');
+            setColor.input('COLOR', colorShadow, colorShadow);
+            const newWorld = b.block(`${life}_ex0`, {parent: setColor.id}); // new {n} by {n} life world
+            const nShadow = b.num(newWorld.id, 12);
+            newWorld.input('n', nShadow, nShadow);
+            const randomize = b.block(`${life}_ex1`, {parent: newWorld.id}); // randomize the life world
+            const forever = b.block('control_forever', {parent: randomize.id});
+
+            // forever body: erase all -> walk the grid stamping live cells -> step -> wait
+            const clear1 = b.block('pen_clear', {parent: forever.id});
+            const gridLoop = b.block(`${grid}_ex0`, {parent: clear1.id}); // for each cell of an n x n grid
+            const gridN = b.num(gridLoop.id, 12);
+            const gridSize = b.num(gridLoop.id, 26);
+            gridLoop.input('n', gridN, gridN);
+            gridLoop.input('size', gridSize, gridSize);
+
+            // grid loop body: if <cell alive> { pen down, pen up } (a dot per living cell)
+            const ifAlive = b.block('control_if', {parent: gridLoop.id});
+            const aliveCond = b.block(`${life}_ex3`, {parent: ifAlive.id}); // life cell {col} {row} is alive?
+            const colRep = b.block(`${grid}_ex1`, {parent: aliveCond.id}); // grid column
+            const rowRep = b.block(`${grid}_ex2`, {parent: aliveCond.id}); // grid row
+            const colShadow = b.num(aliveCond.id, 1);
+            const rowShadow = b.num(aliveCond.id, 1);
+            aliveCond.input('col', colRep.id, colShadow);
+            aliveCond.input('row', rowRep.id, rowShadow);
+            ifAlive.input('CONDITION', aliveCond.id, null);
+            const penDown = b.block('pen_penDown', {parent: ifAlive.id});
+            const penUp = b.block('pen_penUp', {parent: penDown.id});
+            penDown.setNext(penUp.id);
+            ifAlive.input('SUBSTACK', penDown.id, null);
+            gridLoop.input('SUBSTACK', ifAlive.id, null);
+
+            const step = b.block(`${life}_ex2`, {parent: gridLoop.id}); // step the life world
+            const wait = b.block('control_wait', {parent: step.id});
+            const waitShadow = b.posNum(wait.id, 0.15);
+            wait.input('DURATION', waitShadow, waitShadow);
+
+            hat.setNext(hide.id);
+            hide.setNext(clear0.id);
+            clear0.setNext(setSize.id);
+            setSize.setNext(setColor.id);
+            setColor.setNext(newWorld.id);
+            newWorld.setNext(randomize.id);
+            randomize.setNext(forever.id);
+            forever.input('SUBSTACK', clear1.id, null);
+            clear1.setNext(gridLoop.id);
+            gridLoop.setNext(step.id);
+            step.setNext(wait.id);
+        }
+    },
+    {
+        id: 'costume-invert',
+        name: 'Costume Inverter',
+        family: 'Image',
+        blurb: 'Copy the costume to the canvas with colors inverted — a transform graphic effects can’t do.',
+        build (libId, b) {
+            const hat = b.block('event_whenflagclicked', {topLevel: true, x: 40, y: 40});
+            const setSize = b.block('looks_setsizeto', {parent: hat.id});
+            const sizeShadow = b.num(setSize.id, 100);
+            setSize.input('SIZE', sizeShadow, sizeShadow);
+            const clearFx = b.block('looks_cleargraphiceffects', {parent: setSize.id});
+            const invert = b.block(`${libId}_ex0`, {parent: clearFx.id}); // stamp my costume, colors inverted
+            const ix = b.num(invert.id, -130);
+            const iy = b.num(invert.id, 0);
+            invert.input('x', ix, ix);
+            invert.input('y', iy, iy);
+            hat.setNext(setSize.id);
+            setSize.setNext(clearFx.id);
+            clearFx.setNext(invert.id);
+        }
+    },
+    {
+        id: 'sound-visualizer',
+        name: 'Sound Visualizer',
+        family: 'Scope',
+        blurb: 'A real-time oscilloscope: the microphone’s live level sweeps across your own canvas layer.',
+        build (libId, b) {
+            const hat = b.block('event_whenflagclicked', {topLevel: true, x: 40, y: 40});
+            const reset = b.block(`${libId}_ex1`, {parent: hat.id}); // reset the scope
+            const forever = b.block('control_forever', {parent: reset.id});
+            const show = b.block(`${libId}_ex0`, {parent: forever.id}); // show level {v} on the scope
+            const loud = b.block('sensing_loudness', {parent: show.id});
+            const vShadow = b.num(show.id, 0);
+            show.input('v', loud.id, vShadow);
+            forever.input('SUBSTACK', show.id, null);
+            hat.setNext(reset.id);
+            reset.setNext(forever.id);
+        }
     }
 ];
 
 /**
- * Build the runtime blocks + the (compiled) library for a project.
+ * Build the runtime blocks + compiled libraries for a project. A project names one
+ * library via `family`, or several via `families` (its `build` then receives a
+ * {familyName: libraryId} map instead of a single id). It may also declare core
+ * `extensions` (e.g. 'pen') that must be loaded before its blocks can render.
  * @param {object} project - the project definition.
- * @returns {?object} {library, blocks} or null if the library is missing.
+ * @returns {?object} {libraries, library, blocks, extensions} or null if a library is missing.
  */
 const buildProject = project => {
-    const family = FAMILIES.find(f => f.name === project.family);
-    if (!family) return null;
-    const library = buildExampleLibrary(family);
+    const familyNames = project.families || [project.family];
+    const libraries = [];
+    const libraryIds = {};
+    for (const name of familyNames) {
+        const family = FAMILIES.find(f => f.name === name);
+        if (!family) return null;
+        const library = buildExampleLibrary(family);
+        libraries.push(library);
+        libraryIds[name] = library.id;
+    }
     const salt = Math.random().toString(36)
         .slice(2, 7);
     const builder = makeBuilder(salt);
-    project.build(library.id, builder);
-    return {library, blocks: builder.blocks};
+    project.build(project.families ? libraryIds : libraries[0].id, builder);
+    return {
+        libraries,
+        library: libraries[0], // primary, for back-compat
+        blocks: builder.blocks,
+        extensions: project.extensions || []
+    };
 };
 
 /**

@@ -170,6 +170,97 @@ from loudness; clear on a key press; paint a procedural pattern with
 
 ---
 
+## 6. Game of Life (Pen) — libraries: **Life** + **Grid**
+
+**What it does:** Conway's Game of Life on a 12×12 board. Each generation, a grid
+C block walks the sprite to every cell and stamps the living ones with the pen; the
+**Life** library computes the next generation. The random soup settles into the
+familiar still lifes, blinkers, and gliders.
+
+**Beyond Scratch:** two things at once. (1) The **Life** library does real 2D
+neighbor counting — the canonical "hard in Scratch" task. (2) The **Grid** library
+is a *custom C block* (`for each cell of an n×n grid …`) that positions the sprite
+and runs its wrapped blocks at every cell — and it's marked **warp**, so all 144
+cells render in a single frame instead of 144. (Marking a JS block `warp: true`
+now actually runs it without screen refresh.)
+
+**Script (Sprite1):**
+```
+when green flag clicked
+hide
+erase all
+set pen size to (18)
+set pen color to (green)
+new (12) by (12) life world                  // Life
+randomize the life world                      // Life
+forever
+  erase all
+  for each cell of a (12) by (12) grid, (26) apart {   // Grid (C block, warp)
+    if < life cell (grid column) (grid row) is alive? > {  // Life + Grid reporters
+      pen down
+      pen up
+    }
+  }
+  step the life world                         // Life
+  wait (0.15) seconds
+```
+
+**Blocks used:** `new () by () life world`, `randomize`, `step`,
+`life cell () () is alive?`, `for each cell of a () by () grid, () apart`,
+`grid column`, `grid row`. Uses the **pen** extension (loaded automatically).
+Invites tinkering: seed a glider by hand; change the rules; color cells by age.
+
+---
+
+## 7. Costume Inverter — library: **Image**
+
+**What it does:** Copies the sprite's costume, inverts its colors, and stamps the
+result on the canvas beside the original. (The library also has grayscale and
+mirror.)
+
+**Beyond Scratch:** a transform the graphic effects *can't* do. The color effect is
+a hue rotation; there is no "invert", "grayscale", or "mirror" effect. This reads
+the costume's actual rendered pixels (`Scratch.costumePixels()`), transforms them in
+JS, and writes them to a canvas layer — the costume asset is never modified.
+
+**Script (Sprite1):**
+```
+when green flag clicked
+set size to (100) %
+clear graphic effects
+stamp my costume, colors inverted, at x (-130) y (0)   // Image
+```
+
+**Blocks used:** `stamp my costume, colors inverted/grayscale/mirrored, at x () y ()`,
+`clear the stamp`. Invites tinkering: swap in grayscale or mirror; animate the
+transform; posterize or threshold the pixels yourself.
+
+---
+
+## 8. Sound Visualizer — library: **Scope**
+
+**What it does:** A real-time oscilloscope. The microphone's live level sweeps
+across your own canvas layer left-to-right, drawing a mirrored waveform that's
+greener when it's loud — like a heart monitor.
+
+**Beyond Scratch:** drawing a live, per-frame visualization into a pixel layer.
+Vanilla Scratch can read the mic "loudness" but has nowhere to *draw* a history of
+it; this sweeps a cheap one-column-per-frame trace across a `Scratch.canvas` layer.
+
+**Script (Sprite1):**
+```
+when green flag clicked
+reset the scope                               // Scope
+forever
+  show level (loudness) on the scope          // Scope, fed the mic loudness
+```
+
+**Blocks used:** `show level () on the scope`, `reset the scope`. Invites tinkering:
+feed it a sound's samples instead of the mic; change the sweep speed or palette;
+trigger events when the level crosses a threshold.
+
+---
+
 ## Notes for the generator
 
 - Each project embeds only its own library in `customLibraries`.

@@ -28,7 +28,15 @@ const isReentrant = type =>
  */
 const makeJsBlockPrimitive = (libBlock, library, runtime) => {
     const reentrant = isReentrant(libBlock.type);
+    const warp = Boolean(libBlock.warp);
     return function jsBlockPrimitive (argValues, util) {
+        // A block declared `warp: true` ("run without screen refresh") sets warp on
+        // its own stack frame; child branch frames inherit it (Thread#pushStack), so a
+        // C-block's substack runs to completion in one frame instead of yielding once
+        // per iteration. This is what lets a 100+ cell grid render in real time.
+        if (warp && util.thread && util.thread.peekStackFrame()) {
+            util.thread.peekStackFrame().warpMode = true;
+        }
         let runner;
         if (reentrant) {
             runner = util.stackFrame.jsBlock;

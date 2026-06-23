@@ -105,14 +105,22 @@ class LibraryManager extends React.Component {
         const built = buildProject(project);
         if (!built) return;
         const vm = this.props.vm;
-        vm.addCustomLibrary(built.library);
-        const target = vm.editingTarget;
-        if (target) {
-            built.blocks.forEach(rec => target.blocks.createBlock(rec));
-            vm.refreshWorkspace();
-        }
-        this.syncFromVm();
-        this.props.onRequestClose(); // close so the user sees the new script
+        // Some projects use core extensions (e.g. the pen). These must be loaded
+        // first, or the workspace can't render their blocks. loadExtensionURL handles
+        // built-in ids and resolves immediately for them.
+        const loadExtensions = Promise.all((built.extensions || [])
+            .filter(extId => !vm.extensionManager.isExtensionLoaded(extId))
+            .map(extId => vm.extensionManager.loadExtensionURL(extId)));
+        loadExtensions.then(() => {
+            built.libraries.forEach(library => vm.addCustomLibrary(library));
+            const target = vm.editingTarget;
+            if (target) {
+                built.blocks.forEach(rec => target.blocks.createBlock(rec));
+                vm.refreshWorkspace();
+            }
+            this.syncFromVm();
+            this.props.onRequestClose(); // close so the user sees the new script
+        });
     }
     handleRequestClose () {
         this.props.onRequestClose();
@@ -159,7 +167,8 @@ LibraryManager.propTypes = {
         deleteCustomLibrary: PropTypes.func,
         getCustomLibraries: PropTypes.func,
         refreshWorkspace: PropTypes.func,
-        editingTarget: PropTypes.object
+        editingTarget: PropTypes.object,
+        extensionManager: PropTypes.object
     })
 };
 
