@@ -11,7 +11,6 @@ import closeIcon from '../cards/icon--close.svg';
 import shrinkIcon from '../cards/icon--shrink.svg';
 import expandIcon from '../cards/icon--expand.svg';
 import micIcon from './icon--mic.svg';
-import tipsIcon from '../../lib/assets/icon--tips.svg';
 
 import decks from '../../lib/libraries/decks/index.jsx';
 import blockThumbnailsCache from '../../lib/libraries/tips/block-thumbnails-cache.json';
@@ -24,6 +23,150 @@ const toEditorUrl = url => {
     if (!url) return url;
     const trimmed = url.replace(/\/+$/, '');
     return /\/editor$/.test(trimmed) ? trimmed : `${trimmed}/editor`;
+};
+
+/* ===== INLINE ICONS (Tips "more playful" redesign) ===== */
+
+// eslint-disable-next-line @stylistic/max-len
+const IC_Q_BUBBLE_PATH = 'M11 2 C16 2 20 5.6 20 10.2 C20 14.8 16 18.4 11 18.4 C9.9 18.4 8.9 18.2 8 18 L 4 20.5 L 4.8 16.4 C 3.1 14.9 2 12.7 2 10.2 C2 5.6 6 2 11 2 Z';
+// eslint-disable-next-line @stylistic/max-len
+const IC_BLOCK_PATH = 'M5.4 8 L6.4 8 L7 6.6 L9.8 6.6 L10.4 8 L17.6 8 Q19 8 19 9.4 L19 12.6 Q19 14 17.6 14 L13.6 14 L13 15.4 L10.2 15.4 L9.6 14 L5.4 14 Q4 14 4 12.6 L4 9.4 Q4 8 5.4 8 Z';
+
+// "?" inside a speech bubble — the Tips header mark. The bubble is white so it
+// reads on the colored header; the "?" is punched out in the header hue.
+const IcQ = ({size = 22}) => (
+    <svg
+        height={size}
+        viewBox="0 0 22 22"
+        width={size}
+    >
+        <path
+            d={IC_Q_BUBBLE_PATH}
+            fill="#fff"
+        />
+        <text
+            fill="#0FBD8C"
+            fontFamily="inherit"
+            fontSize="11.5"
+            fontWeight="900"
+            textAnchor="middle"
+            x="11"
+            y="14.4"
+        >{'?'}</text>
+    </svg>
+);
+IcQ.propTypes = {size: PropTypes.number};
+
+// A Scratch stack block with a small cursor poking the lower-right corner, so
+// "click a block to get help" reads at a glance on the block-picker button.
+const IcBlockClick = ({size = 26}) => (
+    <svg
+        height={size}
+        viewBox="0 0 24 24"
+        width={size}
+    >
+        <path
+            d={IC_BLOCK_PATH}
+            fill="currentColor"
+        />
+        <rect
+            fill="#fff"
+            height="2"
+            opacity="0.6"
+            rx="1"
+            width="8.6"
+            x="6.2"
+            y="10"
+        />
+        <path
+            d="M0 0 L0 7.2 L1.8 5.7 L2.9 8 L4 7.5 L2.9 5.2 L5.1 5.1 Z"
+            fill="#3A4156"
+            stroke="#fff"
+            strokeLinejoin="round"
+            strokeWidth="1.05"
+            transform="translate(15 12.4)"
+        />
+    </svg>
+);
+IcBlockClick.propTypes = {size: PropTypes.number};
+
+// Four-pointed sparkle stars — the editor's "surprise" mark, for "Surprise me!"
+const IcStars = ({size = 17, color}) => {
+    const star = 'M0 -7 Q 1.1 -1.1 7 0 Q 1.1 1.1 0 7 Q -1.1 1.1 -7 0 Q -1.1 -1.1 0 -7 Z';
+    return (
+        <svg
+            height={size}
+            style={{color: color}}
+            viewBox="0 0 18 18"
+            width={size}
+        >
+            <path
+                d={star}
+                fill="currentColor"
+                transform="translate(7.4 10.2) scale(1.04)"
+            />
+            <path
+                d={star}
+                fill="currentColor"
+                transform="translate(13.6 4.6) scale(0.56)"
+            />
+        </svg>
+    );
+};
+IcStars.propTypes = {color: PropTypes.string, size: PropTypes.number};
+
+// The brand "scratched-on" worm texture, faint behind the header content.
+let scribbleSeq = 0;
+class Scribble extends React.Component {
+    constructor (props) {
+        super(props);
+        this.id = `tw-scrb-${scribbleSeq++}`;
+    }
+    render () {
+        const {color = '#fff', opacity = 0.1, scale = 0.55} = this.props;
+        const s = scale;
+        const p = (a, b) => `${a * s} ${b * s}`;
+        return (
+            <svg
+                aria-hidden="true"
+                className={styles.headerScribble}
+            >
+                <defs>
+                    <pattern
+                        height={110 * s}
+                        id={this.id}
+                        patternTransform="rotate(-12)"
+                        patternUnits="userSpaceOnUse"
+                        width={130 * s}
+                    >
+                        <g
+                            fill="none"
+                            opacity={opacity}
+                            stroke={color}
+                            strokeLinecap="round"
+                            strokeWidth={11 * s}
+                        >
+                            <path d={`M ${p(10, 20)} q ${p(14, -12)} ${p(28, 0)} t ${p(28, 0)}`} />
+                            <path d={`M ${p(70, 62)} q ${p(12, -10)} ${p(24, 0)} t ${p(24, 0)}`} />
+                            <path d={`M ${p(4, 88)} q ${p(10, 10)} ${p(22, 2)} t ${p(22, -4)}`} />
+                            <path d={`M ${p(88, 16)} q ${p(10, 10)} ${p(20, 2)}`} />
+                            <path d={`M ${p(30, 52)} q ${p(-8, 10)} ${p(2, 16)}`} />
+                        </g>
+                    </pattern>
+                </defs>
+                <rect
+                    fill={`url(#${this.id})`}
+                    height="100%"
+                    width="100%"
+                />
+            </svg>
+        );
+    }
+}
+Scribble.propTypes = {
+    color: PropTypes.string,
+    opacity: PropTypes.number,
+    scale: PropTypes.number
 };
 
 /* ===== HEADER ===== */
@@ -86,12 +229,8 @@ const UnstuckCardHeader = ({
         );
     } else {
         headerContent = (
-            <span>
-                <img
-                    className={styles.tipsIcon}
-                    draggable={false}
-                    src={tipsIcon}
-                />
+            <span className={styles.headerTitle}>
+                <IcQ />
                 {'Tips'}
             </span>
         );
@@ -99,6 +238,7 @@ const UnstuckCardHeader = ({
 
     return (
         <div className={styles.header}>
+            <Scribble />
             <div className={styles.headerLeft}>
                 {headerContent}
                 {usingKeywordFallback ? (
@@ -147,21 +287,33 @@ UnstuckCardHeader.propTypes = {
     usingKeywordFallback: PropTypes.bool
 };
 
-/* ===== QUERY INPUT (with mic inside) ===== */
+/* ===== QUERY INPUT (block-picker button + speech-bubble field + mic) ===== */
 class QueryInput extends React.Component {
     constructor (props) {
         super(props);
+        this.state = {pickHover: false};
         this.handleKeyDown = this.handleKeyDown.bind(this);
+        this.handlePickEnter = this.handlePickEnter.bind(this);
+        this.handlePickLeave = this.handlePickLeave.bind(this);
     }
     handleKeyDown (e) {
         if (e.key === 'Enter' && this.props.query.trim()) {
             this.props.onSubmit();
         }
     }
+    handlePickEnter () {
+        this.setState({pickHover: true});
+    }
+    handlePickLeave () {
+        this.setState({pickHover: false});
+    }
     render () {
         const displayValue = this.props.listening && this.props.interimTranscript ?
             this.props.interimTranscript :
             this.props.query;
+        // The hover hint previews the affordance; while pick mode is active the
+        // persistent banner above the body carries the same message instead.
+        const showHint = this.state.pickHover && !this.props.pickMode;
         return (
             <div className={styles.queryRow}>
                 {this.props.onTogglePickMode ? (
@@ -173,67 +325,18 @@ class QueryInput extends React.Component {
                         )}
                         title={this.props.pickMode ?
                             'Click a block, or press Esc to cancel' :
-                            'Pick a block to ask about'}
+                            'Click any block to get help'}
                         onClick={this.props.onTogglePickMode}
+                        onMouseEnter={this.handlePickEnter}
+                        onMouseLeave={this.handlePickLeave}
                     >
-                        <svg
-                            height="18"
-                            viewBox="0 0 18 18"
-                            width="18"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <circle
-                                cx="9"
-                                cy="9"
-                                fill="none"
-                                r="6"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                            />
-                            <line
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeWidth="1.6"
-                                x1="9"
-                                x2="9"
-                                y1="1"
-                                y2="4"
-                            />
-                            <line
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeWidth="1.6"
-                                x1="9"
-                                x2="9"
-                                y1="14"
-                                y2="17"
-                            />
-                            <line
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeWidth="1.6"
-                                x1="1"
-                                x2="4"
-                                y1="9"
-                                y2="9"
-                            />
-                            <line
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeWidth="1.6"
-                                x1="14"
-                                x2="17"
-                                y1="9"
-                                y2="9"
-                            />
-                            <circle
-                                cx="9"
-                                cy="9"
-                                fill="currentColor"
-                                r="1.6"
-                            />
-                        </svg>
+                        <IcBlockClick />
                     </button>
+                ) : null}
+                {showHint ? (
+                    <div className={styles.pickHintBubble}>
+                        {'Click any block to get help'}
+                    </div>
                 ) : null}
                 <input
                     className={styles.queryInput}
@@ -298,10 +401,7 @@ class QuickPicks extends React.Component {
                     >
                         <span
                             className={styles.quickPickDot}
-                            style={{
-                                backgroundColor: pick.color || '#ccc',
-                                boxShadow: `0 0 0 3px ${pick.color || '#ccc'}33`
-                            }}
+                            style={{backgroundColor: pick.color || '#ccc'}}
                         />
                         {pick.label}
                     </button>
@@ -471,7 +571,10 @@ class SearchResults extends React.Component {
                             className={styles.resultCard}
                             data-tip-id={result.tipId}
                             key={result.tipId}
-                            style={{animationDelay: `${index * 60}ms`}}
+                            style={{
+                                animationDelay: `${index * 60}ms`,
+                                borderLeftColor: getTipDotColor(tip)
+                            }}
                             onClick={this.handleResultClick}
                         >
                             {thumbSrc ? (
@@ -1078,7 +1181,7 @@ const UnstuckCard = ({
                             <div className={styles.pickHintBanner}>
                                 <span className={styles.pickHintDot} />
                                 <span className={styles.pickHintText}>
-                                    {'Click any block — or press Esc to cancel'}
+                                    {'Click any block to get help — or press Esc to cancel'}
                                 </span>
                             </div>
                         ) : null}
@@ -1149,13 +1252,6 @@ const UnstuckCard = ({
                                         <div className={styles.promptText}>
                                             {'What do you need help with?'}
                                         </div>
-                                        <button
-                                            className={styles.randomTipButton}
-                                            onClick={onRandomTip}
-                                        >
-                                            <span className={styles.randomTipIcon}>{'🎲'}</span>
-                                            {'Surprise me!'}
-                                        </button>
                                         <QuickPicks
                                             picks={quickPicks}
                                             onPickClick={onPickClick}
@@ -1185,12 +1281,23 @@ const UnstuckCard = ({
                                                 </div>
                                             </div>
                                         )}
-                                        <button
-                                            className={styles.browseAllLink}
-                                            onClick={onBrowseAll}
-                                        >
-                                            {'Browse all tips'}
-                                        </button>
+                                        <div className={styles.footerPills}>
+                                            <button
+                                                className={styles.footerPill}
+                                                onClick={onRandomTip}
+                                            >
+                                                <span className={styles.footerPillIcon}>
+                                                    <IcStars color={'#FF8C1A'} />
+                                                </span>
+                                                {'Surprise me!'}
+                                            </button>
+                                            <button
+                                                className={styles.footerPill}
+                                                onClick={onBrowseAll}
+                                            >
+                                                {'Browse all tips'}
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
