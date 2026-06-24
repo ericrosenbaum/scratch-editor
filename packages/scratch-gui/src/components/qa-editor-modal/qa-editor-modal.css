@@ -380,6 +380,28 @@
     cursor: not-allowed;
 }
 
+.import-button {
+    cursor: pointer;
+    padding: 8px 16px;
+    background: transparent;
+    color: #FC662C;
+    border: 1px solid #FC662C;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+.import-button:hover {
+    background: rgba(252, 102, 44, 0.1);
+}
+
+.import-button:disabled {
+    color: #ccc;
+    border-color: #ccc;
+    background: transparent;
+    cursor: not-allowed;
+}
+
 .pair-count {
     font-size: 0.875rem;
     font-weight: bold;

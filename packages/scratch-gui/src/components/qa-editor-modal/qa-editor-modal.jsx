@@ -6,6 +6,7 @@ import bindAll from 'lodash.bindall';
 import classNames from 'classnames';
 
 import Modal from '../../containers/modal.jsx';
+import importCSV from '../../lib/import-csv';
 
 import styles from './qa-editor-modal.css';
 
@@ -26,6 +27,7 @@ class QAEditorModalComponent extends React.Component {
             'handleNoMatchAnswerChange',
             'handleNoMatchThresholdChange',
             'handleAddPair',
+            'handleImport',
             'handleDeletePair',
             'handleQuestionChange',
             'handleAnswerChange',
@@ -172,6 +174,60 @@ class QAEditorModalComponent extends React.Component {
         });
         this._focusNewQuestion = true;
         this.setState({localDatasets: newDatasets});
+    }
+
+    handleImport (e) {
+        if (e) e.stopPropagation();
+        if (this.state.selectedIndex === null) return;
+        importCSV().then(rows => {
+            if (!rows || rows.length === 0) return;
+            // Coerce every cell to a string and drop rows that are entirely
+            // empty (PapaParse tends to leave a trailing blank row).
+            const cleaned = rows
+                .map(row => (row || []).map(cell =>
+                    (cell === null || typeof cell === 'undefined' ? '' : String(cell))
+                ))
+                .filter(row => row.some(cell => cell.trim() !== ''));
+            if (cleaned.length === 0) return;
+
+            // Two columns -> questions (col 1) + answers (col 2), paired by row.
+            // One column -> fill in just the answers, unless the dataset already
+            // has answers, in which case fill in the questions instead.
+            const hasTwoColumns = cleaned.some(row => row.length > 1 && row[1].trim() !== '');
+
+            // Resetting the textarea refs keeps them in sync with the new pair
+            // count (they get repopulated by the ref callbacks on re-render).
+            this.questionRefs = {};
+            this.answerRefs = {};
+
+            this.setState(prevState => {
+                const {selectedIndex} = prevState;
+                if (selectedIndex === null) return null;
+                const localDatasets = prevState.localDatasets.map((dataset, i) => {
+                    if (i !== selectedIndex) return dataset;
+                    const pairs = dataset.pairs.map(p => ({...p}));
+                    const setField = (rowIndex, field, value) => {
+                        if (!pairs[rowIndex]) pairs[rowIndex] = {question: '', answer: ''};
+                        pairs[rowIndex][field] = value;
+                    };
+                    if (hasTwoColumns) {
+                        cleaned.forEach((row, ri) => {
+                            setField(ri, 'question', row[0] || '');
+                            setField(ri, 'answer', row[1] || '');
+                        });
+                    } else {
+                        const answersFilled = pairs.some(p => (p.answer || '').trim() !== '');
+                        const field = answersFilled ? 'question' : 'answer';
+                        cleaned.forEach((row, ri) => setField(ri, field, row[0] || ''));
+                    }
+                    return {...dataset, pairs};
+                });
+                return {localDatasets};
+            });
+        })
+            .catch(() => {
+                // Swallow parse/cancel errors -- there is simply nothing to import.
+            });
     }
 
     handleDeletePair (e, pairIndex) {
@@ -397,6 +453,17 @@ class QAEditorModalComponent extends React.Component {
                                 onClick={this.handleAddPair}
                             >
                                 {'+ Add Pair'}
+                            </button>
+                            <button
+                                className={styles.importButton}
+                                type="button"
+                                disabled={selectedDataset === null}
+                                title={'Import from a CSV/TSV/TXT file. Two columns fill questions ' +
+                                    'and answers; one column fills the answers (or the questions if ' +
+                                    'answers are already set).'}
+                                onClick={this.handleImport}
+                            >
+                                {'Import…'}
                             </button>
                         </div>
                         <div className={styles.pairCount}>
