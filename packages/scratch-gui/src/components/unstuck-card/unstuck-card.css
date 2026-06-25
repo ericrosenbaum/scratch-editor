@@ -478,10 +478,13 @@ body .unstuck-container {
     100% { box-shadow: 0 0 0 12px hsla(163, 85%, 40%, 0); }
 }
 
-/* Hover hint above the block-picker button: "Click any block to get help" */
+/* Hint bubble for the block-picker button: previews the affordance on hover
+   and persists while pick mode is active. It sits BELOW the button (with the
+   tail pointing up) so it can't be clipped by the title bar when the button
+   is at the top of the body in the search-results view. */
 .pick-hint-bubble {
     position: absolute;
-    bottom: calc(100% + 0.5rem);
+    top: calc(100% + 0.5rem);
     left: 0;
     z-index: 6;
     background: $ui-white;
@@ -500,7 +503,7 @@ body .unstuck-container {
     content: "";
     position: absolute;
     left: 1.25rem;
-    bottom: -5px;
+    top: -5px;
     width: 12px;
     height: 12px;
     background: $ui-white;
@@ -509,40 +512,8 @@ body .unstuck-container {
 }
 
 @keyframes hint-pop {
-    from { opacity: 0; transform: translateY(4px); }
+    from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: translateY(0); }
-}
-
-/* Hint banner shown while pick mode is active */
-.pick-hint-banner {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: $tips-accent-tint;
-    border-bottom: 1px solid hsla(163, 85%, 40%, 0.35);
-    padding: 0.45rem 0.75rem;
-    font-size: 0.75rem;
-    color: $tips-accent-dark;
-    font-weight: 700;
-}
-
-.pick-hint-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: $tips-accent;
-    flex-shrink: 0;
-    animation: pick-hint-pulse 1.2s ease-in-out infinite;
-}
-
-.pick-hint-text {
-    flex: 1;
-    min-width: 0;
-}
-
-@keyframes pick-hint-pulse {
-    0%, 100% { opacity: 0.4; transform: scale(0.9); }
-    50% { opacity: 1; transform: scale(1.1); }
 }
 
 /* Global cursor while pick mode is active.

@@ -30,7 +30,7 @@ const toEditorUrl = url => {
 // eslint-disable-next-line @stylistic/max-len
 const IC_Q_BUBBLE_PATH = 'M11 2 C16 2 20 5.6 20 10.2 C20 14.8 16 18.4 11 18.4 C9.9 18.4 8.9 18.2 8 18 L 4 20.5 L 4.8 16.4 C 3.1 14.9 2 12.7 2 10.2 C2 5.6 6 2 11 2 Z';
 // eslint-disable-next-line @stylistic/max-len
-const IC_BLOCK_PATH = 'M5.4 8 L6.4 8 L7 6.6 L9.8 6.6 L10.4 8 L17.6 8 Q19 8 19 9.4 L19 12.6 Q19 14 17.6 14 L13.6 14 L13 15.4 L10.2 15.4 L9.6 14 L5.4 14 Q4 14 4 12.6 L4 9.4 Q4 8 5.4 8 Z';
+const IC_BLOCK_PATH = 'M4.4 5 L6.4 5 L8 6.8 L12 6.8 L13.6 5 L18.6 5 Q20 5 20 6.4 L20 14.6 Q20 16 18.6 16 L13.6 16 L12 17.8 L8 17.8 L6.4 16 L4.4 16 Q3 16 3 14.6 L3 6.4 Q3 5 4.4 5 Z';
 
 // "?" inside a speech bubble — the Tips header mark. The bubble is white so it
 // reads on the colored header; the "?" is punched out in the header hue.
@@ -59,7 +59,7 @@ IcQ.propTypes = {size: PropTypes.number};
 
 // A Scratch stack block with a small cursor poking the lower-right corner, so
 // "click a block to get help" reads at a glance on the block-picker button.
-const IcBlockClick = ({size = 26}) => (
+const IcBlockClick = ({size = 30}) => (
     <svg
         height={size}
         viewBox="0 0 24 24"
@@ -74,17 +74,17 @@ const IcBlockClick = ({size = 26}) => (
             height="2"
             opacity="0.6"
             rx="1"
-            width="8.6"
-            x="6.2"
-            y="10"
+            width="7"
+            x="6.5"
+            y="10.5"
         />
         <path
-            d="M0 0 L0 7.2 L1.8 5.7 L2.9 8 L4 7.5 L2.9 5.2 L5.1 5.1 Z"
+            d="M0 0 L0 7.2 L1.36 5.92 L2.74 8.81 L4.72 7.86 L3.34 4.98 L5.1 5.1 Z"
             fill="#3A4156"
             stroke="#fff"
             strokeLinejoin="round"
-            strokeWidth="1.05"
-            transform="translate(15 12.4)"
+            strokeWidth="0.85"
+            transform="translate(16 10.2) scale(1.05)"
         />
     </svg>
 );
@@ -311,21 +311,21 @@ class QueryInput extends React.Component {
         const displayValue = this.props.listening && this.props.interimTranscript ?
             this.props.interimTranscript :
             this.props.query;
-        // The hover hint previews the affordance; while pick mode is active the
-        // persistent banner above the body carries the same message instead.
-        const showHint = this.state.pickHover && !this.props.pickMode;
+        // The hint bubble previews the affordance on hover, then persists while
+        // pick mode is active. The copy is identical in every state — hover
+        // bubble, persistent bubble, and native tooltip all read the same.
+        const picking = this.props.pickMode;
+        const showHint = this.state.pickHover || picking;
         return (
             <div className={styles.queryRow}>
                 {this.props.onTogglePickMode ? (
                     <button
-                        aria-label={this.props.pickMode ? 'Cancel block picker' : 'Pick a block'}
+                        aria-label={picking ? 'Cancel block picker' : 'Pick a block'}
                         className={classNames(
                             styles.pickButton,
-                            {[styles.pickButtonActive]: this.props.pickMode}
+                            {[styles.pickButtonActive]: picking}
                         )}
-                        title={this.props.pickMode ?
-                            'Click a block, or press Esc to cancel' :
-                            'Click any block to get help'}
+                        title="Click any block to get help"
                         onClick={this.props.onTogglePickMode}
                         onMouseEnter={this.handlePickEnter}
                         onMouseLeave={this.handlePickLeave}
@@ -1177,14 +1177,6 @@ const UnstuckCard = ({
                             onClose={onClose}
                             onShrinkExpand={onShrinkExpand}
                         />
-                        {pickMode ? (
-                            <div className={styles.pickHintBanner}>
-                                <span className={styles.pickHintDot} />
-                                <span className={styles.pickHintText}>
-                                    {'Click any block to get help — or press Esc to cancel'}
-                                </span>
-                            </div>
-                        ) : null}
                         {expanded ? (
                             <div className={classNames(styles.body, 'no-drag')}>
                                 {modelError ? (
