@@ -1136,10 +1136,15 @@ const UnstuckCard = ({
     const menuBarHeight = 48;
 
     if (x === 0 && y === 0) {
-        // Default position: bottom-right, near sprite pane
-        x = window.innerWidth - 380;
-        y = window.innerHeight - menuBarHeight - 420;
-        if (y < 8) y = 8;
+        // Default position: upper area, moved up and to the left from the old
+        // bottom-right spot. Anchored from the top (not the bottom) so the
+        // fixed-height card always stays fully on screen.
+        const cardHeight = 448; // header (48) + fixed 400px body (see .body in unstuck-card.css)
+        x = window.innerWidth - 460;
+        y = 80;
+        // Clamp so a short window can't push the card off the bottom.
+        const maxY = window.innerHeight - menuBarHeight - cardHeight - 16;
+        if (y > maxY) y = Math.max(8, maxY);
     }
 
     return (
