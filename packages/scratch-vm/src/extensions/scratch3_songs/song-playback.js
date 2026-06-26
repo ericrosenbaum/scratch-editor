@@ -41,6 +41,13 @@ class SongPlayback {
         this._tempoOverride = null;
         this._rootPitchOverride = null;
         this._scaleTypeOverride = null;
+        // Editor library preview: when previewing a not-yet-added track/section
+        // we temporarily swap runtime.song to a detached preview song WITHOUT
+        // emitting project/SONGS events, then restore it on stop/end. This lets
+        // the existing scheduler (which reads runtime.song) render the preview
+        // without dirtying the project or the editor's song state.
+        this._previewing = false;
+        this._previewRestoreSong = null;
         this._ensureMusicLoaded();
         runtime.on('PROJECT_STOP_ALL', () => this.stop());
     }
@@ -118,6 +125,7 @@ class SongPlayback {
             onEnd: () => {
                 const endedSong = this.runtime.song;
                 this._scheduler = null;
+                this._endPreview();
                 this._fire('end', endedSong);
             }
         });
@@ -183,6 +191,48 @@ class SongPlayback {
     }
 
     /**
+     * Play a detached song (not runtime.song) for editor library preview. The
+     * supplied song is swapped into runtime.song WITHOUT emitting project /
+     * SONGS_CHANGED events, every track activated, and the original song
+     * restored when playback stops or ends. Mirrors playAll()'s teardown so it
+     * composes with any in-flight transport (editor preview or blocks).
+     * @param {object} song - a fully-formed, playable song (see sanitizeSong).
+     * @param {object} [opts] - {startStep?: number}
+     */
+    previewSong (song, opts) {
+        if (!song) return;
+        // Tear down the current transport first (synchronously fires onEnd,
+        // which restores any prior preview song and nulls the scheduler).
+        if (this._scheduler) {
+            this._scheduler.stop();
+        }
+        // Capture the real song to restore later (only the first time — chained
+        // previews must not capture a preview song as the restore target).
+        if (!this._previewing) {
+            this._previewRestoreSong = this.runtime.song;
+        }
+        this._previewing = true;
+        this.runtime.song = song;
+        const sched = this._ensureScheduler();
+        if (!sched) {
+            this._endPreview();
+            return;
+        }
+        sched.start({
+            startStep: (opts && opts.startStep) || 0,
+            activeTracks: (song.tracks || []).map(t => t.trackId)
+        });
+    }
+
+    /** Restore the real song after a library preview. Idempotent. */
+    _endPreview () {
+        if (!this._previewing) return;
+        this._previewing = false;
+        this.runtime.song = this._previewRestoreSong || null;
+        this._previewRestoreSong = null;
+    }
+
+    /**
      * Begin a linear fade on a track. Direction 'in' activates and ramps up
      * from silence; direction 'out' ramps down and deactivates on completion.
      * @param {string} trackId
@@ -210,6 +260,7 @@ class SongPlayback {
         this._tempoOverride = null;
         this._rootPitchOverride = null;
         this._scaleTypeOverride = null;
+        this._endPreview();
         this._fire('stop');
     }
 

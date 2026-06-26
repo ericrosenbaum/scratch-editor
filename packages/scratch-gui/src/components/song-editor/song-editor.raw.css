@@ -1176,6 +1176,43 @@
     white-space: nowrap;
 }
 
+/* Library buttons mirror the AI buttons' geometry but use the editor's blue
+   accent (not the purple AI gradient) so "browse ready-made" reads as the
+   non-AI alternative. */
+.library-song {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    background: linear-gradient(135deg, #4C97FF 0%, #3373CC 100%);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(51, 115, 204, 0.3);
+    flex-shrink: 0;
+}
+
+.library-song:hover {
+    background: linear-gradient(135deg, #3373CC 0%, #2860AD 100%);
+}
+
+/* The "Add from Library" track button is a filled blue (vs the dashed
+   per-kind add buttons) so it stands out as the browse-everything entry. */
+.add-track-library {
+    border-style: solid;
+    background: #4C97FF;
+    color: #fff;
+}
+
+.add-track-library:hover {
+    background: #3373CC;
+}
+
 /* Piano-roll wrapper stacks two SVGs in the same grid cell: the cells SVG
    underneath (scrolls with horizontal scroll) and a labels SVG on top that
    stays pinned to the left edge via position:sticky. */

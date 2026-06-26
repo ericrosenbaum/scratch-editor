@@ -9,8 +9,10 @@ import AiEditTrackModal from './ai-edit-track-modal.jsx';
 import AiGenerateTrackModal from './ai-generate-track-modal.jsx';
 import AiSongModal from './ai-song-modal.jsx';
 import KeyboardEntryModal from './keyboard-entry-modal.jsx';
+import SongLibrary from '../../containers/song-library.jsx';
 import SongPlayer from '../../lib/song-player.js';
 import {createBlankTrack, displayNameForTrack, unusedTrackName} from '../../lib/song-defaults.js';
+import {reconcileTrackForSong, songFromLibraryItem} from '../../lib/song-library/import.js';
 import {editTrackWithPrompt, generateSongFromPrompt, generateTrackWithPrompt, SongAiError} from '../../lib/song-ai.js';
 import {
     SCALE_LABELS,
@@ -70,7 +72,11 @@ class SongEditor extends React.Component {
             aiSongBusy: false,
             aiSongError: null,
             // Keyboard-entry modal: index of the track being edited, or null.
-            keyEntryTrackIdx: null
+            keyEntryTrackIdx: null,
+            // Song library browser: null (closed), 'track' (add a track), or
+            // 'song' (start from a section). Each opens the shared library
+            // container filtered to that item type.
+            songLibraryMode: null
         };
         // Undo/redo history stack of song snapshots. The current song is held
         // in props (owned by the parent), so we record snapshots *before* each
@@ -114,6 +120,11 @@ class SongEditor extends React.Component {
         this.handleOpenAiSong = this.handleOpenAiSong.bind(this);
         this.handleCloseAiSong = this.handleCloseAiSong.bind(this);
         this.handleApplyAiSong = this.handleApplyAiSong.bind(this);
+        this.handleOpenTrackLibrary = this.handleOpenTrackLibrary.bind(this);
+        this.handleOpenSectionLibrary = this.handleOpenSectionLibrary.bind(this);
+        this.handleCloseSongLibrary = this.handleCloseSongLibrary.bind(this);
+        this.handleAddLibraryTrack = this.handleAddLibraryTrack.bind(this);
+        this.handleReplaceWithLibrarySong = this.handleReplaceWithLibrarySong.bind(this);
         this.handleUndo = this.handleUndo.bind(this);
         this.handleRedo = this.handleRedo.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -736,6 +747,74 @@ class SongEditor extends React.Component {
         }
     }
 
+    // Stop editor playback before opening a library so the shared transport is
+    // free for hover previews (and the editor playhead doesn't keep running
+    // behind the full-screen modal).
+    handleOpenTrackLibrary () {
+        this.player.stop();
+        this.setState({songLibraryMode: 'track', playing: false, playStep: -1});
+    }
+
+    handleOpenSectionLibrary () {
+        this.player.stop();
+        this.setState({songLibraryMode: 'song', playing: false, playStep: -1});
+    }
+
+    handleCloseSongLibrary () {
+        // Defensive: the container also stops preview on unmount/select.
+        this.props.vm.stopSongPreview();
+        this.setState({songLibraryMode: null});
+    }
+
+    // Layer a single library track onto the current song, reconciled to its
+    // key/scale/length. Mirrors handleApplyAiGenerate (naming, activate,
+    // editing focus) so it flows through undo/redo via _commit.
+    handleAddLibraryTrack (item) {
+        const current = this.props.song;
+        const track = reconcileTrackForSong(item, current);
+        const existing = (current && current.tracks) || [];
+        const named = {
+            ...track,
+            name: unusedTrackName(displayNameForTrack(track), existing.map(t => displayNameForTrack(t)))
+        };
+        this._commit({tracks: [...existing, named]});
+        if (this.state.playing) {
+            this.player.activateTrack(named.trackId);
+        }
+        this.setState({
+            songLibraryMode: null,
+            editingTrackId: named.trackId,
+            selectedKeys: new Set()
+        });
+    }
+
+    // Start a new arrangement from a library section. Adopts the section's
+    // key/scale/tempo/length (musically correct) but keeps the existing songId
+    // so undo can step back. Mirrors handleApplyAiSong.
+    handleReplaceWithLibrarySong (item) {
+        const generated = songFromLibraryItem(item);
+        this._commit({
+            name: generated.name,
+            tempo: generated.tempo,
+            lengthSteps: generated.lengthSteps,
+            stepsPerBeat: generated.stepsPerBeat || 4,
+            rootPitch: generated.rootPitch,
+            scaleType: generated.scaleType,
+            tracks: generated.tracks
+        });
+        const firstTrack = generated.tracks[0];
+        if (this.state.playing) {
+            for (const t of generated.tracks) {
+                this.player.activateTrack(t.trackId);
+            }
+        }
+        this.setState({
+            songLibraryMode: null,
+            editingTrackId: firstTrack ? firstTrack.trackId : null,
+            selectedKeys: new Set()
+        });
+    }
+
     renderSelectionToolbar () {
         const hasSelection = this.state.selectedKeys.size > 0;
         const hasClipboard = !!(this.state.clipboard && this.state.clipboard.notes && this.state.clipboard.notes.length > 0);
@@ -1043,6 +1122,41 @@ class SongEditor extends React.Component {
                     </div>
                     <button
                         type="button"
+                        className="library-song"
+                        onClick={this.handleOpenSectionLibrary}
+                        title="Start from a ready-made section in the library (replaces current song)"
+                        aria-label="Start from a section in the library"
+                    >
+                        <svg
+                            viewBox="0 0 16 16"
+                            width="13"
+                            height="13"
+                            aria-hidden="true"
+                        ><rect
+                            x="2"
+                            y="2.5"
+                            width="12"
+                            height="2.4"
+                            rx="0.8"
+                            fill="currentColor"
+                        /><rect
+                            x="2"
+                            y="6.8"
+                            width="12"
+                            height="2.4"
+                            rx="0.8"
+                            fill="currentColor"
+                        /><rect
+                            x="2"
+                            y="11.1"
+                            width="12"
+                            height="2.4"
+                            rx="0.8"
+                            fill="currentColor"
+                        /></svg>
+                    </button>
+                    <button
+                        type="button"
                         className="generate-song"
                         onClick={this.handleOpenAiSong}
                         title="Generate a whole song with AI (replaces current song)"
@@ -1202,6 +1316,14 @@ class SongEditor extends React.Component {
                                     /></svg>
                             </button>
                         </div>
+                        <div className="track-row-add-group">
+                            <button
+                                type="button"
+                                className="add-track add-track-library"
+                                onClick={this.handleOpenTrackLibrary}
+                                title="Browse ready-made tracks and add one to your song"
+                            >♪ Add from Library</button>
+                        </div>
                     </div>
                 </div>
                 {aiEditTrack ? (
@@ -1240,6 +1362,15 @@ class SongEditor extends React.Component {
                         player={this.player}
                         onCommit={this.handleCommitKeyboardEntry}
                         onCancel={this.handleCloseKeyboardEntry}
+                    />
+                ) : null}
+                {this.state.songLibraryMode ? (
+                    <SongLibrary
+                        vm={this.props.vm}
+                        itemType={this.state.songLibraryMode}
+                        onAddTrack={this.handleAddLibraryTrack}
+                        onReplaceSong={this.handleReplaceWithLibrarySong}
+                        onRequestClose={this.handleCloseSongLibrary}
                     />
                 ) : null}
             </div>

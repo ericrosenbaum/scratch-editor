@@ -900,6 +900,27 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
+     * Preview a detached song (e.g. a library track/section the user is
+     * browsing but has not added). Plays through the shared transport without
+     * touching the project's song, so the editor state and saved project are
+     * untouched. Restored automatically when previewing stops.
+     * @param {!object} song A fully-formed, playable song.
+     * @param {object} [opts] - {startStep?: number}
+     */
+    previewSong (song, opts) {
+        if (this.runtime.songPlayback && this.runtime.songPlayback.previewSong) {
+            this.runtime.songPlayback.previewSong(song, opts);
+        }
+    }
+
+    /** Stop a song preview started with previewSong (restores the real song). */
+    stopSongPreview () {
+        if (this.runtime.songPlayback && this.runtime.songPlayback.stop) {
+            this.runtime.songPlayback.stop();
+        }
+    }
+
+    /**
      * Get a string representation of the image from storage.
      * @param {int} costumeIndex - the index of the costume to be got.
      * @returns {string} the costume's SVG string if it's SVG,

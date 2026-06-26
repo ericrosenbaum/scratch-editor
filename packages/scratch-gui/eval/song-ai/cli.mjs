@@ -82,6 +82,11 @@ const main = async () => {
         await runEval(flags);
         break;
     }
+    case 'library': {
+        const {buildLibrary} = await import('./commands/build-library.mjs');
+        await buildLibrary(flags);
+        break;
+    }
     case 'run-browser': {
         const {runBrowserEval} = await import('./commands/run-browser.mjs');
         await runBrowserEval(flags);

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>Song Library Tile Icon</title>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g fill="#575E75" fill-rule="nonzero">
+            <rect x="22" y="46" width="8" height="22" rx="2"/>
+            <rect x="34" y="34" width="8" height="34" rx="2"/>
+            <rect x="46" y="40" width="8" height="28" rx="2"/>
+        </g>
+        <path d="M64,30 L64,58.5 C64,62 60.9,64.6 57.4,64.1 C54.1,63.7 51.9,60.7 52.4,57.4 C52.9,54.2 55.9,52 59.2,52.4 C60,52.5 60.7,52.8 61.4,53.2 L61.4,38 L76,35 L76,53.5 C76,57 72.9,59.6 69.4,59.1 C66.1,58.7 63.9,55.7 64.4,52.4 C64.9,49.2 67.9,47 71.2,47.4 C72,47.5 72.7,47.8 73.4,48.2 L73.4,31 L64,33 Z" fill="#575E75" fill-rule="nonzero"/>
+    </g>
+</svg>
