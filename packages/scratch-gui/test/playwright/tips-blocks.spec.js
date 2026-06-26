@@ -59,8 +59,8 @@ const waitForEditor = async page => {
     });
 };
 
-// Open the unstuck panel and navigate directly to a specific tip via Redux,
-// then expand the code section via UI click
+// Open the unstuck panel and navigate directly to a specific tip via Redux.
+// The example code is shown directly, so there's no code section to expand.
 const goToTipWithCode = async (page, tipId) => {
     await page.waitForFunction(() => window.__scratchStore, null, {timeout: 10000});
     await page.evaluate(id => {
@@ -75,14 +75,8 @@ const goToTipWithCode = async (page, tipId) => {
         {timeout: 5000}
     );
 
-    // Click "Try this code" to expand the code section
-    const codeHeader = page.locator(
-        '[class*="code-section-header"], [class*="codeSectionHeader"]'
-    );
-    await expect(codeHeader).toBeVisible({timeout: 5000});
-    await codeHeader.click();
-
-    // Wait for the expansion animation
+    // The example code is shown directly now (no expand step needed); give the
+    // block preview a moment to render.
     await page.waitForTimeout(400);
 };
 

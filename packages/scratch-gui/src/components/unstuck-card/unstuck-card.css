@@ -725,58 +725,11 @@ body .unstuck-container {
     transform: translate(2px, -2px);
 }
 
-/* Try this code — collapsible section */
+/* Example code — block preview + "Add" button */
 .code-section {
     border: 1.5px solid hsla(163, 85%, 40%, 0.35);
     border-radius: 0.75rem;
     overflow: hidden;
-}
-
-.code-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.55rem 0.75rem;
-    background: hsla(163, 85%, 40%, 0.1);
-    cursor: pointer;
-    border: none;
-    width: 100%;
-    font-size: 0.85rem;
-    font-weight: 800;
-    color: $tips-ink-strong;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    transition: background-color 0.15s ease;
-}
-
-.code-section-header:hover {
-    background: hsla(163, 85%, 40%, 0.16);
-}
-
-.code-section-caret {
-    font-size: 0.6rem;
-    transition: transform 0.3s ease-in-out, color 0.15s ease;
-    color: $text-primary-transparent;
-}
-
-.code-section-header:hover .code-section-caret {
-    color: $tips-accent;
-}
-
-.code-section-caret-open {
-    transform: rotate(180deg);
-}
-
-.code-section-body {
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
-}
-
-.code-section-body-collapsed {
-    max-height: 0;
-}
-
-.code-section-body-expanded {
-    max-height: 600px;
 }
 
 .code-section-inner {

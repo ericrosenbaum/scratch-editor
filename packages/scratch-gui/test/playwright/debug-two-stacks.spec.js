@@ -44,11 +44,8 @@ const goToTipWithCode = async (page, tipId) => {
         {timeout: 5000}
     );
 
-    const codeHeader = page.locator(
-        '[class*="code-section-header"], [class*="codeSectionHeader"]'
-    );
-    await expect(codeHeader).toBeVisible({timeout: 5000});
-    await codeHeader.click();
+    // The example code is shown directly now (no expand step needed); give the
+    // block preview a moment to render.
     await page.waitForTimeout(600);
 };
 

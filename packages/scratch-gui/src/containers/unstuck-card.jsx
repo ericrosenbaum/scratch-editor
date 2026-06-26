@@ -15,7 +15,6 @@ import {
     startDrag,
     endDrag,
     openUnstuck,
-    toggleCodeExpanded,
     setBrowseAll,
     setBrowseFilter,
     setPickMode
@@ -566,7 +565,6 @@ class UnstuckCard extends React.Component {
                 activeTip={activeTip}
                 browseAll={this.props.browseAll}
                 browseFilter={this.props.browseFilter}
-                codeExpanded={this.props.codeExpanded}
                 colorMode={this.props.colorMode}
                 expanded={this.props.expanded}
                 locale={this.props.locale}
@@ -606,7 +604,6 @@ class UnstuckCard extends React.Component {
                 onShrinkExpand={this.props.onShrinkExpand}
                 onStartDrag={this.props.onStartDrag}
                 onStarterLinkClick={this.props.onStarterLinkClick}
-                onToggleCode={this.props.onToggleCode}
                 onVoiceClick={this.handleVoiceClick}
                 onSubmit={this.handleSubmit}
             />
@@ -622,7 +619,6 @@ UnstuckCard.propTypes = {
     onActivateDeck: PropTypes.func.isRequired,
     onBrowseAll: PropTypes.func.isRequired,
     onBrowseFilter: PropTypes.func.isRequired,
-    codeExpanded: PropTypes.bool.isRequired,
     colorMode: PropTypes.string,
     dispatch: PropTypes.func.isRequired,
     expanded: PropTypes.bool.isRequired,
@@ -642,7 +638,6 @@ UnstuckCard.propTypes = {
     pickMode: PropTypes.bool.isRequired,
     onStartDrag: PropTypes.func.isRequired,
     onStarterLinkClick: PropTypes.func,
-    onToggleCode: PropTypes.func.isRequired,
     query: PropTypes.string.isRequired,
     searchResults: PropTypes.arrayOf(PropTypes.shape({
         tipId: PropTypes.string.isRequired,
@@ -661,7 +656,6 @@ const mapStateToProps = state => ({
     activeTabIndex: state.scratchGui.editorTab.activeTabIndex,
     browseAll: state.scratchGui.unstuck.browseAll,
     browseFilter: state.scratchGui.unstuck.browseFilter,
-    codeExpanded: state.scratchGui.unstuck.codeExpanded,
     colorMode: state.scratchGui.settings.colorMode,
     expanded: state.scratchGui.unstuck.expanded,
     isRtl: state.locales.isRtl,
@@ -696,10 +690,6 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => Object.assign({}, ownProps, stateProps, dispatchProps, {
-    onToggleCode: () => {
-        if (!stateProps.codeExpanded) tipEvents.codeExpanded(stateProps.activeTipId);
-        dispatchProps.dispatch(toggleCodeExpanded());
-    },
     onBrowseAll: () => {
         tipEvents.browseOpened();
         dispatchProps.dispatch(setBrowseAll(true));

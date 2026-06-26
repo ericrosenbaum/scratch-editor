@@ -217,18 +217,11 @@ test.describe('Tips Library - Block Templates', () => {
         await openUnstuck(page);
         await typeQuery(page, 'how do I make my sprite move');
 
-        // The "Add to my project" button should be visible for tips with blockExample
+        // The "Add to my project" button should be visible for tips with
+        // blockExample — the example code is shown directly, no expand needed.
         const addButton = page.locator(
             '[class*="add-to-project"], [class*="addToProject"]'
         );
-
-        // Verify the button exists (it may need the code section to be expanded)
-        const codeHeader = page.locator(
-            '[class*="code-section-header"], [class*="codeSectionHeader"]'
-        );
-        if (await codeHeader.isVisible({timeout: 3000}).catch(() => false)) {
-            await codeHeader.click();
-        }
 
         await expect(addButton).toBeVisible({timeout: 5000});
 

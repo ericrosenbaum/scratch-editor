@@ -862,7 +862,7 @@ class TipDisplay extends React.Component {
         this.props.onPointerClick(index);
     }
     render () {
-        const {tip, tips, onAddToProject, codeExpanded, colorMode, locale, onToggleCode, vm} = this.props;
+        const {tip, tips, onAddToProject, colorMode, locale, vm} = this.props;
         const pointers = tip.pointers || [];
         const hasPointers = pointers.length > 0;
         const multiplePointers = pointers.length > 1;
@@ -990,43 +990,20 @@ class TipDisplay extends React.Component {
 
                 {hasBlocks ? (
                     <div className={styles.codeSection}>
-                        <button
-                            className={styles.codeSectionHeader}
-                            onClick={onToggleCode}
-                        >
-                            <span>{'Try this code'}</span>
-                            <span
-                                className={classNames(
-                                    styles.codeSectionCaret,
-                                    {[styles.codeSectionCaretOpen]: codeExpanded}
-                                )}
+                        <div className={styles.codeSectionInner}>
+                            <BlockPreview
+                                blocks={tip._capturedBlocks}
+                                colorMode={colorMode}
+                                locale={locale}
+                                vm={vm}
+                            />
+                            <button
+                                className={styles.addToProjectButton}
+                                onClick={onAddToProject}
                             >
-                                {'\u25BC'}
-                            </span>
-                        </button>
-                        <div
-                            className={classNames(
-                                styles.codeSectionBody,
-                                codeExpanded ?
-                                    styles.codeSectionBodyExpanded :
-                                    styles.codeSectionBodyCollapsed
-                            )}
-                        >
-                            <div className={styles.codeSectionInner}>
-                                <BlockPreview
-                                    blocks={tip._capturedBlocks}
-                                    colorMode={colorMode}
-                                    locale={locale}
-                                    vm={vm}
-                                />
-                                <button
-                                    className={styles.addToProjectButton}
-                                    onClick={onAddToProject}
-                                >
-                                    <span className={styles.addToProjectButtonIcon}>{'+'}</span>
-                                    <span>{'Add'}</span>
-                                </button>
-                            </div>
+                                <span className={styles.addToProjectButtonIcon}>{'+'}</span>
+                                <span>{'Add'}</span>
+                            </button>
                         </div>
                     </div>
                 ) : null}
@@ -1055,14 +1032,12 @@ class TipDisplay extends React.Component {
 }
 
 TipDisplay.propTypes = {
-    codeExpanded: PropTypes.bool.isRequired,
     colorMode: PropTypes.string,
     locale: PropTypes.string,
     onAddToProject: PropTypes.func.isRequired,
     onFollowUp: PropTypes.func.isRequired,
     onPointerClick: PropTypes.func.isRequired,
     onStarterLinkClick: PropTypes.func,
-    onToggleCode: PropTypes.func.isRequired,
     tip: PropTypes.shape({
         id: PropTypes.string,
         text: PropTypes.string.isRequired,
@@ -1087,7 +1062,6 @@ const UnstuckCard = ({
     activeTip,
     browseAll,
     browseFilter,
-    codeExpanded,
     colorMode,
     expanded,
     interimTranscript,
@@ -1117,7 +1091,6 @@ const UnstuckCard = ({
     onStartDrag,
     onStarterLinkClick,
     onSubmit,
-    onToggleCode,
     onTogglePickMode,
     onVoiceClick,
     pickMode,
@@ -1210,7 +1183,6 @@ const UnstuckCard = ({
                                     )
                                 ) : activeTip ? (
                                     <TipDisplay
-                                        codeExpanded={codeExpanded}
                                         colorMode={colorMode}
                                         locale={locale}
                                         tip={activeTip}
@@ -1220,7 +1192,6 @@ const UnstuckCard = ({
                                         onFollowUp={onFollowUp}
                                         onPointerClick={onPointerClick}
                                         onStarterLinkClick={onStarterLinkClick}
-                                        onToggleCode={onToggleCode}
                                     />
                                 ) : searchResults.length > 0 ? (
                                     <SearchResults
@@ -1310,7 +1281,6 @@ UnstuckCard.propTypes = {
     activeTip: PropTypes.object,
     browseAll: PropTypes.bool,
     browseFilter: PropTypes.string,
-    codeExpanded: PropTypes.bool,
     colorMode: PropTypes.string,
     expanded: PropTypes.bool.isRequired,
     interimTranscript: PropTypes.string,
@@ -1340,7 +1310,6 @@ UnstuckCard.propTypes = {
     onStartDrag: PropTypes.func.isRequired,
     onStarterLinkClick: PropTypes.func,
     onSubmit: PropTypes.func.isRequired,
-    onToggleCode: PropTypes.func,
     onTogglePickMode: PropTypes.func,
     onVoiceClick: PropTypes.func,
     pickMode: PropTypes.bool,

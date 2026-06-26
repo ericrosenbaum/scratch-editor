@@ -34,7 +34,6 @@ class TipEditor extends React.Component {
             selectedScriptIndexes: null,
             showCapturePreview: false,
             dirty: false,
-            previewCodeExpanded: true,
             lastSavedAt: null
         };
         this.autosaveTimer = null;
@@ -639,7 +638,7 @@ class TipEditor extends React.Component {
     }
 
     renderPreview () {
-        const {draft, previewCodeExpanded} = this.state;
+        const {draft} = this.state;
         const noop = () => {};
         return (
             <div className={styles.previewPanel}>
@@ -648,15 +647,11 @@ class TipEditor extends React.Component {
                     <div className={unstuckStyles.card}>
                         <div className={unstuckStyles.body}>
                             <TipDisplay
-                                codeExpanded={previewCodeExpanded}
                                 tip={draft}
                                 tips={allTips}
                                 onAddToProject={noop}
                                 onFollowUp={noop}
                                 onPointerClick={noop}
-                                onToggleCode={() => this.setState(s => ({
-                                    previewCodeExpanded: !s.previewCodeExpanded
-                                }))}
                             />
                         </div>
                     </div>
