@@ -20,7 +20,13 @@ import {
     sanitizeSong,
     stripIdsFromSong
 } from './sanitize.js';
-import {anthropicProvider, anthropicOpusProvider, LOCAL_STORAGE_KEY} from './providers/anthropic.js';
+import {
+    anthropicProvider,
+    anthropicOpusProvider,
+    LOCAL_STORAGE_KEY,
+    ACCESS_CODE_KEY,
+    PROXY_URL
+} from './providers/anthropic.js';
 import {geminiNanoProvider} from './providers/gemini-nano.js';
 import {
     gemma4Provider,
@@ -429,6 +435,8 @@ export {
     sanitizeTrack,
     SongAiError,
     LOCAL_STORAGE_KEY,
+    ACCESS_CODE_KEY,
+    PROXY_URL,
     getProvider,
     listProviders,
     listAvailableProviders,

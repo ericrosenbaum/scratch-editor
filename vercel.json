@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": "packages/scratch-gui/build",
+  "functions": {
+    "api/song-ai.mjs": {
+      "maxDuration": 60
+    }
+  }
+}

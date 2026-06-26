@@ -108,7 +108,14 @@ const baseConfig = new ScratchWebpackConfigBuilder(
         // Experimental: AI song generation. Pass via shell env or set
         // localStorage.scratchAnthropicApiKey at runtime. Never use in prod.
         'process.env.ANTHROPIC_API_KEY': process.env.ANTHROPIC_API_KEY ?
-            `"${process.env.ANTHROPIC_API_KEY}"` : null
+            `"${process.env.ANTHROPIC_API_KEY}"` : null,
+        // When set, the Song Maker routes Claude calls through this server-side
+        // proxy (which holds the key + enforces an access code/spend cap) instead
+        // of calling api.anthropic.com directly. Build the shared/workshop bundle
+        // WITH this set and WITHOUT ANTHROPIC_API_KEY so no key ships in the JS.
+        // See api/song-ai.mjs and src/lib/song-ai/providers/anthropic.js.
+        'process.env.SONG_AI_PROXY_URL': process.env.SONG_AI_PROXY_URL ?
+            `"${process.env.SONG_AI_PROXY_URL}"` : null
     }))
     .addPlugin(new CopyWebpackPlugin({
         patterns: [

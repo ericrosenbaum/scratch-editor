@@ -1,16 +1,18 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import {listAvailableProviders} from '../../lib/song-ai.js';
+import {listAvailableProviders, ACCESS_CODE_KEY, PROXY_URL} from '../../lib/song-ai.js';
 
 const STORAGE_KEY = 'scratchSongAiProvider';
 
-// TEMPORARY: lock the Song Maker AI to Claude Haiku and hide the model picker.
-// While this is set, the picker renders nothing and always reports this
-// provider to the parent. Set to null (or delete the guards below) to restore
-// the user-selectable picker.
-// const FORCED_PROVIDER_ID = 'anthropic';
-const FORCED_PROVIDER_ID = null;
+// Whether this build talks to the server-side proxy (SONG_AI_PROXY_URL was set
+// at build time). The shared/workshop build runs in proxy mode; local dev does
+// not. In proxy mode we (a) require a shared access code and (b) lock the Song
+// Maker to Claude Haiku — the cheapest paid model — hiding the model picker so
+// every call routes through the proxy's access-code + spend-cap. In local dev
+// the normal user-selectable picker is restored.
+const PROXY_MODE = Boolean(PROXY_URL);
+const FORCED_PROVIDER_ID = PROXY_MODE ? 'anthropic' : null;
 
 const getStoredProviderId = () => {
     if (typeof localStorage === 'undefined') return null;
@@ -28,11 +30,42 @@ const storeProviderId = id => {
     } catch (e) { /* ignore */ }
 };
 
+const getStoredAccessCode = () => {
+    if (typeof localStorage === 'undefined') return null;
+    try {
+        return localStorage.getItem(ACCESS_CODE_KEY);
+    } catch (e) {
+        return null;
+    }
+};
+
+const storeAccessCode = code => {
+    if (typeof localStorage === 'undefined') return;
+    try {
+        if (code) {
+            localStorage.setItem(ACCESS_CODE_KEY, code);
+        } else {
+            localStorage.removeItem(ACCESS_CODE_KEY);
+        }
+    } catch (e) { /* ignore */ }
+};
+
 class ProviderPicker extends React.Component {
     constructor (props) {
         super(props);
-        this.state = {available: null};
+        const storedCode = getStoredAccessCode();
+        this.state = {
+            available: null,
+            // Access-code gate (proxy mode only): show the input until a code is
+            // saved, then collapse to a "Change" affordance.
+            codeInput: storedCode || '',
+            hasStoredCode: Boolean(storedCode),
+            editingCode: false
+        };
         this.handleChange = this.handleChange.bind(this);
+        this.handleCodeInput = this.handleCodeInput.bind(this);
+        this.handleSaveCode = this.handleSaveCode.bind(this);
+        this.handleEditCode = this.handleEditCode.bind(this);
     }
 
     componentDidMount () {
@@ -63,7 +96,65 @@ class ProviderPicker extends React.Component {
         if (this.props.onChange) this.props.onChange(id);
     }
 
-    render () {
+    handleCodeInput (e) {
+        this.setState({codeInput: e.target.value});
+    }
+
+    handleSaveCode () {
+        const code = this.state.codeInput.trim();
+        storeAccessCode(code);
+        this.setState({hasStoredCode: Boolean(code), editingCode: false});
+    }
+
+    handleEditCode () {
+        this.setState({editingCode: true});
+    }
+
+    renderAccessCode () {
+        if (!PROXY_MODE) return null;
+        const {busy} = this.props;
+        const {codeInput, hasStoredCode, editingCode} = this.state;
+        if (hasStoredCode && !editingCode) {
+            return (
+                <div className="ai-song-modal-access-code ai-song-modal-access-code-saved">
+                    <span>{'✓ Access code saved'}</span>
+                    <button
+                        className="ai-song-modal-access-code-change"
+                        disabled={busy}
+                        type="button"
+                        onClick={this.handleEditCode}
+                    >{'Change'}</button>
+                </div>
+            );
+        }
+        return (
+            <div className="ai-song-modal-access-code">
+                <label
+                    className="ai-song-modal-access-code-label"
+                    htmlFor="aiSongAccessCode"
+                >{'Enter the workshop access code you were given:'}</label>
+                <div className="ai-song-modal-access-code-row">
+                    <input
+                        className="ai-song-modal-access-code-input"
+                        disabled={busy}
+                        id="aiSongAccessCode"
+                        placeholder={'Access code'}
+                        type="password"
+                        value={codeInput}
+                        onChange={this.handleCodeInput}
+                    />
+                    <button
+                        className="ai-song-modal-access-code-save"
+                        disabled={busy || !codeInput.trim()}
+                        type="button"
+                        onClick={this.handleSaveCode}
+                    >{'Save'}</button>
+                </div>
+            </div>
+        );
+    }
+
+    renderPicker () {
         // Hidden while locked to a single provider.
         if (FORCED_PROVIDER_ID) return null;
         const {available} = this.state;
@@ -93,6 +184,18 @@ class ProviderPicker extends React.Component {
                     ))}
                 </select>
             </div>
+        );
+    }
+
+    render () {
+        const accessCode = this.renderAccessCode();
+        const picker = this.renderPicker();
+        if (!accessCode && !picker) return null;
+        return (
+            <React.Fragment>
+                {accessCode}
+                {picker}
+            </React.Fragment>
         );
     }
 }
