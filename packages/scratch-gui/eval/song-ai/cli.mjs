@@ -92,6 +92,11 @@ const main = async () => {
         await runBrowserEval(flags);
         break;
     }
+    case 'measure-loudness': {
+        const {measureLoudnessCmd} = await import('./commands/measure-loudness.mjs');
+        await measureLoudnessCmd(flags);
+        break;
+    }
     case 'help':
     case undefined:
         process.stdout.write(
@@ -104,6 +109,10 @@ const main = async () => {
             '      [--smoke]                 warm up + print one raw generated song\n' +
             '      [--baseline] [--judge] [--samples N] [--only <id>] [--category <id>]\n' +
             '      [--resume <runId>] [--cdp <url>] [--page <url>] [--verbose]\n' +
+            '      prereq: launch Chrome with --remote-debugging-port=9222 and run `npm start`\n' +
+            '  measure-loudness            measure LUFS + peak of every instrument/preset via real Chrome (CDP)\n' +
+            '      [--target -16] [--only <substr>] [--family <kind>] [--baseline]\n' +
+            '      [--cdp <url>] [--page <url>] [--verbose] [--selftest]\n' +
             '      prereq: launch Chrome with --remote-debugging-port=9222 and run `npm start`\n'
         );
         break;

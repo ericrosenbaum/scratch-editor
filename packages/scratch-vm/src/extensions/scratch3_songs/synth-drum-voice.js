@@ -13,6 +13,8 @@
 //   pitchDecay/bodyDecay/noiseDecay seconds   bodyLevel/noiseLevel 0..1
 //   noiseColor 0..1 -> 200..12000 Hz bandpass center   drive 0..1
 
+const {velocityToGain} = require('./instrument-gain');
+
 const clamp01 = x => Math.max(0, Math.min(1, Number(x) || 0));
 
 // One second of mono white noise, cached on the AudioContext and reused by
@@ -49,15 +51,17 @@ const makeDriveCurve = amount => {
  * @param {number} when - ctx time to start
  * @param {number} velocity - MIDI 1..127
  * @param {AudioNode} destination - node to connect the voice output to
+ * @param {number} [trim] - per-preset loudness trim (linear, default 1) from
+ *   instrument-gain.js, equalizing this preset against the other families.
  * @returns {object} voice wrapper: {_scheduledStart, _trackId, onEnded,
  *   stop(t), disconnect()} — same surface SongScheduler._activeSources uses.
  */
-const buildPercussionVoice = (ctx, params, when, velocity, destination) => {
+const buildPercussionVoice = (ctx, params, when, velocity, destination, trim = 1) => {
     const p = params || {};
-    const vNorm = Math.max(0, Math.min(1, (typeof velocity === 'number' ? velocity : 80) / 127));
-    // Cubed velocity curve to match the sampled-drum / synth voices, with the
-    // same 0.7 peak headroom (body + noise can both approach 1 before this).
-    const velGain = Math.max(0.002, vNorm * vNorm * vNorm);
+    // Shared velocity curve (matches sampled-drum / synth voices), with the same
+    // 0.7 peak headroom (body + noise can both approach 1 before this) and the
+    // per-preset loudness trim folded in.
+    const velGain = velocityToGain(velocity) * (typeof trim === 'number' ? trim : 1);
 
     const baseFreq = 30 * Math.pow(50, clamp01(p.tune));
     const startFreq = Math.min(18000, baseFreq * Math.pow(2, clamp01(p.pitchEnv) * 3));

@@ -49,11 +49,13 @@ const SYNTH_PRESETS = [
     {name: 'Detuned Saw Lead',
         osc1Wave: 'sawtooth', osc2Wave: 'sawtooth', osc2Detune: 12, oscMix: 0.5,
         filterCutoff: 0.70, filterResonance: 0.25, filterEnvAmount: 0.40,
-        ampAttack: 0.01, ampDecay: 0.20, ampSustain: 0.70, ampRelease: 0.25,
-        filterAttack: 0.01, filterDecay: 0.30, filterSustain: 0.60, filterRelease: 0.25,
+        // Crisp attack so fast melodic lines articulate clearly.
+        ampAttack: 0.005, ampDecay: 0.20, ampSustain: 0.70, ampRelease: 0.25,
+        filterAttack: 0.005, filterDecay: 0.30, filterSustain: 0.60, filterRelease: 0.25,
         lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
-        // Light glide makes consecutive lead notes feel connected.
-        glideTime: 0.03},
+        // Glide off by default so melodies read cleanly; it's still a per-track
+        // control for players who want portamento.
+        glideTime: 0.0},
     {name: 'Square Lead',
         osc1Wave: 'square', osc2Wave: 'square', osc2Detune: -5, oscMix: 0.4,
         filterCutoff: 0.75, filterResonance: 0.20, filterEnvAmount: 0.30,
@@ -67,15 +69,17 @@ const SYNTH_PRESETS = [
         ampAttack: 0.005, ampDecay: 0.20, ampSustain: 0.90, ampRelease: 0.10,
         filterAttack: 0.005, filterDecay: 0.15, filterSustain: 0.80, filterRelease: 0.10,
         lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
-        // Classic mono-bass slide between notes.
-        glideTime: 0.08},
+        // Glide off by default so bass lines stay tight and defined; still
+        // available as a per-track control for a classic mono-bass slide.
+        glideTime: 0.0},
     {name: 'Reese Bass',
         osc1Wave: 'sawtooth', osc2Wave: 'sawtooth', osc2Detune: 14, oscMix: 0.5,
         filterCutoff: 0.45, filterResonance: 0.40, filterEnvAmount: 0.50,
         ampAttack: 0.005, ampDecay: 0.20, ampSustain: 0.85, ampRelease: 0.20,
         filterAttack: 0.005, filterDecay: 0.25, filterSustain: 0.70, filterRelease: 0.20,
         lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
-        glideTime: 0.12},
+        // Glide off by default for a tight, defined bass; per-track control remains.
+        glideTime: 0.0},
     {name: 'Acid Bass',
         osc1Wave: 'sawtooth', osc2Wave: 'square', osc2Detune: 0, oscMix: 0.15,
         // High resonance + big filter env sweep is the 303 fingerprint.
@@ -83,7 +87,8 @@ const SYNTH_PRESETS = [
         ampAttack: 0.002, ampDecay: 0.25, ampSustain: 0.40, ampRelease: 0.12,
         filterAttack: 0.002, filterDecay: 0.30, filterSustain: 0.10, filterRelease: 0.18,
         lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
-        glideTime: 0.06},
+        // Glide off by default so acid lines stay articulate; per-track control remains.
+        glideTime: 0.0},
     {name: 'Bell',
         osc1Wave: 'sine', osc2Wave: 'sine', osc2Detune: 24, oscMix: 0.35,
         filterCutoff: 0.85, filterResonance: 0.10, filterEnvAmount: 0.00,

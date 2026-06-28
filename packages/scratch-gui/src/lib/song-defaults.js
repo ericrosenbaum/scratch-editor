@@ -50,7 +50,11 @@ const createBlankTrack = (kind = 'instrument', name) => {
         trackId: newId('track'),
         kind,
         instrument: kind === 'instrument' ? 1 : undefined,
-        volume: 80,
+        // New tracks sit at the top of the dB-taper fader (unity, 0 dB), like a
+        // DAW channel. Each instrument is loudness-calibrated at this position
+        // (see scratch-vm instrument-gain.js), so a fresh multi-track song is
+        // balanced by default; the fader only pulls down from here.
+        volume: 100,
         muted: false,
         solo: false,
         notes: [],

@@ -14,6 +14,7 @@ export const PATHS = {
     baselines: path.join(HERE, 'baselines'),
     baselineFile: path.join(HERE, 'baselines', 'magenta.baseline.json'),
     gemma4BaselineFile: path.join(HERE, 'baselines', 'gemma4.baseline.json'),
+    loudnessBaselineFile: path.join(HERE, 'baselines', 'loudness.baseline.json'),
     weights: path.join(HERE, 'scoring', 'weights.json'),
     results: path.join(HERE, 'results'),
     checkpoints: path.join(HERE, 'checkpoints')

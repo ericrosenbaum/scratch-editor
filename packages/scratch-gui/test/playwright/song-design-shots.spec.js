@@ -275,7 +275,9 @@ test('Velocity actually changes rendered audio amplitude', async ({page}) => {
             const noteDuration = (n.durationSteps || 1) * secondsPerStep;
             const trackVol = 80 / 100;
             const vNorm = Math.max(0, Math.min(1, n.velocity / 127));
-            const vGain = Math.max(0.002, vNorm * vNorm * vNorm);
+            // Square-law velocity curve with a 0.06 floor — mirrors
+            // velocityToGain in scratch-vm .../instrument-gain.js.
+            const vGain = Math.max(0.06, vNorm * vNorm);
             const finalGain = trackVol * vGain;
 
             const src = oac.createBufferSource();
@@ -316,9 +318,9 @@ test('Velocity actually changes rendered audio amplitude', async ({page}) => {
     });
 
     expect(result.error).toBeUndefined();
-    // With cubed velocity, vel=127 → 1.0, vel=1 → (1/127)^3 ≈ 4.9e-7 → clamped to 0.002.
-    // Ratio ≈ 0.8 / (0.8 * 0.002) = 500. We allow some slack for the sample envelope.
-    expect(result.ratio).toBeGreaterThan(50);
+    // With square-law velocity + 0.06 floor, vel=127 → 1.0, vel=1 → 0.06.
+    // Ratio ≈ 1.0 / 0.06 ≈ 16.7. Allow slack for the sample envelope.
+    expect(result.ratio).toBeGreaterThan(8);
 });
 
 test('Velocity changes produce distinct gain values at note time', async ({page}) => {

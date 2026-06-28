@@ -12,6 +12,10 @@ const {getTrackSynth} = require('./synth-defaults');
 const {getDrumVoice} = require('./synth-drum-defaults');
 const {buildPercussionVoice} = require('./synth-drum-voice');
 const {snapToScale, MIN_PITCH, MAX_PITCH} = require('./scale-utils');
+const {
+    velocityToGain, faderToGain,
+    gainForSampleInstrument, gainForSampledDrum, gainForSynthPreset, gainForSynthDrumPreset
+} = require('./instrument-gain');
 
 const ratioForPitchInterval = interval => Math.pow(2, interval / 12);
 
@@ -203,9 +207,11 @@ class SongScheduler {
         const volume = ctx.createGain();
         const cachedVol = this._volumeCache[trackId];
         const track = this._trackById(trackId);
-        const baseVol = typeof cachedVol === 'number' ? cachedVol :
+        // Cache + track.volume hold the linear fader POSITION (0..1); the gain is
+        // the dB-taper mapping of it — see faderToGain.
+        const pos = typeof cachedVol === 'number' ? cachedVol :
             ((typeof (track && track.volume) === 'number' ? track.volume : 80) / 100);
-        volume.gain.value = baseVol;
+        volume.gain.value = faderToGain(pos);
 
         // Distortion sits at the head of the chain so subsequent EQ (filter)
         // and spatial fx (panner / reverb / delay) shape and place the
@@ -322,15 +328,16 @@ class SongScheduler {
     }
 
     /**
-     * Set a track's volume by animating its `volume` gain node. Volume is in
-     * the 0..1 domain (multiply 0..100 sliders by 0.01 before calling). Smooth
-     * via setTargetAtTime so slider drags don't click; tau=0.02 matches the
-     * effect-change smoothing.
+     * Set a track's volume by animating its `volume` gain node. `volume` is the
+     * linear fader POSITION in the 0..1 domain (multiply 0..100 sliders by 0.01
+     * before calling); it's mapped through the dB taper in faderToGain to get the
+     * actual gain. Smooth via setTargetAtTime so slider drags don't click;
+     * tau=0.02 matches the effect-change smoothing.
      *
      * If the chain hasn't been built yet (track hasn't played its first note),
-     * the value is cached and applied when the chain is constructed.
+     * the position is cached and applied when the chain is constructed.
      * @param {string} trackId
-     * @param {number} volume - 0..1
+     * @param {number} volume - fader position 0..1
      */
     setTrackVolume (trackId, volume) {
         const v = Math.max(0, Math.min(1, Number(volume) || 0));
@@ -338,7 +345,8 @@ class SongScheduler {
         const chain = this._trackChains[trackId];
         if (!chain || !chain.volume) return;
         const now = this.audioContext.currentTime;
-        chain.volume.gain.setTargetAtTime(v, now, 0.02);
+        // `v` is the linear fader position; faderToGain applies the dB taper.
+        chain.volume.gain.setTargetAtTime(faderToGain(v), now, 0.02);
     }
 
     _flattenNotes () {
@@ -830,13 +838,14 @@ class SongScheduler {
         source.playbackRate.value = playbackRate;
 
         const volumeGain = ctx.createGain();
-        const velocity = typeof note.velocity === 'number' ? note.velocity : 80;
-        const vNorm = Math.max(0, Math.min(1, velocity / 127));
-        // Cubed velocity curve so 80 vs 110 is plainly audible (the music
-        // samples are already loudness-normalized). Track-level volume lives
-        // on chain.volume — see setTrackVolume — so this gain is per-voice
-        // velocity only.
-        const velocityGain = Math.max(0.002, vNorm * vNorm * vNorm);
+        // Per-voice gain = velocity curve × per-instrument loudness trim. The
+        // velocity curve (velocityToGain) is the shared perceptual law; the trim
+        // (gainForSample*) equalizes perceived loudness across instruments — the
+        // music samples are only peak-normalized, which is not equal-loudness.
+        // Track-level volume lives on chain.volume — see setTrackVolume.
+        const trim = note.kind === 'drum' ?
+            gainForSampledDrum(note.drum) : gainForSampleInstrument(note.instrument);
+        const velocityGain = velocityToGain(note.velocity) * trim;
         volumeGain.gain.setValueAtTime(velocityGain, when);
         volumeGain.gain.value = velocityGain;
 
@@ -958,12 +967,12 @@ class SongScheduler {
         amp.gain.value = 0;
 
         // Velocity → per-voice peak gain. 0.35 headroom keeps two oscs at full
-        // mix from clipping into the per-track chain. Track-level volume is
-        // applied downstream on chain.volume — see setTrackVolume.
-        const velocity = typeof note.velocity === 'number' ? note.velocity : 80;
-        const vNorm = Math.max(0, Math.min(1, velocity / 127));
-        const velocityGain = Math.max(0.002, vNorm * vNorm * vNorm);
-        const peak = velocityGain * 0.35;
+        // mix from clipping into the per-track chain; the per-preset trim
+        // (gainForSynthPreset) equalizes loudness across presets (a saw pad and
+        // a sine sub at the same peak are far apart in LUFS). Track-level volume
+        // is applied downstream on chain.volume — see setTrackVolume.
+        const velocityGain = velocityToGain(note.velocity);
+        const peak = velocityGain * 0.35 * gainForSynthPreset(params.preset);
 
         // Amp ADSR. Clamp times so setValueAtTime / linearRamp pairs always
         // have a strictly increasing time argument.
@@ -1113,7 +1122,8 @@ class SongScheduler {
         const chain = note.trackId ? this._getTrackChain(note.trackId) : null;
         const voice = buildPercussionVoice(
             ctx, params, when, note.velocity,
-            chain ? chain.input : this.destination
+            chain ? chain.input : this.destination,
+            gainForSynthDrumPreset(params.preset)
         );
         voice._trackId = note.trackId;
         this._activeSources.push(voice);

@@ -209,7 +209,8 @@ const buildConfig = baseConfig.clone()
             blocksonly: './src/playground/blocks-only.jsx',
             compatibilitytesting: './src/playground/compatibility-testing.jsx',
             player: './src/playground/player.jsx',
-            songeval: './src/playground/song-eval.jsx'
+            songeval: './src/playground/song-eval.jsx',
+            songloudness: './src/playground/song-loudness.jsx'
         },
         output: {
             path: path.resolve(__dirname, 'build'),
@@ -261,6 +262,13 @@ const buildConfig = baseConfig.clone()
         filename: 'song-eval.html',
         template: 'src/playground/index.ejs',
         title: 'Song-Maker Eval (Gemma 4 on-device)'
+    }))
+    .addPlugin(new HtmlWebpackPlugin({
+        ...commonHtmlWebpackPluginOptions,
+        chunks: ['songloudness'],
+        filename: 'song-loudness.html',
+        template: 'src/playground/index.ejs',
+        title: 'Song-Maker Loudness Measurement'
     }))
     .addPlugin(new CopyWebpackPlugin({
         patterns: [

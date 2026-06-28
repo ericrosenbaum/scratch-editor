@@ -2,6 +2,18 @@ const SongScheduler = require('./scheduler');
 const {getTrackSynth} = require('./synth-defaults');
 const {buildPercussionVoice} = require('./synth-drum-voice');
 const {midiToFreq} = require('./scheduler');
+const {
+    velocityToGain,
+    gainForSampleInstrument, gainForSampledDrum, gainForSynthPreset, gainForSynthDrumPreset
+} = require('./instrument-gain');
+
+// Song master bus: all song tracks (and editor previews) sum here before the
+// shared audio-engine input, so sprite sounds are unaffected. A gentle
+// brick-wall-ish limiter catches peaks when layers stack (the per-track chains
+// otherwise sum straight to the destination and can clip past 0 dBFS); the
+// makeup gain sets overall headroom.
+const MASTER_MAKEUP_GAIN = 1.0; // tune by ear in verification
+const MASTER_LIMITER = {threshold: -3, knee: 0, ratio: 20, attack: 0.003, release: 0.25};
 
 /**
  * Project-wide song playback singleton owned by the runtime. Holds at most
@@ -107,7 +119,7 @@ class SongPlayback {
         this._scheduler = new SongScheduler({
             song,
             audioContext: ctx,
-            destination: this._audioDestination(),
+            destination: this._masterBus(),
             getInstrumentBuffer: (i, n) => this._getInstrumentBuffer(i, n),
             getDrumBuffer: d => this._getDrumBuffer(d),
             tempoOverride: this._tempoOverride === null ? void 0 : this._tempoOverride,
@@ -494,6 +506,47 @@ class SongPlayback {
         return engine && engine.audioContext && engine.audioContext.destination;
     }
 
+    /**
+     * Lazily build (and cache) the song master bus and return its INPUT node:
+     *   makeupGain → limiter → engine input (→ ctx.destination).
+     * The scheduler's track chains and the editor previews all connect here so
+     * the whole song is peak-limited together and can't clip when many tracks
+     * stack. Rebuilt if the audio context is replaced (engine re-created).
+     * Falls back to the raw destination if Web Audio nodes are unavailable.
+     * @returns {AudioNode}
+     */
+    _masterBus () {
+        const ctx = this._audioContext();
+        if (!ctx || typeof ctx.createGain !== 'function') return this._audioDestination();
+        if (this._masterBusCtx === ctx && this._masterBusInput) return this._masterBusInput;
+
+        const input = ctx.createGain();
+        input.gain.value = MASTER_MAKEUP_GAIN;
+        let tail = input;
+        if (typeof ctx.createDynamicsCompressor === 'function') {
+            const limiter = ctx.createDynamicsCompressor();
+            const now = ctx.currentTime;
+            // setValueAtTime where available (AudioParam) so we don't trip on
+            // read-only param assignment in strict engines.
+            const setP = (param, v) => {
+                if (param && typeof param.setValueAtTime === 'function') param.setValueAtTime(v, now);
+                else if (param) param.value = v;
+            };
+            setP(limiter.threshold, MASTER_LIMITER.threshold);
+            setP(limiter.knee, MASTER_LIMITER.knee);
+            setP(limiter.ratio, MASTER_LIMITER.ratio);
+            setP(limiter.attack, MASTER_LIMITER.attack);
+            setP(limiter.release, MASTER_LIMITER.release);
+            input.connect(limiter);
+            tail = limiter;
+            this._masterLimiter = limiter;
+        }
+        tail.connect(this._audioDestination());
+        this._masterBusCtx = ctx;
+        this._masterBusInput = input;
+        return input;
+    }
+
     _music () {
         if (!this.runtime._musicExtension) {
             this._ensureMusicLoaded();
@@ -569,8 +622,11 @@ class SongPlayback {
         source.playbackRate.value = playbackRate;
 
         const volumeGain = ctx.createGain();
-        const vNorm = Math.max(0, Math.min(1, velocity / 127));
-        const velocityGain = Math.max(0.002, vNorm * vNorm * vNorm);
+        // Match scheduled playback: velocity curve × per-instrument loudness trim
+        // (instrument-gain.js) so cell-click previews are at the same level.
+        const previewTrim = kind === 'drum' ?
+            gainForSampledDrum((drum || 1) - 1) : gainForSampleInstrument((instrument || 1) - 1);
+        const velocityGain = velocityToGain(velocity) * previewTrim;
         volumeGain.gain.setValueAtTime(velocityGain, ctx.currentTime);
 
         const releaseGain = ctx.createGain();
@@ -583,7 +639,7 @@ class SongPlayback {
 
         source.connect(volumeGain);
         volumeGain.connect(releaseGain);
-        releaseGain.connect(this._audioDestination());
+        releaseGain.connect(this._masterBus());
 
         try {
             source.start(now);
@@ -605,7 +661,11 @@ class SongPlayback {
     _previewSynthDrumNote ({synthDrum, velocity = 90}) {
         const ctx = this._audioContext();
         if (!ctx) return;
-        buildPercussionVoice(ctx, synthDrum || {}, ctx.currentTime, velocity, this._audioDestination());
+        const sd = synthDrum || {};
+        buildPercussionVoice(
+            ctx, sd, ctx.currentTime, velocity, this._masterBus(),
+            gainForSynthDrumPreset(sd.preset)
+        );
     }
 
     // One-shot synth voice for editor previews — same voice graph as
@@ -641,9 +701,7 @@ class SongPlayback {
         const amp = ctx.createGain();
         amp.gain.value = 0;
 
-        const vNorm = Math.max(0, Math.min(1, velocity / 127));
-        const velocityGain = Math.max(0.002, vNorm * vNorm * vNorm);
-        const peak = velocityGain * 0.35;
+        const peak = velocityToGain(velocity) * 0.35 * gainForSynthPreset(params.preset);
 
         const a = Math.max(0.001, params.ampAttack);
         const d = Math.max(0.001, params.ampDecay);
@@ -673,7 +731,7 @@ class SongPlayback {
         mix1.connect(filter);
         mix2.connect(filter);
         filter.connect(amp);
-        amp.connect(this._audioDestination());
+        amp.connect(this._masterBus());
 
         const stopAt = noteOff + r + 0.02;
 

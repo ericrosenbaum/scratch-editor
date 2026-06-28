@@ -7,6 +7,33 @@
   + expanded vibe parsing), 35 cases, `--samples 2`, with `--judge` scores.
 - `magenta.musicrnn-only.before.json` — pre-Phase-C (MusicRNN-only), same settings.
 - `phase-c-improvement-report.txt` — the full before→after delta report.
+- `loudness.baseline.json` — per-instrument loudness (LUFS) + sample peak of every
+  Song Maker instrument/synth/drum preset, rendered through the real scheduler
+  (`measure-loudness`). The regression anchor for the mix calibration in
+  scratch-vm `instrument-gain.js`.
+
+## Loudness calibration (mix balance)
+
+Every instrument is trimmed toward **−20 LUFS** (EBU R128) at velocity 100 / unity
+fader, so a fresh multi-track song is balanced by default. Trims live in scratch-vm
+`src/extensions/scratch3_songs/instrument-gain.js`. Boosts are clamped to keep the
+full-velocity sample peak below −1 dBFS, so high-crest-factor transients
+(woodblock, clap, closed hat, music box) sit a few LU under target — that is
+correct, not a failure; the song master limiter handles summed peaks.
+
+Reproduce / verify (needs a real Chrome — `OfflineAudioContext` is browser-only):
+
+```sh
+cd packages/scratch-gui && npm start                 # serves /song-loudness.html
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --remote-debugging-port=9222
+node packages/scratch-gui/eval/song-ai/launch.cjs measure-loudness --selftest   # lufs.mjs sanity
+node packages/scratch-gui/eval/song-ai/launch.cjs measure-loudness              # measure → trims
+#   add --baseline to (re)write loudness.baseline.json
+```
+
+A verify run (trims committed) should show most targets at −20 ±1 LU and the rest
+flagged `ok(pk-lim)`. Note: noise-heavy synth-drum presets vary ~0.5 LU run-to-run
+(random noise buffer), so compare with tolerance.
 
 ## Phase C result (before → after, `--samples 2`)
 

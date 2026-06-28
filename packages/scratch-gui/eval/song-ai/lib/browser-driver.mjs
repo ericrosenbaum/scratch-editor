@@ -33,9 +33,15 @@ const withTimeout = (promise, ms, label) => {
     return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 };
 
-// Attach to Chrome and open the eval page. Returns {browser, page, close}.
+// Attach to Chrome and open a hook page. Returns {browser, page, close}.
+// `readyExpr` is the boolean expression page.waitForFunction polls until the
+// page's window hook is installed; `readyName` names it in the error message.
+// Defaults target the Gemma 4 eval (__songEval); the loudness harness passes
+// its own (__songLoudness).
 export const connectBrowserPage = async ({
-    cdpUrl = DEFAULT_CDP_URL, pageUrl = DEFAULT_PAGE_URL, verbose = false
+    cdpUrl = DEFAULT_CDP_URL, pageUrl = DEFAULT_PAGE_URL, verbose = false,
+    readyExpr = 'window.__songEval && typeof window.__songEval.runOperation === "function"',
+    readyName = 'window.__songEval'
 } = {}) => {
     const chromium = await loadChromium();
 
@@ -64,13 +70,12 @@ export const connectBrowserPage = async ({
     }
 
     try {
-        await page.waitForFunction('window.__songEval && typeof window.__songEval.runOperation === "function"',
-            null, {timeout: 30000});
+        await page.waitForFunction(readyExpr, null, {timeout: 30000});
     } catch (e) {
         await browser.close();
         throw new Error(
-            `Page loaded but window.__songEval never appeared (${e.message}).\n` +
-            'Rebuild the dev server so the song-eval entry is served.'
+            `Page loaded but ${readyName} never appeared (${e.message}).\n` +
+            'Rebuild the dev server so the page entry is served.'
         );
     }
 
