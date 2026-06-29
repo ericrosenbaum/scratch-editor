@@ -5,6 +5,9 @@ const StageLayering = require('../../engine/stage-layering');
 // Shared +z axis, used as the normal of the (backdrop-parallel) sprite-drag plane.
 const VEC_Z = new THREE.Vector3(0, 0, 1);
 
+// Degrees -> radians.
+const DEG = Math.PI / 180;
+
 // Monotonic id used to give every effect-patched material a unique program cache key.
 // three.js's default cache key is `onBeforeCompile.toString()`, which is identical for
 // all of our patched materials; without a unique key they would share one compiled
@@ -375,6 +378,11 @@ class PopupScene {
         this._raf = null;
         if (!this.active || !this.inited) return;
 
+        // Re-hide every sprite's flat 2D drawable each frame so the 2D and 3D views are
+        // never shown at once. start() only hides the sprites present when we entered 3D;
+        // doing it per-frame also covers sprites shown via `show`, and clones created,
+        // while already in 3D (both make their 2D drawable visible again).
+        this._hideSprites(true);
         this._ensureBackWall();
         this._syncMeshes();
         this._handlePointer();
@@ -659,27 +667,57 @@ class PopupScene {
         entry.group.position.set(target.x || 0, target.y || 0, -(state.depth || 0));
         entry.group.scale.set(scale, scale, 1);
 
-        // Apply the sprite's direction, honouring its rotation style. "all around"
-        // rotates in the wall plane (about z); "left-right" flips to face the other
-        // way (about y); "don't rotate" stays upright. On top of that, the Pop-Up
-        // tilt (about x) and spin (about y) rotate the card in 3D.
+        // Orient the card from the sprite's direction + rotation style and the Pop-Up
+        // tilt/spin (see _orientation). Shared with forwardVector so "move in 3D" always
+        // travels the way the card actually faces.
+        const o = this._orientation(target, state);
+        entry.group.rotation.set(o.x, o.y, o.z);
+
+        entry.group.visible = target.visible !== false;
+
+        this._applyEffects(entry, target);
+    }
+
+    /**
+     * Compute the card's 3D orientation as Euler angles (radians, in three.js 'XYZ'
+     * order). The sprite's `direction` is honoured per its rotation style: "all around"
+     * rotates in the wall plane (about z); "left-right" flips to face the other way
+     * (about y); "don't rotate" stays upright. On top of that the Pop-Up tilt (about x)
+     * and spin (about y) rotate the card in 3D. This is the single source of truth for
+     * both the rendered mesh (_ensureMesh) and the movement heading (forwardVector).
+     * @param {Target} target - the sprite.
+     * @param {object} state - the sprite's Pop-Up state.
+     * @returns {{x: number, y: number, z: number}} Euler angles in radians.
+     * @private
+     */
+    _orientation (target, state) {
         const dir = Number.isFinite(target.direction) ? target.direction : 90;
         const style = target.rotationStyle;
         let flipY = 0;
         let rotZ = 0;
         if (style === 'left-right') {
-            if (Math.sin(dir * (Math.PI / 180)) < 0) flipY = Math.PI;
+            if (Math.sin(dir * DEG) < 0) flipY = Math.PI;
         } else if (style !== "don't rotate") {
-            rotZ = (90 - dir) * (Math.PI / 180);
+            rotZ = (90 - dir) * DEG;
         }
-        const DEG = Math.PI / 180;
-        const tilt = (state.tilt || 0) * DEG; // about x
-        const spin = (state.spin || 0) * DEG; // about y (adds to the left-right flip)
-        entry.group.rotation.set(tilt, flipY + spin, rotZ);
+        return {
+            x: (state.tilt || 0) * DEG, // about x (tilt)
+            y: flipY + ((state.spin || 0) * DEG), // about y (left-right flip + spin)
+            z: rotZ // about z (direction, "all around")
+        };
+    }
 
-        entry.group.visible = target.visible !== false;
-
-        this._applyEffects(entry, target);
+    /**
+     * The unit vector the card faces in world space, i.e. its front normal (+z when at
+     * rest, toward the camera) rotated by the card's full 3D orientation. `move ... steps
+     * in 3D` travels along this, so movement always matches the rendered facing across
+     * all three rotation axes (direction, tilt and spin). Safe to call headless.
+     * @param {Target} target - the sprite to read orientation from.
+     * @returns {THREE.Vector3} the world-space forward direction (unit length).
+     */
+    forwardVector (target) {
+        const o = this._orientation(target, getPopupState(target));
+        return new THREE.Vector3(0, 0, 1).applyEuler(new THREE.Euler(o.x, o.y, o.z, 'XYZ'));
     }
 
     /**
@@ -978,8 +1016,9 @@ class PopupScene {
 
     /**
      * Drop a persistent, independent copy of a sprite's extruded shape into the
-     * scene at the sprite's current position, depth, size and thickness (the pen
-     * "stamp" model). Stamps don't move with the sprite and survive until cleared.
+     * scene at the sprite's current position, depth, size, thickness and 3D orientation
+     * (the pen "stamp" model). Stamps don't move with the sprite and survive until
+     * cleared.
      * @param {Target} target - the sprite to stamp.
      */
     stampThreeD (target) {
@@ -1004,6 +1043,7 @@ class PopupScene {
         const scale = (Number.isFinite(target.size) ? target.size : 100) / 100;
         const thickness = state.thickness;
         const res = costume.bitmapResolution || 1;
+        const orient = this._orientation(target, state);
 
         this._texLoader.load(uri, tex => {
             if (!this.inited) {
@@ -1030,6 +1070,7 @@ class PopupScene {
             for (const mesh of built.meshes) group.add(mesh);
             group.position.set(px, py, pz);
             group.scale.set(scale, scale, 1);
+            group.rotation.set(orient.x, orient.y, orient.z);
             this._scene.add(group);
 
             this._stamps.push({group, meshes: built.meshes, materials: built.materials, textures: built.textures});

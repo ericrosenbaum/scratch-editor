@@ -5,10 +5,12 @@ const test = require('tap').test;
 const makeTestStorage = require('../fixtures/make-test-storage');
 const VirtualMachine = require('../../src/virtual-machine');
 
-// Build an .sb3 in memory with a single sprite running, on the green flag:
-//   tilt to (30) -> spin to (45) -> move (10) steps in 3D
-// using the built-in 3D Pop-Up extension. The rotation/move blocks are pure state
-// (no renderer needed), so this runs headless.
+// Build an .sb3 in memory with a single sprite that, on the green flag, sets all four
+// 3D Pop-Up properties and then clones itself:
+//   set thickness to (60) -> set depth to (30) -> tilt to (20) -> spin to (40)
+//     -> create clone of (myself)
+// The clone must inherit every 3D property from its parent (mirroring how core
+// properties like size and direction are inherited). Pure state, so this runs headless.
 const md5 = str => crypto.createHash('md5').update(str)
     .digest('hex');
 const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">' +
@@ -68,7 +70,7 @@ const buildProject = () => {
                 blocks: {
                     flag: {
                         opcode: 'event_whenflagclicked',
-                        next: 'tilt',
+                        next: 'thickness',
                         parent: null,
                         inputs: {},
                         fields: {},
@@ -77,31 +79,58 @@ const buildProject = () => {
                         x: 0,
                         y: 0
                     },
+                    thickness: {
+                        opcode: 'popup_setThickness',
+                        next: 'depth',
+                        parent: 'flag',
+                        inputs: {AMOUNT: numInput('60')},
+                        fields: {},
+                        shadow: false,
+                        topLevel: false
+                    },
+                    depth: {
+                        opcode: 'popup_setDepth',
+                        next: 'tilt',
+                        parent: 'thickness',
+                        inputs: {AMOUNT: numInput('30')},
+                        fields: {},
+                        shadow: false,
+                        topLevel: false
+                    },
                     tilt: {
                         opcode: 'popup_setTilt',
                         next: 'spin',
-                        parent: 'flag',
-                        inputs: {ANGLE: numInput('30')},
+                        parent: 'depth',
+                        inputs: {ANGLE: numInput('20')},
                         fields: {},
                         shadow: false,
                         topLevel: false
                     },
                     spin: {
                         opcode: 'popup_setSpin',
-                        next: 'move',
+                        next: 'clone',
                         parent: 'tilt',
-                        inputs: {ANGLE: numInput('45')},
+                        inputs: {ANGLE: numInput('40')},
                         fields: {},
                         shadow: false,
                         topLevel: false
                     },
-                    move: {
-                        opcode: 'popup_move3D',
+                    clone: {
+                        opcode: 'control_create_clone_of',
                         next: null,
                         parent: 'spin',
-                        inputs: {STEPS: numInput('10')},
+                        inputs: {CLONE_OPTION: [1, 'cloneMenu']},
                         fields: {},
                         shadow: false,
+                        topLevel: false
+                    },
+                    cloneMenu: {
+                        opcode: 'control_create_clone_of_menu',
+                        next: null,
+                        parent: 'clone',
+                        inputs: {},
+                        fields: {CLONE_OPTION: ['_myself_', null]},
+                        shadow: true,
                         topLevel: false
                     }
                 }
@@ -109,7 +138,7 @@ const buildProject = () => {
         ],
         monitors: [],
         extensions: ['popup'],
-        meta: {semver: '3.0.0', vm: '0.0.0', agent: 'popup-rotation-test'}
+        meta: {semver: '3.0.0', vm: '0.0.0', agent: 'popup-clone-test'}
     };
     const zip = new JSZip();
     zip.file('project.json', JSON.stringify(project));
@@ -117,40 +146,40 @@ const buildProject = () => {
     return zip.generateAsync({type: 'nodebuffer'});
 };
 
-const near = (a, b) => Math.abs(a - b) < 1e-6;
-
-// `tilt`/`spin` store rotation state; `move ... steps in 3D` advances along the
-// heading built from spin (yaw) + tilt (pitch). Each visual-change block requests a
-// redraw and so yields a frame, so the three blocks run over successive steps.
-test('3D Pop-Up tilt/spin/move3D update rotation state and 3D position', t => {
+// A clone created while its parent has non-default 3D Pop-Up state must inherit all of
+// that state (thickness, depth, tilt, spin), and the inherited state must be a copy so
+// later edits to the clone don't leak back to the parent.
+test('3D Pop-Up clones inherit all 3D properties from their parent', t => {
     buildProject().then(buffer => {
         const vm = new VirtualMachine();
         vm.attachStorage(makeTestStorage());
         return vm.loadProject(buffer).then(() => {
-            const cat = vm.runtime.targets.find(target => !target.isStage);
-            const state = () => cat.getCustomState('Scratch.popup');
+            const original = vm.runtime.targets.find(target => !target.isStage);
 
             vm.runtime.currentStepTime = 1000 / 30;
             vm.runtime.greenFlag();
 
-            // Step enough frames for the (yielding) sequential blocks to all run.
-            for (let i = 0; i < 5; i++) vm.runtime._step();
+            // Step enough frames for the (yielding) set blocks and the clone block to run.
+            for (let i = 0; i < 8; i++) vm.runtime._step();
 
-            t.equal(state().tilt, 30, 'tilt set to 30');
-            t.equal(state().spin, 45, 'spin set to 45');
+            const clone = vm.runtime.targets.find(
+                target => !target.isStage && !target.isOriginal
+            );
+            t.ok(clone, 'a clone was created');
 
-            // Heading: the +z (front) normal rotated by the card's orientation, Euler
-            // 'XYZ' with x=tilt(30deg), y=spin(45deg), z=0 (direction 90 => no roll).
-            // Matches scene.forwardVector / _orientation exactly.
-            const yaw = 45 * Math.PI / 180;
-            const pitch = 30 * Math.PI / 180;
-            const fx = Math.sin(yaw);
-            const fy = -Math.cos(yaw) * Math.sin(pitch);
-            const fz = Math.cos(yaw) * Math.cos(pitch);
+            const parentState = original.getCustomState('Scratch.popup');
+            const cloneState = clone.getCustomState('Scratch.popup');
 
-            t.ok(near(cat.x, 10 * fx), 'x advanced along the heading');
-            t.ok(near(cat.y, 10 * fy), 'y advanced along the heading');
-            t.ok(near(state().depth, -10 * fz), 'depth advanced along the heading');
+            t.ok(cloneState, 'the clone has Pop-Up state');
+            t.equal(cloneState.thickness, 60, 'clone inherited thickness');
+            t.equal(cloneState.depth, 30, 'clone inherited depth');
+            t.equal(cloneState.tilt, 20, 'clone inherited tilt');
+            t.equal(cloneState.spin, 40, 'clone inherited spin');
+
+            // The inherited state must be an independent copy.
+            t.not(cloneState, parentState, 'clone state is a distinct object');
+            cloneState.depth = 999;
+            t.equal(parentState.depth, 30, 'editing the clone does not affect the parent');
 
             t.end();
         });
