@@ -211,6 +211,36 @@ test('c-block runs its wrapped substack the right number of times', async t => {
     t.end();
 });
 
+test('c-block still runs its substack when direct execution is enabled (it stays on the interpreter)', async t => {
+    const {runtime, sequencer, target} = makeHarness();
+    runtime.jsBlocksDirectExecution = true; // direct mode on: C-blocks must ignore it
+    target.blocks.createBlock(commandBlock('cmd', 'jslib_run_repeatN', {
+        n: {name: 'n', block: 'shadowN', shadow: 'shadowN'},
+        SUBSTACK: {name: 'SUBSTACK', block: 'sub', shadow: null}
+    }));
+    target.blocks.createBlock(numberShadow('shadowN', 3, 'cmd'));
+    target.blocks.createBlock({
+        id: 'sub',
+        opcode: 'jslib_run_slideX', // a command — runs DIRECTLY under the flag
+        inputs: {n: {name: 'n', block: 'subShadow', shadow: 'subShadow'}},
+        fields: {},
+        next: null,
+        parent: 'cmd',
+        topLevel: false,
+        shadow: false,
+        x: 0,
+        y: 0
+    });
+    target.blocks.createBlock(numberShadow('subShadow', 1, 'sub'));
+
+    const thread = pushThread(runtime, target, 'cmd');
+    await runThread(sequencer, thread);
+
+    t.equal(target.x, 3, 'C-block branch coordination still works (substack ran 3x) with direct mode on');
+    t.equal(thread.status, Thread.STATUS_DONE, 'thread completed');
+    t.end();
+});
+
 test('heavy reporter finishes on the Promise path; its value flows into a command', async t => {
     const saved = JsBlockRunner.Budget.NORMAL_SLICE;
     JsBlockRunner.Budget.NORMAL_SLICE = 40; // force the reporter onto the async path

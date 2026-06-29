@@ -1,4 +1,5 @@
 const JsBlockRunner = require('./js-block-runner');
+const {makeDirectRunner} = require('./native-js-block-runner');
 
 /**
  * Block types that re-enter the same block across yields (the thread does not
@@ -34,6 +35,14 @@ const makeJsBlockPrimitive = (libBlock, library, runtime) => {
     // than constructing one each time (see JsBlockRunner reuse). Re-entrant blocks keep
     // their single runner in the stack frame, so they don't need (or use) the pool.
     const pool = reentrant ? null : [];
+    // Experimental "direct execution" path: run the compiled body as real JS with
+    // no interpreter (see native-js-block-runner). Eligible for every type EXCEPT
+    // C-blocks, whose Scratch.runBranch() must coordinate with the sequencer (it
+    // parks the interpreter and resumes after the wrapped substack runs). Commands
+    // are "reentrant" only because the interpreter may yield mid-command and resume
+    // next tick; run directly they just finish in one synchronous call.
+    const usesBranch = libBlock.type === 'c-loop' || libBlock.type === 'c-if';
+    const directRunner = usesBranch ? null : makeDirectRunner(libBlock, library, runtime);
     return function jsBlockPrimitive (argValues, util) {
         // A block declared `warp: true` ("run without screen refresh") sets warp on
         // its own stack frame; child branch frames inherit it (Thread#pushStack), so a
@@ -41,6 +50,11 @@ const makeJsBlockPrimitive = (libBlock, library, runtime) => {
         // per iteration. This is what lets a 100+ cell grid render in real time.
         if (warp && util.thread && util.thread.peekStackFrame()) {
             util.thread.peekStackFrame().warpMode = true;
+        }
+        // Flag is read live so the library-manager toggle takes effect immediately,
+        // without re-registering any blocks.
+        if (directRunner && runtime.jsBlocksDirectExecution) {
+            return directRunner.run(util, argValues);
         }
         let runner;
         if (reentrant) {

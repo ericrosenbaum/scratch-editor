@@ -208,6 +208,27 @@ const LibraryManager = props => (
                 </span>
             </Box>
 
+            <Box className={styles.execModeRow}>
+                <label className={styles.execModeToggle}>
+                    <input
+                        type="checkbox"
+                        checked={props.directExecution}
+                        data-testid="js-direct-execution-toggle"
+                        onChange={props.onToggleDirectExecution}
+                    />
+                    {'Run JavaScript directly (no interpreter)'}
+                </label>
+                {props.directExecution ? (
+                    <span className={styles.execModeWarning}>
+                        {'⚠️ experimental — no sandbox, an infinite loop will freeze the page'}
+                    </span>
+                ) : (
+                    <span className={styles.execModeNote}>
+                        {'Blocks run in a sandboxed interpreter. Turn on to compare performance.'}
+                    </span>
+                )}
+            </Box>
+
             <Box className={styles.examplesRow}>
                 <span className={styles.examplesLabel}>{'Add an example library:'}</span>
                 {props.examples.map(example => (
@@ -252,6 +273,7 @@ const LibraryManager = props => (
 );
 
 LibraryManager.propTypes = {
+    directExecution: PropTypes.bool,
     examples: PropTypes.arrayOf(PropTypes.object),
     onAddExample: PropTypes.func,
     projects: PropTypes.arrayOf(PropTypes.object),
@@ -264,7 +286,8 @@ LibraryManager.propTypes = {
     onImport: PropTypes.func,
     onNewBlock: PropTypes.func,
     onNewLibrary: PropTypes.func,
-    onRequestClose: PropTypes.func
+    onRequestClose: PropTypes.func,
+    onToggleDirectExecution: PropTypes.func
 };
 
 export default LibraryManager;

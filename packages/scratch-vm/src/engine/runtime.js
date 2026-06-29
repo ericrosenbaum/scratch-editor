@@ -254,6 +254,15 @@ class Runtime extends EventEmitter {
         this._customLibraries = [];
 
         /**
+         * Experimental: when true, JS-powered blocks run their compiled body as
+         * real JavaScript (no js-interpreter sandbox or instruction budget) for
+         * speed. Off by default; flipped from the library manager to compare
+         * performance. Unsafe — see native-js-block-runner.
+         * @type {boolean}
+         */
+        this.jsBlocksDirectExecution = false;
+
+        /**
          * Per-library encapsulated data stores for JS-powered blocks, keyed by
          * library id. Cleared on green flag / stop; never serialized.
          * @type {Object.<string, object>}

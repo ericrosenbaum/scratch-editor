@@ -37,6 +37,42 @@
     border-bottom: 1px solid $ui-black-transparent;
 }
 
+.exec-mode-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    border: 1px dashed $ui-black-transparent;
+    border-radius: 0.5rem;
+    background: $ui-primary;
+}
+
+.exec-mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: $text-primary;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.exec-mode-toggle input {
+    cursor: pointer;
+}
+
+.exec-mode-note {
+    font-size: 0.75rem;
+    color: $text-primary;
+    opacity: 0.7;
+}
+
+.exec-mode-warning {
+    font-size: 0.75rem;
+    color: $error-light;
+    font-weight: bold;
+}
+
 .examples-label {
     font-size: 0.8rem;
     color: $text-primary;

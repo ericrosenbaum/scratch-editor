@@ -17,14 +17,28 @@ class LibraryManager extends React.Component {
         bindAll(this, [
             'syncFromVm', 'handleNewLibrary', 'handleDeleteLibrary', 'handleNewBlock',
             'handleEditBlock', 'handleDeleteBlock', 'handleExport', 'handleImport',
-            'handleImportFile', 'handleAddExample', 'handleLoadProject', 'handleRequestClose'
+            'handleImportFile', 'handleAddExample', 'handleLoadProject', 'handleRequestClose',
+            'handleToggleDirectExecution'
         ]);
         this.fileInput = null;
         this.examples = exampleLibraryList();
         this.projects = projectList();
+        // Mirror the VM's experimental execution-mode flag in local state; the VM
+        // is the source of truth (it survives this modal unmounting).
+        this.state = {
+            directExecution: typeof this.props.vm.getJsBlocksDirectExecution === 'function' ?
+                this.props.vm.getJsBlocksDirectExecution() : false
+        };
     }
     componentDidMount () {
         this.syncFromVm();
+    }
+    handleToggleDirectExecution (event) {
+        const enabled = event.target.checked;
+        if (typeof this.props.vm.setJsBlocksDirectExecution === 'function') {
+            this.props.vm.setJsBlocksDirectExecution(enabled);
+        }
+        this.setState({directExecution: enabled});
     }
     syncFromVm () {
         this.props.onSetLibraries(this.props.vm.getCustomLibraries().slice());
@@ -129,6 +143,8 @@ class LibraryManager extends React.Component {
         return (
             <React.Fragment>
                 <LibraryManagerComponent
+                    directExecution={this.state.directExecution}
+                    onToggleDirectExecution={this.handleToggleDirectExecution}
                     examples={this.examples}
                     onAddExample={this.handleAddExample}
                     projects={this.projects}
@@ -166,6 +182,8 @@ LibraryManager.propTypes = {
         addCustomLibrary: PropTypes.func,
         deleteCustomLibrary: PropTypes.func,
         getCustomLibraries: PropTypes.func,
+        getJsBlocksDirectExecution: PropTypes.func,
+        setJsBlocksDirectExecution: PropTypes.func,
         refreshWorkspace: PropTypes.func,
         editingTarget: PropTypes.object,
         extensionManager: PropTypes.object

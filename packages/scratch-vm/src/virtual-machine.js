@@ -1375,6 +1375,24 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
+     * Experimental: toggle "direct execution" of JS-powered blocks — running their
+     * compiled body as real JavaScript instead of in the js-interpreter sandbox.
+     * Faster, but unsafe (no sandbox, no infinite-loop guard). Used to measure the
+     * interpreter's overhead.
+     * @param {boolean} enabled - true to run blocks directly.
+     */
+    setJsBlocksDirectExecution (enabled) {
+        this.runtime.jsBlocksDirectExecution = Boolean(enabled);
+    }
+
+    /**
+     * @returns {boolean} whether JS-powered blocks currently run directly (no sandbox).
+     */
+    getJsBlocksDirectExecution () {
+        return Boolean(this.runtime.jsBlocksDirectExecution);
+    }
+
+    /**
      * Emit metadata about available targets.
      * An editor UI could use this to display a list of targets and show
      * the currently editing one.
