@@ -28,7 +28,7 @@ import EditMenu from './edit-menu.jsx';
 import ModeMenu from './mode-menu.jsx';
 import AboutMenu from './about-menu.jsx';
 
-import {openTipsLibrary, openDebugModal} from '../../reducers/modals';
+import {openTipsLibrary, openDebugModal, openPopupExamplesModal} from '../../reducers/modals';
 import {setPlayer} from '../../reducers/mode';
 import {
     isTimeTravel220022BC,
@@ -63,6 +63,7 @@ import profileIcon from './icon--profile.png';
 import remixIcon from './icon--remix.svg';
 import dropdownCaret from './dropdown-caret.svg';
 import debugIcon from '../debug-modal/icons/icon--debug.svg';
+import starterProjectsIcon from './icon--starter-projects.svg';
 
 import scratchLogo from './scratch-logo.svg';
 import scratchLogoAndroid from './scratch-logo-android.svg';
@@ -86,6 +87,11 @@ const ariaMessages = defineMessages({
         id: 'gui.menuBar.debug',
         defaultMessage: 'Debug',
         description: 'accessibility text for the debug button'
+    },
+    popupExamples: {
+        id: 'gui.menuBar.popupExamples',
+        defaultMessage: '3D Pop-Up',
+        description: 'accessibility text for the button that reopens the 3D Pop-Up examples modal'
     },
     home: {
         id: 'gui.menuBar.home',
@@ -458,6 +464,19 @@ class MenuBar extends React.Component {
                     <Divider className={classNames(styles.divider)} />
                     <div className={styles.fileGroup}>
                         <button
+                            aria-label={this.props.intl.formatMessage(ariaMessages.popupExamples)}
+                            className={classNames(styles.menuBarItem, styles.noOffset, styles.hoverable)}
+                            onClick={this.props.onOpenPopupExamples}
+                        >
+                            <img
+                                className={styles.helpIcon}
+                                src={starterProjectsIcon}
+                            />
+                            <span className={styles.collapsibleLabel}>
+                                <FormattedMessage {...ariaMessages.popupExamples} />
+                            </span>
+                        </button>
+                        <button
                             aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
                             className={
                                 classNames(styles.menuBarItem, styles.noOffset, styles.hoverable, 'tutorials-button')
@@ -696,6 +715,7 @@ MenuBar.propTypes = {
     onOpenRegistration: PropTypes.func,
     onOpenTipLibrary: PropTypes.func,
     onOpenDebugModal: PropTypes.func,
+    onOpenPopupExamples: PropTypes.func,
     onProjectTelemetryEvent: PropTypes.func,
     onRequestCloseLogin: PropTypes.func,
     onSeeCommunity: PropTypes.func,
@@ -773,6 +793,7 @@ const mapDispatchToProps = (dispatch, ownProps) => ({
     autoUpdateProject: () => dispatch(autoUpdateProject()),
     onOpenTipLibrary: () => dispatch(openTipsLibrary()),
     onOpenDebugModal: () => dispatch(openDebugModal()),
+    onOpenPopupExamples: () => dispatch(openPopupExamplesModal()),
     onClickNew: needSave => dispatch(requestNewProject(needSave)),
     onClickLogin: ownProps.onClickLogin ?? (() => dispatch(openLoginMenu())),
     onClickSave: () => dispatch(manualUpdateProject()),
