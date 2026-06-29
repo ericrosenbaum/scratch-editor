@@ -220,7 +220,7 @@ test('Velocity actually changes rendered audio amplitude', async ({page}) => {
     await page.waitForTimeout(3000);
 
     const result = await page.evaluate(async () => {
-        const vm = window.vm;
+        const vm = (window.__SONG_TEST__ && window.__SONG_TEST__.vm) || window.vm;
         if (!vm) return {error: 'no vm'};
         const em = vm.extensionManager;
         if (em && !em.isExtensionLoaded('music')) {
@@ -417,7 +417,8 @@ test('Drum lane clicks request the correct drum buffer', async ({page}) => {
         // Find the music extension by polling — it's lazily loaded.
         const tryHook = () => {
             try {
-                const vm = window.vm || (window.__SCRATCH_GUI_VM__);
+                const vm = (window.__SONG_TEST__ && window.__SONG_TEST__.vm) ||
+                    window.vm || (window.__SCRATCH_GUI_VM__);
                 const music = vm && vm.runtime && vm.runtime._musicExtension;
                 if (!music || music.__hooked) return false;
                 const orig = music.getDrumPlayer.bind(music);

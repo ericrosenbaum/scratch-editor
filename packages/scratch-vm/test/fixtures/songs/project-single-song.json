@@ -1,0 +1,153 @@
+{
+    "targets": [
+        {
+            "isStage": true,
+            "name": "Stage",
+            "variables": {},
+            "lists": {},
+            "broadcasts": {},
+            "blocks": {},
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "assetId": "cd21514d0531fdffb22204e0ec5ed84a",
+                    "name": "backdrop1",
+                    "md5ext": "cd21514d0531fdffb22204e0ec5ed84a.svg",
+                    "dataFormat": "svg",
+                    "rotationCenterX": 240,
+                    "rotationCenterY": 180
+                }
+            ],
+            "sounds": [],
+            "volume": 100,
+            "layerOrder": 0,
+            "tempo": 60,
+            "videoTransparency": 50,
+            "videoState": "on",
+            "textToSpeechLanguage": null
+        },
+        {
+            "isStage": false,
+            "name": "Sprite1",
+            "variables": {},
+            "lists": {},
+            "broadcasts": {},
+            "blocks": {},
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "assetId": "bcf454acf82e4504149f7ffe07081dbc",
+                    "name": "costume1",
+                    "bitmapResolution": 1,
+                    "md5ext": "bcf454acf82e4504149f7ffe07081dbc.svg",
+                    "dataFormat": "svg",
+                    "rotationCenterX": 48,
+                    "rotationCenterY": 50
+                }
+            ],
+            "sounds": [],
+            "volume": 100,
+            "layerOrder": 1,
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "size": 100,
+            "direction": 90,
+            "draggable": false,
+            "rotationStyle": "all around"
+        }
+    ],
+    "monitors": [],
+    "extensions": [],
+    "song": {
+        "songId": "song-main",
+        "name": "Main Theme",
+        "tempo": 128,
+        "lengthSteps": 16,
+        "stepsPerBeat": 4,
+        "rootPitch": 62,
+        "scaleType": "minor",
+        "tracks": [
+            {
+                "trackId": "track-piano",
+                "kind": "instrument",
+                "instrument": 1,
+                "volume": 80,
+                "muted": false,
+                "solo": false,
+                "effects": {"reverb": 0.4, "delay": 0.1, "filter": 0.9, "pan": -0.3, "distortion": 0},
+                "notes": [
+                    {"step": 0, "durationSteps": 2, "pitch": 62, "velocity": 100},
+                    {"step": 4, "durationSteps": 1, "pitch": 66, "velocity": 70}
+                ]
+            },
+            {
+                "trackId": "track-drums",
+                "kind": "drum",
+                "drum": 1,
+                "drumLanes": [4, 5, 6],
+                "volume": 70,
+                "muted": false,
+                "solo": false,
+                "effects": {"reverb": 0.1, "delay": 0, "filter": 1, "pan": 0, "distortion": 0.2},
+                "notes": [
+                    {"step": 0, "durationSteps": 1, "drum": 4, "velocity": 110},
+                    {"step": 8, "durationSteps": 1, "drum": 5, "velocity": 90}
+                ]
+            },
+            {
+                "trackId": "track-synth",
+                "kind": "synth",
+                "volume": 75,
+                "muted": false,
+                "solo": false,
+                "synth": {
+                    "preset": "Warm Pad",
+                    "osc1Wave": "sawtooth",
+                    "osc2Wave": "sawtooth",
+                    "osc2Detune": 7,
+                    "oscMix": 0.5,
+                    "filterCutoff": 0.45,
+                    "filterResonance": 0.2,
+                    "ampAttack": 0.03,
+                    "ampRelease": 1.2,
+                    "lfoRate": 5,
+                    "lfoDepth": 0.1,
+                    "lfoDest": "filter",
+                    "glideTime": 0.15
+                },
+                "effects": {"reverb": 0.6, "delay": 0.3, "filter": 0.8, "pan": 0.4, "distortion": 0},
+                "notes": [
+                    {"step": 0, "durationSteps": 4, "pitch": 50, "velocity": 80},
+                    {"step": 8, "durationSteps": 4, "pitch": 57, "velocity": 85}
+                ]
+            },
+            {
+                "trackId": "track-synthdrum",
+                "kind": "synthDrum",
+                "drumLanes": [1, 2],
+                "drumVoices": {
+                    "1": {"preset": "Kick", "bodyWave": "sine", "tune": 0.1, "pitchDecay": 0.55},
+                    "2": {"preset": "Snare", "noiseLevel": 0.9}
+                },
+                "volume": 85,
+                "muted": false,
+                "solo": false,
+                "effects": {"reverb": 0.2, "delay": 0, "filter": 1, "pan": 0, "distortion": 0},
+                "notes": [
+                    {"step": 0, "durationSteps": 1, "drum": 1, "velocity": 120},
+                    {"step": 4, "durationSteps": 1, "drum": 2, "velocity": 100},
+                    {"step": 8, "durationSteps": 1, "drum": 1, "velocity": 120},
+                    {"step": 12, "durationSteps": 1, "drum": 2, "velocity": 100}
+                ]
+            }
+        ]
+    },
+    "meta": {
+        "semver": "3.0.0",
+        "vm": "13.7.2",
+        "agent": "test"
+    }
+}

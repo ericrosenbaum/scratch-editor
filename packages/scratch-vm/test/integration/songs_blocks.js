@@ -1,0 +1,305 @@
+/**
+ * Integration tests for every non-AI Songs extension block.
+ *
+ * Each test builds a real VirtualMachine, loads a project, installs a synth +
+ * synthDrum song (no sample buffers needed), gives the runtime a deterministic
+ * mock audio engine, then invokes block primitives exactly as the interpreter
+ * would (the extension methods take an `args` bag). Assertions read the
+ * authoritative SongPlayback state: isPlaying / activeTrackIds / getTempo /
+ * getRootPitch / getTrackVolume / getTrackEffect and the override maps.
+ */
+
+const tap = require('tap');
+const VirtualMachine = require('../../src/index');
+const makeTestStorage = require('../fixtures/make-test-storage');
+const {attachFakeAudio} = require('../fixtures/songs/make-fake-audio');
+const Scratch3SongsBlocks = require('../../src/extensions/scratch3_songs');
+
+const baseProject = JSON.parse(JSON.stringify(
+    require('../fixtures/songs/project-single-song.json')
+));
+
+// A small synth/synthDrum song so playback needs no decoded sample buffers.
+const makeTestSong = () => ({
+    songId: 'song-blocks',
+    name: 'Blocks',
+    tempo: 120,
+    lengthSteps: 8,
+    stepsPerBeat: 4,
+    rootPitch: 60,
+    scaleType: 'chromatic',
+    tracks: [
+        {
+            trackId: 'lead',
+            kind: 'synth',
+            volume: 80,
+            muted: false,
+            synth: {},
+            effects: {},
+            notes: [{step: 0, durationSteps: 2, pitch: 60, velocity: 100}, {step: 4, pitch: 64, velocity: 90}]
+        },
+        {
+            trackId: 'beat',
+            kind: 'synthDrum',
+            volume: 70,
+            muted: false,
+            drumLanes: [1, 2],
+            drumVoices: {},
+            effects: {},
+            notes: [{step: 0, drum: 1, velocity: 110}, {step: 4, drum: 2, velocity: 100}]
+        }
+    ]
+});
+
+// Resolve to {vm, ext, pb, ctx} ready to run blocks.
+const setup = () => {
+    const vm = new VirtualMachine();
+    vm.attachStorage(makeTestStorage());
+    return vm.loadProject(JSON.stringify(baseProject)).then(() => {
+        vm.setSong(makeTestSong());
+        const ctx = attachFakeAudio(vm);
+        const ext = new Scratch3SongsBlocks(vm.runtime);
+        return {vm, ext, pb: vm.runtime.songPlayback, ctx};
+    });
+};
+
+// Stop the transport (clears the real setInterval) so the test process can exit.
+const teardown = pb => {
+    if (pb) pb.stop();
+};
+
+tap.test('playTrack / stopTrack ("now") toggle the active set and transport', t => {
+    setup().then(({ext, pb}) => {
+        t.notOk(pb.isPlaying(), 'idle before any block');
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        t.ok(pb.isPlaying(), 'transport runs after playTrack');
+        t.same(pb.activeTrackIds(), ['lead'], 'lead is active');
+        ext.playTrack({TRACK: 'beat', WHEN: 'now'});
+        t.same(pb.activeTrackIds().sort(), ['beat', 'lead'], 'both tracks active');
+        ext.stopTrack({TRACK: 'lead', WHEN: 'now'});
+        t.same(pb.activeTrackIds(), ['beat'], 'lead removed, beat remains');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('playTrack "all tracks" activates every track at once', t => {
+    setup().then(({ext, pb}) => {
+        ext.playTrack({TRACK: '__all__', WHEN: 'now'});
+        t.same(pb.activeTrackIds().sort(), ['beat', 'lead'], 'all tracks active');
+        ext.stopTrack({TRACK: '__all__', WHEN: 'now'});
+        t.same(pb.activeTrackIds(), [], 'all tracks stopped');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('playTrack "at next loop" defers activation while running', t => {
+    setup().then(({ext, pb}) => {
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        ext.playTrack({TRACK: 'beat', WHEN: 'loop'});
+        t.same(pb.activeTrackIds(), ['lead'], 'beat NOT active immediately on "at next loop"');
+        t.ok(pb._scheduler._pendingTrackChanges.has('beat'), 'beat queued for the next loop boundary');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('setTrackParam volume writes an override; changeTrackParam composes', t => {
+    setup().then(({ext, pb}) => {
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        ext.setTrackParam({TRACK: 'lead', PARAM: 'volume', VALUE: 50});
+        t.equal(pb.getTrackVolume('lead'), 50, 'volume override set to 50');
+        t.equal(pb._volumeOverrides.get('lead'), 50, 'override stored on the playback map');
+        ext.changeTrackParam({TRACK: 'lead', PARAM: 'volume', VALUE: 30});
+        t.equal(pb.getTrackVolume('lead'), 80, 'change composes against current (50 + 30)');
+        ext.changeTrackParam({TRACK: 'lead', PARAM: 'volume', VALUE: 999});
+        t.equal(pb.getTrackVolume('lead'), 100, 'volume clamps at 100');
+        ext.setTrackParam({TRACK: 'lead', PARAM: 'volume', VALUE: -50});
+        t.equal(pb.getTrackVolume('lead'), 0, 'volume clamps at 0');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('setTrackParam handles each effect param with correct ranges', t => {
+    setup().then(({ext, pb}) => {
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        // filter / delay / reverb are 0..100 user-facing → 0..1 engine-native.
+        for (const param of ['filter', 'delay', 'reverb']) {
+            ext.setTrackParam({TRACK: 'lead', PARAM: param, VALUE: 50});
+            t.equal(pb.getTrackEffect('lead', param), 50, `${param} reads back 50 (user range)`);
+            t.equal(pb._effectOverrides.get('lead')[param], 0.5, `${param} stored 0.5 (engine range)`);
+        }
+        // pan is -100..100 user-facing → -1..1 engine-native.
+        ext.setTrackParam({TRACK: 'lead', PARAM: 'pan', VALUE: -100});
+        t.equal(pb.getTrackEffect('lead', 'pan'), -100, 'pan reads back -100');
+        t.equal(pb._effectOverrides.get('lead').pan, -1, 'pan stored -1 (engine range)');
+        // changeTrackParam composes the engine value, read back in user range.
+        ext.changeTrackParam({TRACK: 'lead', PARAM: 'reverb', VALUE: 30});
+        t.equal(pb.getTrackEffect('lead', 'reverb'), 80, 'reverb 50 + 30 = 80');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('setSongTempo / changeTempoBy override and compose, clamped 20..500', t => {
+    setup().then(({ext, pb}) => {
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        t.equal(pb.getTempo(), 120, 'starts at the song tempo');
+        ext.setSongTempo({TEMPO: 140});
+        t.equal(pb.getTempo(), 140, 'setSongTempo overrides to 140');
+        t.equal(pb._scheduler.tempoOverride, 140, 'override pushed to the running scheduler');
+        ext.changeTempoBy({TEMPO: 10});
+        t.equal(pb.getTempo(), 150, 'changeTempoBy composes (140 + 10)');
+        ext.setSongTempo({TEMPO: 9999});
+        t.equal(pb.getTempo(), 500, 'tempo clamps at 500');
+        ext.setSongTempo({TEMPO: 1});
+        t.equal(pb.getTempo(), 20, 'tempo clamps at 20');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('setSongKey / changeKeyBy override and compose, clamped to MIDI 24..107', t => {
+    setup().then(({ext, pb}) => {
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        t.equal(pb.getRootPitch(), 60, 'starts at the song root (C4 = 60)');
+        ext.setSongKey({NOTE: '2', OCTAVE: 4}); // D, octave 4 → MIDI 62
+        t.equal(pb.getRootPitch(), 62, 'setSongKey D4 → MIDI 62');
+        ext.changeKeyBy({SEMITONES: 3});
+        t.equal(pb.getRootPitch(), 65, 'changeKeyBy composes (62 + 3)');
+        ext.changeKeyBy({SEMITONES: 999});
+        t.equal(pb.getRootPitch(), 107, 'key clamps at MIDI 107');
+        ext.changeKeyBy({SEMITONES: -999});
+        t.equal(pb.getRootPitch(), 24, 'key clamps at MIDI 24');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('setSongScale accepts valid scales and falls back to chromatic', t => {
+    setup().then(({ext, pb}) => {
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        for (const scale of ['major', 'minor', 'pentatonicMajor', 'pentatonicMinor', 'chromatic']) {
+            ext.setSongScale({SCALE: scale});
+            t.equal(pb._scaleTypeOverride, scale, `setSongScale ${scale} applies`);
+        }
+        ext.setSongScale({SCALE: 'bogus'});
+        t.equal(pb._scaleTypeOverride, 'chromatic', 'unknown scale falls back to chromatic');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('all block overrides are cleared on PROJECT_STOP_ALL (green-flag stop)', t => {
+    setup().then(({vm, ext, pb}) => {
+        ext.playTrack({TRACK: '__all__', WHEN: 'now'});
+        ext.setTrackParam({TRACK: 'lead', PARAM: 'volume', VALUE: 30});
+        ext.setTrackParam({TRACK: 'lead', PARAM: 'reverb', VALUE: 80});
+        ext.setSongTempo({TEMPO: 200});
+        ext.setSongKey({NOTE: '5', OCTAVE: 3});
+        ext.setSongScale({SCALE: 'minor'});
+        t.ok(pb._volumeOverrides.size > 0 && pb._effectOverrides.size > 0, 'overrides present before stop');
+        vm.runtime.emit('PROJECT_STOP_ALL');
+        t.equal(pb._volumeOverrides.size, 0, 'volume overrides cleared');
+        t.equal(pb._effectOverrides.size, 0, 'effect overrides cleared');
+        t.equal(pb._tempoOverride, null, 'tempo override cleared');
+        t.equal(pb._rootPitchOverride, null, 'root pitch override cleared');
+        t.equal(pb._scaleTypeOverride, null, 'scale override cleared');
+        t.notOk(pb.isPlaying(), 'transport stopped');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('fadeTrack in activates; fadeTrack out keeps it active until the ramp ends', t => {
+    setup().then(({ext, pb}) => {
+        ext.fadeTrack({DIR: 'in', TRACK: 'lead', WHEN: 'now'});
+        t.ok(pb.activeTrackIds().includes('lead'), 'fade in activates the track');
+        ext.fadeTrack({DIR: 'out', TRACK: 'lead', WHEN: 'now'});
+        t.ok(pb.activeTrackIds().includes('lead'), 'still active during fade-out ramp');
+        t.ok(pb._scheduler._pendingDeactivations.has('lead'), 'queued for deactivation at ramp end');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('hat blocks: whenBeat and whenTrackPlaysNote fire as the transport runs', t => {
+    setup().then(({ext, pb, ctx}) => {
+        ext.playTrack({TRACK: '__all__', WHEN: 'now'});
+        // Drive the scheduler clock deterministically (kill the real interval).
+        const sched = pb._scheduler;
+        clearInterval(sched._timer);
+        sched._timer = null;
+        const {fmtTime} = require('../fixtures/songs/make-fake-audio');
+        let beatFired = false;
+        let leadNote = false;
+        let beatNote = false;
+        // Advance across iteration 0 (wrap at 1.0s), consuming the edge-triggered
+        // flags as we go (the interpreter polls hats every frame).
+        for (let tt = 0.075; tt <= 0.9; tt = Math.round((tt + 0.025) * 1000) / 1000) {
+            ctx.$processTo(fmtTime(tt));
+            sched._tick();
+            if (ext.whenBeat()) beatFired = true;
+            if (ext.whenTrackPlaysNote({TRACK: 'lead'})) leadNote = true;
+            if (ext.whenTrackPlaysNote({TRACK: 'beat'})) beatNote = true;
+        }
+        t.ok(beatFired, 'whenBeat fired during the iteration');
+        t.ok(leadNote, 'whenTrackPlaysNote fired for the lead (synth) track');
+        t.ok(beatNote, 'whenTrackPlaysNote fired for the beat (synthDrum) track');
+        t.notOk(ext.whenTrackPlaysNote({TRACK: 'nonexistent'}), 'unknown track never fires');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('getInfo TRACK menus reflect the current song tracks', t => {
+    setup().then(({ext, pb}) => {
+        const info = ext.getInfo();
+        const trackValues = info.menus.TRACK.items.map(i => i.value);
+        t.ok(trackValues.includes('__all__'), 'TRACK menu has the "all tracks" option');
+        t.ok(trackValues.includes('lead') && trackValues.includes('beat'), 'TRACK menu lists both tracks');
+        const noAllValues = info.menus.TRACK_NO_ALL.items.map(i => i.value);
+        t.notOk(noAllValues.includes('__all__'), 'TRACK_NO_ALL excludes the "all tracks" option');
+        t.same(noAllValues.sort(), ['beat', 'lead'], 'TRACK_NO_ALL lists individual tracks only');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});

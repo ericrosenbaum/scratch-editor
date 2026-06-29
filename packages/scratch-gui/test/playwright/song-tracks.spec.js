@@ -3,11 +3,14 @@ const {test, expect} = require('@playwright/test');
 
 const PAGE = 'index.html';
 
+// The Song Maker tab auto-loads the project song (one instrument track open),
+// so opening the tab is all that's needed — there is no "add song" step.
 const addSong = async page => {
     await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
     await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
     await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
+    await expect(page.locator('.song-editor')).toBeVisible();
+    await expect(page.locator('svg.piano-roll').first()).toBeVisible();
 };
 
 test('Compact tracks render mini grid; editing track shows full piano roll', async ({page}) => {
@@ -25,7 +28,8 @@ test('Compact tracks render mini grid; editing track shows full piano roll', asy
     // Click Edit on the first (compact) track — Done on the currently-editing one.
     const tracks = page.locator('.track-row');
     await expect(tracks).toHaveCount(2);
-    await tracks.first().locator('.edit-toggle-btn').click();
+    await tracks.first().locator('.edit-toggle-btn')
+        .click();
     // Now the first is editing, the second is compact.
     await expect(tracks.first().locator('svg.piano-roll')).toHaveCount(1);
     await expect(tracks.nth(1).locator('svg.mini-grid')).toHaveCount(1);
@@ -78,16 +82,19 @@ test('Track reorder: move up/down/top/bottom', async ({page}) => {
     expect(await drumIndex()).toBe(1);
 
     // Move the last track (a piano) to the top → drum is now at index 2.
-    await rows.nth(2).getByLabel('Move track to top').click();
+    await rows.nth(2).getByLabel('Move track to top')
+        .click();
     expect(await drumIndex()).toBe(2);
 
     // Move the first track (Track 3 piano now at index 0) down by one.
-    await rows.nth(0).getByLabel('Move track down').click();
+    await rows.nth(0).getByLabel('Move track down')
+        .click();
     // Order: Track, Track 3, Drum 1 → drum at index 2 still.
     expect(await drumIndex()).toBe(2);
 
     // Move the middle track (Track 3) to the bottom.
-    await rows.nth(1).getByLabel('Move track to bottom').click();
+    await rows.nth(1).getByLabel('Move track to bottom')
+        .click();
     // Order: Track, Drum 1, Track 3 → drum at index 1.
     expect(await drumIndex()).toBe(1);
 
@@ -98,9 +105,10 @@ test('Track reorder: move up/down/top/bottom', async ({page}) => {
 
 test('Song editor stays within the container when steps is large', async ({page}) => {
     await addSong(page);
-    // Set Steps very high
-    await page.locator('.song-editor input[type="number"]').nth(1).fill('128');
-    await page.locator('.song-editor input[type="number"]').nth(1).press('Tab');
+    // Maximize the grid length (Bars maxes out at 8 → 128 steps) to force a wide grid.
+    const bars = page.getByLabel('Bars', {exact: true});
+    await bars.fill('8');
+    await bars.press('Enter');
 
     // The song-editor container should not be wider than the AssetPanel detail area.
     const editorWidth = await page.locator('.song-editor').evaluate(el => el.getBoundingClientRect().width);
@@ -110,8 +118,9 @@ test('Song editor stays within the container when steps is large', async ({page}
     expect(editorWidth).toBeLessThanOrEqual(parentWidth + 1);
 
     // The piano roll SVG can be wider, but its container scrolls horizontally.
-    const gridScroll = await page.locator('.track-row-grid.is-editing').first().evaluate(el =>
-        el.scrollWidth > el.clientWidth);
+    const gridScroll = await page.locator('.track-row-grid.is-editing').first()
+        .evaluate(el =>
+            el.scrollWidth > el.clientWidth);
     expect(gridScroll).toBe(true);
 
     await page.screenshot({path: 'test-results/song-many-steps.png', fullPage: false});
@@ -131,9 +140,13 @@ test('Many tracks: outer container scrolls vertically', async ({page}) => {
 
     // Verify scrolling actually moves the viewport — set top to 0 then to 100
     // and confirm the second value is observed.
-    await scroller.evaluate(el => { el.scrollTop = 0; });
+    await scroller.evaluate(el => {
+        el.scrollTop = 0;
+    });
     const before = await scroller.evaluate(el => el.scrollTop);
-    await scroller.evaluate(el => { el.scrollTop = 100; });
+    await scroller.evaluate(el => {
+        el.scrollTop = 100;
+    });
     const after = await scroller.evaluate(el => el.scrollTop);
     expect(after).toBeGreaterThan(before);
 

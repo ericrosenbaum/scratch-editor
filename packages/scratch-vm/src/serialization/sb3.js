@@ -483,6 +483,12 @@ const serializeSong = function (song) {
     obj.tempo = song.tempo;
     obj.lengthSteps = song.lengthSteps;
     obj.stepsPerBeat = song.stepsPerBeat;
+    // Key/scale metadata: the editor transposes/snaps notes when these change,
+    // but the values themselves still drive the editor's Key/Scale display and
+    // the block override math (delta = effectiveRoot - song.rootPitch), so they
+    // must persist. Only emitted when present so older blank songs stay lean.
+    if (typeof song.rootPitch === 'number') obj.rootPitch = song.rootPitch;
+    if (song.scaleType) obj.scaleType = song.scaleType;
     obj.tracks = (song.tracks || []).map(track => {
         const t = Object.create(null);
         t.trackId = track.trackId;
@@ -516,6 +522,11 @@ const serializeSong = function (song) {
         t.volume = track.volume;
         t.muted = !!track.muted;
         t.solo = !!track.solo;
+        // Per-track effects (reverb / delay / filter / pan / distortion). These
+        // are set by the editor's effect sliders and read by the scheduler's FX
+        // chain; without persisting them every track reverts to dry defaults on
+        // reload. All four track kinds carry an effects bag.
+        if (track.effects) t.effects = Object.assign({}, track.effects);
         t.notes = (track.notes || []).map(note => {
             const n = Object.create(null);
             n.step = note.step;

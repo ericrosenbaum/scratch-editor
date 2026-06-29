@@ -46,11 +46,15 @@
     display: flex;
     align-items: center;
     gap: 14px;
+    /* Wrap groups onto additional rows at narrow widths instead of letting the
+       fixed-width transport / history / toolbar groups overflow and clip (the
+       editor has overflow:hidden). row-gap keeps wrapped rows legible. */
+    flex-wrap: wrap;
+    row-gap: 8px;
     padding: 12px 16px;
     border-bottom: 1px solid #e6e8f0;
     background: #fff;
     flex-shrink: 0;
-    flex-wrap: nowrap;
     min-width: 0;
 }
 
@@ -98,7 +102,6 @@
 }
 
 .transport-btn.stop,
-.transport-btn.loop,
 .transport-btn.history {
     background: #fff;
     color: #575E75;
@@ -108,7 +111,6 @@
 }
 
 .transport-btn.stop:hover:not(:disabled),
-.transport-btn.loop:hover:not(:disabled),
 .transport-btn.history:hover:not(:disabled) {
     background: #f4f6fb;
     color: #2c2c2c;
@@ -118,18 +120,6 @@
 .transport-btn.history:disabled {
     opacity: 0.4;
     cursor: not-allowed;
-}
-
-.transport-btn.loop.is-on {
-    background: #4C97FF;
-    color: #fff;
-    border-color: #4C97FF;
-    box-shadow: 0 1px 3px rgba(76, 151, 255, 0.3);
-}
-
-.transport-btn.loop.is-on:hover:not(:disabled) {
-    background: #3373CC;
-    color: #fff;
 }
 
 .history-group {
@@ -1806,6 +1796,57 @@
 }
 .kbe-pad.held .kbe-pad-char {
     opacity: 0.95;
+}
+
+/* ---------------------------------------------------------------------------
+   Responsive header. The editor header packs a lot of fixed-width controls
+   (transport, undo/redo, song metadata, library/AI buttons, and the selection
+   toolbar). On narrow viewports these used to overflow a non-wrapping row and
+   get clipped by the editor's overflow:hidden — buttons disappeared and the
+   metadata fields crushed into each other. The header now wraps (above); these
+   breakpoints additionally shrink the metadata fields and transport buttons so
+   the controls stay legible and non-overlapping down to phone widths.
+   --------------------------------------------------------------------------- */
+
+/* Medium: tighten spacing so the whole header still fits on one row longer. */
+@media (max-width: 900px) {
+    .song-editor-header {
+        gap: 8px;
+    }
+    .song-meta-field {
+        padding: 3px 6px;
+    }
+    .song-meta-field-numeric input[type="text"] {
+        width: 40px;
+    }
+}
+
+/* Small: let the metadata group wrap internally, shrink the transport buttons,
+   and compact the selection toolbar so nothing overlaps. */
+@media (max-width: 680px) {
+    .song-meta {
+        flex-wrap: wrap;
+        height: auto;
+        row-gap: 2px;
+    }
+    .transport-btn {
+        width: 34px;
+        height: 34px;
+    }
+    .transport-btn.stop,
+    .transport-btn.history {
+        width: 28px;
+        height: 28px;
+    }
+    .selection-toolbar button {
+        padding: 5px 7px;
+    }
+    .selection-toolbar-label {
+        font-size: 11px;
+    }
+    .track-row-controls {
+        flex-basis: 188px;
+    }
 }
 .kbe-buttons {
     justify-content: flex-end;

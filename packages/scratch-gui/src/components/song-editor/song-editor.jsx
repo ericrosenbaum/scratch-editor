@@ -48,7 +48,6 @@ class SongEditor extends React.Component {
         this.state = {
             playStep: -1,
             playing: false,
-            loop: false,
             // The "cursor" / playhead position when not playing. Drives the
             // step at which Play begins and at which Paste lands its first
             // note. Click on a grid cell to move it.
@@ -88,7 +87,6 @@ class SongEditor extends React.Component {
         this.player = new SongPlayer(props.vm);
         this.handlePlay = this.handlePlay.bind(this);
         this.handlePause = this.handlePause.bind(this);
-        this.handleLoopToggle = this.handleLoopToggle.bind(this);
         this.handleTempoChange = this.handleTempoChange.bind(this);
         this.handleLengthChange = this.handleLengthChange.bind(this);
         this.handleBarsChange = this.handleBarsChange.bind(this);
@@ -131,12 +129,24 @@ class SongEditor extends React.Component {
         this.handleSetCursor = this.handleSetCursor.bind(this);
         this.handleResetCursor = this.handleResetCursor.bind(this);
         this.handlePreviewNote = this.handlePreviewNote.bind(this);
+        this._reconcilePlaying = this._reconcilePlaying.bind(this);
     }
 
     componentDidMount () {
         this._unsubStep = this.player.on('step', step => this.setState({playStep: step}));
         this._unsubEnd = this.player.on('end', () => this.setState({playing: false, playStep: -1}));
-        this._unsubStart = this.player.on('start', () => this.setState({playing: true}));
+        // Guard against a stale deferred 'start' (the scheduler fires onStart
+        // via setTimeout, so it can land after a teardown): only flip to playing
+        // if the transport is actually still ours and running.
+        this._unsubStart = this.player.on('start', () => {
+            if (this.player.isPlaying()) this.setState({playing: true});
+        });
+        // Whenever the shared transport stops for ANY reason — a green-flag
+        // stop, a `stop all tracks` block, the scheduler idling out, or our own
+        // stop — reconcile our play state against the authoritative VM state.
+        // This is what un-sticks the play button if the event bookkeeping ever
+        // drifts (the historical "stuck in playing" bug).
+        this._unsubTransportStop = this.player.on('transportstop', this._reconcilePlaying);
         window.addEventListener('keydown', this.handleKeyDown);
     }
 
@@ -145,8 +155,18 @@ class SongEditor extends React.Component {
         if (this._unsubStep) this._unsubStep();
         if (this._unsubEnd) this._unsubEnd();
         if (this._unsubStart) this._unsubStart();
+        if (this._unsubTransportStop) this._unsubTransportStop();
         if (this.player.dispose) this.player.dispose();
         window.removeEventListener('keydown', this.handleKeyDown);
+    }
+
+    // Derive play state from the authoritative VM transport rather than
+    // trusting paired start/end events. Called on every transport-stop signal.
+    _reconcilePlaying () {
+        const playing = this.player.isPlaying();
+        if (playing !== this.state.playing) {
+            this.setState({playing, playStep: playing ? this.state.playStep : -1});
+        }
     }
 
     componentDidUpdate (prevProps) {
@@ -306,28 +326,17 @@ class SongEditor extends React.Component {
         this.player.previewNote(opts);
     }
 
-    handleLoopToggle () {
-        this.setState(state => {
-            const loop = !state.loop;
-            this.player.setLoop(loop);
-            return {loop};
-        });
-    }
-
     handleTempoChange (tempo) {
         const clamped = Math.max(20, Math.min(500, parseInt(tempo, 10) || 120));
         if (clamped === (this.props.song.tempo || 120)) return;
         this._commit({tempo: clamped});
-        // If the user changes BPM during playback, restart the scheduler at
-        // the current step so the new tempo takes effect immediately. The
-        // running scheduler captures `secondsPerStep` from its own song
-        // reference, so a state-only update wouldn't reach it.
+        // If the user changes BPM during playback, push the new tempo to the
+        // RUNNING scheduler live instead of restarting it. Restarting (the old
+        // behavior) tore down and rebuilt the whole transport — an audible gap
+        // on every change. setTempoOverride re-derives secondsPerStep on the
+        // fly with no teardown, so playback stays continuous.
         if (this.state.playing) {
-            const updatedSong = {...this.props.song, tempo: clamped};
-            const resumeStep = this.state.playStep >= 0 ?
-                this.state.playStep :
-                (this.state.cursorStep || 0);
-            this.player.play(updatedSong, {startStep: resumeStep});
+            this.player.setTempoOverride(clamped);
         }
     }
 
@@ -440,15 +449,13 @@ class SongEditor extends React.Component {
         this.updateTrack(trackIdx, {...target, name: unique});
     }
 
-    updateTrack (trackIdx, updatedTrack) {
-        const prev = (this.props.song.tracks || [])[trackIdx];
-        const tracks = (this.props.song.tracks || []).slice();
-        tracks[trackIdx] = updatedTrack;
-        this._commit({tracks});
+    // Cheap, audio-only application of a track edit to the running scheduler:
+    // the editor "wins back" any block override for the changed param, then
+    // animates the audio node directly so the change is heard immediately
+    // (no song-state round-trip, no scheduler re-flatten). Shared by the
+    // committing updateTrack and the drag-time liveUpdateTrack.
+    _applyLiveAudio (prev, updatedTrack) {
         if (!prev || prev.trackId !== updatedTrack.trackId) return;
-        // Editor "wins back" any block override for the param being edited,
-        // then animates the audio node directly so the change is heard during
-        // the slider drag without waiting for the next scheduler tick.
         if (prev.effects !== updatedTrack.effects) {
             const prevFx = prev.effects || {};
             const nextFx = updatedTrack.effects || {};
@@ -462,6 +469,32 @@ class SongEditor extends React.Component {
         if (prev.volume !== updatedTrack.volume) {
             this.player.clearTrackVolumeOverride(updatedTrack.trackId);
             this.player.setTrackVolume(updatedTrack.trackId, updatedTrack.volume);
+        }
+    }
+
+    updateTrack (trackIdx, updatedTrack) {
+        const prev = (this.props.song.tracks || [])[trackIdx];
+        const tracks = (this.props.song.tracks || []).slice();
+        tracks[trackIdx] = updatedTrack;
+        this._commit({tracks});
+        this._applyLiveAudio(prev, updatedTrack);
+    }
+
+    // Live (slider-drag) track update: apply only the cheap audio change to the
+    // running scheduler — NO _commit, so no per-pixel undo push or Redux/render
+    // churn (the cause of slider hitches during playback). The single commit
+    // happens on release via updateTrack. Synth / synthDrum params are re-read
+    // per note from the live song, so also swap the scheduler's song reference;
+    // that's cheap because the note list is unchanged (updateSong skips the
+    // re-flatten).
+    liveUpdateTrack (trackIdx, updatedTrack) {
+        const prev = (this.props.song.tracks || [])[trackIdx];
+        if (!prev || prev.trackId !== updatedTrack.trackId) return;
+        this._applyLiveAudio(prev, updatedTrack);
+        if (this.state.playing) {
+            const tracks = (this.props.song.tracks || []).slice();
+            tracks[trackIdx] = updatedTrack;
+            this.player.updateSong({...this.props.song, tracks});
         }
     }
 
@@ -829,21 +862,21 @@ class SongEditor extends React.Component {
                     disabled={!hasSelection}
                     title="Cut selected notes (⌘X)"
                     aria-label="Cut"
-                >Cut</button>
+                ><span className="selection-toolbar-label">Cut</span></button>
                 <button
                     type="button"
                     onClick={this.handleSelectionCopy}
                     disabled={!hasSelection}
                     title="Copy selected notes (⌘C)"
                     aria-label="Copy"
-                >Copy</button>
+                ><span className="selection-toolbar-label">Copy</span></button>
                 <button
                     type="button"
                     onClick={this.handleSelectionPaste}
                     disabled={!pasteAllowed}
                     title="Paste notes from clipboard (⌘V)"
                     aria-label="Paste"
-                >Paste</button>
+                ><span className="selection-toolbar-label">Paste</span></button>
                 <button
                     type="button"
                     className="selection-delete"
@@ -851,7 +884,7 @@ class SongEditor extends React.Component {
                     disabled={!hasSelection}
                     title="Delete selected notes (Delete or Backspace)"
                     aria-label="Delete selected notes"
-                >Delete</button>
+                ><span className="selection-toolbar-label">Delete</span></button>
             </div>
         );
     }
@@ -859,7 +892,7 @@ class SongEditor extends React.Component {
     render () {
         const {song} = this.props;
         const {
-            playStep, playing, loop, cursorStep, editingTrackId, selectedKeys,
+            playStep, playing, cursorStep, editingTrackId, selectedKeys,
             aiEditTrackIdx, keyEntryTrackIdx
         } = this.state;
         const tracks = song.tracks || [];
@@ -962,47 +995,6 @@ class SongEditor extends React.Component {
                                     height="12"
                                     rx="1"
                                     fill="currentColor"
-                                /></svg>
-                        </button>
-                        <button
-                            type="button"
-                            className={`transport-btn loop ${loop ? 'is-on' : ''}`}
-                            onClick={this.handleLoopToggle}
-                            aria-pressed={loop}
-                            aria-label={loop ? 'Loop on' : 'Loop off'}
-                            title={loop ? 'Loop: on' : 'Loop: off'}
-                        >
-                            <svg
-                                viewBox="0 0 16 16"
-                                width="14"
-                                height="14"
-                                aria-hidden="true"
-                            ><path
-                                d="M4 4.5h6.5a3 3 0 0 1 0 6H9"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                                strokeLinecap="round"
-                            /><path
-                                    d="M11 6.5L13 4.5L11 2.5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.6"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                /><path
-                                d="M12 11.5H5.5a3 3 0 0 1 0-6H7"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                                strokeLinecap="round"
-                            /><path
-                                    d="M5 9.5L3 11.5L5 13.5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1.6"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
                                 /></svg>
                         </button>
                     </div>
@@ -1193,6 +1185,7 @@ class SongEditor extends React.Component {
                             isLast={idx === tracks.length - 1}
                             selectedKeys={editingTrackId === track.trackId ? selectedKeys : new Set()}
                             onUpdate={updated => this.updateTrack(idx, updated)}
+                            onLiveUpdate={updated => this.liveUpdateTrack(idx, updated)}
                             onRename={newName => this.renameTrack(idx, newName)}
                             onDelete={() => this.deleteTrack(idx)}
                             onToggleEdit={() => this.toggleEdit(track.trackId)}

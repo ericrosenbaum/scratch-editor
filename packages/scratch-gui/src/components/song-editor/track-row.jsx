@@ -28,7 +28,13 @@ class TrackRow extends React.Component {
             // controls are open in the editor panel below the grid, or null.
             // Keyed by preset index (stable across lane reorder) so it follows
             // a lane when its sound is swapped.
-            editingVoiceLane: null
+            editingVoiceLane: null,
+            // While a parameter slider (volume / effect / synth) is being
+            // dragged, the in-progress track lives here so the slider renders
+            // smoothly without committing to Redux on every pixel. The commit
+            // (one undo entry) happens once on release — see _liveUpdate /
+            // _commitDraft. null when no drag is in flight.
+            draftTrack: null
         };
         this.handleInstrumentChange = this.handleInstrumentChange.bind(this);
         this.handleDrumChange = this.handleDrumChange.bind(this);
@@ -44,6 +50,7 @@ class TrackRow extends React.Component {
         this.handleSynthWaveChange = this.handleSynthWaveChange.bind(this);
         this.handleSynthParamsToggle = this.handleSynthParamsToggle.bind(this);
         this.handleSynthDrumParamChange = this.handleSynthDrumParamChange.bind(this);
+        this._commitDraft = this._commitDraft.bind(this);
 
         this.handleAddNote = this.handleAddNote.bind(this);
         this.handleRemoveNote = this.handleRemoveNote.bind(this);
@@ -88,6 +95,14 @@ class TrackRow extends React.Component {
         if (this._resizeObs) {
             this._resizeObs.disconnect();
             this._resizeObs = null;
+        }
+        // Flush any in-flight slider drag so its value isn't lost, and drop the
+        // document listeners we may have attached during the drag.
+        if (this._dragging) this._commitDraft();
+        if (this._dragCommitAttached) {
+            window.removeEventListener('pointerup', this._commitDraft, true);
+            window.removeEventListener('keyup', this._commitDraft, true);
+            this._dragCommitAttached = false;
         }
     }
 
@@ -158,6 +173,48 @@ class TrackRow extends React.Component {
 
     _updateTrack (patch) {
         this.props.onUpdate({...this.props.track, ...patch});
+    }
+
+    // The track the controls render from: the in-flight draft while a slider is
+    // being dragged, otherwise the committed prop. Keeps sliders responsive
+    // during a drag without round-tripping every pixel through Redux.
+    _track () {
+        return this.state.draftTrack || this.props.track;
+    }
+
+    // Live (drag) update for parameter sliders: merge the patch into the draft,
+    // push only the CHEAP audio change to the running scheduler (no undo push,
+    // no Redux/song commit, no re-flatten), and arm a one-shot release handler
+    // that commits the final value once. This is the fix for slider drags
+    // hitching playback — the heavy commit now happens once per gesture.
+    _liveUpdate (patch) {
+        const merged = {...this._track(), ...patch};
+        this._draft = merged;
+        this._dragging = true;
+        this.setState({draftTrack: merged});
+        if (this.props.onLiveUpdate) this.props.onLiveUpdate(merged);
+        if (!this._dragCommitAttached) {
+            this._dragCommitAttached = true;
+            window.addEventListener('pointerup', this._commitDraft, true);
+            window.addEventListener('keyup', this._commitDraft, true);
+        }
+    }
+
+    // Commit the in-flight slider draft to the song (one undo entry). Triggered
+    // on pointer/key release. Guarded by the synchronous _dragging flag so the
+    // several release events that may fire (pointerup + keyup) commit only once.
+    _commitDraft () {
+        if (!this._dragging) return;
+        this._dragging = false;
+        if (this._dragCommitAttached) {
+            window.removeEventListener('pointerup', this._commitDraft, true);
+            window.removeEventListener('keyup', this._commitDraft, true);
+            this._dragCommitAttached = false;
+        }
+        const draft = this._draft;
+        this._draft = null;
+        this.setState({draftTrack: null});
+        if (draft) this.props.onUpdate(draft);
     }
 
     handleInstrumentChange (e) {
@@ -265,11 +322,11 @@ class TrackRow extends React.Component {
     // scheduler re-resolves params per hit, so changes are heard on the next
     // note during playback — no preview spam while dragging a slider.
     handleSynthDrumParamChange (presetIdx, key, value) {
-        const track = this.props.track;
+        const track = this._track();
         const current = getDrumVoice(track, presetIdx);
         const voices = {...(track.drumVoices || {})};
         voices[presetIdx] = {...current, [key]: value};
-        this._updateTrack({drumVoices: voices});
+        this._liveUpdate({drumVoices: voices});
     }
 
     renderLanePicker () {
@@ -384,7 +441,7 @@ class TrackRow extends React.Component {
     renderSynthDrumVoicePanel () {
         const presetIdx = this.state.editingVoiceLane;
         if (presetIdx === null || typeof presetIdx === 'undefined') return null;
-        const track = this.props.track;
+        const track = this._track();
         const v = getDrumVoice(track, presetIdx);
         const name = SYNTH_DRUM_PRESET_NAMES[presetIdx - 1] || 'Sound';
         const WAVES = ['sine', 'square', 'sawtooth', 'triangle'];
@@ -457,13 +514,13 @@ class TrackRow extends React.Component {
     }
 
     handleVolumeChange (e) {
-        this._updateTrack({volume: parseInt(e.target.value, 10)});
+        this._liveUpdate({volume: parseInt(e.target.value, 10)});
     }
 
     handleEffectChange (name, value) {
-        const current = getTrackEffects(this.props.track);
+        const current = getTrackEffects(this._track());
         const next = {...current, [name]: value};
-        this._updateTrack({effects: next});
+        this._liveUpdate({effects: next});
     }
 
     handleSynthPresetChange (e) {
@@ -477,8 +534,8 @@ class TrackRow extends React.Component {
     }
 
     handleSynthParamChange (key, value) {
-        const current = getTrackSynth(this.props.track);
-        this._updateTrack({synth: {...current, [key]: value}});
+        const current = getTrackSynth(this._track());
+        this._liveUpdate({synth: {...current, [key]: value}});
     }
 
     handleSynthWaveChange (which, e) {
@@ -835,7 +892,7 @@ class TrackRow extends React.Component {
     }
 
     renderEffects () {
-        const effects = getTrackEffects(this.props.track);
+        const effects = getTrackEffects(this._track());
         // UI-facing integer values; map to/from the audio-side floats on commit.
         const rows = [
             {name: 'reverb', label: 'Reverb', min: 0, max: 100,
@@ -905,8 +962,8 @@ class TrackRow extends React.Component {
     }
 
     renderSynthControls () {
-        const params = getTrackSynth(this.props.track);
-        const presetName = (this.props.track.synth && this.props.track.synth.preset) || DEFAULT_SYNTH.preset;
+        const params = getTrackSynth(this._track());
+        const presetName = (this._track().synth && this._track().synth.preset) || DEFAULT_SYNTH.preset;
         // Exponential mapping for ADSR-time sliders so the 0–100 UI scale has
         // fine control at short values (most musical territory) and still
         // reaches ~3 s (amp/filter A/D/R) or ~4 s (release) at the top end.
@@ -1199,7 +1256,10 @@ class TrackRow extends React.Component {
     }
 
     renderControls () {
-        const {track, isFirst, isLast, onMoveUp, onMoveDown, onMoveTop, onMoveBottom} = this.props;
+        const {isFirst, isLast, onMoveUp, onMoveDown, onMoveTop, onMoveBottom} = this.props;
+        // Render from the draft while a slider drag is in flight so the slider
+        // tracks the pointer without committing every pixel to Redux.
+        const track = this._track();
         const isDrum = track.kind === 'drum';
         const isSynth = track.kind === 'synth';
         const isSynthDrum = track.kind === 'synthDrum';
@@ -1620,6 +1680,8 @@ TrackRow.propTypes = {
     isLast: PropTypes.bool.isRequired,
     selectedKeys: PropTypes.instanceOf(Set),
     onUpdate: PropTypes.func.isRequired,
+    // Optional: cheap live audio update during a slider drag (no song commit).
+    onLiveUpdate: PropTypes.func,
     onDelete: PropTypes.func.isRequired,
     onToggleEdit: PropTypes.func.isRequired,
     onSelectionChange: PropTypes.func.isRequired,

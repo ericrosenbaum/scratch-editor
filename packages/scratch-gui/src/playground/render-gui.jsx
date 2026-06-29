@@ -24,6 +24,16 @@ const handleTelemetryModalOptOut = () => {
     log('User opted out of telemetry');
 };
 
+// Expose the VM to browser-driven tests (Playwright) so they can read and
+// assert runtime/song state. Guarded to non-production builds so the shipped
+// app never attaches this. The dev build that the test harness serves has
+// NODE_ENV !== 'production', so it gets the hook.
+const handleVmInit = vm => {
+    if (process.env.NODE_ENV !== 'production' && typeof window === 'object') {
+        window.__SONG_TEST__ = {vm};
+    }
+};
+
 /*
  * Render the GUI playground. This is a separate function because importing anything
  * that instantiates the VM causes unsupported browsers to crash
@@ -75,6 +85,7 @@ export default appTarget => {
                 onTelemetryModalCancel={handleTelemetryModalCancel}
                 onTelemetryModalOptIn={handleTelemetryModalOptIn}
                 onTelemetryModalOptOut={handleTelemetryModalOptOut}
+                onVmInit={handleVmInit}
             /> :
             <WrappedGui
                 canEditTitle
@@ -83,6 +94,7 @@ export default appTarget => {
                 backpackHost={backpackHost}
                 canSave={false}
                 onClickLogo={onClickLogo}
+                onVmInit={handleVmInit}
             />
     );
 };

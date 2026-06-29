@@ -6,14 +6,17 @@
  * keeps everything playing — there's only one transport in the VM.
  *
  * "Play" here means "preview every track of the current song from the cursor"
- * — `playAll()` on the playback singleton. Loop is implicit (the transport
- * always loops); the prior `setLoop`/`isLoop` API is retained as a no-op
- * shim so the editor's loop toggle continues to compile without churn.
+ * — `playAll()` on the playback singleton. Loop is implicit: the transport
+ * always loops, so there is no loop toggle to expose.
  */
 class SongPlayer {
     constructor (vm) {
         this.vm = vm;
-        this._listeners = {start: [], step: [], end: []};
+        // 'start'/'step'/'end' are editor-scoped (gated by _isMyPlayback).
+        // 'transportstop' fires UNCONDITIONALLY whenever the shared transport
+        // stops (editor, blocks, or a green-flag stop), so the editor can
+        // reconcile its play state even if _isMyPlayback drifted out of sync.
+        this._listeners = {start: [], step: [], end: [], transportstop: []};
         this._unsubs = [];
         this._subscribed = false;
         // Becomes true between play() and the playback's 'end'/'stop' event
@@ -40,20 +43,15 @@ class SongPlayer {
                 this._fire('end');
                 this._isMyPlayback = false;
             }
+            this._fire('transportstop');
         }));
         this._unsubs.push(pb.on('stop', () => {
             if (this._isMyPlayback) {
                 this._fire('end');
                 this._isMyPlayback = false;
             }
+            this._fire('transportstop');
         }));
-    }
-
-    // No-op shims — the new transport is always-looping, so loop state is
-    // not configurable. Kept so call-sites compile during the transition.
-    setLoop () { /* always loops */ }
-    isLoop () {
-        return true;
     }
 
     updateSong (song) {
@@ -73,6 +71,15 @@ class SongPlayer {
     setTrackVolume (trackId, volume) {
         const pb = this._playback();
         if (pb && pb.setTrackVolume) pb.setTrackVolume(trackId, volume);
+    }
+
+    // Live tempo change during playback. Routes through the playback's tempo
+    // override (the same path the `set tempo` block uses), which re-derives
+    // secondsPerStep on the running scheduler WITHOUT tearing it down — so a
+    // BPM change mid-playback doesn't restart the transport (no audible gap).
+    setTempoOverride (bpm) {
+        const pb = this._playback();
+        if (pb && pb.setTempoOverride) pb.setTempoOverride(bpm);
     }
 
     // When the user moves an editor slider for a param that a block has
@@ -107,6 +114,13 @@ class SongPlayer {
     isPlaying () {
         const pb = this._playback();
         return !!(pb && pb.isPlaying() && this._isMyPlayback);
+    }
+
+    // True if the shared transport is running for ANY owner (editor or blocks).
+    // Used by the editor to detect "the transport stopped underneath me".
+    isTransportRunning () {
+        const pb = this._playback();
+        return !!(pb && pb.isPlaying());
     }
 
     on (event, fn) {
@@ -155,7 +169,7 @@ class SongPlayer {
             } catch (e) { /* ignore */ }
         }
         this._unsubs = [];
-        this._listeners = {start: [], step: [], end: []};
+        this._listeners = {start: [], step: [], end: [], transportstop: []};
         this._subscribed = false;
     }
 }
