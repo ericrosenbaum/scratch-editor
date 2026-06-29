@@ -844,9 +844,10 @@ body .unstuck-container {
     text-align: left;
     background: $ui-white;
     border: 1.5px solid $tips-line-soft;
-    /* colored left accent stripe; its color is set inline per result so each
-       card carries its tip's category color */
-    border-left: 4px solid $unstuck-purple;
+    /* colored leading-edge accent stripe; its color is set per result via the
+       --result-accent custom property so each card carries its tip's category
+       color (see RTL section for the right-edge mirror) */
+    border-left: 4px solid var(--result-accent, $unstuck-purple);
     border-radius: 0.75rem;
     padding: 0.625rem 0.75rem;
     cursor: pointer;
@@ -1206,4 +1207,110 @@ body .unstuck-container {
 
 .footer-pill:hover .footer-pill-icon {
     transform: rotate(18deg) scale(1.12);
+}
+
+/* ===== RTL (right-to-left languages) =====
+   The whole editor flips to `direction: rtl` for languages like Arabic and
+   Hebrew (set via dir="rtl" on the page wrapper in gui.jsx, which this card is
+   nested inside). Flex rows, the grids and the space-between header mirror
+   automatically; the rules below flip the few spots that use physical
+   left/right offsets, directional arrows or forced left text-alignment so the
+   window reads as a true mirror image. The default window position is mirrored
+   in unstuck-card.jsx. */
+
+/* Header: the extra breathing room belongs on the title side (now the right). */
+[dir="rtl"] .header {
+    padding: 0 1rem 0 0.5rem;
+}
+
+[dir="rtl"] .fallback-badge {
+    margin-left: 0;
+    margin-right: 0.5rem;
+}
+
+/* Back arrow points the other way; keep it flipped through the hover nudge. */
+[dir="rtl"] .back-arrow {
+    transform: scaleX(-1);
+}
+
+[dir="rtl"] .back-button:hover .back-arrow {
+    transform: scaleX(-1) translateX(-2px);
+}
+
+[dir="rtl"] .context-suggestions-label {
+    padding-left: 0;
+    padding-right: 0.125rem;
+}
+
+[dir="rtl"] .context-suggestion {
+    text-align: right;
+}
+
+/* Category tiles: the colored dot sits on the leading (right) edge. */
+[dir="rtl"] .quick-pick {
+    padding: 0 0.625rem 0 0.5rem;
+    text-align: right;
+}
+
+/* Mic button lives at the input's trailing edge — the left in RTL — so the
+   text padding has to make room on that side instead. */
+[dir="rtl"] .query-input {
+    padding: 0 1rem 0 2.5rem;
+    text-align: right;
+}
+
+[dir="rtl"] .mic-button {
+    right: auto;
+    left: 6px;
+}
+
+/* The pick-mode hint bubble hangs under the block-picker button, which is on
+   the right in RTL — anchor the bubble and its tail to that side. */
+[dir="rtl"] .pick-hint-bubble {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .pick-hint-bubble::after {
+    left: auto;
+    right: 1.25rem;
+}
+
+/* Show-me arrow points toward the reading direction (left in RTL). */
+[dir="rtl"] .show-me-arrow {
+    transform: scaleX(-1);
+}
+
+[dir="rtl"] .show-me-button:hover .show-me-arrow {
+    transform: scaleX(-1) translateX(3px);
+}
+
+/* Result cards: category accent stripe + text align to the leading (right) edge. */
+[dir="rtl"] .result-card {
+    border-left: 1.5px solid $tips-line-soft;
+    border-right: 4px solid var(--result-accent, $unstuck-purple);
+    text-align: right;
+}
+
+[dir="rtl"] .result-card-row {
+    text-align: right;
+}
+
+/* Compact tip list: accent stripe + hover nudge mirror to the right. */
+[dir="rtl"] .compact-tip {
+    border-left: none;
+    border-right: 2px solid $unstuck-purple;
+    text-align: right;
+}
+
+[dir="rtl"] .compact-tip:hover {
+    transform: translateX(-2px);
+}
+
+[dir="rtl"] .compact-tip:active {
+    transform: translateX(-1px) scale(0.98);
+}
+
+[dir="rtl"] .section-label {
+    padding: 0.3rem 0.25rem 0.1rem 0;
 }

@@ -567,6 +567,7 @@ class UnstuckCard extends React.Component {
                 browseFilter={this.props.browseFilter}
                 colorMode={this.props.colorMode}
                 expanded={this.props.expanded}
+                isRtl={this.props.isRtl}
                 locale={this.props.locale}
                 listening={this.state.listening}
                 interimTranscript={this.state.interimTranscript}

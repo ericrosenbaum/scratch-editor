@@ -572,8 +572,10 @@ class SearchResults extends React.Component {
                             data-tip-id={result.tipId}
                             key={result.tipId}
                             style={{
-                                animationDelay: `${index * 60}ms`,
-                                borderLeftColor: getTipDotColor(tip)
+                                'animationDelay': `${index * 60}ms`,
+                                // Drives the category accent stripe, placed on the
+                                // leading edge (left for LTR, right for RTL — see CSS).
+                                '--result-accent': getTipDotColor(tip)
                             }}
                             onClick={this.handleResultClick}
                         >
@@ -1065,6 +1067,7 @@ const UnstuckCard = ({
     colorMode,
     expanded,
     interimTranscript,
+    isRtl,
     listening,
     loading,
     locale,
@@ -1113,7 +1116,12 @@ const UnstuckCard = ({
         // bottom-right spot. Anchored from the top (not the bottom) so the
         // fixed-height card always stays fully on screen.
         const cardHeight = 448; // header (48) + fixed 400px body (see .body in unstuck-card.css)
-        x = window.innerWidth - 460;
+        // LTR anchors the card near the right edge. In RTL the overlay flips to
+        // direction:rtl, so the (un-positioned, absolute) container anchors to
+        // the overlay's right edge instead of its left. Because the overlay and
+        // the container's side margins are symmetric, the mirror position is
+        // simply the negated x — that lands the card near the left edge.
+        x = (isRtl ? -1 : 1) * (window.innerWidth - 460);
         y = 80;
         // Clamp so a short window can't push the card off the bottom.
         const maxY = window.innerHeight - menuBarHeight - cardHeight - 16;
@@ -1284,6 +1292,7 @@ UnstuckCard.propTypes = {
     colorMode: PropTypes.string,
     expanded: PropTypes.bool.isRequired,
     interimTranscript: PropTypes.string,
+    isRtl: PropTypes.bool,
     listening: PropTypes.bool,
     loading: PropTypes.bool.isRequired,
     locale: PropTypes.string,

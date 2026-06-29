@@ -44,7 +44,13 @@ const reducer = function (state, action) {
             browseAll: false,
             browseFilter: null,
             contextSuggestions: [],
-            pickMode: false
+            pickMode: false,
+            // Reset to the (0, 0) sentinel so the default position is recomputed
+            // for the current layout direction on each open. A position dragged
+            // in one direction is meaningless in the other and would otherwise
+            // place the window off-screen (matches ACTIVATE_DECK in cards.js).
+            x: 0,
+            y: 0
         });
     case CLOSE_UNSTUCK:
         return Object.assign({}, state, {
