@@ -58,10 +58,31 @@ class Scratch3PopupBlocks {
 
         this._reset = this._reset.bind(this);
         this._dispose = this._dispose.bind(this);
+        this._onTargetCreated = this._onTargetCreated.bind(this);
 
         // Handle the stop button: return to the flat view and reset state.
         runtime.on('PROJECT_STOP_ALL', this._reset);
         runtime.on('RUNTIME_DISPOSED', this._dispose);
+        // Clones must inherit their parent's 3D properties (thickness, depth, tilt, spin).
+        runtime.on('targetWasCreated', this._onTargetCreated);
+    }
+
+    /**
+     * When a target is cloned, copy its Pop-Up 3D state onto the new clone so the clone
+     * inherits all 3D properties (thickness, depth, tilt, spin), mirroring how core
+     * properties like size and direction are inherited. New top-level sprites (no source)
+     * keep the defaults.
+     * @param {Target} newTarget - the newly created target.
+     * @param {Target} [sourceTarget] - the target cloned from, if any.
+     * @listens Runtime#event:targetWasCreated
+     * @private
+     */
+    _onTargetCreated (newTarget, sourceTarget) {
+        if (!sourceTarget) return;
+        const state = sourceTarget.getCustomState(STATE_KEY);
+        if (state) {
+            newTarget.setCustomState(STATE_KEY, Clone.simple(state));
+        }
     }
 
     /**
@@ -590,10 +611,12 @@ class Scratch3PopupBlocks {
     }
 
     /**
-     * `move [STEPS] steps in 3D` - move along the sprite's 3D heading. The heading
-     * is built from spin (yaw, about Y) and tilt (pitch, about X): at rest the sprite
-     * faces the camera (out of the page); spin steers it horizontally and tilt steers
-     * it vertically/in-out.
+     * `move [STEPS] steps in 3D` - move along the sprite's full 3D heading. The heading
+     * is the direction the card actually faces, built from all three rotation axes:
+     * the sprite's `direction` (about Z, honouring its rotation style), tilt (about X)
+     * and spin (about Y). At rest the sprite faces the camera (out of the page); spin
+     * steers it horizontally and tilt steers it vertically/in-out. Sharing the scene's
+     * orientation maths guarantees movement matches what's rendered.
      * @param {object} args - the block arguments.
      * @param {object} util - block utility (provides the current target).
      */
@@ -601,15 +624,11 @@ class Scratch3PopupBlocks {
         const target = util.target;
         const state = this._getState(target);
         const steps = Cast.toNumber(args.STEPS);
-        const yaw = MathUtil.degToRad(state.spin);
-        const pitch = MathUtil.degToRad(state.tilt);
-        const fx = Math.sin(yaw) * Math.cos(pitch); // horizontal (stage x)
-        const fy = -Math.sin(pitch); // vertical (stage y)
-        const fz = Math.cos(yaw) * Math.cos(pitch); // toward the camera (+world z)
-        target.setXY(target.x + (steps * fx), target.y + (steps * fy));
+        const f = this._scene.forwardVector(target);
+        target.setXY(target.x + (steps * f.x), target.y + (steps * f.y));
         // World +z (toward the camera) means a smaller depth, since the group's z is
         // set to -(depth) in the scene.
-        state.depth = MathUtil.clamp(state.depth - (steps * fz), DEPTH_RANGE.min, DEPTH_RANGE.max);
+        state.depth = MathUtil.clamp(state.depth - (steps * f.z), DEPTH_RANGE.min, DEPTH_RANGE.max);
         this._visualChange();
     }
 
