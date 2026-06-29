@@ -10,6 +10,9 @@ import thumbForest from './starters/popup-example-3.png';
 import thumbSpace from './starters/popup-example-4.png';
 import thumbJump from './starters/popup-example-5.png';
 import thumbGarden from './starters/popup-example-6.png';
+import thumbPlatformer from './starters/popup-example-7.png';
+import thumbBirthday from './starters/popup-example-8.png';
+import thumbCrystal from './starters/popup-example-9.png';
 
 import sb3Card from './starters/popup-example-1.sb3';
 import sb3Fish from './starters/popup-example-2.sb3';
@@ -17,6 +20,9 @@ import sb3Forest from './starters/popup-example-3.sb3';
 import sb3Space from './starters/popup-example-4.sb3';
 import sb3Jump from './starters/popup-example-5.sb3';
 import sb3Garden from './starters/popup-example-6.sb3';
+import sb3Platformer from './starters/popup-example-7.sb3';
+import sb3Birthday from './starters/popup-example-8.sb3';
+import sb3Crystal from './starters/popup-example-9.sb3';
 
 const starters = [
     {
@@ -60,6 +66,30 @@ const starters = [
         description: 'Move with the arrow keys and press space to plant 3D flowers.',
         thumbnail: thumbGarden,
         sb3: sb3Garden
+    },
+    {
+        id: '3d-platformer',
+        title: '3D Platformer',
+        description: 'Hop between floating platforms with gravity. Arrows walk and step ' +
+            'in/out; space jumps — line up in all three axes to land.',
+        thumbnail: thumbPlatformer,
+        sb3: sb3Platformer
+    },
+    {
+        id: 'birthday-card',
+        title: 'Birthday Card',
+        description: 'A 3D greeting that sways and shifts colour. Click the balloons to ' +
+            'pop them and click the cake to make a wish.',
+        thumbnail: thumbBirthday,
+        sb3: sb3Birthday
+    },
+    {
+        id: '3d-crystal',
+        title: '3D Crystal',
+        description: 'Several flat gems are crossed and spun into one solid, faceted ' +
+            'crystal — a 3D shape no single drawing could make. The camera orbits it.',
+        thumbnail: thumbCrystal,
+        sb3: sb3Crystal
     }
 ];
 
