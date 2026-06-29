@@ -26,7 +26,23 @@ const examples = [
         shot: 'example-garden.png',
         drag: true,
         keys: ['Space', 'ArrowRight', 'ArrowRight', 'Space', 'ArrowUp', 'ArrowUp', 'Space',
-            'ArrowRight', 'ArrowRight', 'Space']}
+            'ArrowRight', 'ArrowRight', 'Space']},
+    // Platformer: walk + step into the scene + jump across the floating platforms.
+    {file: 'popup-example-7.sb3',
+        shot: 'example-platformer.png',
+        drag: true,
+        keys: ['ArrowUp', 'ArrowUp', 'Space', 'ArrowRight', 'ArrowRight', 'Space',
+            'ArrowUp', 'Space']},
+    // Birthday card: click around the upper stage to pop balloons; runs its own
+    // animated effects on the green flag.
+    {file: 'popup-example-8.sb3',
+        shot: 'example-birthday.png',
+        drag: true,
+        clicks: [{xFrac: 0.32, yFrac: 0.52}, {xFrac: 0.68, yFrac: 0.45}, {xFrac: 0.5, yFrac: 0.78}]},
+    // Crystal: auto-orbits, so no drag needed; the crossed clones build on green flag.
+    {file: 'popup-example-9.sb3',
+        shot: 'example-crystal.png',
+        drag: false}
 ];
 
 for (const ex of examples) {
@@ -65,6 +81,16 @@ for (const ex of examples) {
         }
 
         const stage = page.locator('canvas').first();
+
+        // Click sprites on the stage (e.g. balloons) to fire their "when clicked" scripts.
+        if (ex.clicks) {
+            const box = await stage.boundingBox();
+            for (const c of ex.clicks) {
+                await page.mouse.click(box.x + (box.width * c.xFrac), box.y + (box.height * c.yFrac));
+                await page.waitForTimeout(350);
+            }
+        }
+
         if (ex.drag) await dragStage(page, stage, 0.68, 0.32);
         await page.waitForTimeout(300);
         await stage.screenshot({path: path.join(SHOTS, ex.shot)});
