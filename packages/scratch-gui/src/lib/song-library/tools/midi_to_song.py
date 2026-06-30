@@ -28,6 +28,7 @@ import glob
 import json
 import math
 import os
+import re
 from collections import defaultdict, Counter
 
 import mido
@@ -104,6 +105,46 @@ DRUM_MAP = {
     75: 9, 76: 10, 77: 10,                             # claves, wood blocks
     78: 18, 79: 18, 80: 12, 81: 12,                    # cuica, triangle
 }
+
+# Some CC0 packs (e.g. LMMS/Komiku exports) put every instrument on its own
+# named *track* on channel 0 rather than spreading them across GM channels, and
+# emit no program_change. For those files we read the instrument from the track
+# name. Keyword -> 1-based INSTRUMENT_NAMES index; first matching keyword wins,
+# so list the more specific keywords first.
+NAME_INSTRUMENT_RULES = [
+    ('bass', 6),
+    ('rhodes', 2), ('mellowpiano', 1), ('piano', 1),
+    ('overdrive', 5), ('distortion', 5), ('elecguitar', 5), ('electric guitar', 5),
+    ('steelguitar', 4), ('acoustic', 4), ('guitar', 4), ('banjo', 4), ('sitar', 4),
+    ('synthlead', 20), ('square', 20), ('sawtooth', 20), ('saw', 20),
+    ('lead', 20), ('synth', 20),
+    ('strings', 21), ('pad', 21), ('choir', 15), ('voice', 15), ('vox', 15),
+    ('trumpet', 9), ('trombone', 9), ('french horn', 9), ('horn', 9), ('brass', 9),
+    ('sax', 11), ('clarinet', 10), ('oboe', 10),
+    ('whistle', 12), ('flute', 12), ('piccolo', 12),
+    ('recorder', 13), ('panflute', 13), ('pan flute', 13),
+    ('bassoon', 14),
+    ('vibra', 16), ('musicbox', 17), ('music box', 17), ('bell', 16),
+    ('steeldrum', 18), ('steel drum', 18),
+    ('marimba', 19), ('xylophone', 19), ('xylo', 19), ('kalimba', 19),
+    ('accordeon', 3), ('accordion', 3), ('orgue', 3), ('organ', 3),
+    ('cello', 8), ('violin', 8), ('viola', 8), ('contrabass', 6),
+    ('pizz', 7),
+]
+
+
+def instrument_from_name(name):
+    n = (name or '').lower()
+    for kw, inst in NAME_INSTRUMENT_RULES:
+        if kw in n:
+            return inst
+    return 1  # default -> Piano
+
+
+# Name-based drum tracks that use the small LMMS beat/bassline pitch cluster
+# (48..51) rather than GM percussion numbers. Kick / snare / closed hat / open
+# hat. Tracks whose pitches fall outside this cluster are treated as GM (DRUM_MAP).
+LMMS_DRUM_MAP = {48: 2, 49: 1, 50: 6, 51: 5}
 
 # Krumhansl-Kessler key profiles, for the display-only major/minor key label.
 KK_MAJOR = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88]
@@ -182,52 +223,120 @@ def note_signature(notes, tpb):
     return set((round(n['start'] / step), n['pitch'] % 12) for n in notes)
 
 
-def select_channels(notes_by_ch, prog_counter, tpb):
-    """Choose <=4 channels: drums (ch9) first, then a bass, then the busiest
-    remaining melodic channels, skipping near-duplicate (doubled) parts."""
-    chosen = []
-    if notes_by_ch.get(9):
-        chosen.append(9)
-    melodic = [c for c in notes_by_ch if c != 9 and notes_by_ch[c]]
+def extract_parts(mid):
+    """Reduce a MIDI file to a list of instrument "parts", each a dict:
 
-    def median_pitch(c):
-        ps = sorted(n['pitch'] for n in notes_by_ch[c])
+        {notes: [{start, dur, pitch, vel}], program: int|None, name: str,
+         is_drum: bool, drum_lmms: bool}
+
+    Two layouts are handled. Channel-distributed files (the GM norm: >=2 MIDI
+    channels carry notes) group by channel and read the instrument from the
+    dominant program_change -- this reproduces the original behaviour exactly.
+    Track-distributed files (everything on one channel, instruments split into
+    named tracks with no program_change, e.g. LMMS/Komiku exports) group by
+    track and read the instrument from the track name.
+    """
+    notes_by_ch, prog_counter = extract_notes(mid)
+    nonempty = [c for c in notes_by_ch if notes_by_ch[c]]
+    if len(nonempty) >= 2:
+        return [{'notes': notes_by_ch[c], 'program': dominant_program(prog_counter[c]),
+                 'name': '', 'is_drum': c == 9, 'drum_lmms': False}
+                for c in nonempty]
+
+    parts = []
+    for tr in mid.tracks:
+        name = ''
+        t = 0
+        active = {}
+        progs = set()
+        chans = set()
+        notes = []
+        for msg in tr:
+            t += msg.time
+            if msg.type == 'track_name':
+                name = msg.name
+            elif msg.type == 'program_change':
+                progs.add(msg.program)
+            elif msg.type == 'note_on' and msg.velocity > 0:
+                active[(msg.channel, msg.note)] = (t, msg.velocity)
+                chans.add(msg.channel)
+            elif msg.type == 'note_off' or (msg.type == 'note_on' and msg.velocity == 0):
+                k = (msg.channel, msg.note)
+                if k in active:
+                    start, vel = active.pop(k)
+                    notes.append({'start': start, 'dur': max(1, t - start),
+                                  'pitch': msg.note, 'vel': vel})
+        if not notes:
+            continue
+        nm = (name or '').strip()
+        is_drum = (9 in chans) or bool(re.search(r'drum|perc', nm, re.I))
+        drum_lmms = is_drum and all(n['pitch'] in LMMS_DRUM_MAP for n in notes)
+        parts.append({'notes': notes, 'program': (max(progs) if progs else None),
+                      'name': nm, 'is_drum': is_drum, 'drum_lmms': drum_lmms})
+    return parts
+
+
+def _is_bass_part(part):
+    p = part['program']
+    if p is not None and 32 <= p <= 39:
+        return True
+    return bool(re.search(r'bass', part['name'], re.I))
+
+
+def select_parts(parts, tpb):
+    """Choose <=4 parts: drums first, then a bass, then the busiest remaining
+    melodic parts, skipping near-duplicate (doubled) parts."""
+    chosen = []
+    drums = [p for p in parts if p['is_drum'] and p['notes']]
+    if drums:
+        chosen.append(max(drums, key=lambda p: len(p['notes'])))
+    melodic = [p for p in parts if not p['is_drum'] and p['notes']]
+
+    def median_pitch(p):
+        ps = sorted(n['pitch'] for n in p['notes'])
         return ps[len(ps) // 2]
 
-    bass_candidates = [c for c in melodic if 32 <= dominant_program(prog_counter[c]) <= 39]
+    bass_candidates = [p for p in melodic if _is_bass_part(p)]
     if bass_candidates:
-        chosen.append(max(bass_candidates, key=lambda c: len(notes_by_ch[c])))
+        chosen.append(max(bass_candidates, key=lambda p: len(p['notes'])))
     elif melodic:
         chosen.append(min(melodic, key=median_pitch))
 
-    chosen_sigs = {c: note_signature(notes_by_ch[c], tpb) for c in chosen if c != 9}
-    for c in sorted((c for c in melodic if c not in chosen),
-                    key=lambda c: -len(notes_by_ch[c])):
+    chosen_ids = {id(p) for p in chosen}
+    chosen_sigs = [(p, note_signature(p['notes'], tpb)) for p in chosen if not p['is_drum']]
+    for p in sorted((p for p in melodic if id(p) not in chosen_ids),
+                    key=lambda p: -len(p['notes'])):
         if len(chosen) >= MAX_TRACKS:
             break
-        prog = dominant_program(prog_counter[c])
-        sig = note_signature(notes_by_ch[c], tpb)
-        dup = any(dominant_program(prog_counter[oc]) == prog and osig and
-                  len(sig & osig) / (len(sig | osig) or 1) > 0.55
-                  for oc, osig in chosen_sigs.items())
+        sig = note_signature(p['notes'], tpb)
+        # Channel-distributed parts only count as duplicates of a same-program
+        # part (matches the original behaviour); name/track parts (program None)
+        # dedupe purely on rhythm+pitch-class overlap, which catches the common
+        # doubled lead (e.g. square + sawtooth playing the same line).
+        dup = any(osig and len(sig & osig) / (len(sig | osig) or 1) > 0.55 and
+                  (p['program'] is None or p['program'] == op['program'])
+                  for op, osig in chosen_sigs)
         if not dup:
-            chosen.append(c)
-            chosen_sigs[c] = sig
+            chosen.append(p)
+            chosen_ids.add(id(p))
+            chosen_sigs.append((p, sig))
     return chosen
 
 
 def build_payload(path):
     mid = mido.MidiFile(path)
     tpb = mid.ticks_per_beat
-    notes_by_ch, prog_counter = extract_notes(mid)
-    if not notes_by_ch:
+    parts = extract_parts(mid)
+    if not parts:
         return None
     bpm = first_tempo_bpm(mid)
     step_ticks = tpb / 4.0
-    chosen = select_channels(notes_by_ch, prog_counter, tpb)
+    chosen = select_parts(parts, tpb)
 
-    # densest WINDOW_BARS window over the chosen channels
-    all_notes = [n for c in chosen for n in notes_by_ch[c]]
+    # densest WINDOW_BARS window over the chosen parts
+    all_notes = [n for p in chosen for n in p['notes']]
+    if not all_notes:
+        return None
     max_step = max(round(n['start'] / step_ticks) for n in all_notes)
     num_bars = max(1, math.ceil((max_step + 1) / STEPS_PER_BAR))
     win_bars = min(WINDOW_BARS, num_bars)
@@ -241,11 +350,12 @@ def build_payload(path):
 
     tracks = []
     pc_weights = [0.0] * 12
-    for c in chosen:
-        is_drum = (c == 9)
+    for part in chosen:
+        is_drum = part['is_drum']
+        drum_map = LMMS_DRUM_MAP if part['drum_lmms'] else DRUM_MAP
         out_notes = []
         lane_counter = Counter()
-        for n in notes_by_ch[c]:
+        for n in part['notes']:
             s = round(n['start'] / step_ticks)
             if not (win_start <= s < win_end):
                 continue
@@ -254,7 +364,7 @@ def build_payload(path):
             dur = max(1, min(dur, win_steps - step))
             vel = max(1, min(127, n['vel']))
             if is_drum:
-                lane = DRUM_MAP.get(n['pitch'])
+                lane = drum_map.get(n['pitch'])
                 if lane is None:
                     continue
                 out_notes.append({'step': step, 'durationSteps': dur, 'velocity': vel, 'drum': lane})
@@ -274,7 +384,8 @@ def build_payload(path):
             tracks.append({'kind': 'drum', 'volume': 100, 'muted': False,
                            'effects': effects, 'notes': out_notes, 'drumLanes': keep})
         else:
-            inst = gm_to_instrument(dominant_program(prog_counter[c]))
+            inst = (gm_to_instrument(part['program']) if part['program'] is not None
+                    else instrument_from_name(part['name']))
             tracks.append({'kind': 'instrument', 'volume': 100, 'muted': False,
                            'effects': effects, 'notes': out_notes, 'instrument': inst})
     if not tracks:
@@ -291,10 +402,15 @@ def build_payload(path):
     return payload, PITCH_CLASS_NAMES[rot], scale
 
 
-# Curated subset that ships in song-tracks.json: display name + tags. All share
-# the 'game' tag; they're grouped as sections by itemType ('song'), not a tag.
-# The rest are the existing genre/mood/context vocabulary.
-CURATED = [
+# Curated subsets that ship in song-tracks.json: source file -> display name +
+# tags. They're grouped as sections by itemType ('song'), not a tag. Tags are
+# the existing genre/mood/context vocabulary (plus 'disco'/'funk' for the dance
+# pack). Display names are kid-friendly -- CC0 imposes no naming obligation, and
+# Song Maker targets young learners -- with the original file name kept here for
+# provenance. See CC0-MIDI-CREDITS.md for the three source collections.
+
+# github.com/m-malandro/CC0-midis -- General-MIDI game themes.
+MALANDRO_CURATED = [
     ('overture-2021.mid',             'Overture',            ['cinematic', 'epic', 'intro', 'game']),
     ('gather-your-party.mid',         'Gather Your Party',   ['chiptune', 'epic', 'exploration', 'game']),
     ('arena-rock.mid',                'Arena Rock',          ['rock', 'epic', 'boss', 'game']),
@@ -310,26 +426,69 @@ CURATED = [
     ('do-you-remember.mid',           'Do You Remember',     ['lofi', 'sad', 'story', 'game']),
 ]
 
+# opengameart.org "Original MIDI Album" by Roppy Chop Studios -- chill/ambient.
+ROPPY_CURATED = [
+    ('Casual Afternoon.mid',  'Casual Afternoon', ['chill', 'happy', 'lofi', 'game']),
+    ('Icy Garden.mid',        'Icy Garden',       ['chill', 'spooky', 'game']),
+    ('Journey Forgotten.mid', 'Forgotten Path',   ['chill', 'exploration', 'game']),
+    ('No One.mid',            'Quiet Reflection', ['lofi', 'sad', 'story', 'game']),
+]
+
+# opengameart.org "Helice Incredible Adventure" by Komiku / Loyalty Freak Music
+# -- a disco/funk RPG soundtrack. Track-distributed MIDIs (named tracks, LMMS
+# drum kits); display names are renamed from the originals for a kid audience.
+HELICE_CURATED = [
+    ('Disco Challenge.mid',                                'Disco Challenge',    ['electronic', 'disco', 'boss', 'game']),
+    ("Fighting the Sellers's machine.mid",                 'Machine Battle',     ['rock', 'epic', 'boss', 'game']),
+    ('Big Boss Hélice.mid',                                'Big Boss',           ['electronic', 'epic', 'boss', 'game']),
+    ("The biggest capitalist machine you've ever seen.mid", 'Mega Machine',      ['electronic', 'epic', 'boss', 'game']),
+    ('Everything is groovy (How to move your body).mid',   'Get Groovy',         ['funk', 'happy', 'dance', 'game']),
+    ('The big dancefloor.mid',                             'Big Dancefloor',     ['disco', 'happy', 'dance', 'game']),
+    ("I'm in the Not-a-Club.mid",                          'Dance Club',         ['disco', 'dance', 'game']),
+    ('dropda basstion.mid',                                'Bass Station',       ['funk', 'upbeat', 'game']),
+    ('Cliff Road Chill.mid',                               'Cliff Road',         ['chill', 'exploration', 'game']),
+    ('Little town before Big city.mid',                    'Little Town',        ['happy', 'exploration', 'game']),
+    ('The journey begins.mid',                             'The Journey Begins', ['chill', 'intro', 'exploration', 'game']),
+    ('An anarchist utopia.mid',                            'Peaceful Days',      ['chill', 'story', 'game']),
+]
+
+CURATED = MALANDRO_CURATED + ROPPY_CURATED + HELICE_CURATED
+
 
 def root_pitch(key_name, octave=4):
     return (octave + 1) * 12 + PITCH_CLASS_NAMES.index(key_name)
 
 
+def find_file(indirs, fname):
+    """First match for fname across the given source directories."""
+    for d in indirs:
+        path = os.path.join(d, fname)
+        if os.path.exists(path):
+            return path
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--in', dest='indir', required=True, help='directory of .mid files')
+    ap.add_argument('--in', dest='indirs', required=True, nargs='+',
+                    help='one or more directories of .mid files (searched in order)')
     ap.add_argument('--out', dest='out', default='cc0-midi-items.json')
     ap.add_argument('--all', action='store_true',
                     help='convert every .mid found instead of just the curated list')
     args = ap.parse_args()
 
+    if args.all:
+        todo = []
+        for d in args.indirs:
+            for p in sorted(glob.glob(os.path.join(d, '*.mid'))):
+                todo.append((os.path.basename(p), os.path.splitext(os.path.basename(p))[0], ['game']))
+    else:
+        todo = CURATED
+
     items = []
-    todo = ([(os.path.basename(p), os.path.splitext(os.path.basename(p))[0],
-              ['game']) for p in sorted(glob.glob(os.path.join(args.indir, '*.mid')))]
-            if args.all else CURATED)
     for fname, name, tags in todo:
-        path = os.path.join(args.indir, fname)
-        if not os.path.exists(path):
+        path = find_file(args.indirs, fname)
+        if not path:
             print(f'  skip (missing): {fname}')
             continue
         res = build_payload(path)
