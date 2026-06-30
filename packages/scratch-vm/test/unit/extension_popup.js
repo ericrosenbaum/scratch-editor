@@ -206,6 +206,33 @@ test('PopupScene._focusPoint tracks the followed sprite, else the stage centre',
     t.end();
 });
 
+test('PopupScene._updateCamera eases the focus toward the followed sprite (smooth, not a snap)', t => {
+    const ball = makeTarget({id: 'ball', x: 200, y: 0});
+    const runtime = {
+        renderer: null,
+        targets: [ball],
+        on: () => {},
+        getSpriteTargetByName: name => (name === 'Ball' ? ball : null)
+    };
+    const scene = new PopupScene(runtime);
+    // _init() (which builds these) needs a renderer/DOM, so stand them in for a headless test.
+    scene._camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, 5000);
+    scene._clock = null; // null -> deterministic dt = 1/60 per frame
+    scene._mode = 'follow';
+    scene._followName = 'Ball';
+
+    // One frame moves the focus only part-way toward the sprite at x=200, never instantly.
+    scene._updateCamera();
+    t.ok(scene._focus.x > 0 && scene._focus.x < 200, 'one frame eases the focus partway, not all the way');
+    const afterOne = scene._focus.x;
+
+    // Successive frames keep approaching and converge close to the target.
+    for (let i = 0; i < 240; i++) scene._updateCamera();
+    t.ok(scene._focus.x > afterOne, 'the focus keeps approaching the sprite across frames');
+    t.ok(Math.abs(scene._focus.x - 200) < 1, 'the focus converges onto the sprite over time');
+    t.end();
+});
+
 test('PopupScene._handlePointer orbits empty space in follow mode too', t => {
     const mouse = makeMouse();
     const runtime = {renderer: null, targets: [], on: () => {}, ioDevices: {mouse}};

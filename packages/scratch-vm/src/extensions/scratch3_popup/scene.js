@@ -71,6 +71,10 @@ const WALL_Z = -160;
 const CAM_RADIUS = 520;
 const CAM_HEIGHT = 150;
 const AUTO_SPIN = 0.006;
+// Follow-camera smoothing: the half-life (in seconds) of the exponential ease applied to
+// the camera's focus point. A sprite that teleports/jumps is then tracked with a smooth
+// glide rather than a snap. Frame-rate independent (see _updateCamera); lower = snappier.
+const CAM_SMOOTH_HALFLIFE = 0.12;
 // Drag sensitivity: radians per stage-x unit, and height per stage-y unit.
 const DRAG_ROT = 0.008;
 const DRAG_HEIGHT = 0.6;
@@ -178,6 +182,11 @@ class PopupScene {
         this._camHeight = CAM_HEIGHT;
         this._lastDragX = 0;
         this._lastDragY = 0;
+        // Smoothed focus point the camera orbits and looks at, eased toward _focusPoint()
+        // each frame (starts at the stage centre). _clock supplies frame-rate-independent
+        // dt for that ease; it's created with the renderer in _init (browser only).
+        this._focus = new THREE.Vector3(0, 0, 0);
+        this._clock = null;
 
         // Pointer interaction: a raycaster for hit-testing sprites, reusable scratch
         // objects, and the per-gesture state machine driven by _handlePointer.
@@ -250,6 +259,7 @@ class PopupScene {
 
         this._scene = new THREE.Scene();
         this._camera = new THREE.PerspectiveCamera(45, CANVAS_W / CANVAS_H, 1, 5000);
+        this._clock = new THREE.Clock();
 
         this._texLoader = new THREE.TextureLoader();
 
@@ -429,20 +439,33 @@ class PopupScene {
     /**
      * Position the camera: auto-spin in 'orbit' mode. The 'drag'/'follow' orbit is driven
      * by _handlePointer (so it can yield to sprite dragging). The camera orbits and looks
-     * at a focus point — the followed sprite in 'follow' mode, else the stage centre — so
-     * in 'follow' it stays a fixed offset from the sprite and tracks it as it moves.
+     * at a smoothed focus point — easing toward the followed sprite in 'follow' mode, else
+     * the stage centre — so in 'follow' it stays a fixed offset from the sprite and tracks
+     * it as it moves.
+     *
+     * The focus is eased with frame-rate-independent exponential smoothing (half-life form:
+     * t = 1 - 2^(-dt / halfLife)), the standard way to damp a follow camera so a sprite that
+     * teleports or is flung is tracked with a glide instead of a snap (cf. Freya Holmer,
+     * "Lerp smoothing is broken"). Only the focus is smoothed; the orbit angle/height stay
+     * direct so dragging the view remains crisp. dt is clamped so a long pause (e.g. a
+     * backgrounded tab) can't produce one giant jump.
      */
     _updateCamera () {
         if (this._mode === 'orbit') {
             this._angle += AUTO_SPIN;
         }
-        const focus = this._focusPoint();
+        const dt = this._clock ? Math.min(this._clock.getDelta(), 0.1) : 1 / 60;
+        const t = 1 - Math.pow(2, -dt / CAM_SMOOTH_HALFLIFE);
+        const target = this._focusPoint();
+        this._focus.x += (target.x - this._focus.x) * t;
+        this._focus.y += (target.y - this._focus.y) * t;
+        this._focus.z += (target.z - this._focus.z) * t;
         this._camera.position.set(
-            focus.x + (Math.sin(this._angle) * CAM_RADIUS),
-            focus.y + this._camHeight,
-            focus.z + (Math.cos(this._angle) * CAM_RADIUS)
+            this._focus.x + (Math.sin(this._angle) * CAM_RADIUS),
+            this._focus.y + this._camHeight,
+            this._focus.z + (Math.cos(this._angle) * CAM_RADIUS)
         );
-        this._camera.lookAt(focus.x, focus.y, focus.z);
+        this._camera.lookAt(this._focus.x, this._focus.y, this._focus.z);
     }
 
     /**
