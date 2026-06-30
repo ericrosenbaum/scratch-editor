@@ -23,6 +23,7 @@ const messages = defineMessages({
     upbeat: {defaultMessage: 'Upbeat', description: 'Song library mood', id: 'gui.songLibraryTags.upbeat'},
     sad: {defaultMessage: 'Sad', description: 'Song library mood', id: 'gui.songLibraryTags.sad'},
     // Context (what the music is for)
+    game: {defaultMessage: 'Game Music', description: 'Song library context', id: 'gui.songLibraryTags.game'},
     platformer: {defaultMessage: 'Platformer', description: 'Song lib context', id: 'gui.songLibraryTags.platformer'},
     boss: {defaultMessage: 'Boss Battle', description: 'Song library context', id: 'gui.songLibraryTags.boss'},
     racing: {defaultMessage: 'Racing', description: 'Song library context', id: 'gui.songLibraryTags.racing'},
@@ -51,6 +52,7 @@ export default [
     {tag: 'spooky', intlLabel: messages.spooky},
     {tag: 'upbeat', intlLabel: messages.upbeat},
     {tag: 'sad', intlLabel: messages.sad},
+    {tag: 'game', intlLabel: messages.game},
     {tag: 'platformer', intlLabel: messages.platformer},
     {tag: 'boss', intlLabel: messages.boss},
     {tag: 'racing', intlLabel: messages.racing},

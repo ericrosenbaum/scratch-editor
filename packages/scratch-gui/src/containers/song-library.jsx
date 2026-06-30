@@ -10,7 +10,7 @@ import libraryIcon from '../components/song-editor/song-track-library-icon.svg';
 
 import songTrackLibraryContent from '../lib/libraries/song-tracks.json';
 import songTrackTags from '../lib/libraries/song-track-tags.js';
-import {previewSongForItem} from '../lib/song-library/import.js';
+import {previewSongForItem, trackLabelsForItem} from '../lib/song-library/import.js';
 
 const messages = defineMessages({
     trackLibraryTitle: {
@@ -93,7 +93,11 @@ class SongLibrary extends React.PureComponent {
             .map(item => ({
                 ...item,
                 rawURL: libraryIcon,
-                description: describeItem(item)
+                description: describeItem(item),
+                // Listed over the thumbnail so the instrumentation is visible
+                // at a glance (e.g. 'Piano · Bass · Drums') without changing
+                // the card layout.
+                trackNames: trackLabelsForItem(item)
             }));
         const title = this.props.intl.formatMessage(
             wantSongs ? messages.sectionLibraryTitle : messages.trackLibraryTitle

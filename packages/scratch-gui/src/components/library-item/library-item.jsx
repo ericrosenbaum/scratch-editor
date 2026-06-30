@@ -182,6 +182,18 @@ class LibraryItemComponent extends React.PureComponent {
                         onMouseLeave={this.props.showPlayButton ? this.props.onMouseLeave : null}
                     >
                         {this.renderImage(styles.libraryItemImage, this.props.iconSource)}
+                        {this.props.trackNames && this.props.trackNames.length > 0 ? (
+                            <div className={styles.libraryItemTrackList}>
+                                {this.props.trackNames.map((trackName, i) => (
+                                    <span
+                                        key={i}
+                                        className={styles.libraryItemTrackChip}
+                                    >
+                                        {trackName}
+                                    </span>
+                                ))}
+                            </div>
+                        ) : null}
                     </Box>
                 </Box>
                 <span className={styles.libraryItemName}>{this.props.name}</span>
@@ -218,6 +230,7 @@ LibraryItemComponent.propTypes = {
         PropTypes.string,
         PropTypes.node
     ]),
+    trackNames: PropTypes.arrayOf(PropTypes.string),
     onBlur: PropTypes.func.isRequired,
     onClick: PropTypes.func.isRequired,
     onFocus: PropTypes.func.isRequired,

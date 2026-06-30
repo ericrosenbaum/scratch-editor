@@ -144,6 +144,7 @@ class LibraryItem extends React.PureComponent {
                 internetConnectionRequired={this.props.internetConnectionRequired}
                 isPlaying={this.props.isPlaying}
                 name={this.props.name}
+                trackNames={this.props.trackNames}
                 showPlayButton={this.props.showPlayButton}
                 platform={this.props.platform}
                 onBlur={this.handleBlur}
@@ -187,6 +188,7 @@ LibraryItem.propTypes = {
         PropTypes.string,
         PropTypes.node
     ]),
+    trackNames: PropTypes.arrayOf(PropTypes.string),
     onMouseEnter: PropTypes.func.isRequired,
     onMouseLeave: PropTypes.func.isRequired,
     onSelect: PropTypes.func.isRequired,

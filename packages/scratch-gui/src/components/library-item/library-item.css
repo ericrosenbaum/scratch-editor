@@ -91,6 +91,42 @@
     max-height: 100%;
 }
 
+/*
+    Instrumentation overlay for song-library cards. Sits inside the existing
+    100px-tall image container (which is position: absolute), so it adds the
+    track listing without changing the card's layout or footprint. The chips
+    flow from the bottom over a soft scrim so they stay legible on top of the
+    thumbnail art.
+*/
+.library-item-track-list {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    justify-content: center;
+    gap: 0.125rem;
+    padding: 0.75rem 0.25rem 0.25rem;
+    max-height: 100%;
+    overflow: hidden;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.92) 55%, rgba(255, 255, 255, 0));
+    pointer-events: none;
+}
+
+.library-item-track-chip {
+    font-size: 0.625rem;
+    line-height: 1;
+    font-weight: bold;
+    color: $text-primary;
+    background: $ui-primary;
+    border: 1px solid $ui-black-transparent;
+    border-radius: 0.5rem;
+    padding: 0.125rem 0.25rem;
+    white-space: nowrap;
+}
+
 .library-item-inset-image {
     width: 2.5rem;
 }

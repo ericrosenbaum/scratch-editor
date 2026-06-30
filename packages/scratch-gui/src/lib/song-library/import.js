@@ -13,7 +13,7 @@
 // sanitizeTrack/sanitizeSong so an added item is a fully valid, editable
 // track/song indistinguishable from an AI-generated or hand-built one.
 
-import {createBlankSong} from '../song-defaults.js';
+import {createBlankSong, INSTRUMENT_NAMES} from '../song-defaults.js';
 import {sanitizeTrack, sanitizeSong} from '../song-ai/sanitize.js';
 import {transposeNotes, snapNotesToScale, DEFAULT_ROOT_PITCH} from '../scale-utils.js';
 
@@ -86,8 +86,39 @@ const previewSongForItem = item => {
     return song;
 };
 
+// Human-readable label for a single wire-format track. Mirrors
+// displayNameForTrack (song-defaults.js) but reads the wire shape, where a
+// synth track carries its preset name on `synthPreset` rather than
+// `synth.preset`. Used to annotate library thumbnails with their instrumentation.
+const wireTrackLabel = track => {
+    if (!track) return 'Track';
+    if (track.kind === 'drum') return 'Drums';
+    if (track.kind === 'synthDrum') return 'Synth Drums';
+    if (track.kind === 'synth') {
+        return track.synthPreset || (track.synth && track.synth.preset) || 'Synth';
+    }
+    const idx = (track.instrument || 1) - 1;
+    return INSTRUMENT_NAMES[idx] || 'Track';
+};
+
+/**
+ * The list of instrument/track labels for a library item, for display on its
+ * thumbnail (e.g. ['Piano', 'Bass', 'Drums']). A 'song' item lists every track
+ * in its payload; a single-track item returns its one label.
+ * @param {object} item - any library item.
+ * @returns {Array<string>} ordered track labels.
+ */
+const trackLabelsForItem = item => {
+    if (!item || !item.payload) return [];
+    if (item.itemType === 'song') {
+        return ((item.payload.tracks) || []).map(wireTrackLabel);
+    }
+    return [wireTrackLabel(item.payload)];
+};
+
 export {
     reconcileTrackForSong,
     songFromLibraryItem,
-    previewSongForItem
+    previewSongForItem,
+    trackLabelsForItem
 };
