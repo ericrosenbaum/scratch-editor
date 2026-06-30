@@ -1,5 +1,6 @@
 const test = require('tap').test;
 const {PopupScene, getPopupState} = require('../../src/extensions/scratch3_popup/scene.js');
+const THREE = require('three');
 
 // A minimal stand-in for a RenderedTarget that records 2D drawable visibility changes.
 const makeTarget = (props = {}) => Object.assign({
@@ -172,5 +173,50 @@ test('PopupScene._handlePointer orbits on empty space (drag mode) and fires the 
     mouse._down = false; // release at the same spot
     scene._handlePointer();
     t.same(hats, [['event_whenthisspriteclicked', null, sprite]], 'a tap on a sprite fires its clicked hat');
+    t.end();
+});
+
+test('PopupScene._focusPoint tracks the followed sprite, else the stage centre', t => {
+    const ball = makeTarget({id: 'ball', x: 100, y: 50});
+    const runtime = {
+        renderer: null,
+        targets: [ball],
+        on: () => {},
+        getSpriteTargetByName: name => (name === 'Ball' ? ball : null)
+    };
+    const scene = new PopupScene(runtime);
+
+    // Not following -> the stage centre.
+    t.same(scene._focusPoint(), {x: 0, y: 0, z: 0}, 'non-follow modes focus the stage centre');
+
+    // Following, before any mesh is built -> the sprite's 2D coords and -depth.
+    getPopupState(ball).depth = 30;
+    scene._mode = 'follow';
+    scene._followName = 'Ball';
+    t.same(scene._focusPoint(), {x: 100, y: 50, z: -30}, 'follow mode focuses the sprite (x, y, -depth)');
+
+    // Once a mesh group exists, its position wins (matches the rendered sprite).
+    scene._meshes.set('ball', {group: new THREE.Group()});
+    scene._meshes.get('ball').group.position.set(12, 34, -56);
+    t.same(scene._focusPoint(), {x: 12, y: 34, z: -56}, 'follow mode uses the built mesh position');
+
+    // Following a missing sprite -> back to the centre.
+    scene._followName = 'Ghost';
+    t.same(scene._focusPoint(), {x: 0, y: 0, z: 0}, 'following a missing sprite falls back to the centre');
+    t.end();
+});
+
+test('PopupScene._handlePointer orbits empty space in follow mode too', t => {
+    const mouse = makeMouse();
+    const runtime = {renderer: null, targets: [], on: () => {}, ioDevices: {mouse}};
+    const scene = new PopupScene(runtime);
+    scene._mode = 'follow';
+    scene._raycastTarget = () => null;
+
+    mouse._down = true;
+    mouse._x = 0;
+    mouse._y = 0;
+    scene._handlePointer();
+    t.equal(scene._gesture, 'camera', 'pressing empty space while following orbits the camera around the sprite');
     t.end();
 });

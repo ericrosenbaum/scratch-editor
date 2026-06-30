@@ -125,6 +125,21 @@ class Scratch3PopupBlocks {
                     }
                 },
                 {
+                    opcode: 'followCamera',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.followCamera',
+                        default: 'set camera to follow [SPRITE]',
+                        description: 'Make the 3D camera track and stay centered on a chosen sprite'
+                    }),
+                    arguments: {
+                        SPRITE: {
+                            type: ArgumentType.STRING,
+                            menu: 'spriteMenu'
+                        }
+                    }
+                },
+                {
                     opcode: 'setSky',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -529,6 +544,16 @@ class Scratch3PopupBlocks {
      */
     setCamera (args) {
         this._scene.setMode(Cast.toString(args.VIEW));
+        this._visualChange();
+    }
+
+    /**
+     * `set camera to follow [SPRITE]` - track and stay centred on the chosen sprite,
+     * orbiting around it (drag empty space to spin) as it moves through the scene.
+     * @param {object} args - the block arguments.
+     */
+    followCamera (args) {
+        this._scene.followSprite(Cast.toString(args.SPRITE));
         this._visualChange();
     }
 

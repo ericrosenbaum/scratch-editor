@@ -170,8 +170,10 @@ class PopupScene {
 
         this._raf = null;
 
-        // Camera state: 'front' (flat 2D), 'orbit' (auto-spin), or 'drag' (drag to spin).
+        // Camera state: 'front' (flat 2D), 'orbit' (auto-spin), 'drag' (drag to spin),
+        // or 'follow' (orbit a chosen sprite and translate with it; see _followName).
         this._mode = 'front';
+        this._followName = null; // sprite name the 'follow' camera tracks
         this._angle = 0;
         this._camHeight = CAM_HEIGHT;
         this._lastDragX = 0;
@@ -285,6 +287,19 @@ class PopupScene {
             return;
         }
         this._mode = mode === 'orbit' ? 'orbit' : 'drag';
+        this.start();
+    }
+
+    /**
+     * Enter 'follow' camera mode: the camera keeps the named sprite centred, orbiting
+     * around it (drag empty space to spin) and translating with it as it moves, so the
+     * sprite stays framed wherever it goes. Falls back to the stage centre whenever the
+     * sprite is missing.
+     * @param {string} name - the sprite to follow.
+     */
+    followSprite (name) {
+        this._followName = name;
+        this._mode = 'follow';
         this.start();
     }
 
@@ -412,26 +427,53 @@ class PopupScene {
     }
 
     /**
-     * Position the camera: auto-spin in 'orbit' mode. The 'drag' orbit is driven by
-     * _handlePointer (so it can yield to sprite dragging). Always looks at the centre.
+     * Position the camera: auto-spin in 'orbit' mode. The 'drag'/'follow' orbit is driven
+     * by _handlePointer (so it can yield to sprite dragging). The camera orbits and looks
+     * at a focus point — the followed sprite in 'follow' mode, else the stage centre — so
+     * in 'follow' it stays a fixed offset from the sprite and tracks it as it moves.
      */
     _updateCamera () {
         if (this._mode === 'orbit') {
             this._angle += AUTO_SPIN;
         }
+        const focus = this._focusPoint();
         this._camera.position.set(
-            Math.sin(this._angle) * CAM_RADIUS,
-            this._camHeight,
-            Math.cos(this._angle) * CAM_RADIUS
+            focus.x + (Math.sin(this._angle) * CAM_RADIUS),
+            focus.y + this._camHeight,
+            focus.z + (Math.cos(this._angle) * CAM_RADIUS)
         );
-        this._camera.lookAt(0, 0, 0);
+        this._camera.lookAt(focus.x, focus.y, focus.z);
+    }
+
+    /**
+     * The point the camera orbits and looks at: the followed sprite's 3D position in
+     * 'follow' mode, or the stage centre otherwise. Prefers the built mesh group's
+     * position, falling back to the sprite's 2D coords + depth before its mesh exists
+     * (e.g. the first frame after entering 3D), and to the centre if the sprite is gone.
+     * Safe to call headless.
+     * @returns {{x: number, y: number, z: number}} the focus point in world space.
+     * @private
+     */
+    _focusPoint () {
+        if (this._mode === 'follow' && this._followName) {
+            const target = this.runtime.getSpriteTargetByName(this._followName);
+            if (target) {
+                const entry = this._meshes.get(target.id);
+                if (entry) {
+                    const p = entry.group.position;
+                    return {x: p.x, y: p.y, z: p.z};
+                }
+                return {x: target.x || 0, y: target.y || 0, z: -(getPopupState(target).depth || 0)};
+            }
+        }
+        return {x: 0, y: 0, z: 0};
     }
 
     /**
      * Per-frame pointer state machine, read from the VM's mouse device (no DOM).
      * A press on a sprite grabs it (drag it in a plane parallel to the backdrop), just
      * like dragging a sprite on the 2D stage in the editor; a press on empty space in
-     * 'drag' mode orbits the camera instead. A press-and-release that barely moves fires
+     * 'drag'/'follow' mode orbits the camera instead. A press-and-release that barely moves fires
      * the sprite's "when this sprite clicked" hat. Sprite drag and camera orbit are
      * mutually exclusive within one gesture, so orbiting still works whenever the press
      * misses every sprite. Sprite click/drag work in both 'orbit' and 'drag'.
@@ -457,7 +499,7 @@ class PopupScene {
             this._pressY = sy;
             if (hit) {
                 this._beginSpriteDrag(hit.target, sx, sy);
-            } else if (this._mode === 'drag') {
+            } else if (this._mode === 'drag' || this._mode === 'follow') {
                 this._gesture = 'camera';
                 this._lastDragX = sx;
                 this._lastDragY = sy;
