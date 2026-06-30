@@ -31,7 +31,7 @@ const trackItem = (overrides = {}) => ({
 const songItem = () => ({
     name: 'Test Section',
     itemType: 'song',
-    tags: ['rock', 'section'],
+    tags: ['rock'],
     tempo: 160,
     rootPitch: 52,
     scaleType: 'pentatonicMinor',

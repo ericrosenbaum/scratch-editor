@@ -292,22 +292,22 @@ def build_payload(path):
 
 
 # Curated subset that ships in song-tracks.json: display name + tags. All share
-# the 'game' + 'section' tags so they form one browsable section; the rest are
-# the existing genre/mood/context vocabulary.
+# the 'game' tag; they're grouped as sections by itemType ('song'), not a tag.
+# The rest are the existing genre/mood/context vocabulary.
 CURATED = [
-    ('overture-2021.mid',             'Overture',            ['cinematic', 'epic', 'intro', 'game', 'section']),
-    ('gather-your-party.mid',         'Gather Your Party',   ['chiptune', 'epic', 'adventure', 'game', 'section']),
-    ('arena-rock.mid',                'Arena Rock',          ['rock', 'epic', 'boss', 'game', 'section']),
-    ('frantic-boss-battle.mid',       'Frantic Boss Battle', ['electronic', 'epic', 'boss', 'game', 'section']),
-    ('lighthearted-battle-theme.mid', 'Lighthearted Battle', ['chiptune', 'upbeat', 'boss', 'game', 'section']),
-    ('math-metal.mid',                'Math Metal',          ['rock', 'epic', 'boss', 'game', 'section']),
-    ('mine-all-mine.mid',             'Mine All Mine',       ['rock', 'upbeat', 'platformer', 'game', 'section']),
-    ('gears.mid',                     'Gears',               ['electronic', 'epic', 'racing', 'game', 'section']),
-    ('movin-on.mid',                  "Movin' On",           ['rock', 'happy', 'racing', 'game', 'section']),
-    ('maybe.mid',                     'Maybe',               ['pop', 'happy', 'dance', 'game', 'section']),
-    ('android-observation-room.mid',  'Observation Room',    ['electronic', 'chill', 'story', 'game', 'section']),
-    ('sitar-jam.mid',                 'Sitar Jam',           ['world', 'chill', 'story', 'game', 'section']),
-    ('do-you-remember.mid',           'Do You Remember',     ['lofi', 'sad', 'story', 'game', 'section']),
+    ('overture-2021.mid',             'Overture',            ['cinematic', 'epic', 'intro', 'game']),
+    ('gather-your-party.mid',         'Gather Your Party',   ['chiptune', 'epic', 'exploration', 'game']),
+    ('arena-rock.mid',                'Arena Rock',          ['rock', 'epic', 'boss', 'game']),
+    ('frantic-boss-battle.mid',       'Frantic Boss Battle', ['electronic', 'epic', 'boss', 'game']),
+    ('lighthearted-battle-theme.mid', 'Lighthearted Battle', ['chiptune', 'upbeat', 'boss', 'game']),
+    ('math-metal.mid',                'Math Metal',          ['rock', 'epic', 'boss', 'game']),
+    ('mine-all-mine.mid',             'Mine All Mine',       ['rock', 'upbeat', 'platformer', 'game']),
+    ('gears.mid',                     'Gears',               ['electronic', 'epic', 'racing', 'game']),
+    ('movin-on.mid',                  "Movin' On",           ['rock', 'happy', 'racing', 'game']),
+    ('maybe.mid',                     'Maybe',               ['pop', 'happy', 'dance', 'game']),
+    ('android-observation-room.mid',  'Observation Room',    ['electronic', 'chill', 'story', 'game']),
+    ('sitar-jam.mid',                 'Sitar Jam',           ['chill', 'story', 'game']),
+    ('do-you-remember.mid',           'Do You Remember',     ['lofi', 'sad', 'story', 'game']),
 ]
 
 
@@ -325,7 +325,7 @@ def main():
 
     items = []
     todo = ([(os.path.basename(p), os.path.splitext(os.path.basename(p))[0],
-              ['game', 'section']) for p in sorted(glob.glob(os.path.join(args.indir, '*.mid')))]
+              ['game']) for p in sorted(glob.glob(os.path.join(args.indir, '*.mid')))]
             if args.all else CURATED)
     for fname, name, tags in todo:
         path = os.path.join(args.indir, fname)

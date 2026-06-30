@@ -5,8 +5,7 @@
     "tags": [
       "cinematic",
       "epic",
-      "exploration",
-      "section"
+      "exploration"
     ],
     "tempo": 110,
     "rootPitch": 62,
@@ -394,8 +393,7 @@
     "tags": [
       "rock",
       "epic",
-      "boss",
-      "section"
+      "boss"
     ],
     "tempo": 160,
     "rootPitch": 52,
@@ -1279,8 +1277,7 @@
     "tags": [
       "rock",
       "epic",
-      "boss",
-      "section"
+      "boss"
     ],
     "tempo": 160,
     "rootPitch": 52,
@@ -1870,8 +1867,7 @@
     "tags": [
       "electronic",
       "epic",
-      "boss",
-      "section"
+      "boss"
     ],
     "tempo": 170,
     "rootPitch": 69,
@@ -2463,8 +2459,7 @@
     "tags": [
       "funk",
       "upbeat",
-      "dance",
-      "section"
+      "dance"
     ],
     "tempo": 124,
     "rootPitch": 60,
@@ -3776,8 +3771,7 @@
     "tags": [
       "funk",
       "upbeat",
-      "dance",
-      "section"
+      "dance"
     ],
     "tempo": 120,
     "rootPitch": 60,
@@ -4459,8 +4453,7 @@
     "tags": [
       "cinematic",
       "epic",
-      "intro",
-      "section"
+      "intro"
     ],
     "tempo": 100,
     "rootPitch": 62,
@@ -4901,8 +4894,7 @@
     "tags": [
       "cinematic",
       "epic",
-      "intro",
-      "section"
+      "intro"
     ],
     "tempo": 100,
     "rootPitch": 62,
@@ -5422,8 +5414,7 @@
     "tags": [
       "hiphop",
       "chill",
-      "dance",
-      "section"
+      "dance"
     ],
     "tempo": 90,
     "rootPitch": 53,
@@ -5895,8 +5886,7 @@
     "tags": [
       "lofi",
       "chill",
-      "story",
-      "section"
+      "story"
     ],
     "tempo": 80,
     "rootPitch": 62,
@@ -6480,8 +6470,7 @@
     "tags": [
       "lofi",
       "chill",
-      "story",
-      "section"
+      "story"
     ],
     "tempo": 80,
     "rootPitch": 62,
@@ -6875,8 +6864,7 @@
     "tags": [
       "chiptune",
       "upbeat",
-      "platformer",
-      "section"
+      "platformer"
     ],
     "tempo": 130,
     "rootPitch": 60,
@@ -7796,8 +7784,7 @@
     "tags": [
       "chiptune",
       "upbeat",
-      "platformer",
-      "section"
+      "platformer"
     ],
     "tempo": 130,
     "rootPitch": 60,
@@ -8352,8 +8339,7 @@
     "tags": [
       "pop",
       "happy",
-      "dance",
-      "section"
+      "dance"
     ],
     "tempo": 118,
     "rootPitch": 67,
@@ -8879,8 +8865,7 @@
     "tags": [
       "jingle",
       "happy",
-      "quiz",
-      "section"
+      "quiz"
     ],
     "tempo": 120,
     "rootPitch": 79,
@@ -9050,8 +9035,7 @@
     "tags": [
       "electronic",
       "upbeat",
-      "racing",
-      "section"
+      "racing"
     ],
     "tempo": 140,
     "rootPitch": 64,
@@ -10020,8 +10004,7 @@
     "tags": [
       "synthwave",
       "upbeat",
-      "racing",
-      "section"
+      "racing"
     ],
     "tempo": 140,
     "rootPitch": 64,
@@ -10637,8 +10620,7 @@
     "tags": [
       "cinematic",
       "sad",
-      "story",
-      "section"
+      "story"
     ],
     "tempo": 70,
     "rootPitch": 69,
@@ -10822,8 +10804,7 @@
     "tags": [
       "cinematic",
       "happy",
-      "story",
-      "section"
+      "story"
     ],
     "tempo": 100,
     "rootPitch": 60,
@@ -11166,8 +11147,7 @@
     "tags": [
       "cinematic",
       "spooky",
-      "maze",
-      "section"
+      "maze"
     ],
     "tempo": 90,
     "rootPitch": 57,
@@ -11553,8 +11533,7 @@
     "tags": [
       "cinematic",
       "spooky",
-      "maze",
-      "section"
+      "maze"
     ],
     "tempo": 90,
     "rootPitch": 57,
@@ -11803,8 +11782,7 @@
     "tags": [
       "ambient",
       "chill",
-      "underwater",
-      "section"
+      "underwater"
     ],
     "tempo": 75,
     "rootPitch": 62,
@@ -19265,8 +19243,7 @@
       "cinematic",
       "epic",
       "intro",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 160,
     "rootPitch": 64,
@@ -21160,9 +21137,8 @@
     "tags": [
       "chiptune",
       "epic",
-      "adventure",
-      "game",
-      "section"
+      "exploration",
+      "game"
     ],
     "tempo": 130,
     "rootPitch": 60,
@@ -22589,8 +22565,7 @@
       "rock",
       "epic",
       "boss",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 110,
     "rootPitch": 69,
@@ -24875,8 +24850,7 @@
       "electronic",
       "epic",
       "boss",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 160,
     "rootPitch": 64,
@@ -26777,8 +26751,7 @@
       "chiptune",
       "upbeat",
       "boss",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 205,
     "rootPitch": 67,
@@ -28894,8 +28867,7 @@
       "rock",
       "epic",
       "boss",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 190,
     "rootPitch": 71,
@@ -30502,8 +30474,7 @@
       "rock",
       "upbeat",
       "platformer",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 151,
     "rootPitch": 71,
@@ -32409,8 +32380,7 @@
       "electronic",
       "epic",
       "racing",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 140,
     "rootPitch": 64,
@@ -33727,8 +33697,7 @@
       "rock",
       "happy",
       "racing",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 140,
     "rootPitch": 67,
@@ -36236,8 +36205,7 @@
       "pop",
       "happy",
       "dance",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 155,
     "rootPitch": 60,
@@ -38190,8 +38158,7 @@
       "electronic",
       "chill",
       "story",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 123,
     "rootPitch": 67,
@@ -40100,11 +40067,9 @@
     "name": "Sitar Jam",
     "itemType": "song",
     "tags": [
-      "world",
       "chill",
       "story",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 112,
     "rootPitch": 71,
@@ -41735,8 +41700,7 @@
       "lofi",
       "sad",
       "story",
-      "game",
-      "section"
+      "game"
     ],
     "tempo": 105,
     "rootPitch": 60,
