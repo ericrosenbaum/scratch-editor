@@ -196,6 +196,9 @@ class PopupScene {
 
         this._wall = null;
         this._wallCostumeId = null;
+        // Whether the backdrop is shown as a 3D back wall. When false the sky shows
+        // through behind the sprites instead.
+        this._wallVisible = true;
 
         // Persistent stamps: [{group, meshes, materials, textures}].
         this._stamps = [];
@@ -328,6 +331,17 @@ class PopupScene {
         this._skyPreset = preset;
         this._init();
         if (this.inited) this._applySky(preset);
+    }
+
+    /**
+     * Show or hide the backdrop "back wall". When hidden, the sky (or transparency)
+     * shows through behind the sprites instead of the stage backdrop.
+     * @param {boolean} visible - true to show the wall, false to hide it.
+     */
+    setWallVisible (visible) {
+        this._wallVisible = visible !== false;
+        if (this._wall) this._wall.visible = this._wallVisible;
+        if (this._renderer) this.runtime.requestRedraw();
     }
 
     /**
@@ -605,6 +619,7 @@ class PopupScene {
                 new THREE.MeshBasicMaterial({map: tex, transparent: true, side: THREE.DoubleSide})
             );
             wall.position.z = WALL_Z;
+            wall.visible = this._wallVisible;
             this._wall = wall;
             this._scene.add(wall);
             this.runtime.requestRedraw();
@@ -669,7 +684,7 @@ class PopupScene {
 
         // Orient the card from the sprite's direction + rotation style and the Pop-Up
         // tilt/spin (see _orientation). Shared with forwardVector so "move in 3D" always
-        // travels the way the card actually faces.
+        // travels the way the card's nose points (its rightward heading).
         const o = this._orientation(target, state);
         entry.group.rotation.set(o.x, o.y, o.z);
 
@@ -708,16 +723,19 @@ class PopupScene {
     }
 
     /**
-     * The unit vector the card faces in world space, i.e. its front normal (+z when at
-     * rest, toward the camera) rotated by the card's full 3D orientation. `move ... steps
-     * in 3D` travels along this, so movement always matches the rendered facing across
-     * all three rotation axes (direction, tilt and spin). Safe to call headless.
+     * The unit vector the card's "nose" points in world space — i.e. its local +x (the
+     * drawing's rightward / direction-90 heading), rotated by the card's full 3D
+     * orientation. At rest (direction 90, no spin/tilt) this is +x (right), so `move ...
+     * steps in 3D` matches 2D `move 10 steps`; `direction` then steers it in the wall
+     * plane just like 2D, spin (yaw) angles it into/out of the page, and tilt rolls it.
+     * Built from the same orientation as the rendered mesh, so movement always matches
+     * where the card points. Safe to call headless.
      * @param {Target} target - the sprite to read orientation from.
-     * @returns {THREE.Vector3} the world-space forward direction (unit length).
+     * @returns {THREE.Vector3} the world-space heading direction (unit length).
      */
     forwardVector (target) {
         const o = this._orientation(target, getPopupState(target));
-        return new THREE.Vector3(0, 0, 1).applyEuler(new THREE.Euler(o.x, o.y, o.z, 'XYZ'));
+        return new THREE.Vector3(1, 0, 0).applyEuler(new THREE.Euler(o.x, o.y, o.z, 'XYZ'));
     }
 
     /**

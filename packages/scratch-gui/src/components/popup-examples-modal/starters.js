@@ -13,6 +13,9 @@ import thumbGarden from './starters/popup-example-6.png';
 import thumbPlatformer from './starters/popup-example-7.png';
 import thumbBirthday from './starters/popup-example-8.png';
 import thumbCrystal from './starters/popup-example-9.png';
+import thumbSolar from './starters/popup-example-10.png';
+import thumbGems from './starters/popup-example-11.png';
+import thumbCarousel from './starters/popup-example-12.png';
 
 import sb3Card from './starters/popup-example-1.sb3';
 import sb3Fish from './starters/popup-example-2.sb3';
@@ -23,6 +26,9 @@ import sb3Garden from './starters/popup-example-6.sb3';
 import sb3Platformer from './starters/popup-example-7.sb3';
 import sb3Birthday from './starters/popup-example-8.sb3';
 import sb3Crystal from './starters/popup-example-9.sb3';
+import sb3Solar from './starters/popup-example-10.sb3';
+import sb3Gems from './starters/popup-example-11.sb3';
+import sb3Carousel from './starters/popup-example-12.sb3';
 
 const starters = [
     {
@@ -35,7 +41,8 @@ const starters = [
     {
         id: 'fish-tank',
         title: 'Fish Tank',
-        description: 'Fish swim at different depths while the camera slowly turns.',
+        description: 'Real fish glide through a reef of coral and kelp, wandering gently ' +
+            'and turning with a quick spin at the edges. Drag to look around.',
         thumbnail: thumbFish,
         sb3: sb3Fish
     },
@@ -90,6 +97,30 @@ const starters = [
             'crystal — a 3D shape no single drawing could make. The camera orbits it.',
         thumbnail: thumbCrystal,
         sb3: sb3Crystal
+    },
+    {
+        id: 'solar-system',
+        title: 'Solar System',
+        description: 'Planets orbit the sun at their own speeds and depths while the ' +
+            'camera circles the whole system.',
+        thumbnail: thumbSolar,
+        sb3: sb3Solar
+    },
+    {
+        id: 'gem-hunt',
+        title: 'Gem Hunt',
+        description: 'A game: roam with the arrow keys (in, out and across) and collect ' +
+            'all five gems hidden at different depths.',
+        thumbnail: thumbGems,
+        sb3: sb3Gems
+    },
+    {
+        id: 'carousel',
+        title: 'Carousel',
+        description: 'Six horses are spaced evenly around a striped big top and revolve ' +
+            'as they bob up and down — all with the orbit block.',
+        thumbnail: thumbCarousel,
+        sb3: sb3Carousel
     }
 ];
 

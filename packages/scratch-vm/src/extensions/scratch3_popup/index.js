@@ -140,6 +140,22 @@ class Scratch3PopupBlocks {
                         }
                     }
                 },
+                {
+                    opcode: 'setBackdrop',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.setBackdrop',
+                        default: 'set backdrop wall to [VISIBLE]',
+                        description: 'Show or hide the backdrop as a wall behind the 3D scene'
+                    }),
+                    arguments: {
+                        VISIBLE: {
+                            type: ArgumentType.STRING,
+                            menu: 'backdropVisibility',
+                            defaultValue: 'hidden'
+                        }
+                    }
+                },
                 '---',
                 {
                     opcode: 'changeDepth',
@@ -305,6 +321,21 @@ class Scratch3PopupBlocks {
                         }
                     }
                 },
+                {
+                    opcode: 'orbit',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.orbit',
+                        default: 'orbit [DEGREES] degrees around center',
+                        description: 'Revolve this sprite around the centre of the stage in the ground plane'
+                    }),
+                    arguments: {
+                        DEGREES: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 15
+                        }
+                    }
+                },
                 '---',
                 {
                     opcode: 'touchingSprite',
@@ -375,6 +406,27 @@ class Scratch3PopupBlocks {
                     acceptReporters: false,
                     items: this._skyMenu()
                 },
+                backdropVisibility: {
+                    acceptReporters: false,
+                    items: [
+                        {
+                            text: formatMessage({
+                                id: 'popup.backdrop.hidden',
+                                default: 'hidden',
+                                description: 'Hide the backdrop wall (show the sky behind the scene)'
+                            }),
+                            value: 'hidden'
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'popup.backdrop.shown',
+                                default: 'shown',
+                                description: 'Show the backdrop as a wall behind the scene'
+                            }),
+                            value: 'shown'
+                        }
+                    ]
+                },
                 spriteMenu: {
                     acceptReporters: true,
                     items: '_spriteMenu'
@@ -443,11 +495,14 @@ class Scratch3PopupBlocks {
     }
 
     /**
-     * Return to the flat view (used by the stop button).
+     * Return to the flat view (used by the stop button). Also restores the backdrop
+     * wall to its default (shown), so a project that hid it doesn't leave the wall
+     * hidden for the next project run. Runs on every green flag (via PROJECT_STOP_ALL).
      * @private
      */
     _reset () {
         this._scene.setMode('front');
+        this._scene.setWallVisible(true);
     }
 
     /**
@@ -483,6 +538,16 @@ class Scratch3PopupBlocks {
      */
     setSky (args) {
         this._scene.setSky(Cast.toString(args.SKY));
+        this._visualChange();
+    }
+
+    /**
+     * `set backdrop wall to [shown | hidden]`. Hiding the wall lets the sky show through
+     * behind the sprites instead of the stage backdrop.
+     * @param {object} args - the block arguments.
+     */
+    setBackdrop (args) {
+        this._scene.setWallVisible(Cast.toString(args.VISIBLE) !== 'hidden');
         this._visualChange();
     }
 
@@ -611,12 +676,11 @@ class Scratch3PopupBlocks {
     }
 
     /**
-     * `move [STEPS] steps in 3D` - move along the sprite's full 3D heading. The heading
-     * is the direction the card actually faces, built from all three rotation axes:
-     * the sprite's `direction` (about Z, honouring its rotation style), tilt (about X)
-     * and spin (about Y). At rest the sprite faces the camera (out of the page); spin
-     * steers it horizontally and tilt steers it vertically/in-out. Sharing the scene's
-     * orientation maths guarantees movement matches what's rendered.
+     * `move [STEPS] steps in 3D` - move along the sprite's heading, the direction its nose
+     * points. At rest (direction 90, no spin/tilt) the nose points right, so this matches
+     * 2D `move 10 steps`; the sprite's `direction` then steers it in the wall plane exactly
+     * like 2D, while spin (yaw) angles the heading into/out of the page and tilt rolls it.
+     * Sharing the scene's orientation maths guarantees movement matches what's rendered.
      * @param {object} args - the block arguments.
      * @param {object} util - block utility (provides the current target).
      */
@@ -629,6 +693,29 @@ class Scratch3PopupBlocks {
         // World +z (toward the camera) means a smaller depth, since the group's z is
         // set to -(depth) in the scene.
         state.depth = MathUtil.clamp(state.depth - (steps * f.z), DEPTH_RANGE.min, DEPTH_RANGE.max);
+        this._visualChange();
+    }
+
+    /**
+     * `orbit [DEGREES] degrees around center` - revolve the sprite around the centre of
+     * the stage in the ground (x / depth) plane, the same plane the camera circles. The
+     * sprite keeps its height and its facing, so a flat drawing (e.g. a planet) stays
+     * face-on to the camera instead of turning edge-on as it would if you steered it
+     * with `spin` + `move in 3D`. This makes solar systems, carousels and the like simple.
+     * @param {object} args - the block arguments.
+     * @param {object} util - block utility (provides the current target).
+     */
+    orbit (args, util) {
+        const target = util.target;
+        const state = this._getState(target);
+        const a = Cast.toNumber(args.DEGREES) * (Math.PI / 180);
+        const cos = Math.cos(a);
+        const sin = Math.sin(a);
+        const x = target.x || 0;
+        const z = state.depth || 0;
+        // Rotate (x, depth) about the origin in the ground plane; height (y) is untouched.
+        target.setXY((x * cos) - (z * sin), target.y);
+        state.depth = MathUtil.clamp((x * sin) + (z * cos), DEPTH_RANGE.min, DEPTH_RANGE.max);
         this._visualChange();
     }
 

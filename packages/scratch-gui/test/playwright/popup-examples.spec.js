@@ -11,7 +11,7 @@ test.skip(({browserName}) => browserName !== 'chromium', 'WebGL/3D requires Chro
 
 const examples = [
     {file: 'popup-example-1.sb3', shot: 'example-card.png', drag: true},
-    {file: 'popup-example-2.sb3', shot: 'example-fish.png', drag: false},
+    {file: 'popup-example-2.sb3', shot: 'example-fish.png', drag: true},
     {file: 'popup-example-3.sb3', shot: 'example-forest.png', drag: true},
     // Keyboard-interactive examples: drive the arrow keys / space, then capture.
     {file: 'popup-example-4.sb3',
@@ -42,6 +42,19 @@ const examples = [
     // Crystal: auto-orbits, so no drag needed; the crossed clones build on green flag.
     {file: 'popup-example-9.sb3',
         shot: 'example-crystal.png',
+        drag: false},
+    // Solar system: planets orbit the sun on the green flag; camera auto-orbits.
+    {file: 'popup-example-10.sb3',
+        shot: 'example-solar.png',
+        drag: false},
+    // Gem hunt: roam in 3D (across + into/out of the scene) collecting gems.
+    {file: 'popup-example-11.sb3',
+        shot: 'example-gems.png',
+        drag: true,
+        keys: ['ArrowLeft', 'ArrowLeft', 'ArrowUp', 'ArrowUp']},
+    // Carousel: clones are placed + revolved with the orbit block; camera auto-orbits.
+    {file: 'popup-example-12.sb3',
+        shot: 'example-carousel.png',
         drag: false}
 ];
 

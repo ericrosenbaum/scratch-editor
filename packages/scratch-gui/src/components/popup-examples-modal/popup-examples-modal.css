@@ -8,12 +8,17 @@
 
 .body {
     background: $ui-white;
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    /* Keep the modal compact: about two-and-a-half rows of examples, and never taller
+       than the viewport (it opens 100px from the top, below a ~3.125rem header).
+       Anything past that scrolls inside the body. */
+    max-height: min(34rem, calc(100vh - 11rem));
+    overflow-y: auto;
 }
 
 .description {
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.75rem 0;
     font-size: 0.875rem;
     line-height: 1.4;
     color: $text-primary;
@@ -21,7 +26,7 @@
 }
 
 .choose-project {
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.75rem 0;
     font-size: 0.875rem;
     font-weight: bold;
     color: $text-primary;
@@ -31,7 +36,7 @@
 .starter-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .starter-card {
@@ -56,7 +61,7 @@
 
 .thumbnail-wrapper {
     width: 100%;
-    height: 100px;
+    height: 84px;
     display: flex;
     align-items: center;
     justify-content: center;

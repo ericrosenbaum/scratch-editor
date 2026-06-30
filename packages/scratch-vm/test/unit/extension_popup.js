@@ -52,37 +52,34 @@ test('PopupScene._hideSprites hides every non-stage drawable, including clones',
     t.end();
 });
 
-test('PopupScene.forwardVector matches the rendered orientation across all three axes', t => {
+test('PopupScene.forwardVector points along the heading (2D-compatible) across all axes', t => {
     const runtime = {renderer: null, targets: [], on: () => {}};
     const scene = new PopupScene(runtime);
     const near = (a, b) => Math.abs(a - b) < 1e-9;
 
-    // At rest the card faces the camera (+z), regardless of direction (a pure roll).
-    const rest = makeTarget({direction: 0});
-    let f = scene.forwardVector(rest);
-    t.ok(near(f.x, 0) && near(f.y, 0) && near(f.z, 1), 'rest faces +z (toward camera)');
+    // At rest (direction 90, no spin/tilt) the heading is +x (right), like 2D `move`.
+    let f = scene.forwardVector(makeTarget({direction: 90}));
+    t.ok(near(f.x, 1) && near(f.y, 0) && near(f.z, 0), 'rest (dir 90) heads +x (right), like 2D move');
 
-    // Direction (roll about the forward axis) must not change the heading.
-    const rolled = makeTarget({direction: 0});
-    const f2 = scene.forwardVector(rolled);
-    t.ok(near(f2.x, 0) && near(f2.y, 0) && near(f2.z, 1), 'direction alone does not change heading');
+    // `direction` steers the heading in the wall plane exactly like 2D: dir 0 -> up (+y).
+    f = scene.forwardVector(makeTarget({direction: 0}));
+    t.ok(near(f.x, 0) && near(f.y, 1) && near(f.z, 0), 'direction 0 heads +y (up), like 2D move');
 
-    // Spin 90deg (yaw about y) turns the heading to +x.
-    const spun = makeTarget();
+    // Spin (yaw about y) angles the heading into the page: spin 90 -> -z.
+    const spun = makeTarget({direction: 90});
     getPopupState(spun).spin = 90;
     f = scene.forwardVector(spun);
-    t.ok(near(f.x, 1) && near(f.y, 0) && near(f.z, 0), 'spin 90 faces +x');
+    t.ok(near(f.x, 0) && near(f.y, 0) && near(f.z, -1), 'spin 90 angles the heading into the page (-z)');
 
-    // Tilt 90deg (pitch about x) tips the heading down to -y.
-    const tilted = makeTarget();
+    // Tilt about the heading axis is a roll: a straight-ahead (+x) heading is unchanged.
+    const tilted = makeTarget({direction: 90});
     getPopupState(tilted).tilt = 90;
     f = scene.forwardVector(tilted);
-    t.ok(near(f.x, 0) && near(f.y, -1) && near(f.z, 0), 'tilt 90 faces -y (down)');
+    t.ok(near(f.x, 1) && near(f.y, 0) && near(f.z, 0), 'tilt 90 rolls the card; +x heading unchanged');
 
-    // left-right flip (facing left) flips the heading to -z (into the page).
-    const flipped = makeTarget({rotationStyle: 'left-right', direction: -90});
-    f = scene.forwardVector(flipped);
-    t.ok(near(f.x, 0) && near(f.y, 0) && near(f.z, -1), 'left-right flip faces -z');
+    // A left-right flip (facing left) reverses the heading to -x (left).
+    f = scene.forwardVector(makeTarget({rotationStyle: 'left-right', direction: -90}));
+    t.ok(near(f.x, -1) && near(f.y, 0) && near(f.z, 0), 'left-right flip heads -x (left)');
 
     t.end();
 });

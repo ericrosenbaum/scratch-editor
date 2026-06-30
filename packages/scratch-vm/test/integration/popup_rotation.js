@@ -139,14 +139,14 @@ test('3D Pop-Up tilt/spin/move3D update rotation state and 3D position', t => {
             t.equal(state().tilt, 30, 'tilt set to 30');
             t.equal(state().spin, 45, 'spin set to 45');
 
-            // Heading: the +z (front) normal rotated by the card's orientation, Euler
-            // 'XYZ' with x=tilt(30deg), y=spin(45deg), z=0 (direction 90 => no roll).
-            // Matches scene.forwardVector / _orientation exactly.
+            // Heading: the local +x (nose / direction-90) heading rotated by the card's
+            // orientation, Euler 'XYZ' with x=tilt(30deg), y=spin(45deg), z=0 (direction
+            // 90 => no wall-plane rotation). Matches scene.forwardVector / _orientation.
             const yaw = 45 * Math.PI / 180;
             const pitch = 30 * Math.PI / 180;
-            const fx = Math.sin(yaw);
-            const fy = -Math.cos(yaw) * Math.sin(pitch);
-            const fz = Math.cos(yaw) * Math.cos(pitch);
+            const fx = Math.cos(yaw);
+            const fy = Math.sin(pitch) * Math.sin(yaw);
+            const fz = -Math.cos(pitch) * Math.sin(yaw);
 
             t.ok(near(cat.x, 10 * fx), 'x advanced along the heading');
             t.ok(near(cat.y, 10 * fy), 'y advanced along the heading');

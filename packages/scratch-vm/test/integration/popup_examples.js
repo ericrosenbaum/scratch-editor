@@ -67,6 +67,70 @@ test('3D Pop-Up example 9 (crystal): crossed clones inherit distinct spins', {sk
     });
 });
 
+test('3D Pop-Up example 2 (fish tank): fish stay upright and turn back at the walls', {skip: !haveStarters}, t => {
+    // Run long enough that the fish reach the side walls and do their spin-around turns.
+    loadAndRun('popup-example-2.sb3', 400).then(({vm, errors}) => {
+        t.equal(errors.length, 0, 'no runtime errors');
+
+        const fishNames = ['Clownfish', 'BlueTang', 'BannerFish', 'YellowTang'];
+        const fish = vm.runtime.targets.filter(target => target.sprite && fishNames.includes(target.sprite.name));
+        t.equal(fish.length, 4, 'all four library fish are present');
+        // "stay right-side up": tilt is never touched, so every fish stays upright.
+        t.ok(fish.every(f => popupState(f).tilt === 0), 'every fish stays upright (tilt 0)');
+        // The quick spin-around (not a fly-off) keeps every fish inside the tank.
+        t.ok(fish.every(f => Math.abs(f.x) < 235), 'every fish turned back and stayed within the walls');
+
+        const decor = ['Sand', 'Coral1', 'Coral2', 'Kelp1', 'Kelp2'];
+        t.ok(decor.every(name => vm.runtime.targets.some(tg => tg.sprite && tg.sprite.name === name)),
+            'the sand, coral and kelp sprites are all present');
+        t.end();
+    });
+});
+
+test('3D Pop-Up example 10 (solar system): planets orbit away from their start', {skip: !haveStarters}, t => {
+    loadAndRun('popup-example-10.sb3', 20).then(({vm, errors}) => {
+        t.equal(errors.length, 0, 'no runtime errors');
+
+        // Each planet starts on the +x axis (depth 0) and is walked around the centre by
+        // the `orbit` block, so after a few frames it has left its starting spot.
+        const earth = vm.runtime.targets.find(target => target.sprite && target.sprite.name === 'Earth');
+        t.ok(earth, 'the Earth sprite exists');
+        const moved = Math.hypot(earth.x - 95, popupState(earth).depth);
+        t.ok(moved > 5, 'Earth has orbited away from its starting position');
+        t.end();
+    });
+});
+
+test('3D Pop-Up example 11 (gem hunt): gems clone and the score is global', {skip: !haveStarters}, t => {
+    loadAndRun('popup-example-11.sb3', 5).then(({vm, errors}) => {
+        t.equal(errors.length, 0, 'no runtime errors');
+
+        const gems = vm.runtime.targets.filter(
+            target => target.sprite && target.sprite.name === 'Gem' && !target.isOriginal
+        );
+        t.equal(gems.length, 5, 'five gem clones were created');
+        const stage = vm.runtime.getTargetForStage();
+        const hasScore = Object.values(stage.variables).some(v => v.name === 'Gems');
+        t.ok(hasScore, 'the Gems score is a global (stage) variable');
+        t.end();
+    });
+});
+
+test('3D Pop-Up example 12 (carousel): six horses are spaced evenly around the centre', {skip: !haveStarters}, t => {
+    loadAndRun('popup-example-12.sb3', 5).then(({vm, errors}) => {
+        t.equal(errors.length, 0, 'no runtime errors');
+
+        const horses = vm.runtime.targets.filter(
+            target => target.sprite && /^Horse/.test(target.sprite.name) && !target.isOriginal
+        );
+        t.equal(horses.length, 6, 'six horse clones were created (three of each colour)');
+        // The horses start the same radius from the centre, just at different angles.
+        const radii = horses.map(h => Math.hypot(h.x, popupState(h).depth));
+        for (const r of radii) t.ok(Math.abs(r - 120) < 1, 'each horse sits ~120 units from the centre');
+        t.end();
+    });
+});
+
 test('3D Pop-Up example 8 (birthday): clicking a balloon pops it', {skip: !haveStarters}, t => {
     loadAndRun('popup-example-8.sb3', 10).then(async ({vm, errors}) => {
         const red = vm.runtime.targets.find(target => target.sprite && target.sprite.name === 'RedBalloon');
