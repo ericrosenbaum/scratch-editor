@@ -6,7 +6,7 @@
 //   popup-example-4.sb3   Space Flyer     (arrow keys fly in x + depth)
 //   popup-example-5.sb3   Jump!           (arrow keys walk, space jumps)
 //   popup-example-6.sb3   Magic Garden    (arrow keys move, space stamps flowers)
-//   popup-example-7.sb3   3D Platformer   (gravity + jump across platforms in x/y/depth)
+//   popup-example-7.sb3   3D Platformer   (gravity + jump up a tower to a flag; follow cam)
 //   popup-example-8.sb3   Birthday Card   (text + animated effects + click to pop)
 //   popup-example-9.sb3   3D Crystal      (crossed clones form one composite gem)
 //   popup-example-10.sb3  Solar System    (planets orbit the sun in the ground plane)
@@ -102,6 +102,10 @@ const buildScript = (blocks, specs, x, y) => {
 const flag = (...specs) => [{op: 'event_whenflagclicked'}, ...specs];
 const setSky = sky => ({op: 'popup_setSky', fields: {SKY: [sky, null]}});
 const setCamera = view => ({op: 'popup_setCamera', fields: {VIEW: [view, null]}});
+// `set camera to follow [sprite]` — the 3D camera tracks and stays centred on the sprite.
+const followCamera = spriteName => ({op: 'popup_followCamera',
+    inputs: {SPRITE: {op: 'popup_menu_spriteMenu', menu: true, shadow: true,
+        fields: {spriteMenu: [spriteName, null]}}}});
 // 'shown' | 'hidden' — when hidden the sky shows behind the sprites instead of the backdrop.
 const setBackdrop = visible => ({op: 'popup_setBackdrop', fields: {VISIBLE: [visible, null]}});
 const setThickness = v => ({op: 'popup_setThickness', inputs: {AMOUNT: num(v)}});
@@ -129,6 +133,12 @@ const pointDir = v => ({op: 'motion_pointindirection', inputs: {DIRECTION: num(v
 const turn = v => ({op: 'motion_turnright', inputs: {DEGREES: num(v)}});
 const yPos = () => ({op: 'motion_yposition'});
 const xPos = () => ({op: 'motion_xposition'});
+
+// `key [key] pressed?` boolean — poll a key every frame (in a forever-if) for smooth,
+// continuous movement, unlike the `when key pressed` hat which stutters on the OS repeat.
+const keyPressed = key => ({op: 'sensing_keypressed', boolean: true,
+    inputs: {KEY_OPTION: {op: 'sensing_keyoptions', menu: true, shadow: true,
+        fields: {KEY_OPTION: [key, null]}}}});
 
 const setSize = v => ({op: 'looks_setsizeto', inputs: {SIZE: num(v)}});
 const changeSize = v => ({op: 'looks_changesizeby', inputs: {CHANGE: num(v)}});
@@ -521,14 +531,29 @@ const garden = [
     })
 ];
 
-// ---- example 7: 3D Platformer (gravity + jump between platforms in x/y/depth) ----
-// A hopper with real gravity. Arrow keys walk (x) and step into/out of the scene
-// (depth); space jumps. Platforms are clones placed at different x, y AND depth, so
-// reaching them means lining up in all three axes before you leap. The clones inherit
-// the platform's 3D thickness/depth (3D properties are inherited like size/direction).
+// ---- example 7: 3D Platformer (gravity + jump up a tower to a flag) ---------------
+// A hopper with real gravity climbs a tower of floating platforms to a goal flag, while
+// the 3D camera FOLLOWS it up (set camera to follow [Hero]). Three things make it play
+// well:
+//  - Controls are POLLED every frame in a `forever … if key pressed` loop (left/right
+//    walk, up/down step into and out of the scene, space jumps). That is smooth, unlike
+//    the `when key pressed` hat which stutters on the OS key-repeat delay.
+//  - Landing no longer jitters: instead of rising in coarse 3px steps, the hero pops out
+//    of a platform in 1px steps and then settles one step back onto the surface, so its
+//    end-of-frame rest position is stable (no more bobbing on contact).
+//  - A jump only fires when grounded, so you can't fly by holding space.
+// Two extra ledges sit at front/back depths to explore by stepping in/out; the climb
+// itself stays near depth 0 so it's always winnable. Reaching the flag sets the global
+// "Win" flag (shown in a monitor and used by the beatable test) and plays a celebration.
 const platformSlabSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="150" height="44" viewBox="0 0 150 44">
   <rect x="3" y="3" width="144" height="38" rx="10" fill="#8bd17c" stroke="#4f9a40" stroke-width="4"/>
   <rect x="3" y="3" width="144" height="14" rx="7" fill="#a7e29a"/></svg>`);
+const goalFlagSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="130" viewBox="0 0 80 130">
+  <rect x="12" y="6" width="8" height="118" rx="4" fill="#b9854f" stroke="#8a5f33" stroke-width="3"/>
+  <path d="M20 12 L70 28 L20 46 Z" fill="#ff4d6d" stroke="#c2305c" stroke-width="3" stroke-linejoin="round"/>
+  <polygon points="40,21 44,30 53,30 46,36 49,45 40,39 31,45 34,36 27,30 36,30"
+    fill="#ffe14d" stroke="#d9a93a" stroke-width="1.5" stroke-linejoin="round"/>
+  <ellipse cx="16" cy="124" rx="13" ry="4" fill="#000" opacity="0.18"/></svg>`);
 const platformBgSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360">
   <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
   <stop offset="0" stop-color="#aee3ff"/><stop offset="1" stop-color="#e7f7ff"/></linearGradient></defs>
@@ -537,53 +562,103 @@ const platformBgSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="480" h
   <ellipse cx="120" cy="96" rx="48" ry="22" fill="#ffffff"/><ellipse cx="160" cy="104" rx="40" ry="18" fill="#ffffff"/>
   <ellipse cx="330" cy="150" rx="44" ry="20" fill="#ffffff"/></svg>`);
 
+// Tower of platforms [x, y, depth]. The first six zigzag up the centre, all at the same
+// modest depth (26, just into the page) and wide enough to overlap x = 0, so a straight-up
+// jump always lands on the next one. The hero stays at depth 0 (in front of them), so it's
+// never buried in the stack — yet 26 < the ~31-unit landing tolerance, so it still lands.
+// The last two are decorative ledges set far / near for parallax (explore by stepping
+// in and out with the up/down arrows).
+const CLIMB_DEPTH = 26;
+const PLATFORMS = [
+    [0, -125, CLIMB_DEPTH], [-50, -83, CLIMB_DEPTH], [45, -41, CLIMB_DEPTH],
+    [-45, 1, CLIMB_DEPTH], [50, 43, CLIMB_DEPTH], [0, 85, CLIMB_DEPTH],
+    [-95, -25, 140], [100, 20, -60]
+];
 const platformBlocks = {};
-// Place each platform, then clone. The clone keeps the position + 3D depth/thickness
-// it was stamped with; the original hides once the three platforms exist.
-buildScript(platformBlocks, flag(
-    setThickness(30),
-    gotoXY(-150, -120), setDepth(0), createClone(),
-    gotoXY(25, -45), setDepth(60), createClone(),
-    gotoXY(155, 25), setDepth(-60), createClone(),
-    hide()
-), 30, 30);
+const placePlatforms = [setThickness(40)];
+for (const [x, y, d] of PLATFORMS) placePlatforms.push(gotoXY(x, y), setDepth(d), createClone());
+placePlatforms.push(hide()); // hide the original once every clone exists
+buildScript(platformBlocks, flag(...placePlatforms), 30, 30);
 buildScript(platformBlocks, whenClone(show()), 320, 30);
 
-const vy = mkVar('vy');
+const vy = mkVar('vy'); // vertical velocity (hero-local)
+const onGround = mkVar('onGround'); // 1 while standing on a platform (hero-local)
+const won = mkVar('Win'); // 1 once the flag is reached (global: shared with Goal + monitor)
 const heroBlocks = {};
 buildScript(heroBlocks, flag(
-    setThickness(20),
-    setVar(vy, 0),
-    gotoXY(-150, -70), setDepth(0),
+    setThickness(22), setSize(75),
+    setVar(won, 0), setVar(vy, 0), setVar(onGround, 0),
+    gotoXY(0, -75), setDepth(0),
     forever(
-        // Gravity: accelerate downward, then move by the velocity.
-        changeVar(vy, -1.5),
-        changeYBy(varRep(vy)),
-        // Landing: if we have sunk into a platform, stop falling and rise back to its top.
-        ifThen(touching3D('Platform'),
-            setVar(vy, 0),
-            repeatUntil(not(touching3D('Platform')), changeYBy(3))
+        // Controls, polled every frame for smooth motion (frozen once you've won).
+        ifThen(eq(varRep(won), 0),
+            ifThen(keyPressed('right arrow'), changeX(7)),
+            ifThen(keyPressed('left arrow'), changeX(-7)),
+            ifThen(keyPressed('up arrow'), changeDepth(16)),
+            ifThen(keyPressed('down arrow'), changeDepth(-16)),
+            // Jump only from the ground (no mid-air jumps / flying).
+            ifThen(and(keyPressed('space'), eq(varRep(onGround), 1)),
+                setVar(vy, 13), setVar(onGround, 0))
         ),
-        // Fell past the bottom: respawn on the first platform.
+        // Gravity, with a terminal velocity so a long fall can't tunnel through a slab.
+        changeVar(vy, -1.2),
+        ifThen(lt(varRep(vy), -14), setVar(vy, -14)),
+        changeYBy(varRep(vy)),
+        // Land: while falling/resting, pop up out of the slab in 1px steps, then settle
+        // one step back onto its surface so the resting position is stable (no jitter).
+        setVar(onGround, 0),
+        ifThen(and(touching3D('Platform'), not(gt(varRep(vy), 0))),
+            repeatUntil(not(touching3D('Platform')), changeYBy(1)),
+            changeYBy(-1),
+            setVar(vy, 0),
+            setVar(onGround, 1)
+        ),
+        // Fell off the bottom: respawn at the start.
         ifThen(lt(yPos(), -175),
-            gotoXY(-150, -70), setDepth(0), setVar(vy, 0)
-        )
+            gotoXY(0, -75), setDepth(0), setVar(vy, 0))
     )
 ), 30, 30);
-buildScript(heroBlocks, whenKey('right arrow', changeX(14)), 30, 230);
-buildScript(heroBlocks, whenKey('left arrow', changeX(-14)), 30, 310);
-buildScript(heroBlocks, whenKey('up arrow', changeDepth(20)), 30, 390);
-buildScript(heroBlocks, whenKey('down arrow', changeDepth(-20)), 30, 470);
-buildScript(heroBlocks, whenKey('space', setVar(vy, 18)), 30, 550);
+// Reaching the flag wins. Touching it, or landing on the top platform (grounded and high
+// up — so a mid-jump apex from a lower platform can't false-trigger), sets Win = 1 and
+// the hero does a celebratory spin-and-grow.
+buildScript(heroBlocks, flag(
+    waitUntil(or(touching3D('Goal'), and(eq(varRep(onGround), 1), gt(yPos(), 120)))),
+    setVar(won, 1),
+    repeatN(18, changeSpin(10), changeEffect('color', 6), changeSize(2)),
+    repeatN(18, changeSpin(10), changeEffect('color', 6), changeSize(-2)),
+    setEffect('color', 0)
+), 360, 30);
+
+const goalBlocks = {};
+buildScript(goalBlocks, flag(
+    setThickness(18), setSize(95), setDepth(0),
+    gotoXY(0, 120), show(),
+    // Idle: bob gently until the player arrives.
+    forever(ifThen(eq(varRep(won), 0),
+        repeatN(16, changeYBy(0.7)),
+        repeatN(16, changeYBy(-0.7))
+    ))
+), 30, 30);
+buildScript(goalBlocks, flag(
+    waitUntil(eq(varRep(won), 1)),
+    setSky('dream'), // the sky bursts into colour to celebrate
+    repeatN(24, changeSpin(12), changeEffect('color', 8), changeSize(2)),
+    repeatN(24, changeSpin(12), changeEffect('color', 8), changeSize(-2))
+), 360, 30);
+
 const platformer = [
-    stage(platformBgSVG, buildScript({}, flag(setSky('day'), setCamera('drag')), 30, 30)),
+    stage(platformBgSVG, buildScript({}, flag(setSky('day'), followCamera('Hero')), 30, 30), [won]),
     sprite({
-        name: 'Platform', svg: platformSlabSVG, rcx: 75, rcy: 22, x: -150, y: -120, size: 120,
+        name: 'Platform', svg: platformSlabSVG, rcx: 75, rcy: 22, x: 0, y: -125, size: 125,
         layer: 1, blocks: platformBlocks
     }),
     sprite({
-        name: 'Hero', svg: hopperSVG, rcx: 40, rcy: 40, x: -150, y: -70, size: 80,
-        layer: 2, vars: [vy], blocks: heroBlocks
+        name: 'Goal', svg: goalFlagSVG, rcx: 40, rcy: 65, x: 0, y: 120, size: 95,
+        layer: 3, blocks: goalBlocks
+    }),
+    sprite({
+        name: 'Hero', svg: hopperSVG, rcx: 40, rcy: 40, x: 0, y: -75, size: 75,
+        layer: 2, vars: [vy, onGround], blocks: heroBlocks
     })
 ];
 
@@ -914,7 +989,7 @@ Promise.resolve()
     .then(() => writeProject('popup-example-4.sb3', spaceFlyer))
     .then(() => writeProject('popup-example-5.sb3', jumper))
     .then(() => writeProject('popup-example-6.sb3', garden))
-    .then(() => writeProject('popup-example-7.sb3', platformer))
+    .then(() => writeProject('popup-example-7.sb3', platformer, [varMonitor(won, 5, 5)]))
     .then(() => writeProject('popup-example-8.sb3', birthdayCard))
     .then(() => writeProject('popup-example-9.sb3', crystal))
     .then(() => writeProject('popup-example-10.sb3', solarSystem))

@@ -77,8 +77,9 @@ const starters = [
     {
         id: '3d-platformer',
         title: '3D Platformer',
-        description: 'Hop between floating platforms with gravity. Arrows walk and step ' +
-            'in/out; space jumps — line up in all three axes to land.',
+        description: 'Climb a tower of floating platforms to the flag at the top. Arrows ' +
+            'walk and step in/out, space jumps, and the camera follows you up. Reach the ' +
+            'goal to win!',
         thumbnail: thumbPlatformer,
         sb3: sb3Platformer
     },

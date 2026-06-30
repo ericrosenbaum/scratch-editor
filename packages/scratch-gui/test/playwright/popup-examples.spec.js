@@ -27,12 +27,12 @@ const examples = [
         drag: true,
         keys: ['Space', 'ArrowRight', 'ArrowRight', 'Space', 'ArrowUp', 'ArrowUp', 'Space',
             'ArrowRight', 'ArrowRight', 'Space']},
-    // Platformer: walk + step into the scene + jump across the floating platforms.
+    // Platformer: jump up the tower of floating platforms (the camera follows the hero).
+    // A full beatable playthrough is covered by popup-platformer-beatable.spec.js.
     {file: 'popup-example-7.sb3',
         shot: 'example-platformer.png',
         drag: true,
-        keys: ['ArrowUp', 'ArrowUp', 'Space', 'ArrowRight', 'ArrowRight', 'Space',
-            'ArrowUp', 'Space']},
+        keys: ['Space', 'Space', 'Space']},
     // Birthday card: click around the upper stage to pop balloons; runs its own
     // animated effects on the green flag.
     {file: 'popup-example-8.sb3',

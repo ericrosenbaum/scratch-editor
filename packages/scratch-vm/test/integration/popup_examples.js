@@ -39,13 +39,22 @@ test('3D Pop-Up example 7 (platformer): platforms clone with inherited depths', 
         const platforms = vm.runtime.targets.filter(
             target => target.sprite && target.sprite.name === 'Platform' && !target.isOriginal
         );
-        t.equal(platforms.length, 3, 'three platform clones were created');
+        t.equal(platforms.length, 8, 'all eight platform clones were created');
         const depths = platforms.map(p => popupState(p).depth).sort((a, b) => a - b);
-        t.same(depths, [-60, 0, 60], 'clones inherited the three distinct depths');
+        // Six climbing platforms at the same depth plus two decorative ledges (near / far).
+        t.same(depths, [-60, 26, 26, 26, 26, 26, 26, 140], 'clones inherited their depths');
 
         const hero = vm.runtime.targets.find(target => target.sprite.name === 'Hero' && target.isOriginal);
         t.ok(hero, 'the hero sprite exists');
         t.ok(Number.isFinite(popupState(hero).thickness), 'hero has 3D state');
+
+        const goal = vm.runtime.targets.find(target => target.sprite && target.sprite.name === 'Goal');
+        t.ok(goal, 'the goal flag sprite exists');
+
+        const stage = vm.runtime.getTargetForStage();
+        const winVar = Object.values(stage.variables).find(v => v.name === 'Win');
+        t.ok(winVar, 'the global Win flag exists');
+        t.equal(Number(winVar && winVar.value), 0, 'Win is 0 before the goal is reached');
         t.end();
     });
 });
