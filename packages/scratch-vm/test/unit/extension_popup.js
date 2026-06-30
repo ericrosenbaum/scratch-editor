@@ -27,6 +27,23 @@ const makeRenderer = log => ({
     updateDrawableVisible: (id, visible) => log.push([id, visible])
 });
 
+// A mutable stand-in for the VM mouse io-device. Flip _down / _x / _y between
+// _handlePointer calls to simulate a press/move/release.
+const makeMouse = () => ({
+    _down: false,
+    _x: 0,
+    _y: 0,
+    getIsDown () {
+        return this._down;
+    },
+    getScratchX () {
+        return this._x;
+    },
+    getScratchY () {
+        return this._y;
+    }
+});
+
 test('PopupScene._hideSprites hides every non-stage drawable, including clones', t => {
     const log = [];
     const stage = makeTarget({id: 'stage', isStage: true, drawableID: 5});
@@ -81,5 +98,79 @@ test('PopupScene.forwardVector points along the heading (2D-compatible) across a
     f = scene.forwardVector(makeTarget({rotationStyle: 'left-right', direction: -90}));
     t.ok(near(f.x, -1) && near(f.y, 0) && near(f.z, 0), 'left-right flip heads -x (left)');
 
+    t.end();
+});
+
+test('PopupScene._handlePointer grabs any sprite on press, not just draggable ones (2D-editor parity)', t => {
+    const mouse = makeMouse();
+    const runtime = {renderer: null, targets: [], on: () => {}, ioDevices: {mouse}};
+    const scene = new PopupScene(runtime);
+
+    // Stub the three.js-dependent halves so the gesture decision can be tested headless.
+    const dragged = [];
+    scene._beginSpriteDrag = target => dragged.push(target);
+    let orbitCalls = 0;
+    scene._orbitBy = () => {
+        orbitCalls++;
+    };
+
+    // A non-draggable sprite sits under the pointer.
+    const sprite = makeTarget({id: 's1', draggable: false});
+    scene._raycastTarget = () => ({target: sprite, point: null});
+
+    mouse._down = true;
+    mouse._x = 12;
+    mouse._y = -8;
+    scene._handlePointer();
+
+    t.same(dragged, [sprite], 'pressing a non-draggable sprite still begins a sprite drag');
+    t.equal(orbitCalls, 0, 'no camera orbit happens while a sprite is grabbed');
+    t.end();
+});
+
+test('PopupScene._handlePointer orbits on empty space (drag mode) and fires the clicked hat on a tap', t => {
+    const mouse = makeMouse();
+    const hats = [];
+    const runtime = {
+        renderer: null,
+        targets: [],
+        on: () => {},
+        ioDevices: {mouse},
+        startHats: (...args) => hats.push(args)
+    };
+    const scene = new PopupScene(runtime);
+    scene._mode = 'drag';
+
+    // Empty space: pressing then dragging orbits the camera.
+    scene._raycastTarget = () => null;
+    let orbitCalls = 0;
+    scene._orbitBy = () => {
+        orbitCalls++;
+    };
+
+    mouse._down = true;
+    mouse._x = 0;
+    mouse._y = 0;
+    scene._handlePointer(); // press edge -> camera gesture
+    mouse._x = 30;
+    scene._handlePointer(); // held -> orbit
+    t.equal(scene._gesture, 'camera', 'pressing empty space in drag mode starts a camera orbit');
+    t.ok(orbitCalls >= 1, 'holding and moving orbits the camera');
+
+    mouse._down = false;
+    scene._handlePointer(); // release
+    t.equal(hats.length, 0, 'no clicked hat fires when the press missed every sprite');
+
+    // A tap on a sprite (press + release without moving) fires its clicked hat.
+    scene._beginSpriteDrag = () => {}; // skip the three.js drag setup
+    const sprite = makeTarget({id: 's1'});
+    scene._raycastTarget = () => ({target: sprite, point: null});
+    mouse._down = true;
+    mouse._x = 5;
+    mouse._y = 5;
+    scene._handlePointer(); // press
+    mouse._down = false; // release at the same spot
+    scene._handlePointer();
+    t.same(hats, [['event_whenthisspriteclicked', null, sprite]], 'a tap on a sprite fires its clicked hat');
     t.end();
 });

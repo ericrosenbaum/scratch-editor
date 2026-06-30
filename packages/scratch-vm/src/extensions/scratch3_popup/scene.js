@@ -429,11 +429,17 @@ class PopupScene {
 
     /**
      * Per-frame pointer state machine, read from the VM's mouse device (no DOM).
-     * A press either grabs a sprite (drag it in a plane parallel to the backdrop) or,
-     * on empty space in 'drag' mode, orbits the camera. A press-and-release that barely
-     * moves fires the sprite's "when this sprite clicked" hat. Sprite drag and camera
-     * orbit are mutually exclusive within one gesture, so orbiting still works whenever
-     * the press misses every sprite. Sprite click/drag work in both 'orbit' and 'drag'.
+     * A press on a sprite grabs it (drag it in a plane parallel to the backdrop), just
+     * like dragging a sprite on the 2D stage in the editor; a press on empty space in
+     * 'drag' mode orbits the camera instead. A press-and-release that barely moves fires
+     * the sprite's "when this sprite clicked" hat. Sprite drag and camera orbit are
+     * mutually exclusive within one gesture, so orbiting still works whenever the press
+     * misses every sprite. Sprite click/drag work in both 'orbit' and 'drag'.
+     *
+     * Dragging is allowed for any sprite, not just `draggable` ones: this extension runs
+     * in the editor, whose 2D stage (useEditorDragStyle) likewise lets you drag any
+     * sprite regardless of its drag mode. The `draggable` flag only gates dragging in the
+     * fullscreen player, which the VM can't distinguish here.
      * @private
      */
     _handlePointer () {
@@ -449,9 +455,9 @@ class PopupScene {
             this._pressTarget = hit ? hit.target : null;
             this._pressX = sx;
             this._pressY = sy;
-            if (hit && hit.target.draggable) {
+            if (hit) {
                 this._beginSpriteDrag(hit.target, sx, sy);
-            } else if (!hit && this._mode === 'drag') {
+            } else if (this._mode === 'drag') {
                 this._gesture = 'camera';
                 this._lastDragX = sx;
                 this._lastDragY = sy;
