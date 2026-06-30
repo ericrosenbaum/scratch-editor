@@ -169,6 +169,148 @@ const measureOne = async ({family, index}) => {
     return {family, index, name, lufs, samplePeak, samplePeakDb, nGatedBlocks};
 };
 
+// --- whole-song render (clipping / distortion diagnostics) -------------------
+// Renders a full library payload (every track, every note) through the real
+// scheduler, optionally through a faithful copy of the song master bus
+// (song-playback.js _masterBus: makeup 1.0 → DynamicsCompressor limiter), and
+// reports the rendered sample peak + how many samples exceed 0 dBFS. An
+// OfflineAudioContext does NOT clamp to [-1, 1], so samplePeak > 1.0 on the
+// post-limiter render is signal that WILL hard-clip (distort) on real hardware.
+const MASTER_MAKEUP_GAIN = 1.0;
+const MASTER_LIMITER = {threshold: -3, knee: 0, ratio: 20, attack: 0.003, release: 0.25};
+
+const clipStats = rendered => {
+    let peak = 0;
+    let clipped = 0;
+    let total = 0;
+    for (let c = 0; c < rendered.numberOfChannels; c++) {
+        const data = rendered.getChannelData(c);
+        total += data.length;
+        for (let i = 0; i < data.length; i++) {
+            const a = Math.abs(data[i]);
+            if (a > peak) peak = a;
+            if (a > 1.0) clipped++;
+        }
+    }
+    return {
+        samplePeak: peak,
+        samplePeakDb: peak > 0 ? 20 * Math.log10(peak) : -Infinity,
+        clippedSamples: clipped,
+        clippedFraction: total ? clipped / total : 0
+    };
+};
+
+// Soft-clip ("clipper") curve for a WaveShaper: transparent below `knee`, then a
+// tanh approach to `ceiling`, so the output magnitude can never exceed `ceiling`
+// (inputs past ±1 clamp to the curve endpoints, which are ≤ ceiling). Catches
+// the fast transients a DynamicsCompressor's attack window lets through.
+const makeSoftClipCurve = (ceiling, knee) => {
+    const N = 4096;
+    const curve = new Float32Array(N);
+    const span = Math.max(1e-3, ceiling - knee);
+    for (let i = 0; i < N; i++) {
+        const x = ((i / (N - 1)) * 2) - 1;
+        const a = Math.abs(x);
+        const y = a <= knee ? a : knee + (span * Math.tanh((a - knee) / span));
+        curve[i] = Math.sign(x) * y;
+    }
+    return curve;
+};
+
+const measureSong = async ({payload, limiter = true, master = null}) => {
+    const m = music();
+    if (!m) throw new Error('music extension not ready');
+    const tempo = payload.tempo || 120;
+    const stepsPerBeat = payload.stepsPerBeat || 4;
+    const lengthSteps = payload.lengthSteps || 32;
+    const secPerStep = 60 / (tempo * stepsPerBeat);
+    const offset = 0.05;
+    const tail = 2.5; // release/reverb/delay decay
+    const seconds = offset + (lengthSteps * secPerStep) + tail;
+    const oac = new OfflineAudioContext(2, Math.ceil(SR * seconds), SR);
+
+    let destination = oac.destination;
+    if (limiter) {
+        const cfg = {
+            makeup: MASTER_MAKEUP_GAIN,
+            threshold: MASTER_LIMITER.threshold,
+            knee: MASTER_LIMITER.knee,
+            ratio: MASTER_LIMITER.ratio,
+            attack: MASTER_LIMITER.attack,
+            release: MASTER_LIMITER.release,
+            softClipCeiling: null,
+            softClipKnee: 0.8,
+            ...(master || {})
+        };
+        const input = oac.createGain();
+        input.gain.value = cfg.makeup;
+        const lim = oac.createDynamicsCompressor();
+        lim.threshold.setValueAtTime(cfg.threshold, 0);
+        lim.knee.setValueAtTime(cfg.knee, 0);
+        lim.ratio.setValueAtTime(cfg.ratio, 0);
+        lim.attack.setValueAtTime(cfg.attack, 0);
+        lim.release.setValueAtTime(cfg.release, 0);
+        input.connect(lim);
+        let tailNode = lim;
+        if (cfg.softClipCeiling) {
+            const clip = oac.createWaveShaper();
+            clip.curve = makeSoftClipCurve(cfg.softClipCeiling, cfg.softClipKnee);
+            clip.oversample = '4x';
+            lim.connect(clip);
+            tailNode = clip;
+        }
+        tailNode.connect(oac.destination);
+        destination = input;
+    }
+
+    const tracks = (payload.tracks || []).map((t, i) => ({...t, trackId: `t${i}`}));
+    const song = {tempo, lengthSteps, stepsPerBeat, rootPitch: 60, scaleType: 'chromatic', tracks};
+    const sched = new SongScheduler({
+        song,
+        audioContext: oac,
+        destination,
+        getInstrumentBuffer: (instIdx, midiNote) => {
+            const info = m.getInstrumentPlayer(instIdx, midiNote);
+            if (!info || !info.player || !info.player.buffer) return null;
+            const {player, sampleNote, releaseTime} = info;
+            return {buffer: player.buffer, sampleNote, releaseTime};
+        },
+        getDrumBuffer: drumIdx => {
+            const p = m.getDrumPlayer(drumIdx);
+            return p && p.buffer;
+        }
+    });
+
+    let scheduled = 0;
+    for (const t of tracks) {
+        const isDrum = t.kind === 'drum';
+        for (const n of (t.notes || [])) {
+            const when = offset + (n.step * secPerStep);
+            const note = isDrum ?
+                {trackId: t.trackId,
+                    kind: 'drum',
+                    drum: n.drum - 1,
+                    velocity: n.velocity,
+                    step: n.step,
+                    durationSteps: n.durationSteps} :
+                {trackId: t.trackId,
+                    kind: 'instrument',
+                    instrument: t.instrument - 1,
+                    pitch: n.pitch,
+                    velocity: n.velocity,
+                    step: n.step,
+                    durationSteps: n.durationSteps};
+            sched._scheduleNote(note, when);
+            scheduled++;
+        }
+    }
+
+    const rendered = await oac.startRendering();
+    const clip = clipStats(rendered);
+    const {lufs} = measureLoudness(rendered, {warn: () => {}});
+    return {limiter, scheduled, seconds, lufs, ...clip};
+};
+
 const measureAll = async () => {
     const targets = listTargets();
     const families = [
@@ -186,7 +328,7 @@ const measureAll = async () => {
     return {results, sampleRate: SR, velocity: TEST_VELOCITY, pitch: TEST_PITCH};
 };
 
-window.__songLoudness = {ready, listTargets, measureOne, measureAll};
+window.__songLoudness = {ready, listTargets, measureOne, measureAll, measureSong};
 
 // eslint-disable-next-line no-console
 console.log('[song-loudness] window.__songLoudness ready');

@@ -8,12 +8,39 @@ const {
 } = require('./instrument-gain');
 
 // Song master bus: all song tracks (and editor previews) sum here before the
-// shared audio-engine input, so sprite sounds are unaffected. A gentle
-// brick-wall-ish limiter catches peaks when layers stack (the per-track chains
-// otherwise sum straight to the destination and can clip past 0 dBFS); the
-// makeup gain sets overall headroom.
+// shared audio-engine input, so sprite sounds are unaffected. The chain is
+//   makeup gain → limiter → soft-clip ceiling → engine input.
+// The limiter rides the macro level when layers stack, but a DynamicsCompressor
+// has an attack window (and finite ratio), so fast transients — note onsets,
+// kicks — punch through it above 0 dBFS and hard-clip on the hardware. The
+// soft-clip ceiling is the brick wall the limiter isn't: a WaveShaper has no
+// attack, so it catches every transient and saturates gently toward the ceiling
+// instead of clipping. Measured across the library this takes dense sections
+// from ~0.15% of samples clipping (audible distortion) to zero. See the
+// whole-song render harness in scratch-gui src/playground/song-loudness.jsx.
 const MASTER_MAKEUP_GAIN = 1.0; // tune by ear in verification
 const MASTER_LIMITER = {threshold: -3, knee: 0, ratio: 20, attack: 0.003, release: 0.25};
+// Final peak ceiling (linear). 0.95 ≈ -0.45 dBFS, leaving margin for inter-sample
+// peaks; KNEE is where saturation begins (below it the bus is transparent).
+const MASTER_CEILING = 0.95;
+const MASTER_CEILING_KNEE = 0.80;
+
+// Soft-clip transfer curve for the master WaveShaper: identity below KNEE, then a
+// tanh approach to CEILING so |output| can never exceed CEILING (inputs past ±1
+// clamp to the curve endpoints, which sit at the ceiling). Built once and reused.
+const makeSoftClipCurve = (ceiling, knee) => {
+    const N = 4096;
+    const curve = new Float32Array(N);
+    const span = Math.max(1e-3, ceiling - knee);
+    for (let i = 0; i < N; i++) {
+        const x = ((i / (N - 1)) * 2) - 1;
+        const a = Math.abs(x);
+        const y = a <= knee ? a : knee + (span * Math.tanh((a - knee) / span));
+        curve[i] = Math.sign(x) * y;
+    }
+    return curve;
+};
+let _softClipCurve = null;
 
 /**
  * Project-wide song playback singleton owned by the runtime. Holds at most
@@ -540,6 +567,16 @@ class SongPlayback {
             input.connect(limiter);
             tail = limiter;
             this._masterLimiter = limiter;
+        }
+        // Brick-wall safety: a WaveShaper soft-clip ceiling after the limiter
+        // catches the transients its attack window lets through (see header).
+        if (typeof ctx.createWaveShaper === 'function') {
+            const clip = ctx.createWaveShaper();
+            if (!_softClipCurve) _softClipCurve = makeSoftClipCurve(MASTER_CEILING, MASTER_CEILING_KNEE);
+            clip.curve = _softClipCurve;
+            clip.oversample = '4x';
+            tail.connect(clip);
+            tail = clip;
         }
         tail.connect(this._audioDestination());
         this._masterBusCtx = ctx;
