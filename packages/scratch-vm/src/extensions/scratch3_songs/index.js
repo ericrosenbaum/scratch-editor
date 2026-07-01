@@ -20,16 +20,22 @@ class Scratch3SongsBlocks {
         this.runtime = runtime;
 
         /**
-         * Edge-triggered fire flags for hat blocks. Keys: `beat` (global) and
-         * `<trackId>|note` (per track).
+         * Track id of the note currently being dispatched to `whenTrackPlaysNote`
+         * hats. Set immediately before each `startHats` call so every matching
+         * hat's predicate sees it during synchronous evaluation.
          */
-        this._fireFlags = {};
+        this._currentNoteTrackId = null;
 
         // Wire hat-block callbacks once. The scheduler picks them up next
-        // time it's built.
+        // time it's built. Each beat/note fires its hats explicitly via
+        // `startHats` (the same path broadcasts and key presses use), so every
+        // matching hat block gets its own thread.
         this.runtime.songPlayback.setHatCallbacks({
-            onBeat: () => this._setFlag('beat'),
-            onNote: note => this._setFlag(`${note.trackId}|note`)
+            onBeat: () => this.runtime.startHats('songs_whenBeat'),
+            onNote: note => {
+                this._currentNoteTrackId = note.trackId;
+                this.runtime.startHats('songs_whenTrackPlaysNote');
+            }
         });
 
         // Refresh toolbox menus whenever the song changes (tracks added,
@@ -219,6 +225,11 @@ class Scratch3SongsBlocks {
                 {
                     opcode: 'whenBeat',
                     blockType: BlockType.HAT,
+                    // Fired explicitly from the scheduler's onBeat callback, not
+                    // edge-evaluated every step. Restart so each beat retriggers
+                    // a still-running script (broadcast/green-flag semantics).
+                    isEdgeActivated: false,
+                    shouldRestartExistingThreads: true,
                     text: formatMessage({
                         id: 'songs.whenBeat',
                         default: 'when beat',
@@ -228,6 +239,8 @@ class Scratch3SongsBlocks {
                 {
                     opcode: 'whenTrackPlaysNote',
                     blockType: BlockType.HAT,
+                    isEdgeActivated: false,
+                    shouldRestartExistingThreads: true,
                     text: formatMessage({
                         id: 'songs.whenTrackPlaysNote',
                         default: 'when [TRACK] plays note',
@@ -303,18 +316,6 @@ class Scratch3SongsBlocks {
                 }
             }
         };
-    }
-
-    _setFlag (key) {
-        this._fireFlags[key] = true;
-    }
-
-    _consumeFlag (key) {
-        if (this._fireFlags[key]) {
-            this._fireFlags[key] = false;
-            return true;
-        }
-        return false;
     }
 
     /* Block implementations */
@@ -442,13 +443,15 @@ class Scratch3SongsBlocks {
     }
 
     whenBeat () {
-        return this._consumeFlag('beat');
+        // Only invoked by the explicit `startHats('songs_whenBeat')` call in
+        // the onBeat callback, so it always fires.
+        return true;
     }
 
     whenTrackPlaysNote (args) {
         const trackId = Cast.toString(args.TRACK);
         if (!trackId) return false;
-        return this._consumeFlag(`${trackId}|note`);
+        return trackId === this._currentNoteTrackId;
     }
 }
 

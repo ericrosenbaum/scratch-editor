@@ -255,30 +255,110 @@ tap.test('fadeTrack in activates; fadeTrack out keeps it active until the ramp e
         });
 });
 
-tap.test('hat blocks: whenBeat and whenTrackPlaysNote fire as the transport runs', t => {
-    setup().then(({ext, pb, ctx}) => {
-        ext.playTrack({TRACK: '__all__', WHEN: 'now'});
-        // Drive the scheduler clock deterministically (kill the real interval).
-        const sched = pb._scheduler;
-        clearInterval(sched._timer);
-        sched._timer = null;
-        const {fmtTime} = require('../fixtures/songs/make-fake-audio');
-        let beatFired = false;
-        let leadNote = false;
-        let beatNote = false;
-        // Advance across iteration 0 (wrap at 1.0s), consuming the edge-triggered
-        // flags as we go (the interpreter polls hats every frame).
-        for (let tt = 0.075; tt <= 0.9; tt = Math.round((tt + 0.025) * 1000) / 1000) {
-            ctx.$processTo(fmtTime(tt));
-            sched._tick();
-            if (ext.whenBeat()) beatFired = true;
-            if (ext.whenTrackPlaysNote({TRACK: 'lead'})) leadNote = true;
-            if (ext.whenTrackPlaysNote({TRACK: 'beat'})) beatNote = true;
-        }
-        t.ok(beatFired, 'whenBeat fired during the iteration');
-        t.ok(leadNote, 'whenTrackPlaysNote fired for the lead (synth) track');
-        t.ok(beatNote, 'whenTrackPlaysNote fired for the beat (synthDrum) track');
-        t.notOk(ext.whenTrackPlaysNote({TRACK: 'nonexistent'}), 'unknown track never fires');
+// The hat tests run the real interpreter (not bare predicate calls), so the
+// extension must be registered with the runtime — `loadExtensionIdSync` binds
+// the block functions and the `songs_*` hats. Each hat gets a "change tempo by
+// 10" body, so a hat that fired moves the tempo by +10 and we can count how
+// many of several identical hats actually ran.
+const setupHats = () => {
+    const vm = new VirtualMachine();
+    vm.attachStorage(makeTestStorage());
+    return vm.loadProject(JSON.stringify(baseProject)).then(() => {
+        vm.setSong(makeTestSong());
+        attachFakeAudio(vm);
+        vm.runtime.extensionManager.loadExtensionIdSync('songs');
+        vm.runtime.currentStepTime = 1000 / 60;
+        const pb = vm.runtime.songPlayback;
+        const target = vm.runtime.targets.find(tt => !tt.isStage) || vm.runtime.targets[0];
+        return {vm, pb, target};
+    });
+};
+
+// Build a `<hat> → change tempo by 10` script on `target`. The numeric input
+// (and, for whenTrackPlaysNote, the TRACK input) is supplied by a native shadow
+// value block (math_number / text), which the interpreter resolves without any
+// extra primitive registration. Pass `trackId` only for whenTrackPlaysNote.
+const addTempoHat = (target, idx, opcode, trackId) => {
+    const hatId = `hat_${idx}`;
+    const bodyId = `body_${idx}`;
+    const numId = `num_${idx}`;
+    const hat = {
+        id: hatId,
+        opcode,
+        next: bodyId,
+        parent: null,
+        inputs: {},
+        fields: {},
+        topLevel: true,
+        shadow: false,
+        x: 0,
+        y: idx * 200
+    };
+    if (typeof trackId === 'string') {
+        const trackShadowId = `track_${idx}`;
+        hat.inputs.TRACK = {name: 'TRACK', block: trackShadowId, shadow: trackShadowId};
+        target.blocks.createBlock({
+            id: trackShadowId,
+            opcode: 'text',
+            next: null,
+            parent: hatId,
+            inputs: {},
+            fields: {TEXT: {name: 'TEXT', value: trackId}},
+            topLevel: false,
+            shadow: true
+        });
+    }
+    target.blocks.createBlock(hat);
+    target.blocks.createBlock({
+        id: bodyId,
+        opcode: 'songs_changeTempoBy',
+        next: null,
+        parent: hatId,
+        inputs: {TEMPO: {name: 'TEMPO', block: numId, shadow: numId}},
+        fields: {},
+        topLevel: false,
+        shadow: false
+    });
+    target.blocks.createBlock({
+        id: numId,
+        opcode: 'math_number',
+        next: null,
+        parent: bodyId,
+        inputs: {},
+        fields: {NUM: {name: 'NUM', value: '10'}},
+        topLevel: false,
+        shadow: true
+    });
+};
+
+tap.test('hat blocks: every whenBeat hat fires on a beat (regression: shared-flag bug fired only one)', t => {
+    setupHats().then(({vm, pb, target}) => {
+        addTempoHat(target, 0, 'songs_whenBeat');
+        addTempoHat(target, 1, 'songs_whenBeat');
+        t.equal(pb.getTempo(), 120, 'tempo starts at the song value');
+        // Simulate one transport beat — the scheduler's onBeat callback fires the
+        // hats via startHats; the step runs their queued bodies.
+        pb._hatCallbacks.onBeat();
+        vm.runtime._step();
+        t.equal(pb.getTempo(), 140, 'BOTH whenBeat hats ran (+10 each); the old bug left it at 130');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('hat blocks: a played note fires every whenTrackPlaysNote hat for that track only', t => {
+    setupHats().then(({vm, pb, target}) => {
+        addTempoHat(target, 0, 'songs_whenTrackPlaysNote', 'lead');
+        addTempoHat(target, 1, 'songs_whenTrackPlaysNote', 'lead');
+        addTempoHat(target, 2, 'songs_whenTrackPlaysNote', 'beat');
+        t.equal(pb.getTempo(), 120, 'tempo starts at the song value');
+        // The "lead" track plays a note.
+        pb._hatCallbacks.onNote({trackId: 'lead'});
+        vm.runtime._step();
+        t.equal(pb.getTempo(), 140, 'both "lead" hats fired (+10 each); the "beat" hat did not');
         teardown(pb);
         t.end();
     })
