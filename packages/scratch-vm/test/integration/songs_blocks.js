@@ -367,6 +367,26 @@ tap.test('hat blocks: a played note fires every whenTrackPlaysNote hat for that 
         });
 });
 
+tap.test('hat blocks: concurrent notes on different tracks each fire their own hat (no cross-track clobber)', t => {
+    setupHats().then(({vm, pb, target}) => {
+        addTempoHat(target, 0, 'songs_whenTrackPlaysNote', 'lead');
+        addTempoHat(target, 1, 'songs_whenTrackPlaysNote', 'beat');
+        t.equal(pb.getTempo(), 120, 'tempo starts at the song value');
+        // Both tracks play a note in the same tick, before the runtime steps.
+        // With restart-existing-threads this let the second note reset and kill
+        // the first track's hat, so only one fired (tempo 130).
+        pb._hatCallbacks.onNote({trackId: 'lead'});
+        pb._hatCallbacks.onNote({trackId: 'beat'});
+        vm.runtime._step();
+        t.equal(pb.getTempo(), 140, 'both the lead and beat hats fired (+10 each)');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
 tap.test('getInfo TRACK menus reflect the current song tracks', t => {
     setup().then(({ext, pb}) => {
         const info = ext.getInfo();

@@ -240,7 +240,13 @@ class Scratch3SongsBlocks {
                     opcode: 'whenTrackPlaysNote',
                     blockType: BlockType.HAT,
                     isEdgeActivated: false,
-                    shouldRestartExistingThreads: true,
+                    // NOT restart (unlike whenBeat): every note on any track calls
+                    // startHats, which re-evaluates ALL whenTrackPlaysNote hats
+                    // against the single _currentNoteTrackId. Restarting would
+                    // reset a hat another track just triggered and then kill it on
+                    // the track mismatch. Skipping already-running threads instead
+                    // lets each track's own note keep its hat alive.
+                    shouldRestartExistingThreads: false,
                     text: formatMessage({
                         id: 'songs.whenTrackPlaysNote',
                         default: 'when [TRACK] plays note',
