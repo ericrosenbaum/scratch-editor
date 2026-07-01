@@ -162,7 +162,8 @@ test('Double-click on a note deletes it', async ({page}) => {
     await setupSongWithNote(page, 80, 60);
     await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(1);
 
-    await page.locator('svg.piano-roll rect.note').first().dblclick();
+    await page.locator('svg.piano-roll rect.note').first()
+        .dblclick();
     await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(0);
 });
 
@@ -178,7 +179,8 @@ test('Double-click on an empty cell creates a note without deleting it', async (
 test('Hovering a note shows move/resize cursors', async ({page}) => {
     await setupSongWithNote(page, 80, 60);
     const piano = page.locator('svg.piano-roll').first();
-    const box = await page.locator('svg.piano-roll rect.note').first().boundingBox();
+    const box = await page.locator('svg.piano-roll rect.note').first()
+        .boundingBox();
 
     // Note body → move cursor.
     await page.mouse.move(box.x + 4, box.y + (box.height / 2));

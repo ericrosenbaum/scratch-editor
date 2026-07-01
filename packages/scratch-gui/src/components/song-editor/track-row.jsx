@@ -1768,7 +1768,9 @@ TrackRow.propTypes = {
     onMoveTop: PropTypes.func.isRequired,
     onMoveBottom: PropTypes.func.isRequired,
     onAiEdit: PropTypes.func.isRequired,
-    onKeyboardEntry: PropTypes.func.isRequired
+    onKeyboardEntry: PropTypes.func.isRequired,
+    // Optional: audition a note ({kind, instrument?/drum?/synth?, pitch?, velocity}).
+    onPreviewNote: PropTypes.func
 };
 
 export default TrackRow;
