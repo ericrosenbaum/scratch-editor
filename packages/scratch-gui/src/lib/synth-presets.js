@@ -64,8 +64,14 @@ const SYNTH_PRESETS = [
         lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
         glideTime: 0.0},
     {name: 'Sub Bass',
-        osc1Wave: 'sine', osc2Wave: 'triangle', osc2Detune: 0, oscMix: 0.2,
-        filterCutoff: 0.35, filterResonance: 0.10, filterEnvAmount: 0.10,
+        // Sine osc1 is the deep sub foundation; a sawtooth osc2 layered on top
+        // (was a near-inaudible triangle) adds a full harmonic series so the
+        // note reads with presence on small laptop/tablet/phone speakers that
+        // can't reproduce a bare 40-260 Hz fundamental. The low-pass at ~980 Hz
+        // (was ~460) lets those harmonics through while still keeping it warm,
+        // not buzzy — sine stays 70% of the mix so it's still unmistakably a sub.
+        osc1Wave: 'sine', osc2Wave: 'sawtooth', osc2Detune: 0, oscMix: 0.3,
+        filterCutoff: 0.5, filterResonance: 0.12, filterEnvAmount: 0.15,
         ampAttack: 0.005, ampDecay: 0.20, ampSustain: 0.90, ampRelease: 0.10,
         filterAttack: 0.005, filterDecay: 0.15, filterSustain: 0.80, filterRelease: 0.10,
         lfoRate: 5.0, lfoDepth: 0.0, lfoWave: 'sine', lfoDest: 'none',
