@@ -254,6 +254,20 @@ class SongEditor extends React.Component {
         const root = this._rootEl;
         if (!root || !root.isConnected) return;
         const meta = e.metaKey || e.ctrlKey;
+        if (!meta && e.key === ' ') {
+            // Space toggles play/stop. Skip when a modal owns the keyboard
+            // (the keyboard-entry modal records notes; the others own focus)
+            // or when a focused button/select would also react to Space.
+            if (tag === 'BUTTON' || tag === 'SELECT') return;
+            if (this.state.aiEditTrackIdx !== null || this.state.aiGenerateKind ||
+                this.state.aiSongOpen || this.state.keyEntryTrackIdx !== null ||
+                this.state.songLibraryMode) {
+                return;
+            }
+            e.preventDefault();
+            this.handlePlay();
+            return;
+        }
         if (!meta && (e.key === 'Backspace' || e.key === 'Delete')) {
             if (this.state.selectedKeys.size === 0) return;
             e.preventDefault();
@@ -341,7 +355,7 @@ class SongEditor extends React.Component {
     }
 
     handleLengthChange (lengthSteps) {
-        const clamped = Math.max(4, Math.min(128, parseInt(lengthSteps, 10) || 32));
+        const clamped = Math.max(4, Math.min(256, parseInt(lengthSteps, 10) || 32));
         if (clamped === (this.props.song.lengthSteps || 32)) return;
         const tracks = (this.props.song.tracks || []).map(t => ({
             ...t,
@@ -944,7 +958,7 @@ class SongEditor extends React.Component {
                             className={`transport-btn play ${playing ? 'is-playing' : ''}`}
                             onClick={this.handlePlay}
                             aria-label={playing ? 'Stop' : 'Play'}
-                            title={playing ? 'Stop (rewind to start)' : 'Play'}
+                            title={playing ? 'Stop (Space; rewinds to start)' : 'Play (Space)'}
                         >
                             {playing ? (
                                 <svg
@@ -1062,13 +1076,14 @@ class SongEditor extends React.Component {
                             value={song.tempo || 120}
                             min={20}
                             max={500}
+                            sliderMax={240}
                             onCommit={this.handleTempoChange}
                         />
                         <NumericMetaField
                             label="Bars"
                             value={Math.max(1, Math.round((song.lengthSteps || 32) / ((song.stepsPerBeat || 4) * 4)))}
                             min={1}
-                            max={8}
+                            max={16}
                             sliderStep={1}
                             onCommit={this.handleBarsChange}
                         />

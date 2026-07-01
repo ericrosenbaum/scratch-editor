@@ -76,9 +76,13 @@ class NumericMetaField extends React.Component {
 
     render () {
         const {label, value, min, max, sliderStep} = this.props;
+        // The slider may cover a narrower range than the typed input: for BPM
+        // the useful drag range tops out around 240, but users can still type
+        // higher values (up to `max`) directly into the text box.
+        const sliderMax = this.props.sliderMax || max;
         const {focused, draft} = this.state;
         const displayed = focused ? draft : String(value);
-        const sliderValue = focused ? this._parsedDraft() : value;
+        const sliderValue = Math.min(sliderMax, focused ? this._parsedDraft() : value);
         return (
             <label
                 className="song-meta-field song-meta-field-numeric"
@@ -101,7 +105,7 @@ class NumericMetaField extends React.Component {
                             className="song-meta-slider"
                             type="range"
                             min={min}
-                            max={max}
+                            max={sliderMax}
                             step={sliderStep || 1}
                             value={sliderValue}
                             onChange={this.handleSliderChange}
@@ -110,7 +114,7 @@ class NumericMetaField extends React.Component {
                         />
                         <div className="song-meta-slider-range">
                             <span>{min}</span>
-                            <span>{max}</span>
+                            <span>{sliderMax}</span>
                         </div>
                     </div>
                 ) : null}
@@ -124,6 +128,9 @@ NumericMetaField.propTypes = {
     value: PropTypes.number.isRequired,
     min: PropTypes.number.isRequired,
     max: PropTypes.number.isRequired,
+    // Optional lower ceiling for the slider only; typed values may go up to
+    // `max`. Defaults to `max`.
+    sliderMax: PropTypes.number,
     sliderStep: PropTypes.number,
     onCommit: PropTypes.func.isRequired
 };

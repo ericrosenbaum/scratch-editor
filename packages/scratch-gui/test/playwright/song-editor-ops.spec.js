@@ -158,6 +158,52 @@ test('AI Edit button on each track opens the AI edit modal', async ({page}) => {
     await expect(page.locator('.ai-song-modal-title')).toHaveCount(0);
 });
 
+test('Double-click on a note deletes it', async ({page}) => {
+    await setupSongWithNote(page, 80, 60);
+    await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(1);
+
+    await page.locator('svg.piano-roll rect.note').first().dblclick();
+    await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(0);
+});
+
+test('Double-click on an empty cell creates a note without deleting it', async ({page}) => {
+    // The first click of the double-click creates a note; the delete gesture
+    // must not fire on the note it just created (both clicks have to land on
+    // a pre-existing note).
+    const {pbox} = await setupSongWithNote(page, 80, 60);
+    await page.mouse.dblclick(pbox.x + 180, pbox.y + 100);
+    await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(2);
+});
+
+test('Hovering a note shows move/resize cursors', async ({page}) => {
+    await setupSongWithNote(page, 80, 60);
+    const piano = page.locator('svg.piano-roll').first();
+    const box = await page.locator('svg.piano-roll rect.note').first().boundingBox();
+
+    // Note body → move cursor.
+    await page.mouse.move(box.x + 4, box.y + (box.height / 2));
+    expect(await piano.evaluate(el => el.style.cursor)).toBe('move');
+
+    // Right edge (stretch zone) → horizontal resize cursor.
+    await page.mouse.move(box.x + box.width - 2, box.y + (box.height / 2));
+    expect(await piano.evaluate(el => el.style.cursor)).toBe('ew-resize');
+
+    // Empty cell → back to the default grid cursor.
+    await page.mouse.move(box.x + 200, box.y + 100);
+    expect(await piano.evaluate(el => el.style.cursor)).toBe('');
+});
+
+test('Space toggles play and stop', async ({page}) => {
+    await setupSongWithNote(page, 80, 60);
+    const playing = page.locator('.song-editor-transport .transport-btn.play.is-playing');
+
+    await page.keyboard.press('Space');
+    await expect(playing).toHaveCount(1);
+
+    await page.keyboard.press('Space');
+    await expect(playing).toHaveCount(0);
+});
+
 test('Drum-track resize works the same way', async ({page}) => {
     await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
     await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});

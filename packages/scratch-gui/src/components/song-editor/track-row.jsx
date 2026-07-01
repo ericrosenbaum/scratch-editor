@@ -217,8 +217,25 @@ class TrackRow extends React.Component {
         if (draft) this.props.onUpdate(draft);
     }
 
+    // Root pitch of the song (fallback middle C) — the note we audition when
+    // the user switches a track's sound, so every choice is heard right away.
+    _previewPitch () {
+        return (typeof this.props.rootPitch === 'number') ? this.props.rootPitch : 60;
+    }
+
     handleInstrumentChange (e) {
-        this._updateTrack({instrument: parseInt(e.target.value, 10)});
+        const instrument = parseInt(e.target.value, 10);
+        this._updateTrack({instrument});
+        // Audition the newly chosen instrument so the user hears what they
+        // picked without having to place or play a note.
+        if (this.props.onPreviewNote && !this.props.track.muted) {
+            this.props.onPreviewNote({
+                kind: 'instrument',
+                instrument,
+                pitch: this._previewPitch(),
+                velocity: DEFAULT_VELOCITY
+            });
+        }
     }
 
     handleDrumChange (e) {
@@ -268,6 +285,19 @@ class TrackRow extends React.Component {
             }
         }
         this._updateTrack(patch);
+        this._previewLaneSound(newDrum, patch.drumVoices);
+    }
+
+    // Audition a lane's drum sound (sampled or synthesized) after the user
+    // picks it, so the choice is heard immediately.
+    _previewLaneSound (drum, voices) {
+        if (!this.props.onPreviewNote || this.props.track.muted) return;
+        if (this._isSynthDrum()) {
+            const voice = (voices && voices[drum]) || voiceParamsForPreset(drum);
+            this.props.onPreviewNote({kind: 'synthDrum', synthDrum: voice, velocity: DEFAULT_VELOCITY});
+        } else {
+            this.props.onPreviewNote({kind: 'drum', drum, velocity: DEFAULT_VELOCITY});
+        }
     }
 
     handleAddLane () {
@@ -288,6 +318,7 @@ class TrackRow extends React.Component {
             patch.drumVoices = voices;
         }
         this._updateTrack(patch);
+        this._previewLaneSound(newDrum, patch.drumVoices);
     }
 
     handleRemoveLane (laneIdx) {
@@ -531,6 +562,15 @@ class TrackRow extends React.Component {
         // field is a UI label only — tweaking sliders later does not clear it.
         const {name: presetName, ...params} = preset;
         this._updateTrack({synth: {preset: presetName, ...params}});
+        // Audition the newly chosen preset.
+        if (this.props.onPreviewNote && !this.props.track.muted) {
+            this.props.onPreviewNote({
+                kind: 'synth',
+                synth: {preset: presetName, ...params},
+                pitch: this._previewPitch(),
+                velocity: DEFAULT_VELOCITY
+            });
+        }
     }
 
     handleSynthParamChange (key, value) {
@@ -1650,6 +1690,7 @@ class TrackRow extends React.Component {
                                     cursorStep={this.props.cursorStep}
                                     selectedKeys={selectedKeys || new Set()}
                                     onAddNote={this.handleAddNote}
+                                    onRemoveNote={this.handleRemoveNote}
                                     onResizeNote={this.handleResizeNote}
                                     onSelectionChange={this.handleSelectionChange}
                                     onMoveSelected={this.handleMoveSelected}

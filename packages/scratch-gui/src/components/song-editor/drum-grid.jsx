@@ -37,9 +37,13 @@ class DrumGrid extends React.Component {
         };
         this.svgRef = React.createRef();
         this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleSvgMouseMove = this.handleSvgMouseMove.bind(this);
         this.handleWindowMouseMove = this.handleWindowMouseMove.bind(this);
         this.handleWindowMouseUp = this.handleWindowMouseUp.bind(this);
         this.handleScrollerScroll = this.handleScrollerScroll.bind(this);
+        // Cache of the inline hover cursor currently applied to the SVG, so
+        // mousemove only touches the DOM when the hover zone changes.
+        this._hoverCursor = '';
     }
 
     componentDidMount () {
@@ -252,6 +256,23 @@ class DrumGrid extends React.Component {
         }
     }
 
+    // Hover feedback: show a horizontal-resize cursor over a hit's stretch
+    // zone (its right edge) so users can tell where to grab before dragging.
+    // Inline style overrides the grid's default pointer; direct DOM mutation
+    // avoids re-rendering the whole grid on every mousemove.
+    handleSvgMouseMove (e) {
+        if (this.state.dragMode) return;
+        const svg = this.svgRef.current;
+        if (!svg) return;
+        const {x, y} = this._svgCoords(e);
+        const hit = this._hitTest(x, y);
+        const cursor = (hit && hit.isRightEdge) ? 'ew-resize' : '';
+        if (cursor !== this._hoverCursor) {
+            this._hoverCursor = cursor;
+            svg.style.cursor = cursor;
+        }
+    }
+
     handleWindowMouseUp () {
         const {dragMode, dragStart, dragCurrent, resizeIdx, resizePreviewSteps, resizeOriginalDuration} = this.state;
         this._detachWindow();
@@ -389,6 +410,7 @@ class DrumGrid extends React.Component {
                 width={width}
                 height={height}
                 onMouseDown={this.handleMouseDown}
+                onMouseMove={this.handleSvgMouseMove}
             >
                 {cells}
                 {noteRects}

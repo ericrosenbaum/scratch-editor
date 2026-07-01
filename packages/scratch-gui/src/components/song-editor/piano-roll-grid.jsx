@@ -57,9 +57,20 @@ class PianoRollGrid extends React.Component {
         };
         this.svgRef = React.createRef();
         this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleDoubleClick = this.handleDoubleClick.bind(this);
+        this.handleSvgMouseMove = this.handleSvgMouseMove.bind(this);
         this.handleWindowMouseMove = this.handleWindowMouseMove.bind(this);
         this.handleWindowMouseUp = this.handleWindowMouseUp.bind(this);
         this.handleScrollerScroll = this.handleScrollerScroll.bind(this);
+        // Keys of the notes hit by the last two mousedowns, used to decide
+        // whether a dblclick was genuinely two clicks on the same existing
+        // note (vs. click-to-create followed by a click on the new note).
+        this._lastDownHitKey = null;
+        this._prevDownHitKey = null;
+        this._suppressDblClick = false;
+        // Cache of the inline hover cursor currently applied to the SVG, so
+        // mousemove only touches the DOM when the hover zone changes.
+        this._hoverCursor = '';
     }
 
     componentDidMount () {
@@ -264,6 +275,14 @@ class PianoRollGrid extends React.Component {
         if (e.button !== 0) return;
         const coords = this._svgCoords(e);
 
+        // Record which note (if any) this press landed on, for the
+        // double-click-to-delete gesture. Shift the previous entry down so a
+        // dblclick can verify BOTH of its clicks hit the same note.
+        const downHit = this._hitTest(coords.x, coords.y);
+        this._prevDownHitKey = this._lastDownHitKey;
+        this._lastDownHitKey = (downHit && !downHit.isRightEdge) ? noteKey(downHit.note) : null;
+        this._suppressDblClick = false;
+
         // Grab and drag the paused playhead. Checked before the gutter so a
         // click that lands on the cursor in column 0 still starts a drag
         // instead of just re-snapping the cursor to itself.
@@ -286,7 +305,7 @@ class PianoRollGrid extends React.Component {
             return;
         }
 
-        const hit = this._hitTest(coords.x, coords.y);
+        const hit = downHit;
         if (hit) {
             if (hit.isRightEdge) {
                 this.setState({
@@ -442,9 +461,54 @@ class PianoRollGrid extends React.Component {
         }
     }
 
+    // Double-click on a note's body deletes it — the quick path requested in
+    // playtesting, so deleting doesn't require the toolbar's Delete button.
+    // Guarded so a double-click on an EMPTY cell (which creates a note on the
+    // first click) doesn't immediately delete the note it just created: both
+    // mousedowns must have landed on the same pre-existing note, and neither
+    // may have turned into a drag.
+    handleDoubleClick (e) {
+        if (this._suppressDblClick) return;
+        const coords = this._svgCoords(e);
+        const hit = this._hitTest(coords.x, coords.y);
+        if (!hit || hit.isRightEdge) return;
+        const key = noteKey(hit.note);
+        if (this._lastDownHitKey !== key || this._prevDownHitKey !== key) return;
+        if (this.props.selectedKeys.size > 0) {
+            this.props.onSelectionChange(new Set());
+        }
+        this.props.onRemoveNote(hit.idx);
+        this._lastDownHitKey = null;
+        this._prevDownHitKey = null;
+    }
+
+    // Hover feedback: show a horizontal-resize cursor over a note's stretch
+    // zone (its right edge) so users can tell where to grab, and a move
+    // cursor over the note body. Applied as an inline style so it overrides
+    // the grid's default pointer; direct DOM mutation avoids re-rendering the
+    // whole grid on every mousemove.
+    handleSvgMouseMove (e) {
+        if (this.state.dragMode) return;
+        const svg = this.svgRef.current;
+        if (!svg) return;
+        const {x, y} = this._svgCoords(e);
+        let cursor = '';
+        const hit = this._hitTest(x, y);
+        if (hit) cursor = hit.isRightEdge ? 'ew-resize' : 'move';
+        if (cursor !== this._hoverCursor) {
+            this._hoverCursor = cursor;
+            svg.style.cursor = cursor;
+        }
+    }
+
     handleWindowMouseUp () {
         const {dragMode, dragStart, dragCurrent, resizeIdx, resizePreviewSteps, resizeOriginalDuration, moveDelta, moveBaseline} = this.state;
         this._detachWindow();
+        // A completed drag means the pair of clicks wasn't a clean
+        // double-click on a note; don't let a trailing dblclick delete it.
+        if (dragMode === 'move' || dragMode === 'resize' || dragMode === 'rect') {
+            this._suppressDblClick = true;
+        }
 
         if (dragMode === 'pending' && dragStart) {
             // It was a click on empty area: clear selection and add a note.
@@ -620,6 +684,8 @@ class PianoRollGrid extends React.Component {
                     width={width}
                     height={height}
                     onMouseDown={this.handleMouseDown}
+                    onDoubleClick={this.handleDoubleClick}
+                    onMouseMove={this.handleSvgMouseMove}
                 >
                     {cells}
                     {noteRects}
@@ -683,6 +749,7 @@ PianoRollGrid.propTypes = {
     cursorStep: PropTypes.number,
     selectedKeys: PropTypes.instanceOf(Set).isRequired,
     onAddNote: PropTypes.func.isRequired,
+    onRemoveNote: PropTypes.func.isRequired,
     onResizeNote: PropTypes.func.isRequired,
     onSelectionChange: PropTypes.func.isRequired,
     onMoveSelected: PropTypes.func,

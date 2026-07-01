@@ -24,6 +24,29 @@ test('BPM commits to song.tempo', async ({page}) => {
     expect((await songData(page)).tempo).toBe(96);
 });
 
+test('BPM slider is capped at 240 but typing accepts higher values', async ({page}) => {
+    await openSongMaker(page);
+    const bpm = page.getByLabel('BPM', {exact: true});
+    // Focusing reveals the slider popover, whose drag range tops out at 240
+    // so the useful BPM range isn't squeezed into a few pixels.
+    await bpm.click();
+    await expect(page.getByLabel('BPM slider')).toHaveAttribute('max', '240');
+    // Typed values can still go past the slider's cap.
+    await bpm.fill('300');
+    await bpm.press('Enter');
+    expect((await songData(page)).tempo).toBe(300);
+});
+
+test('Bars accepts up to 16 (256 steps)', async ({page}) => {
+    await openSongMaker(page);
+    const before = await songData(page);
+    const stepsPerBar = (before.stepsPerBeat || 4) * 4;
+    const bars = page.getByLabel('Bars', {exact: true});
+    await bars.fill('16');
+    await bars.press('Enter');
+    expect((await songData(page)).lengthSteps).toBe(16 * stepsPerBar);
+});
+
 test('Bars commits to song.lengthSteps (bars × stepsPerBeat × 4)', async ({page}) => {
     await openSongMaker(page);
     const before = await songData(page);

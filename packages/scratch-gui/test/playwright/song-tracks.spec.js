@@ -105,7 +105,7 @@ test('Track reorder: move up/down/top/bottom', async ({page}) => {
 
 test('Song editor stays within the container when steps is large', async ({page}) => {
     await addSong(page);
-    // Maximize the grid length (Bars maxes out at 8 → 128 steps) to force a wide grid.
+    // Use a long song (8 bars → 128 steps) to force a wide grid.
     const bars = page.getByLabel('Bars', {exact: true});
     await bars.fill('8');
     await bars.press('Enter');
