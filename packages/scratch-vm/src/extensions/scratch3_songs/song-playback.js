@@ -18,12 +18,27 @@ const {
 // instead of clipping. Measured across the library this takes dense sections
 // from ~0.15% of samples clipping (audible distortion) to zero. See the
 // whole-song render harness in scratch-gui src/playground/song-loudness.jsx.
-const MASTER_MAKEUP_GAIN = 1.0; // tune by ear in verification
-const MASTER_LIMITER = {threshold: -3, knee: 0, ratio: 20, attack: 0.003, release: 0.25};
+// A dense multi-track song sums many voices: even with each instrument peak-safe
+// on its own note (~-1 dBFS at velocity 127), 3-4 note chords and 4 stacked
+// tracks drive the raw sum to ~+8 dBFS. The old settings (makeup 1.0, limiter
+// threshold -3) left the soft-clip saturating ~0.1-0.15% of samples on the
+// densest library songs — audible distortion, worst on harmonized/loud parts.
+// Two changes fix it (verified via song-loudness.jsx measureSong across the
+// densest songs → soft-clip engagement 0.00%):
+//   - 0.7 makeup gives ~3 dB of summing headroom and pulls the full-mix level
+//     down from a too-hot ~-6 LUFS toward a saner ~-7.5 LUFS.
+//   - a -6 dB limiter threshold catches the polyphonic peaks the old -3 let
+//     through, so the soft-clip is a barely-touched final safety net, not the
+//     workhorse. Per-instrument trims are unchanged — they're already balanced
+//     and peak-safe; the problem was the summed level, not any single voice.
+const MASTER_MAKEUP_GAIN = 0.7;
+const MASTER_LIMITER = {threshold: -6, knee: 0, ratio: 20, attack: 0.003, release: 0.25};
 // Final peak ceiling (linear). 0.95 ≈ -0.45 dBFS, leaving margin for inter-sample
-// peaks; KNEE is where saturation begins (below it the bus is transparent).
+// peaks; KNEE is where saturation begins (below it the bus is transparent). The
+// earlier knee (0.70) rounds the rare residual transient off gently rather than
+// near-flat-topping it.
 const MASTER_CEILING = 0.95;
-const MASTER_CEILING_KNEE = 0.80;
+const MASTER_CEILING_KNEE = 0.70;
 
 // Soft-clip transfer curve for the master WaveShaper: identity below KNEE, then a
 // tanh approach to CEILING so |output| can never exceed CEILING (inputs past ±1

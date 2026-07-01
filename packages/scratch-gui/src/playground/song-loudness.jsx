@@ -176,8 +176,10 @@ const measureOne = async ({family, index}) => {
 // reports the rendered sample peak + how many samples exceed 0 dBFS. An
 // OfflineAudioContext does NOT clamp to [-1, 1], so samplePeak > 1.0 on the
 // post-limiter render is signal that WILL hard-clip (distort) on real hardware.
-const MASTER_MAKEUP_GAIN = 1.0;
-const MASTER_LIMITER = {threshold: -3, knee: 0, ratio: 20, attack: 0.003, release: 0.25};
+// Kept in sync with song-playback.js so this replica master bus measures what
+// ships. softClipKnee defaults to 0.70 in the cfg below to match too.
+const MASTER_MAKEUP_GAIN = 0.7;
+const MASTER_LIMITER = {threshold: -6, knee: 0, ratio: 20, attack: 0.003, release: 0.25};
 
 const clipStats = rendered => {
     let peak = 0;
@@ -239,7 +241,7 @@ const measureSong = async ({payload, limiter = true, master = null}) => {
             attack: MASTER_LIMITER.attack,
             release: MASTER_LIMITER.release,
             softClipCeiling: null,
-            softClipKnee: 0.8,
+            softClipKnee: 0.70,
             ...(master || {})
         };
         const input = oac.createGain();
