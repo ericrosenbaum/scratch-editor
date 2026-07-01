@@ -17,6 +17,7 @@ const sampleSong = () => ({
         {
             trackId: 'track-1',
             kind: 'instrument',
+            name: 'Lead',
             instrument: 1,
             volume: 80,
             muted: false,
@@ -28,6 +29,7 @@ const sampleSong = () => ({
         {
             trackId: 'track-2',
             kind: 'drum',
+            name: 'Beatz',
             drum: 1,
             volume: 70,
             muted: true,
@@ -78,6 +80,8 @@ test('Song Maker: sb3 round-trip preserves the project song', t => {
         t.equal(song.tracks[1].notes[0].velocity, 110, 'drum velocity preserved');
         t.equal(song.tracks[1].kind, 'drum', 'kind preserved');
         t.notOk('pitch' in song.tracks[1].notes[0], 'drum notes omit pitch');
+        t.equal(song.tracks[0].name, 'Lead', 'track name serialized');
+        t.equal(song.tracks[1].name, 'Beatz', 'drum track name serialized');
 
         const targetHasSong = serialized.targets.some(tt => tt.song || Array.isArray(tt.songs));
         t.notOk(targetHasSong, 'no target carries a song');
@@ -88,6 +92,8 @@ test('Song Maker: sb3 round-trip preserves the project song', t => {
             t.equal(vm2.runtime.song.tempo, 90, 'tempo round-trips');
             t.equal(vm2.runtime.song.tracks[0].notes[0].pitch, 60, 'pitch round-trips');
             t.equal(vm2.runtime.song.tracks[0].notes[0].velocity, 100, 'velocity round-trips');
+            t.equal(vm2.runtime.song.tracks[0].name, 'Lead', 'track name round-trips');
+            t.equal(vm2.runtime.song.tracks[1].name, 'Beatz', 'drum track name round-trips');
             t.end();
         });
     }).catch(err => {
@@ -234,6 +240,26 @@ test('Song Maker: Songs extension getInfo returns the new block set', t => {
     }
     const hats = info.blocks.filter(b => b.blockType === 'hat');
     t.equal(hats.length, 2, 'two hat blocks (whenBeat + whenTrackPlaysNote)');
+    t.end();
+});
+
+test('Song Maker: displayNameForTrack matches the editor (name/synthDrum/synth preset)', t => {
+    const {displayNameForTrack} = require('../../src/extensions/scratch3_songs/song-defaults');
+    // A user-set name always wins — this is the block-menu/editor mismatch fix.
+    t.equal(displayNameForTrack({kind: 'instrument', instrument: 1, name: 'Piano2'}), 'Piano2',
+        'track name wins over instrument name');
+    t.equal(displayNameForTrack({kind: 'drum', name: 'My Beat'}), 'My Beat',
+        'track name wins for drum tracks');
+    // Fallbacks for unnamed tracks (legacy / library songs).
+    t.equal(displayNameForTrack({kind: 'instrument', instrument: 6}), 'Bass',
+        'falls back to instrument name');
+    t.equal(displayNameForTrack({kind: 'drum'}), 'Drums', 'unnamed drum falls back to Drums');
+    t.equal(displayNameForTrack({kind: 'synthDrum'}), 'Synth Drums',
+        'synthDrum falls back to Synth Drums');
+    t.equal(displayNameForTrack({kind: 'synth', synth: {preset: 'Warm Pad'}}), 'Warm Pad',
+        'synth uses its preset name');
+    t.equal(displayNameForTrack({kind: 'synth'}), 'Synth', 'synth without preset falls back to Synth');
+    t.equal(displayNameForTrack(null), '', 'null track yields empty string');
     t.end();
 });
 

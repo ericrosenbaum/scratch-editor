@@ -59,10 +59,19 @@ const createBlankSong = (name = 'Song') => ({
     tracks: [createBlankTrack('instrument')]
 });
 
+// Keep this in sync with displayNameForTrack in
+// packages/scratch-gui/src/lib/song-defaults.js. A user-set (or auto-numbered)
+// track name wins; otherwise fall back to the track's kind/instrument so legacy
+// and library songs without names still display sensibly.
 const displayNameForTrack = track => {
     if (!track) return '';
+    if (typeof track.name === 'string' && track.name.length > 0) return track.name;
     if (track.kind === 'drum') return 'Drums';
-    if (track.kind === 'synth') return 'Synth';
+    if (track.kind === 'synthDrum') return 'Synth Drums';
+    if (track.kind === 'synth') {
+        const preset = track.synth && track.synth.preset;
+        return preset || 'Synth';
+    }
     const idx = (track.instrument || 1) - 1;
     return INSTRUMENT_NAMES[idx] || 'Track';
 };

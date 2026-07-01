@@ -493,6 +493,10 @@ const serializeSong = function (song) {
         const t = Object.create(null);
         t.trackId = track.trackId;
         t.kind = track.kind;
+        // User-set or auto-numbered display name. Only emitted when present so
+        // unnamed/legacy tracks stay lean; the editor and the Songs block menu
+        // both read it back via displayNameForTrack.
+        if (typeof track.name === 'string' && track.name.length > 0) t.name = track.name;
         if (track.kind === 'drum') {
             // Multi-lane drum track. Persist the lane list, and also keep
             // the legacy single `drum` field for backwards compatibility
