@@ -439,15 +439,40 @@ tap.test('hat blocks: concurrent notes on different tracks each fire their own h
         });
 });
 
-tap.test('getInfo TRACK menus reflect the current song tracks', t => {
+tap.test('getInfo TRACK menus reflect the current song tracks by display name', t => {
     setup().then(({ext, pb}) => {
+        // Menu values are the tracks' display names (not trackIds), mirroring the
+        // "switch costume to" block, so the field always renders a readable label.
+        // The fixture's tracks are a preset-less synth ('Synth') and a synthDrum
+        // ('Synth Drums').
         const info = ext.getInfo();
         const trackValues = info.menus.TRACK.items.map(i => i.value);
         t.ok(trackValues.includes('__all__'), 'TRACK menu has the "all tracks" option');
-        t.ok(trackValues.includes('lead') && trackValues.includes('beat'), 'TRACK menu lists both tracks');
-        const noAllValues = info.menus.TRACK_NO_ALL.items.map(i => i.value);
+        t.ok(trackValues.includes('Synth') && trackValues.includes('Synth Drums'),
+            'TRACK menu lists both tracks by display name');
+        const noAll = info.menus.TRACK_NO_ALL.items;
+        const noAllValues = noAll.map(i => i.value);
         t.notOk(noAllValues.includes('__all__'), 'TRACK_NO_ALL excludes the "all tracks" option');
-        t.same(noAllValues.sort(), ['beat', 'lead'], 'TRACK_NO_ALL lists individual tracks only');
+        t.same(noAllValues.sort(), ['Synth', 'Synth Drums'], 'TRACK_NO_ALL lists individual tracks by name');
+        t.ok(noAll.every(i => i.text === i.value), 'each track item shows its value as its text');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('track blocks resolve a track by its display name (and still by legacy trackId)', t => {
+    setup().then(({ext, pb}) => {
+        // Primary path: the menu stores the display name.
+        ext.playTrack({TRACK: 'Synth', WHEN: 'now'});
+        t.same(pb.activeTrackIds(), ['lead'], 'display name resolves to the matching trackId');
+        // Fallback path: a raw trackId (legacy projects / reporters) still resolves.
+        ext.playTrack({TRACK: 'beat', WHEN: 'now'});
+        t.same(pb.activeTrackIds().sort(), ['beat', 'lead'], 'legacy trackId still resolves');
+        ext.stopTrack({TRACK: 'Synth', WHEN: 'now'});
+        t.same(pb.activeTrackIds(), ['beat'], 'stop by display name deactivates the right track');
         teardown(pb);
         t.end();
     })

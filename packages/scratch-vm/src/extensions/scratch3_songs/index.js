@@ -112,23 +112,46 @@ class Scratch3SongsBlocks {
     }
 
     /**
+     * Resolve a single TRACK menu value to its track object. Menus store the
+     * track's display name (the same way the "switch costume to" block stores
+     * a costume name), so match on that first. Fall back to a trackId match so
+     * reporter-supplied ids and any legacy project that still stores a trackId
+     * keep working. Returns null when nothing matches.
+     * @param value
+     */
+    _trackByMenuValue (value) {
+        const v = Cast.toString(value);
+        if (!v) return null;
+        for (const t of this._tracks()) {
+            if (displayNameForTrack(t) === v) return t;
+        }
+        return this._trackById(v);
+    }
+
+    /**
      * Resolve a TRACK menu value to a list of track IDs to act on. `__all__`
-     * expands to every track in the project song; an individual trackId
-     * resolves to a single-element list (or empty if the track is gone).
+     * expands to every track in the project song; a track name (or legacy
+     * trackId) resolves to a single-element list (or empty if the track is
+     * gone).
      * @param value
      */
     _resolveTrackIds (value) {
         const v = Cast.toString(value);
         if (!v) return [];
         if (v === ALL_TRACKS) return this._tracks().map(t => t.trackId);
-        return this._trackById(v) ? [v] : [];
+        const t = this._trackByMenuValue(v);
+        return t ? [t.trackId] : [];
     }
 
     getInfo () {
         const tracks = this._tracks();
+        // Menu values are the track's display name (not its trackId), so the
+        // block always shows a human-readable label — the same pattern the
+        // "switch costume to" block uses (see _trackByMenuValue for lookup).
         const trackMenu = [{text: 'all tracks', value: ALL_TRACKS}];
         for (const t of tracks) {
-            trackMenu.push({text: displayNameForTrack(t), value: t.trackId});
+            const name = displayNameForTrack(t);
+            trackMenu.push({text: name, value: name});
         }
         const defaultTrack = trackMenu[0].value;
 
@@ -296,7 +319,7 @@ class Scratch3SongsBlocks {
                         TRACK: {
                             type: ArgumentType.STRING,
                             menu: 'TRACK_NO_ALL',
-                            defaultValue: (tracks[0] && tracks[0].trackId) || ''
+                            defaultValue: (tracks[0] && displayNameForTrack(tracks[0])) || ''
                         }
                     }
                 },
@@ -370,7 +393,7 @@ class Scratch3SongsBlocks {
                         TRACK: {
                             type: ArgumentType.STRING,
                             menu: 'TRACK_NO_ALL',
-                            defaultValue: (tracks[0] && tracks[0].trackId) || ''
+                            defaultValue: (tracks[0] && displayNameForTrack(tracks[0])) || ''
                         }
                     }
                 }
@@ -380,7 +403,10 @@ class Scratch3SongsBlocks {
                 TRACK_NO_ALL: {
                     acceptReporters: true,
                     items: tracks.length > 0 ?
-                        tracks.map(t => ({text: displayNameForTrack(t), value: t.trackId})) :
+                        tracks.map(t => {
+                            const name = displayNameForTrack(t);
+                            return {text: name, value: name};
+                        }) :
                         [{text: '—', value: ''}]
                 },
                 WHEN: {
@@ -585,7 +611,11 @@ class Scratch3SongsBlocks {
     }
 
     getCurrentNote (args) {
-        const pitch = this._lastNoteByTrack.get(Cast.toString(args.TRACK));
+        // args.TRACK is a display name; map it back to the trackId the
+        // per-track note map is keyed by.
+        const track = this._trackByMenuValue(args.TRACK);
+        if (!track) return 0;
+        const pitch = this._lastNoteByTrack.get(track.trackId);
         return typeof pitch === 'number' ? pitch : 0;
     }
 
@@ -604,9 +634,11 @@ class Scratch3SongsBlocks {
     }
 
     whenTrackPlaysNote (args) {
-        const trackId = Cast.toString(args.TRACK);
-        if (!trackId) return false;
-        return trackId === this._currentNoteTrackId;
+        // args.TRACK is a display name; compare the resolved trackId against
+        // the track that just played a note.
+        const track = this._trackByMenuValue(args.TRACK);
+        if (!track) return false;
+        return track.trackId === this._currentNoteTrackId;
     }
 }
 
