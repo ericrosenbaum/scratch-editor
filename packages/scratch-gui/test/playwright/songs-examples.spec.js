@@ -26,10 +26,11 @@ const examples = [
     {file: 'songs-example-2.sb3',
         shot: 'songs-example-2.png',
         clicks: [frac(-165, -30), frac(-55, -30), frac(55, -30), frac(165, -30)]},
-    // Gem Hunt: walk up into the centre gem so the score ticks and the music layers up.
+    // Gem Hunt: the crab chases the mouse pointer, so park the pointer at stage centre
+    // and let it settle there among the gems.
     {file: 'songs-example-3.sb3',
         shot: 'songs-example-3.png',
-        keys: ['ArrowUp', 'ArrowUp', 'ArrowUp', 'ArrowUp', 'ArrowUp']}
+        mouse: {xFrac: 0.5, yFrac: 0.5}}
 ];
 
 for (const ex of examples) {
@@ -84,6 +85,13 @@ for (const ex of examples) {
                 await page.keyboard.press(key);
                 await page.waitForTimeout(200);
             }
+        }
+
+        // Park the pointer over the stage (some projects follow the mouse).
+        if (ex.mouse) {
+            const box = await stage.boundingBox();
+            await page.mouse.move(box.x + (box.width * ex.mouse.xFrac), box.y + (box.height * ex.mouse.yFrac));
+            await page.waitForTimeout(700);
         }
 
         await page.waitForTimeout(600);
