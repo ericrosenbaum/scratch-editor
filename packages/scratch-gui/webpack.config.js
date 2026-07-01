@@ -100,6 +100,13 @@ const baseConfig = new ScratchWebpackConfigBuilder(
         resourceQuery: /^$/, // reject any query string
         type: 'asset' // let webpack decide on the best type of asset
     })
+    .addModuleRule({
+        // Bundled example projects (Songs welcome modal). Emit each .sb3 as a
+        // fetchable file so `import sb3 from './starters/…sb3'` resolves to a URL
+        // that the modal fetches and hands to vm.loadProject().
+        test: /\.sb3$/,
+        type: 'asset/resource'
+    })
     .addPlugin(new webpack.DefinePlugin({
         'process.env.DEBUG': Boolean(process.env.DEBUG),
         'process.env.GA_ID': `"${process.env.GA_ID || 'UA-000000-01'}"`,

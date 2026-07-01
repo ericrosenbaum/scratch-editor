@@ -14,6 +14,7 @@ import BlocksComponent from '../components/blocks/blocks.jsx';
 import ExtensionLibrary from './extension-library.jsx';
 import extensionData from '../lib/libraries/extensions/index.jsx';
 import CustomProcedures from './custom-procedures.jsx';
+import SongsExamplesModal from './songs-examples-modal.jsx';
 import errorBoundaryHOC from '../lib/error-boundary-hoc.jsx';
 import {BLOCKS_DEFAULT_SCALE, STAGE_DISPLAY_SIZES} from '../lib/layout-constants';
 import DropAreaHOC from '../lib/drop-area-hoc.jsx';
@@ -731,6 +732,8 @@ class Blocks extends React.Component {
                         colorMode={colorMode}
                     />
                 ) : null}
+                {/* Manages its own visibility via redux (opens on load); renders null when hidden. */}
+                <SongsExamplesModal />
             </React.Fragment>
         );
     }
