@@ -437,6 +437,14 @@
     justify-content: space-between;
 }
 
+/* Volume slider surfaced in compact (non-edit) mode: sits just below the name
+   row while the actions row stays pinned to the bottom (margin-top:auto above).
+   Reuses the shared .volume-row slider styling; don't let it stretch. */
+.track-row-controls.compact .compact-volume {
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
 .track-state-group {
     display: inline-flex;
     align-items: center;

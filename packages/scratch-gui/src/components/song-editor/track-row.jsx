@@ -723,10 +723,47 @@ class TrackRow extends React.Component {
     }
 
     renderCompactControls () {
-        const {track, isFirst, isLast, onMoveUp, onMoveDown, onMoveTop, onMoveBottom} = this.props;
+        const {isFirst, isLast, onMoveUp, onMoveDown, onMoveTop, onMoveBottom} = this.props;
+        // Draft-aware track so the volume slider thumb tracks the pointer
+        // mid-drag (same _liveUpdate/_commitDraft path as the edit-mode
+        // slider); track.muted is only ever committed immediately, so reading
+        // it off the draft is equivalent.
+        const track = this._track();
+        const volume = typeof track.volume === 'number' ? track.volume : 80;
         return (
             <div className="track-row-controls compact">
                 {this.renderNameRow()}
+                <div className="volume-row compact-volume">
+                    <svg
+                        className="volume-icon"
+                        viewBox="0 0 16 16"
+                        width="13"
+                        height="13"
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M3 6v4h2.5L9 12.5V3.5L5.5 6H3z"
+                            fill="currentColor"
+                        />
+                        <path
+                            d="M11 5.5a3 3 0 0 1 0 5M12.5 4a5 5 0 0 1 0 8"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.3"
+                            strokeLinecap="round"
+                        />
+                    </svg>
+                    <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={volume}
+                        onChange={this.handleVolumeChange}
+                        aria-label="Volume"
+                        style={{'--vol-pct': `${volume}%`}}
+                    />
+                    <span className="volume-value">{volume}</span>
+                </div>
                 <div className="actions-row compact-actions">
                     <div className="track-state-group">
                         <button
