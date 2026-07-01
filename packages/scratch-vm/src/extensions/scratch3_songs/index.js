@@ -2,6 +2,8 @@ const formatMessage = require('format-message');
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
+const MathUtil = require('../../util/math-util');
+const Timer = require('../../util/timer');
 const {displayNameForTrack} = require('./song-defaults');
 
 // eslint-disable-next-line @stylistic/max-len
@@ -12,8 +14,9 @@ const ALL_TRACKS = '__all__';
 /**
  * Songs extension — real-time controls for the single project-wide track set
  * authored in the Song Maker tab. The transport always loops; blocks toggle
- * tracks active/inactive (immediately or quantized to the next loop), fade
- * tracks in/out, and tweak per-track effect parameters live.
+ * tracks active/inactive (immediately or quantized to the next loop), tweak
+ * per-track effect parameters live, and report/react to the transport's beat,
+ * loop, and note position.
  */
 class Scratch3SongsBlocks {
     constructor (runtime) {
@@ -26,17 +29,55 @@ class Scratch3SongsBlocks {
          */
         this._currentNoteTrackId = null;
 
+        // Beat position within the current loop (1-based; 0 when idle). Updated
+        // from the scheduler's onBeat callback, which passes a 0-based beat index
+        // that resets every loop. Read by the `current beat` reporter and the
+        // edge-activated `when beat counter reaches` hat.
+        this._currentBeat = 0;
+
+        // Number of times the whole loop has completed since playback started
+        // (0 during the first pass). Set from the scheduler's onLoop callback,
+        // which passes the completed-loop count. Read by the `loop counter`
+        // reporter and the `when loop counter reaches` hat.
+        this._loopCount = 0;
+
+        // Most-recent MIDI pitch played per track, keyed by trackId. Fed by the
+        // onNote callback and read by the `current note on [track]` reporter.
+        this._lastNoteByTrack = new Map();
+
         // Wire hat-block callbacks once. The scheduler picks them up next
         // time it's built. Each beat/note fires its hats explicitly via
         // `startHats` (the same path broadcasts and key presses use), so every
-        // matching hat block gets its own thread.
+        // matching hat block gets its own thread. The beat/loop counters are
+        // also updated here so the reporters and edge-activated "reaches" hats
+        // can read them.
         this.runtime.songPlayback.setHatCallbacks({
-            onBeat: () => this.runtime.startHats('songs_whenBeat'),
+            onBeat: beatIndex => {
+                this._currentBeat = (typeof beatIndex === 'number' ? beatIndex : 0) + 1;
+                this.runtime.startHats('songs_whenBeat');
+            },
             onNote: note => {
                 this._currentNoteTrackId = note.trackId;
+                this._lastNoteByTrack.set(note.trackId, note.pitch);
                 this.runtime.startHats('songs_whenTrackPlaysNote');
+            },
+            onLoop: iter => {
+                // `iter` is the completed-loop count; assigning (rather than
+                // incrementing) stays correct even if a backgrounded tab skips
+                // loop wraps.
+                this._loopCount = (typeof iter === 'number' ? iter : this._loopCount + 1);
             }
         });
+
+        // Reset the beat/loop/note state whenever playback stops. Both the stop
+        // button and the green flag route through PROJECT_STOP_ALL →
+        // songPlayback.stop() (fires 'stop'); idle-out fires 'end'. We do NOT
+        // reset on 'start': start() runs its first tick synchronously (firing
+        // the first onBeat/onNote) before the deferred 'start' event, so a
+        // start-reset would clobber them. A fresh transport is always preceded
+        // by a 'stop'/'end' (or is the first run, fields already 0).
+        this.runtime.songPlayback.on('stop', () => this._resetPlaybackCounters());
+        this.runtime.songPlayback.on('end', () => this._resetPlaybackCounters());
 
         // Refresh toolbox menus whenever the song changes (tracks added,
         // instruments changed, project loaded, etc).
@@ -45,6 +86,13 @@ class Scratch3SongsBlocks {
                 this.runtime.requestToolboxExtensionsUpdate();
             }
         });
+    }
+
+    _resetPlaybackCounters () {
+        this._currentBeat = 0;
+        this._loopCount = 0;
+        this._currentNoteTrackId = null;
+        this._lastNoteByTrack.clear();
     }
 
     _song () {
@@ -120,20 +168,6 @@ class Scratch3SongsBlocks {
                     }
                 },
                 {
-                    opcode: 'fadeTrack',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'songs.fadeTrack',
-                        default: 'fade [DIR] [TRACK] [WHEN]',
-                        description: 'Fade tracks in or out'
-                    }),
-                    arguments: {
-                        DIR: {type: ArgumentType.STRING, menu: 'DIR', defaultValue: 'in'},
-                        TRACK: {type: ArgumentType.STRING, menu: 'TRACK', defaultValue: defaultTrack},
-                        WHEN: {type: ArgumentType.STRING, menu: 'WHEN', defaultValue: 'now'}
-                    }
-                },
-                {
                     opcode: 'changeTrackParam',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -159,6 +193,18 @@ class Scratch3SongsBlocks {
                         TRACK: {type: ArgumentType.STRING, menu: 'TRACK', defaultValue: defaultTrack},
                         PARAM: {type: ArgumentType.STRING, menu: 'PARAM', defaultValue: 'volume'},
                         VALUE: {type: ArgumentType.NUMBER, defaultValue: 100}
+                    }
+                },
+                {
+                    opcode: 'restForBeats',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'songs.restForBeats',
+                        default: 'rest for [BEATS] beats',
+                        description: 'Wait (play no sound) for a number of beats'
+                    }),
+                    arguments: {
+                        BEATS: {type: ArgumentType.NUMBER, defaultValue: 1}
                     }
                 },
                 {
@@ -210,18 +256,51 @@ class Scratch3SongsBlocks {
                         SEMITONES: {type: ArgumentType.NUMBER, defaultValue: 1}
                     }
                 },
+                '---',
                 {
-                    opcode: 'setSongScale',
-                    blockType: BlockType.COMMAND,
+                    opcode: 'getTempo',
+                    blockType: BlockType.REPORTER,
                     text: formatMessage({
-                        id: 'songs.setSongScale',
-                        default: 'set scale to [SCALE]',
-                        description: 'Override the song scale at playback time'
+                        id: 'songs.getTempo',
+                        default: 'tempo',
+                        description: 'Report the current song tempo, in bpm'
+                    })
+                },
+                {
+                    opcode: 'getCurrentBeat',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'songs.getCurrentBeat',
+                        default: 'current beat',
+                        description: 'Report the beat position within the current loop'
+                    })
+                },
+                {
+                    opcode: 'getLoopCount',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'songs.getLoopCount',
+                        default: 'loop counter',
+                        description: 'Report how many times the loop has played since it started'
+                    })
+                },
+                {
+                    opcode: 'getCurrentNote',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'songs.getCurrentNote',
+                        default: 'current note on [TRACK]',
+                        description: 'Report the MIDI pitch of the most recent note played on a track'
                     }),
                     arguments: {
-                        SCALE: {type: ArgumentType.STRING, menu: 'SCALE', defaultValue: 'major'}
+                        TRACK: {
+                            type: ArgumentType.STRING,
+                            menu: 'TRACK_NO_ALL',
+                            defaultValue: (tracks[0] && tracks[0].trackId) || ''
+                        }
                     }
                 },
+                '---',
                 {
                     opcode: 'whenBeat',
                     blockType: BlockType.HAT,
@@ -235,6 +314,41 @@ class Scratch3SongsBlocks {
                         default: 'when beat',
                         description: 'Hat — fires on each transport beat'
                     })
+                },
+                {
+                    opcode: 'whenBeatCounterReaches',
+                    blockType: BlockType.HAT,
+                    // Edge-activated: the runtime evaluates the predicate every
+                    // frame and fires on each false→true crossing. The beat
+                    // position resets each loop, so this re-arms and fires once
+                    // per loop when the loop reaches beat N.
+                    isEdgeActivated: true,
+                    shouldRestartExistingThreads: false,
+                    text: formatMessage({
+                        id: 'songs.whenBeatCounterReaches',
+                        default: 'when beat counter reaches [N]',
+                        description: 'Hat — fires each loop when the beat reaches a value'
+                    }),
+                    arguments: {
+                        N: {type: ArgumentType.NUMBER, defaultValue: 4}
+                    }
+                },
+                {
+                    opcode: 'whenLoopCounterReaches',
+                    blockType: BlockType.HAT,
+                    // Edge-activated. The loop counter is cumulative (monotonic
+                    // within a run), so this fires once when the count reaches N;
+                    // it re-arms after the counter resets on stop / green flag.
+                    isEdgeActivated: true,
+                    shouldRestartExistingThreads: false,
+                    text: formatMessage({
+                        id: 'songs.whenLoopCounterReaches',
+                        default: 'when loop counter reaches [N]',
+                        description: 'Hat — fires once when the loop counter reaches a value'
+                    }),
+                    arguments: {
+                        N: {type: ArgumentType.NUMBER, defaultValue: 2}
+                    }
                 },
                 {
                     opcode: 'whenTrackPlaysNote',
@@ -276,13 +390,6 @@ class Scratch3SongsBlocks {
                         {text: 'at next loop', value: 'loop'}
                     ]
                 },
-                DIR: {
-                    acceptReporters: false,
-                    items: [
-                        {text: 'in', value: 'in'},
-                        {text: 'out', value: 'out'}
-                    ]
-                },
                 PARAM: {
                     acceptReporters: false,
                     items: [
@@ -309,16 +416,6 @@ class Scratch3SongsBlocks {
                         {text: 'A#', value: '10'},
                         {text: 'B', value: '11'}
                     ]
-                },
-                SCALE: {
-                    acceptReporters: true,
-                    items: [
-                        {text: 'major', value: 'major'},
-                        {text: 'minor', value: 'minor'},
-                        {text: 'pentatonic major', value: 'pentatonicMajor'},
-                        {text: 'pentatonic minor', value: 'pentatonicMinor'},
-                        {text: 'chromatic', value: 'chromatic'}
-                    ]
                 }
             }
         };
@@ -341,14 +438,6 @@ class Scratch3SongsBlocks {
         const ids = this._resolveTrackIds(args.TRACK);
         if (ids.length === 0) return;
         this.runtime.songPlayback.setTracksActive(ids, false, when);
-    }
-
-    fadeTrack (args) {
-        const dir = Cast.toString(args.DIR) === 'out' ? 'out' : 'in';
-        const when = Cast.toString(args.WHEN) === 'loop' ? 'loop' : 'now';
-        for (const id of this._resolveTrackIds(args.TRACK)) {
-            this.runtime.songPlayback.fadeTrack(id, dir, when, 1.0);
-        }
     }
 
     // Block writes never mutate runtime.song — they go through the playback's
@@ -440,12 +529,72 @@ class Scratch3SongsBlocks {
         pb.setRootPitchOverride(midi);
     }
 
-    setSongScale (args) {
+    // Rest (play no sound) for a number of beats, yielding the thread until the
+    // duration elapses. Mirrors the Music extension's stack-timer pattern.
+    restForBeats (args, util) {
+        if (this._stackTimerNeedsInit(util)) {
+            const beats = this._clampBeats(Cast.toNumber(args.BEATS));
+            this._startStackTimer(util, this._beatsToSec(beats));
+        } else {
+            this._checkStackTimer(util);
+        }
+    }
+
+    // One beat = 60 / tempo seconds — the same beat the `when beat` hat fires on.
+    // Uses the currently-audible tempo (block override if set, else the song's
+    // authored tempo).
+    _beatsToSec (beats) {
         const pb = this.runtime.songPlayback;
-        if (!pb) return;
-        const valid = {major: 1, minor: 1, pentatonicMajor: 1, pentatonicMinor: 1, chromatic: 1};
-        const raw = Cast.toString(args.SCALE);
-        pb.setScaleTypeOverride(valid[raw] ? raw : 'chromatic');
+        const tempo = pb ? pb.getTempo() : 120;
+        return (60 / tempo) * beats;
+    }
+
+    _clampBeats (beats) {
+        return MathUtil.clamp(beats, 0, 100);
+    }
+
+    _stackTimerNeedsInit (util) {
+        return !util.stackFrame.timer;
+    }
+
+    _startStackTimer (util, duration) {
+        util.stackFrame.timer = new Timer();
+        util.stackFrame.timer.start();
+        util.stackFrame.duration = duration;
+        util.yield();
+    }
+
+    _checkStackTimer (util) {
+        const timeElapsed = util.stackFrame.timer.timeElapsed();
+        if (timeElapsed < util.stackFrame.duration * 1000) {
+            util.yield();
+        }
+    }
+
+    getTempo () {
+        const pb = this.runtime.songPlayback;
+        return pb ? pb.getTempo() : 120;
+    }
+
+    getCurrentBeat () {
+        return this._currentBeat;
+    }
+
+    getLoopCount () {
+        return this._loopCount;
+    }
+
+    getCurrentNote (args) {
+        const pitch = this._lastNoteByTrack.get(Cast.toString(args.TRACK));
+        return typeof pitch === 'number' ? pitch : 0;
+    }
+
+    whenBeatCounterReaches (args) {
+        return this._currentBeat >= Cast.toNumber(args.N);
+    }
+
+    whenLoopCounterReaches (args) {
+        return this._loopCount >= Cast.toNumber(args.N);
     }
 
     whenBeat () {

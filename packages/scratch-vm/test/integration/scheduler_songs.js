@@ -10,7 +10,7 @@
  *   - Clock-free: read scheduler._notes after activation to verify the flatten
  *     (active-track filtering, mute, solo, key/scale snapping, drum bypass).
  *   - Clock-driven: advance the mock clock through one loop iteration and count
- *     onNote / onBeat callbacks, and verify "at next loop" quantization + fades.
+ *     onNote / onBeat callbacks, and verify "at next loop" quantization.
  */
 
 const tap = require('tap');
@@ -138,39 +138,6 @@ tap.test('transport: "at next loop" defers activation to the loop boundary', t =
     // Advance past the loop boundary (1.0s) so _onLoopWrap applies the pending change.
     advance(ctx, sched, {toSec: 1.2});
     t.ok(sched.activeTrackIds().includes('b'), 'b becomes active after the loop wrap');
-    sched.stop();
-    t.end();
-});
-
-tap.test('transport: fade out deactivates the track once the ramp completes', t => {
-    const ctx = makeAudioContext();
-    const song = makeSong([
-        synthTrack('a', [{step: 0, pitch: 60, velocity: 90}]),
-        synthTrack('b', [{step: 0, pitch: 67, velocity: 90}])
-    ]);
-    const sched = makeScheduler(song, ctx);
-    startDeterministic(sched, {startStep: 0, activeTracks: ['a', 'b']});
-    sched.fadeTrack('a', 'out', 'now', 0.2);
-    t.ok(sched.activeTrackIds().includes('a'), 'a still active while fading out');
-    t.ok(sched._pendingDeactivations.has('a'), 'a queued for deactivation at ramp end');
-    // Advance past the 0.2s fade so _tick removes a from the active set.
-    advance(ctx, sched, {toSec: 0.4});
-    t.notOk(sched.activeTrackIds().includes('a'), 'a deactivated after the fade-out completes');
-    t.ok(sched.activeTrackIds().includes('b'), 'b unaffected by a\'s fade');
-    sched.stop();
-    t.end();
-});
-
-tap.test('transport: fade in activates a previously-inactive track immediately', t => {
-    const ctx = makeAudioContext();
-    const song = makeSong([
-        synthTrack('a', [{step: 0, pitch: 60, velocity: 90}]),
-        synthTrack('b', [{step: 0, pitch: 67, velocity: 90}])
-    ]);
-    const sched = makeScheduler(song, ctx);
-    startDeterministic(sched, {startStep: 0, activeTracks: ['a']});
-    sched.fadeTrack('b', 'in', 'now', 0.2);
-    t.ok(sched.activeTrackIds().includes('b'), 'b activated at the start of a fade-in');
     sched.stop();
     t.end();
 });

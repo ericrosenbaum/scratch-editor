@@ -1,75 +1,77 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="372" viewBox="0 0 600 372">
   <defs>
     <linearGradient id="songsBg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#F5F7FC"/>
       <stop offset="1" stop-color="#E1E7F4"/>
     </linearGradient>
-    <filter id="songsCardShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#2A3A6E" flood-opacity="0.16"/>
+    <filter id="songsCardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#2A3A6E" flood-opacity="0.16"/>
     </filter>
     <filter id="songsPlayShadow" x="-60%" y="-60%" width="220%" height="220%">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#4C97FF" flood-opacity="0.45"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#4C97FF" flood-opacity="0.45"/>
     </filter>
     <clipPath id="songsCardClip">
-      <rect x="20" y="32" width="160" height="120" rx="16"/>
+      <rect x="48" y="52" width="504" height="268" rx="24"/>
     </clipPath>
   </defs>
 
-  <!-- Airy editor background -->
-  <rect width="200" height="200" rx="32" fill="url(#songsBg)"/>
+  <!-- Airy editor background (full-bleed to match other extension tiles) -->
+  <rect width="600" height="372" fill="url(#songsBg)"/>
 
   <!-- Piano-roll card -->
-  <rect x="20" y="32" width="160" height="120" rx="16" fill="#FFFFFF" filter="url(#songsCardShadow)"/>
+  <rect x="48" y="52" width="504" height="268" rx="24" fill="#FFFFFF" filter="url(#songsCardShadow)"/>
 
   <g clip-path="url(#songsCardClip)">
     <!-- Keyboard gutter -->
-    <rect x="20" y="32" width="22" height="120" fill="#F4F6FB"/>
-    <!-- White-key separators / lane rows -->
+    <rect x="48" y="52" width="72" height="268" fill="#F4F6FB"/>
+    <!-- Lane rows / white-key separators -->
     <g stroke-width="1">
-      <line x1="20" y1="49.1" x2="42" y2="49.1" stroke="#DCE0EA"/>
-      <line x1="20" y1="66.3" x2="42" y2="66.3" stroke="#DCE0EA"/>
-      <line x1="20" y1="83.4" x2="42" y2="83.4" stroke="#DCE0EA"/>
-      <line x1="20" y1="100.6" x2="42" y2="100.6" stroke="#DCE0EA"/>
-      <line x1="20" y1="117.7" x2="42" y2="117.7" stroke="#DCE0EA"/>
-      <line x1="20" y1="134.9" x2="42" y2="134.9" stroke="#DCE0EA"/>
-      <line x1="42" y1="49.1" x2="180" y2="49.1" stroke="#EDEFF6"/>
-      <line x1="42" y1="66.3" x2="180" y2="66.3" stroke="#EDEFF6"/>
-      <line x1="42" y1="83.4" x2="180" y2="83.4" stroke="#EDEFF6"/>
-      <line x1="42" y1="100.6" x2="180" y2="100.6" stroke="#EDEFF6"/>
-      <line x1="42" y1="117.7" x2="180" y2="117.7" stroke="#EDEFF6"/>
-      <line x1="42" y1="134.9" x2="180" y2="134.9" stroke="#EDEFF6"/>
+      <line x1="48" y1="85.5" x2="120" y2="85.5" stroke="#DCE0EA"/>
+      <line x1="48" y1="119" x2="120" y2="119" stroke="#DCE0EA"/>
+      <line x1="48" y1="152.5" x2="120" y2="152.5" stroke="#DCE0EA"/>
+      <line x1="48" y1="186" x2="120" y2="186" stroke="#DCE0EA"/>
+      <line x1="48" y1="219.5" x2="120" y2="219.5" stroke="#DCE0EA"/>
+      <line x1="48" y1="253" x2="120" y2="253" stroke="#DCE0EA"/>
+      <line x1="48" y1="286.5" x2="120" y2="286.5" stroke="#DCE0EA"/>
+      <line x1="120" y1="85.5" x2="552" y2="85.5" stroke="#EDEFF6"/>
+      <line x1="120" y1="119" x2="552" y2="119" stroke="#EDEFF6"/>
+      <line x1="120" y1="152.5" x2="552" y2="152.5" stroke="#EDEFF6"/>
+      <line x1="120" y1="186" x2="552" y2="186" stroke="#EDEFF6"/>
+      <line x1="120" y1="219.5" x2="552" y2="219.5" stroke="#EDEFF6"/>
+      <line x1="120" y1="253" x2="552" y2="253" stroke="#EDEFF6"/>
+      <line x1="120" y1="286.5" x2="552" y2="286.5" stroke="#EDEFF6"/>
     </g>
     <!-- Black keys (grouped 2 + 3, like a real keyboard) -->
     <g fill="#2C2C2C">
-      <rect x="20" y="44.6" width="12" height="9" rx="2"/>
-      <rect x="20" y="61.8" width="12" height="9" rx="2"/>
-      <rect x="20" y="96.1" width="12" height="9" rx="2"/>
-      <rect x="20" y="113.2" width="12" height="9" rx="2"/>
-      <rect x="20" y="130.4" width="12" height="9" rx="2"/>
+      <rect x="48" y="76" width="30" height="19" rx="4"/>
+      <rect x="48" y="109.5" width="30" height="19" rx="4"/>
+      <rect x="48" y="176.5" width="30" height="19" rx="4"/>
+      <rect x="48" y="210" width="30" height="19" rx="4"/>
+      <rect x="48" y="243.5" width="30" height="19" rx="4"/>
     </g>
     <!-- Faint beat lines -->
-    <g stroke="#F0F2F8" stroke-width="1">
-      <line x1="62" y1="32" x2="62" y2="152"/>
-      <line x1="158" y1="32" x2="158" y2="152"/>
+    <g stroke="#F0F2F8" stroke-width="2">
+      <line x1="192" y1="52" x2="192" y2="320"/>
+      <line x1="480" y1="52" x2="480" y2="320"/>
     </g>
     <!-- Playhead -->
-    <line x1="110" y1="32" x2="110" y2="152" stroke="#4C97FF" stroke-width="2" opacity="0.5"/>
+    <line x1="330" y1="52" x2="330" y2="320" stroke="#4C97FF" stroke-width="4" opacity="0.5"/>
     <!-- Rainbow note pills (the song) -->
-    <g stroke-width="1.5">
-      <rect x="50" y="120.8" width="20" height="11" rx="3.5" fill="#FF6B6B" stroke="#B84F4F"/>
-      <rect x="74" y="103.6" width="20" height="11" rx="3.5" fill="#FFCC4F" stroke="#B89337"/>
-      <rect x="74" y="69.4" width="20" height="11" rx="3.5" fill="#4FB8E9" stroke="#3788A5"/>
-      <rect x="98" y="86.5" width="20" height="11" rx="3.5" fill="#4FE974" stroke="#37A554"/>
-      <rect x="122" y="52.2" width="20" height="11" rx="3.5" fill="#944FE9" stroke="#6A37A5"/>
-      <rect x="122" y="103.6" width="20" height="11" rx="3.5" fill="#FF9F4F" stroke="#B87237"/>
-      <rect x="146" y="69.4" width="20" height="11" rx="3.5" fill="#4FE9D9" stroke="#37A59C"/>
+    <g stroke-width="2.5">
+      <rect x="138" y="291" width="56" height="24" rx="7" fill="#FF6B6B" stroke="#B84F4F"/>
+      <rect x="208" y="224.5" width="56" height="24" rx="7" fill="#FFCC4F" stroke="#B89337"/>
+      <rect x="208" y="124" width="56" height="24" rx="7" fill="#4FB8E9" stroke="#3788A5"/>
+      <rect x="286" y="157.5" width="56" height="24" rx="7" fill="#4FE974" stroke="#37A554"/>
+      <rect x="356" y="90.5" width="56" height="24" rx="7" fill="#944FE9" stroke="#6A37A5"/>
+      <rect x="356" y="224.5" width="56" height="24" rx="7" fill="#FF9F4F" stroke="#B87237"/>
+      <rect x="426" y="124" width="56" height="24" rx="7" fill="#4FE9D9" stroke="#37A59C"/>
     </g>
   </g>
 
   <!-- Card hairline border -->
-  <rect x="20" y="32" width="160" height="120" rx="16" fill="none" stroke="#E6E8F0" stroke-width="1"/>
+  <rect x="48" y="52" width="504" height="268" rx="24" fill="none" stroke="#E6E8F0" stroke-width="1.5"/>
 
   <!-- Play button accent -->
-  <circle cx="168" cy="150" r="18" fill="#4C97FF" filter="url(#songsPlayShadow)"/>
-  <path d="M163.5 142.5 L163.5 157.5 L177 150 Z" fill="#FFFFFF"/>
+  <circle cx="516" cy="316" r="32" fill="#4C97FF" filter="url(#songsPlayShadow)"/>
+  <path d="M508 302 L508 330 L532 316 Z" fill="#FFFFFF"/>
 </svg>

@@ -217,7 +217,8 @@ test('Song Maker: Songs extension getInfo returns the new block set', t => {
             this.audioEngine = null;
             this._handlers = {};
             this._songPlayback = {
-                setHatCallbacks: () => {}
+                setHatCallbacks: () => {},
+                on: () => {}
             };
         }
         get songPlayback () { return this._songPlayback; }
@@ -232,14 +233,20 @@ test('Song Maker: Songs extension getInfo returns the new block set', t => {
     t.equal(info.id, 'songs', 'extension id correct');
     const opcodes = info.blocks.map(b => b.opcode);
     for (const op of [
-        'playTrack', 'stopTrack', 'fadeTrack',
-        'changeTrackParam', 'setTrackParam',
-        'whenBeat', 'whenTrackPlaysNote'
+        'playTrack', 'stopTrack',
+        'changeTrackParam', 'setTrackParam', 'restForBeats',
+        'setSongTempo', 'changeTempoBy', 'setSongKey', 'changeKeyBy',
+        'getTempo', 'getCurrentBeat', 'getLoopCount', 'getCurrentNote',
+        'whenBeat', 'whenBeatCounterReaches', 'whenLoopCounterReaches', 'whenTrackPlaysNote'
     ]) {
         t.ok(opcodes.indexOf(op) >= 0, `has ${op} block`);
     }
+    // Removed blocks should no longer appear.
+    t.equal(opcodes.indexOf('fadeTrack'), -1, 'fadeTrack removed');
+    t.equal(opcodes.indexOf('setSongScale'), -1, 'setSongScale removed');
     const hats = info.blocks.filter(b => b.blockType === 'hat');
-    t.equal(hats.length, 2, 'two hat blocks (whenBeat + whenTrackPlaysNote)');
+    t.equal(hats.length, 4,
+        'four hat blocks (whenBeat, whenBeatCounterReaches, whenLoopCounterReaches, whenTrackPlaysNote)');
     t.end();
 });
 

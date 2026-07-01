@@ -199,23 +199,6 @@ tap.test('setSongKey / changeKeyBy override and compose, clamped to MIDI 24..107
         });
 });
 
-tap.test('setSongScale accepts valid scales and falls back to chromatic', t => {
-    setup().then(({ext, pb}) => {
-        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
-        for (const scale of ['major', 'minor', 'pentatonicMajor', 'pentatonicMinor', 'chromatic']) {
-            ext.setSongScale({SCALE: scale});
-            t.equal(pb._scaleTypeOverride, scale, `setSongScale ${scale} applies`);
-        }
-        ext.setSongScale({SCALE: 'bogus'});
-        t.equal(pb._scaleTypeOverride, 'chromatic', 'unknown scale falls back to chromatic');
-        teardown(pb);
-        t.end();
-    })
-        .catch(e => {
-            t.fail(e.stack || e); t.end();
-        });
-});
-
 tap.test('all block overrides are cleared on PROJECT_STOP_ALL (green-flag stop)', t => {
     setup().then(({vm, ext, pb}) => {
         ext.playTrack({TRACK: '__all__', WHEN: 'now'});
@@ -223,14 +206,12 @@ tap.test('all block overrides are cleared on PROJECT_STOP_ALL (green-flag stop)'
         ext.setTrackParam({TRACK: 'lead', PARAM: 'reverb', VALUE: 80});
         ext.setSongTempo({TEMPO: 200});
         ext.setSongKey({NOTE: '5', OCTAVE: 3});
-        ext.setSongScale({SCALE: 'minor'});
         t.ok(pb._volumeOverrides.size > 0 && pb._effectOverrides.size > 0, 'overrides present before stop');
         vm.runtime.emit('PROJECT_STOP_ALL');
         t.equal(pb._volumeOverrides.size, 0, 'volume overrides cleared');
         t.equal(pb._effectOverrides.size, 0, 'effect overrides cleared');
         t.equal(pb._tempoOverride, null, 'tempo override cleared');
         t.equal(pb._rootPitchOverride, null, 'root pitch override cleared');
-        t.equal(pb._scaleTypeOverride, null, 'scale override cleared');
         t.notOk(pb.isPlaying(), 'transport stopped');
         teardown(pb);
         t.end();
@@ -240,13 +221,84 @@ tap.test('all block overrides are cleared on PROJECT_STOP_ALL (green-flag stop)'
         });
 });
 
-tap.test('fadeTrack in activates; fadeTrack out keeps it active until the ramp ends', t => {
+tap.test('tempo reporter reflects the current effective tempo', t => {
     setup().then(({ext, pb}) => {
-        ext.fadeTrack({DIR: 'in', TRACK: 'lead', WHEN: 'now'});
-        t.ok(pb.activeTrackIds().includes('lead'), 'fade in activates the track');
-        ext.fadeTrack({DIR: 'out', TRACK: 'lead', WHEN: 'now'});
-        t.ok(pb.activeTrackIds().includes('lead'), 'still active during fade-out ramp');
-        t.ok(pb._scheduler._pendingDeactivations.has('lead'), 'queued for deactivation at ramp end');
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        t.equal(ext.getTempo(), 120, 'reports the song tempo before any override');
+        ext.setSongTempo({TEMPO: 145});
+        t.equal(ext.getTempo(), 145, 'reflects the tempo override');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('rest for beats converts beats to seconds at the current tempo and yields', t => {
+    setup().then(({ext, pb}) => {
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        t.equal(ext._beatsToSec(1), 0.5, 'one beat = 0.5s at 120 bpm');
+        ext.setSongTempo({TEMPO: 240});
+        t.equal(ext._beatsToSec(1), 0.25, 'one beat = 0.25s at 240 bpm');
+        // First call initializes the stack timer and yields; duration is in seconds.
+        const util = {
+            stackFrame: {},
+            yielded: false,
+            yield () {
+                this.yielded = true;
+            }
+        };
+        ext.restForBeats({BEATS: 2}, util);
+        t.ok(util.yielded, 'first call yields the thread');
+        t.ok(util.stackFrame.timer, 'stack timer initialized');
+        t.equal(util.stackFrame.duration, 0.5, '2 beats at 240 bpm = 0.5s');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('beat / loop / note reporters track the transport and reset on stop', t => {
+    setup().then(({ext, pb}) => {
+        t.equal(ext.getCurrentBeat(), 0, 'current beat is 0 before playback');
+        t.equal(ext.getLoopCount(), 0, 'loop counter starts at 0');
+        t.equal(ext.getCurrentNote({TRACK: 'lead'}), 0, 'current note is 0 before playback');
+        // Drive the hat callbacks exactly as the scheduler would (not via
+        // playTrack, whose first tick auto-schedules step-0 notes on every track).
+        pb._hatCallbacks.onBeat(2); // 0-based beat index → 1-based beat 3
+        t.equal(ext.getCurrentBeat(), 3, 'current beat is 1-based within the loop');
+        pb._hatCallbacks.onLoop(4);
+        t.equal(ext.getLoopCount(), 4, 'loop counter reflects completed loops');
+        pb._hatCallbacks.onNote({trackId: 'lead', pitch: 67});
+        t.equal(ext.getCurrentNote({TRACK: 'lead'}), 67, 'current note reports the last MIDI pitch');
+        t.equal(ext.getCurrentNote({TRACK: 'beat'}), 0, 'a track with no note yet reports 0');
+        // Green-flag / stop resets all of it.
+        pb.stop();
+        t.equal(ext.getCurrentBeat(), 0, 'current beat reset on stop');
+        t.equal(ext.getLoopCount(), 0, 'loop counter reset on stop');
+        t.equal(ext.getCurrentNote({TRACK: 'lead'}), 0, 'current note cleared on stop');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('counter hat predicates are true at/after their threshold', t => {
+    setup().then(({ext, pb}) => {
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        pb._hatCallbacks.onBeat(1); // beat 2
+        t.notOk(ext.whenBeatCounterReaches({N: 4}), 'beat hat false before beat 4');
+        pb._hatCallbacks.onBeat(3); // beat 4
+        t.ok(ext.whenBeatCounterReaches({N: 4}), 'beat hat true once the beat reaches 4');
+        pb._hatCallbacks.onLoop(1);
+        t.notOk(ext.whenLoopCounterReaches({N: 2}), 'loop hat false before 2 loops');
+        pb._hatCallbacks.onLoop(2);
+        t.ok(ext.whenLoopCounterReaches({N: 2}), 'loop hat true once 2 loops complete');
         teardown(pb);
         t.end();
     })

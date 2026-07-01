@@ -4,8 +4,7 @@
  * song (tempo + length + tracks). Tracks are individually `active` or
  * `inactive`; the transport ticks whenever ≥1 track is active and always loops.
  * Track activation can be scheduled to take effect immediately ("now") or at
- * the next loop boundary ("loop"). Per-track fades animate a gain node on the
- * track's FX chain so they compose with per-note velocity gain.
+ * the next loop boundary ("loop").
  */
 
 const {getTrackSynth} = require('./synth-defaults');
@@ -85,10 +84,6 @@ class SongScheduler {
         // Pending activate/deactivate changes to apply at the next loop
         // boundary. Map<trackId, boolean>. Last write wins.
         this._pendingTrackChanges = new Map();
-        // Pending deactivations triggered by fade-out: when audioContext time
-        // reaches the stored ctxTime, the track is removed from _activeTracks.
-        // Map<trackId, number /* ctxTime */>.
-        this._pendingDeactivations = new Map();
 
         // Per-track FX chains, keyed by trackId. Built lazily on first note of
         // a track so empty / muted tracks cost nothing.
@@ -194,9 +189,9 @@ class SongScheduler {
     _getTrackChain (trackId) {
         if (this._trackChains[trackId]) return this._trackChains[trackId];
         const ctx = this.audioContext;
-        // `input` is the per-voice mixer at the head of the chain. Per-track
-        // fades animate this node directly, so we keep volume on a separate
-        // gain so the two automations compose multiplicatively.
+        // `input` is the per-voice mixer at the head of the chain; every note on
+        // the track connects here. Track level lives on a separate `volume` gain
+        // downstream so per-note velocity gain and track volume compose.
         const input = ctx.createGain();
         input.gain.value = 1;
 
@@ -492,7 +487,6 @@ class SongScheduler {
             if (toAdd.length === 0) return;
             for (const id of toAdd) {
                 this._activeTracks.add(id);
-                this._pendingDeactivations.delete(id);
             }
             if (this._started) {
                 this._notes = this._flattenNotes();
@@ -518,7 +512,6 @@ class SongScheduler {
         if (active) {
             if (this._activeTracks.has(trackId)) return;
             this._activeTracks.add(trackId);
-            this._pendingDeactivations.delete(trackId);
             if (this._started) {
                 this._notes = this._flattenNotes();
             } else {
@@ -552,60 +545,6 @@ class SongScheduler {
                 } catch (e) { /* already stopped */ }
                 this._activeSources.splice(i, 1);
             }
-        }
-    }
-
-    /**
-     * Start a linear gain fade on a track. Direction 'in' activates the
-     * track (silent, ramping up); direction 'out' ramps down and deactivates
-     * once the fade completes.
-     * @param {string} trackId
-     * @param {string} direction - 'in' or 'out'
-     * @param {string} [when] - 'now' or 'loop'
-     * @param {number} [durationSec]
-     */
-    fadeTrack (trackId, direction, when = 'now', durationSec = 1.0) {
-        if (!trackId) return;
-        if (when === 'loop' && this._started) {
-            // Defer the entire fade by scheduling it at the next boundary in
-            // _tick. We co-opt _pendingTrackChanges with a sentinel object.
-            this._pendingTrackChanges.set(trackId, {fade: direction, durationSec});
-            return;
-        }
-        this._beginFade(trackId, direction, durationSec);
-    }
-
-    _beginFade (trackId, direction, durationSec) {
-        const ctx = this.audioContext;
-        if (direction === 'in') {
-            // Build the chain proactively so we can set gain=0 before any note
-            // hits, then activate so notes start flowing.
-            const chain = this._getTrackChain(trackId);
-            const now = ctx.currentTime;
-            try {
-                chain.input.gain.cancelScheduledValues(now);
-            } catch (e) { /* ignore */ }
-            chain.input.gain.setValueAtTime(0, now);
-            chain.input.gain.linearRampToValueAtTime(1, now + durationSec);
-            this._pendingDeactivations.delete(trackId);
-            this._applyTrackActiveChange(trackId, true);
-        } else if (direction === 'out') {
-            // If the track isn't active, there's nothing to fade.
-            if (!this._activeTracks.has(trackId)) return;
-            const chain = this._getTrackChain(trackId);
-            const now = ctx.currentTime;
-            try {
-                chain.input.gain.cancelScheduledValues(now);
-            } catch (e) { /* ignore */ }
-            // Capture the current gain so the ramp starts from where we are.
-            const startVal = chain.input.gain.value;
-            chain.input.gain.setValueAtTime(startVal, now);
-            chain.input.gain.linearRampToValueAtTime(0, now + durationSec);
-            // Mark for deactivation when the fade completes. _tick checks the
-            // map each cycle and removes the track from _activeTracks at that
-            // time, restoring the chain gain to 1 so a later activation isn't
-            // silent.
-            this._pendingDeactivations.set(trackId, now + durationSec);
         }
     }
 
@@ -666,11 +605,7 @@ class SongScheduler {
         this._iter = newIter;
         if (this._pendingTrackChanges.size > 0) {
             for (const [trackId, value] of this._pendingTrackChanges) {
-                if (value && typeof value === 'object' && value.fade) {
-                    this._beginFade(trackId, value.fade, value.durationSec);
-                } else {
-                    this._applyTrackActiveChange(trackId, !!value);
-                }
+                this._applyTrackActiveChange(trackId, !!value);
             }
             this._pendingTrackChanges.clear();
         }
@@ -709,7 +644,6 @@ class SongScheduler {
         this._volumeCache = {};
         this._activeTracks.clear();
         this._pendingTrackChanges.clear();
-        this._pendingDeactivations.clear();
         this._lastPitchByTrack.clear();
         if (!this._ended) {
             this._ended = true;
@@ -734,30 +668,9 @@ class SongScheduler {
             this._onLoopWrap(iterNow);
         }
 
-        // Apply fade-out deactivations whose ramps have completed.
-        if (this._pendingDeactivations.size > 0) {
-            for (const [trackId, atTime] of Array.from(this._pendingDeactivations)) {
-                if (now >= atTime) {
-                    this._activeTracks.delete(trackId);
-                    this._pendingDeactivations.delete(trackId);
-                    // Restore chain gain so a future fade-in / play starts at full level.
-                    const chain = this._trackChains[trackId];
-                    if (chain) {
-                        try {
-                            chain.input.gain.cancelScheduledValues(now);
-                        } catch (e) { /* ignore */ }
-                        chain.input.gain.setValueAtTime(1, now);
-                    }
-                    this._notes = this._flattenNotes();
-                    this._cancelScheduledForTrack(trackId);
-                }
-            }
-        }
-
         // Idle-out when nothing is active and no pending work remains.
         if (this._activeTracks.size === 0 &&
             this._pendingTrackChanges.size === 0 &&
-            this._pendingDeactivations.size === 0 &&
             this._activeSources.length === 0) {
             // Defer to next tick to give onStep a final flush, then halt.
             this._started = false;

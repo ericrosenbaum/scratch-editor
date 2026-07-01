@@ -86,12 +86,13 @@ class SongPlayback {
         //   _volumeOverrides: Map<trackId, number>               0..1
         this._effectOverrides = new Map();
         this._volumeOverrides = new Map();
-        // Song-wide playback overrides — tempo (bpm), root pitch (MIDI int),
-        // and scale type (name). Stored at the playback level so they
-        // survive scheduler re-creation, then pushed into the scheduler when
-        // it spins up or when they change. null = no override (fall back to
-        // the song's authored value). Cleared alongside the effect maps on
-        // green-flag stop so each run starts fresh.
+        // Song-wide playback overrides — tempo (bpm) and root pitch (MIDI int).
+        // Stored at the playback level so they survive scheduler re-creation,
+        // then pushed into the scheduler when it spins up or when they change.
+        // null = no override (fall back to the song's authored value). Cleared
+        // alongside the effect maps on green-flag stop so each run starts fresh.
+        // `_scaleTypeOverride` is retained (always null) because the scheduler's
+        // setPitchOverrides(root, scale) is shared with the root-pitch override.
         this._tempoOverride = null;
         this._rootPitchOverride = null;
         this._scaleTypeOverride = null;
@@ -175,7 +176,9 @@ class SongPlayback {
             onNote: (n, t) => {
                 if (hat.onNote) hat.onNote(n, t);
             },
-            onLoop: () => { /* no external subscribers yet */ },
+            onLoop: iter => {
+                if (hat.onLoop) hat.onLoop(iter);
+            },
             onEnd: () => {
                 const endedSong = this.runtime.song;
                 this._scheduler = null;
@@ -284,20 +287,6 @@ class SongPlayback {
         this._previewing = false;
         this.runtime.song = this._previewRestoreSong || null;
         this._previewRestoreSong = null;
-    }
-
-    /**
-     * Begin a linear fade on a track. Direction 'in' activates and ramps up
-     * from silence; direction 'out' ramps down and deactivates on completion.
-     * @param {string} trackId
-     * @param {string} direction - 'in' or 'out'
-     * @param {string} [when]
-     * @param {number} [durationSec]
-     */
-    fadeTrack (trackId, direction, when, durationSec) {
-        const sched = this._ensureScheduler();
-        if (!sched) return;
-        sched.fadeTrack(trackId, direction, when || 'now', durationSec || 1.0);
     }
 
     /** Immediately stop the transport and tear down all audio nodes. */
@@ -519,19 +508,6 @@ class SongPlayback {
     setRootPitchOverride (midi) {
         const v = parseInt(midi, 10);
         this._rootPitchOverride = Number.isFinite(v) ? v : null;
-        if (this._scheduler && this._scheduler.setPitchOverrides) {
-            this._scheduler.setPitchOverrides(this._rootPitchOverride, this._scaleTypeOverride);
-        }
-    }
-
-    /**
-     * Song-wide scale-type override. Played pitched notes are snapped to the
-     * named scale (using the effective root) at flatten time. Cleared on
-     * green-flag stop.
-     * @param scaleType
-     */
-    setScaleTypeOverride (scaleType) {
-        this._scaleTypeOverride = scaleType || null;
         if (this._scheduler && this._scheduler.setPitchOverrides) {
             this._scheduler.setPitchOverrides(this._rootPitchOverride, this._scaleTypeOverride);
         }
