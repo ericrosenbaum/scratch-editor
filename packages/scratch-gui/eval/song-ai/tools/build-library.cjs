@@ -125,6 +125,9 @@ for (const dir of fs.readdirSync(GOLDENS).sort()) {
             lengthSteps: lengthFromNotes(golden.notes),
             stepsPerBeat: 4,
             instrumentName: instrumentNameFor(golden),
+            // Bootstrap items come from the Opus goldens; surface that in the
+            // library UI (YAB feedback: flag AI-generated content).
+            aiGenerated: true,
             payload: golden
         });
     } else if (dir.startsWith('song-')) {
@@ -145,6 +148,7 @@ for (const dir of fs.readdirSync(GOLDENS).sort()) {
             lengthSteps: golden.lengthSteps || 32,
             stepsPerBeat: golden.stepsPerBeat || 4,
             trackCount: (golden.tracks || []).length,
+            aiGenerated: true,
             payload: golden
         });
     }

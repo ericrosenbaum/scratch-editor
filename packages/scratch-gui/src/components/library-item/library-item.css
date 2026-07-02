@@ -146,6 +146,20 @@
     min-width: 0;
 }
 
+/* Author byline under the item name (song library attribution). */
+.library-item-credit {
+    width: 90%;
+    margin-top: -0.125rem;
+    text-align: center;
+    font-size: 0.625rem;
+    color: $text-primary-transparent;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
 .featured-item {
     flex-basis: 300px;
     max-width: 300px;

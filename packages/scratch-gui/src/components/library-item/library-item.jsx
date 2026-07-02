@@ -197,6 +197,9 @@ class LibraryItemComponent extends React.PureComponent {
                     </Box>
                 </Box>
                 <span className={styles.libraryItemName}>{this.props.name}</span>
+                {this.props.credit ? (
+                    <span className={styles.libraryItemCredit}>{this.props.credit}</span>
+                ) : null}
                 {this.props.showPlayButton ? (
                     <PlayButton
                         isPlaying={this.props.isPlaying}
@@ -214,6 +217,12 @@ LibraryItemComponent.propTypes = {
     intl: intlShape,
     bluetoothRequired: PropTypes.bool,
     collaborator: PropTypes.string,
+    // Author byline shown under the item name (e.g. "by m-malandro" or
+    // "AI-generated" for machine-made library content).
+    credit: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.node
+    ]),
     description: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.node

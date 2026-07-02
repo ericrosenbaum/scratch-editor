@@ -133,6 +133,7 @@ class LibraryItem extends React.PureComponent {
             <LibraryItemComponent
                 bluetoothRequired={this.props.bluetoothRequired}
                 collaborator={this.props.collaborator}
+                credit={this.props.credit}
                 description={this.props.description}
                 disabled={this.props.disabled}
                 extensionId={this.props.extensionId}
@@ -168,6 +169,10 @@ const mapStateToProps = state => ({
 LibraryItem.propTypes = {
     bluetoothRequired: PropTypes.bool,
     collaborator: PropTypes.string,
+    credit: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.node
+    ]),
     description: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.node

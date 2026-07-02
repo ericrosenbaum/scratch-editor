@@ -452,7 +452,13 @@ HELICE_CURATED = [
     ('An anarchist utopia.mid',                            'Peaceful Days',      ['chill', 'story', 'game']),
 ]
 
-CURATED = MALANDRO_CURATED + ROPPY_CURATED + HELICE_CURATED
+# (fname, display name, tags, author credit) — the credit is shown in the
+# library UI; CC0 requires no attribution but we give it as good practice.
+CURATED = (
+    [(f, n, t, 'm-malandro') for f, n, t in MALANDRO_CURATED] +
+    [(f, n, t, 'Roppy Chop Studios') for f, n, t in ROPPY_CURATED] +
+    [(f, n, t, 'Komiku / Loyalty Freak Music') for f, n, t in HELICE_CURATED]
+)
 
 
 def root_pitch(key_name, octave=4):
@@ -481,12 +487,12 @@ def main():
         todo = []
         for d in args.indirs:
             for p in sorted(glob.glob(os.path.join(d, '*.mid'))):
-                todo.append((os.path.basename(p), os.path.splitext(os.path.basename(p))[0], ['game']))
+                todo.append((os.path.basename(p), os.path.splitext(os.path.basename(p))[0], ['game'], None))
     else:
         todo = CURATED
 
     items = []
-    for fname, name, tags in todo:
+    for fname, name, tags, credit in todo:
         path = find_file(args.indirs, fname)
         if not path:
             print(f'  skip (missing): {fname}')
@@ -502,6 +508,7 @@ def main():
             'rootPitch': root_pitch(key_name), 'scaleType': scale,  # display label only
             'lengthSteps': payload['lengthSteps'], 'stepsPerBeat': 4,
             'trackCount': len(payload['tracks']), 'source': 'cc0-midi',
+            **({'credit': credit} if credit else {}),
             'payload': payload,
         })
         print(f"  {name:22} {payload['tempo']:>3}bpm  {len(payload['tracks'])} tracks  {tags}")

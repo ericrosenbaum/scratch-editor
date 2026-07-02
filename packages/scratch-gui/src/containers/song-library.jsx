@@ -22,6 +22,16 @@ const messages = defineMessages({
         defaultMessage: 'Start from a Section',
         description: 'Heading for the song-maker section (whole-song) library',
         id: 'gui.songLibrary.startFromASection'
+    },
+    creditBy: {
+        defaultMessage: 'by {name}',
+        description: 'Author byline on a song-library item card',
+        id: 'gui.songLibrary.creditBy'
+    },
+    creditAi: {
+        defaultMessage: 'AI-generated',
+        description: 'Byline on a song-library item card for AI-generated content',
+        id: 'gui.songLibrary.creditAi'
     }
 });
 
@@ -86,6 +96,18 @@ class SongLibrary extends React.PureComponent {
             this.props.onAddTrack(item);
         }
     }
+    // Byline under the card name: the human author for converted CC0
+    // material, or an explicit AI flag for generated content (YAB feedback:
+    // credit sources, and always disclose what's AI-made).
+    _creditLabel (item) {
+        if (item.aiGenerated) {
+            return this.props.intl.formatMessage(messages.creditAi);
+        }
+        if (item.credit) {
+            return this.props.intl.formatMessage(messages.creditBy, {name: item.credit});
+        }
+        return null;
+    }
     render () {
         const wantSongs = this.props.itemType === 'song';
         const data = songTrackLibraryContent
@@ -94,6 +116,7 @@ class SongLibrary extends React.PureComponent {
                 ...item,
                 rawURL: libraryIcon,
                 description: describeItem(item),
+                credit: this._creditLabel(item),
                 // Listed over the thumbnail so the instrumentation is visible
                 // at a glance (e.g. 'Piano · Bass · Drums') without changing
                 // the card layout.

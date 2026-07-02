@@ -14,6 +14,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 110,
       "lengthSteps": 32,
@@ -401,6 +402,7 @@
     "lengthSteps": 64,
     "stepsPerBeat": 4,
     "trackCount": 3,
+    "aiGenerated": true,
     "payload": {
       "tempo": 160,
       "lengthSteps": 64,
@@ -1286,6 +1288,7 @@
     "stepsPerBeat": 4,
     "trackCount": 3,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 160,
       "lengthSteps": 32,
@@ -1876,6 +1879,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 170,
       "lengthSteps": 32,
@@ -2467,6 +2471,7 @@
     "lengthSteps": 64,
     "stepsPerBeat": 4,
     "trackCount": 4,
+    "aiGenerated": true,
     "payload": {
       "tempo": 124,
       "lengthSteps": 64,
@@ -3780,6 +3785,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 120,
       "lengthSteps": 32,
@@ -4461,6 +4467,7 @@
     "lengthSteps": 64,
     "stepsPerBeat": 4,
     "trackCount": 4,
+    "aiGenerated": true,
     "payload": {
       "tempo": 100,
       "lengthSteps": 64,
@@ -4903,6 +4910,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 100,
       "lengthSteps": 64,
@@ -5423,6 +5431,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 90,
       "lengthSteps": 32,
@@ -5894,6 +5903,7 @@
     "lengthSteps": 64,
     "stepsPerBeat": 4,
     "trackCount": 4,
+    "aiGenerated": true,
     "payload": {
       "tempo": 80,
       "lengthSteps": 64,
@@ -6479,6 +6489,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 80,
       "lengthSteps": 32,
@@ -6872,6 +6883,7 @@
     "lengthSteps": 64,
     "stepsPerBeat": 4,
     "trackCount": 4,
+    "aiGenerated": true,
     "payload": {
       "tempo": 130,
       "lengthSteps": 64,
@@ -7793,6 +7805,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 130,
       "lengthSteps": 32,
@@ -8348,6 +8361,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 118,
       "lengthSteps": 32,
@@ -8874,6 +8888,7 @@
     "stepsPerBeat": 4,
     "trackCount": 3,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 120,
       "lengthSteps": 16,
@@ -9043,6 +9058,7 @@
     "lengthSteps": 64,
     "stepsPerBeat": 4,
     "trackCount": 4,
+    "aiGenerated": true,
     "payload": {
       "tempo": 140,
       "lengthSteps": 64,
@@ -10013,6 +10029,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 140,
       "lengthSteps": 32,
@@ -10629,6 +10646,7 @@
     "stepsPerBeat": 4,
     "trackCount": 1,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 70,
       "lengthSteps": 32,
@@ -10812,6 +10830,7 @@
     "lengthSteps": 48,
     "stepsPerBeat": 4,
     "trackCount": 3,
+    "aiGenerated": true,
     "payload": {
       "tempo": 100,
       "lengthSteps": 48,
@@ -11155,6 +11174,7 @@
     "lengthSteps": 64,
     "stepsPerBeat": 4,
     "trackCount": 4,
+    "aiGenerated": true,
     "payload": {
       "tempo": 90,
       "lengthSteps": 64,
@@ -11542,6 +11562,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 90,
       "lengthSteps": 32,
@@ -11791,6 +11812,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "tempo": 75,
       "lengthSteps": 32,
@@ -11963,7 +11985,6 @@
   {
     "name": "Adventure Bass",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "cinematic",
       "epic",
@@ -11975,8 +11996,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Bass",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -12055,7 +12078,6 @@
   {
     "name": "Adventure Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "cinematic",
       "epic",
@@ -12067,8 +12089,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Flute",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -12171,7 +12195,6 @@
   {
     "name": "Adventure Pad",
     "itemType": "track",
-    "kind": "synth",
     "tags": [
       "cinematic",
       "epic",
@@ -12183,8 +12206,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "synth",
     "instrumentName": "Warm Pad",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "synth",
       "volume": 75,
@@ -12299,7 +12324,6 @@
   {
     "name": "Boss Battle Bass",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "rock",
       "epic",
@@ -12311,8 +12335,10 @@
     "scaleType": "pentatonicMinor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Bass",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 90,
@@ -12523,7 +12549,6 @@
   {
     "name": "Boss Battle Beat",
     "itemType": "track",
-    "kind": "drum",
     "tags": [
       "rock",
       "epic",
@@ -12535,8 +12560,10 @@
     "scaleType": "pentatonicMinor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "drum",
     "instrumentName": "Drums",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "drum",
       "volume": 90,
@@ -12761,7 +12788,6 @@
   {
     "name": "Boss Battle Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "rock",
       "epic",
@@ -12773,7 +12799,9 @@
     "scaleType": "pentatonicMinor",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Electric Guitar",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 75,
@@ -13092,7 +13120,6 @@
   {
     "name": "Boss Battle Melody 2",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "rock",
       "epic",
@@ -13104,8 +13131,10 @@
     "scaleType": "pentatonicMinor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Synth Lead",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -13238,7 +13267,6 @@
   {
     "name": "Boss Rush Bass",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "electronic",
       "epic",
@@ -13250,8 +13278,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Bass",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 90,
@@ -13414,7 +13444,6 @@
   {
     "name": "Boss Rush Lead",
     "itemType": "track",
-    "kind": "synth",
     "tags": [
       "electronic",
       "epic",
@@ -13426,8 +13455,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "synth",
     "instrumentName": "Detuned Saw Lead",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "synth",
       "volume": 85,
@@ -13554,7 +13585,6 @@
   {
     "name": "Dance Party Bass",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "funk",
       "upbeat",
@@ -13566,8 +13596,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Bass",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -13730,7 +13762,6 @@
   {
     "name": "Dance Party Beat",
     "itemType": "track",
-    "kind": "drum",
     "tags": [
       "funk",
       "upbeat",
@@ -13742,7 +13773,9 @@
     "scaleType": "major",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "drum",
     "instrumentName": "Drums",
+    "aiGenerated": true,
     "payload": {
       "kind": "drum",
       "volume": 75,
@@ -14150,7 +14183,6 @@
   {
     "name": "Dance Party Beat 2",
     "itemType": "track",
-    "kind": "drum",
     "tags": [
       "funk",
       "upbeat",
@@ -14162,8 +14194,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "drum",
     "instrumentName": "Drums",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "drum",
       "volume": 85,
@@ -14419,7 +14453,6 @@
   {
     "name": "Dance Party Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "funk",
       "upbeat",
@@ -14431,8 +14464,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Synth Lead",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -14583,7 +14618,6 @@
   {
     "name": "Deep Dive Beat",
     "itemType": "track",
-    "kind": "drum",
     "tags": [
       "electronic",
       "chill",
@@ -14595,8 +14629,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "drum",
     "instrumentName": "Drums",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "drum",
       "volume": 82,
@@ -14795,7 +14831,6 @@
   {
     "name": "Epic Intro Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "cinematic",
       "epic",
@@ -14807,8 +14842,10 @@
     "scaleType": "minor",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Flute",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -14941,7 +14978,6 @@
   {
     "name": "Epic Intro Pad",
     "itemType": "track",
-    "kind": "synth",
     "tags": [
       "cinematic",
       "epic",
@@ -14953,8 +14989,10 @@
     "scaleType": "minor",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "synth",
     "instrumentName": "Warm Pad",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "synth",
       "volume": 75,
@@ -15069,7 +15107,6 @@
   {
     "name": "Hip-Hop Bass",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "hiphop",
       "chill",
@@ -15081,8 +15118,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Bass",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -15161,7 +15200,6 @@
   {
     "name": "Hip-Hop Beat",
     "itemType": "track",
-    "kind": "drum",
     "tags": [
       "hiphop",
       "chill",
@@ -15173,8 +15211,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "drum",
     "instrumentName": "Drums",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "drum",
       "volume": 85,
@@ -15385,7 +15425,6 @@
   {
     "name": "Lo-fi Chill Bass",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "lofi",
       "chill",
@@ -15397,8 +15436,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Bass",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -15465,7 +15506,6 @@
   {
     "name": "Lo-fi Chill Beat",
     "itemType": "track",
-    "kind": "drum",
     "tags": [
       "lofi",
       "chill",
@@ -15477,8 +15517,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "drum",
     "instrumentName": "Drums",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "drum",
       "volume": 75,
@@ -15641,7 +15683,6 @@
   {
     "name": "Lo-fi Chill Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "lofi",
       "chill",
@@ -15653,7 +15694,9 @@
     "scaleType": "minor",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Choir",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 55,
@@ -15816,7 +15859,6 @@
   {
     "name": "Lo-fi Chill Melody 2",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "lofi",
       "chill",
@@ -15828,8 +15870,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Electric Piano",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 78,
@@ -15926,7 +15970,6 @@
   {
     "name": "Platformer Bass",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "chiptune",
       "upbeat",
@@ -15938,8 +15981,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Bass",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -16078,7 +16123,6 @@
   {
     "name": "Platformer Lead",
     "itemType": "track",
-    "kind": "synth",
     "tags": [
       "chiptune",
       "upbeat",
@@ -16090,8 +16134,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "synth",
     "instrumentName": "Square Lead",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "synth",
       "volume": 80,
@@ -16242,7 +16288,6 @@
   {
     "name": "Platformer Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "chiptune",
       "upbeat",
@@ -16254,7 +16299,9 @@
     "scaleType": "major",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Synth Lead",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 75,
@@ -16459,7 +16506,6 @@
   {
     "name": "Platformer Melody 2",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "chiptune",
       "upbeat",
@@ -16471,8 +16517,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Synth Lead",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -16629,7 +16677,6 @@
   {
     "name": "Pop Hit Lead",
     "itemType": "track",
-    "kind": "synth",
     "tags": [
       "pop",
       "happy",
@@ -16641,8 +16688,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "synth",
     "instrumentName": "Pluck Lead",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "synth",
       "volume": 80,
@@ -16769,7 +16818,6 @@
   {
     "name": "Pop Hit Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "pop",
       "happy",
@@ -16781,8 +16829,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Marimba",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -16903,7 +16953,6 @@
   {
     "name": "Quiz Jingle Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "jingle",
       "happy",
@@ -16915,8 +16964,10 @@
     "scaleType": "major",
     "lengthSteps": 16,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Marimba",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -17001,7 +17052,6 @@
   {
     "name": "Racing Bass",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "synthwave",
       "upbeat",
@@ -17013,8 +17063,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Bass",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -17225,7 +17277,6 @@
   {
     "name": "Racing Beat",
     "itemType": "track",
-    "kind": "drum",
     "tags": [
       "electronic",
       "upbeat",
@@ -17237,7 +17288,9 @@
     "scaleType": "major",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "drum",
     "instrumentName": "Drums",
+    "aiGenerated": true,
     "payload": {
       "kind": "drum",
       "volume": 75,
@@ -17688,7 +17741,6 @@
   {
     "name": "Racing Beat 2",
     "itemType": "track",
-    "kind": "drum",
     "tags": [
       "synthwave",
       "upbeat",
@@ -17700,8 +17752,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "drum",
     "instrumentName": "Drums",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "drum",
       "volume": 85,
@@ -17931,7 +17985,6 @@
   {
     "name": "Racing Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "synthwave",
       "upbeat",
@@ -17943,8 +17996,10 @@
     "scaleType": "major",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Synth Lead",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 85,
@@ -18059,7 +18114,6 @@
   {
     "name": "Sad Story Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "cinematic",
       "sad",
@@ -18071,7 +18125,9 @@
     "scaleType": "minor",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Piano",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 68,
@@ -18186,7 +18242,6 @@
   {
     "name": "Sad Story Melody 2",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "cinematic",
       "sad",
@@ -18198,8 +18253,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Piano",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 82,
@@ -18296,7 +18353,6 @@
   {
     "name": "Sad Story Pad",
     "itemType": "track",
-    "kind": "synth",
     "tags": [
       "cinematic",
       "sad",
@@ -18308,8 +18364,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "synth",
     "instrumentName": "Warm Pad",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "synth",
       "volume": 62,
@@ -18424,7 +18482,6 @@
   {
     "name": "Sing-Along Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "cinematic",
       "happy",
@@ -18436,7 +18493,9 @@
     "scaleType": "pentatonicMajor",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Flute",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 75,
@@ -18539,7 +18598,6 @@
   {
     "name": "Spooky Maze Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "cinematic",
       "spooky",
@@ -18551,7 +18609,9 @@
     "scaleType": "minor",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Music Box",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 62,
@@ -18756,7 +18816,6 @@
   {
     "name": "Spooky Maze Melody 2",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "cinematic",
       "spooky",
@@ -18768,8 +18827,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Music Box",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 78,
@@ -18860,7 +18921,6 @@
   {
     "name": "Spooky Maze Pad",
     "itemType": "track",
-    "kind": "synth",
     "tags": [
       "cinematic",
       "spooky",
@@ -18872,8 +18932,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "synth",
     "instrumentName": "Warm Pad",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "synth",
       "volume": 75,
@@ -18964,7 +19026,6 @@
   {
     "name": "Underwater Melody",
     "itemType": "track",
-    "kind": "instrument",
     "tags": [
       "ambient",
       "chill",
@@ -18976,8 +19037,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "instrument",
     "instrumentName": "Flute",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "instrument",
       "volume": 72,
@@ -19044,7 +19107,6 @@
   {
     "name": "Underwater Pad",
     "itemType": "track",
-    "kind": "synth",
     "tags": [
       "ambient",
       "chill",
@@ -19056,7 +19118,9 @@
     "scaleType": "minor",
     "lengthSteps": 64,
     "stepsPerBeat": 4,
+    "kind": "synth",
     "instrumentName": "Glass Pad",
+    "aiGenerated": true,
     "payload": {
       "kind": "synth",
       "volume": 55,
@@ -19147,7 +19211,6 @@
   {
     "name": "Underwater Pad 2",
     "itemType": "track",
-    "kind": "synth",
     "tags": [
       "ambient",
       "chill",
@@ -19159,8 +19222,10 @@
     "scaleType": "minor",
     "lengthSteps": 32,
     "stepsPerBeat": 4,
+    "kind": "synth",
     "instrumentName": "Glass Pad",
     "source": "opus",
+    "aiGenerated": true,
     "payload": {
       "kind": "synth",
       "volume": 70,
@@ -19252,6 +19317,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 160,
       "lengthSteps": 128,
@@ -21147,6 +21213,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 130,
       "lengthSteps": 128,
@@ -22574,6 +22641,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 110,
       "lengthSteps": 128,
@@ -24859,6 +24927,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 160,
       "lengthSteps": 128,
@@ -26760,6 +26829,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 205,
       "lengthSteps": 128,
@@ -28876,6 +28946,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 190,
       "lengthSteps": 128,
@@ -30483,6 +30554,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 151,
       "lengthSteps": 128,
@@ -32389,6 +32461,7 @@
     "stepsPerBeat": 4,
     "trackCount": 3,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 140,
       "lengthSteps": 128,
@@ -33706,6 +33779,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 140,
       "lengthSteps": 128,
@@ -36214,6 +36288,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 155,
       "lengthSteps": 128,
@@ -38167,6 +38242,7 @@
     "stepsPerBeat": 4,
     "trackCount": 3,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 123,
       "lengthSteps": 128,
@@ -40078,6 +40154,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 112,
       "lengthSteps": 128,
@@ -41709,6 +41786,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "m-malandro",
     "payload": {
       "tempo": 105,
       "lengthSteps": 128,
@@ -42560,6 +42638,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Roppy Chop Studios",
     "payload": {
       "tempo": 120,
       "lengthSteps": 128,
@@ -44346,6 +44425,7 @@
     "stepsPerBeat": 4,
     "trackCount": 2,
     "source": "cc0-midi",
+    "credit": "Roppy Chop Studios",
     "payload": {
       "tempo": 120,
       "lengthSteps": 128,
@@ -45168,6 +45248,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Roppy Chop Studios",
     "payload": {
       "tempo": 120,
       "lengthSteps": 128,
@@ -46031,6 +46112,7 @@
     "stepsPerBeat": 4,
     "trackCount": 3,
     "source": "cc0-midi",
+    "credit": "Roppy Chop Studios",
     "payload": {
       "tempo": 120,
       "lengthSteps": 128,
@@ -47300,6 +47382,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 140,
       "lengthSteps": 128,
@@ -49847,6 +49930,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 140,
       "lengthSteps": 128,
@@ -53433,6 +53517,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 90,
       "lengthSteps": 128,
@@ -55222,6 +55307,7 @@
     "stepsPerBeat": 4,
     "trackCount": 3,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 270,
       "lengthSteps": 128,
@@ -56744,6 +56830,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 120,
       "lengthSteps": 128,
@@ -59591,6 +59678,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 120,
       "lengthSteps": 128,
@@ -62532,6 +62620,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 120,
       "lengthSteps": 128,
@@ -65210,6 +65299,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 100,
       "lengthSteps": 128,
@@ -67348,6 +67438,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 120,
       "lengthSteps": 128,
@@ -68706,6 +68797,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 100,
       "lengthSteps": 128,
@@ -70641,6 +70733,7 @@
     "stepsPerBeat": 4,
     "trackCount": 4,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 120,
       "lengthSteps": 128,
@@ -71927,6 +72020,7 @@
     "stepsPerBeat": 4,
     "trackCount": 3,
     "source": "cc0-midi",
+    "credit": "Komiku / Loyalty Freak Music",
     "payload": {
       "tempo": 90,
       "lengthSteps": 128,
