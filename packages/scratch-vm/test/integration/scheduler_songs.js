@@ -123,6 +123,40 @@ tap.test('transport: every note in iteration 0 fires onNote; beats fire per iter
     t.end();
 });
 
+tap.test('transport: changing tempo mid-playback re-anchors the playhead (no long pause)', t => {
+    const ctx = makeAudioContext();
+    const song = makeSong([
+        synthTrack('a', [{step: 0, pitch: 60, velocity: 90}, {step: 4, pitch: 67, velocity: 90}])
+    ]);
+    let beats = 0;
+    const sched = makeScheduler(song, ctx, {onBeat: () => beats++});
+    startDeterministic(sched, {startStep: 0, activeTracks: ['a']});
+    // Run through several loops at 120 bpm (iterDuration 1.0s) so the anchor is
+    // many iterations behind — this is what turns a stale anchor into a long
+    // silent pause when the tempo then drops.
+    advance(ctx, sched, {toSec: 5.0});
+    const beatsBefore = beats;
+    t.ok(beatsBefore > 0, 'beats fired during the initial 120 bpm run');
+
+    // Slow to 60 bpm (iterDuration doubles to 2.0s). A bare tempoOverride
+    // assignment would leave the current iteration's start far in the future.
+    sched.setTempoOverride(60);
+    const dNew = sched.iterDuration;
+    const now = ctx.currentTime;
+    const iterStart = sched._startCtxTime + (sched._iter * dNew);
+    // The playhead must still sit INSIDE the current iteration, at/just behind
+    // now — not stranded in the future (the pause bug drove iterStart > now).
+    t.ok(now - iterStart >= 0 && now - iterStart < dNew,
+        'current iteration brackets now after the tempo change (was: stranded in the future)');
+
+    // Playback keeps producing beats promptly at the new rate: at 60 bpm a beat
+    // is 1.0s, so within ~1.5s more we must see at least one new beat.
+    advance(ctx, sched, {fromSec: now + 0.025, toSec: now + 1.5});
+    t.ok(beats > beatsBefore, 'beats continue to fire after slowing down (no long pause)');
+    sched.stop();
+    t.end();
+});
+
 tap.test('transport: "at next loop" defers activation to the loop boundary', t => {
     const ctx = makeAudioContext();
     const song = makeSong([

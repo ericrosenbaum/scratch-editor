@@ -11,6 +11,11 @@ const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53
 
 const ALL_TRACKS = '__all__';
 
+// Bars are 4/4-assumed, matching the editor's "length in bars" control
+// (stepsPerBar = stepsPerBeat * 4). Used to derive bar boundaries and the
+// bar position from the scheduler's per-beat callback.
+const BEATS_PER_BAR = 4;
+
 /**
  * Songs extension — real-time controls for the single project-wide track set
  * authored in the Song Maker tab. The transport always loops; blocks toggle
@@ -35,10 +40,16 @@ class Scratch3SongsBlocks {
         // edge-activated `when beat counter reaches` hat.
         this._currentBeat = 0;
 
+        // Bar position within the current loop (1-based; 0 when idle). Derived
+        // from the same 0-based beat index (4 beats per bar), so it resets every
+        // loop just like _currentBeat. Read by the `current bar` reporter and the
+        // `bar` case of the edge-activated `when … counter reaches` hat.
+        this._currentBar = 0;
+
         // Number of times the whole loop has completed since playback started
         // (0 during the first pass). Set from the scheduler's onLoop callback,
         // which passes the completed-loop count. Read by the `loop counter`
-        // reporter and the `when loop counter reaches` hat.
+        // reporter and the `loop` case of the `when … counter reaches` hat.
         this._loopCount = 0;
 
         // Most-recent MIDI pitch played per track, keyed by trackId. Fed by the
@@ -46,15 +57,31 @@ class Scratch3SongsBlocks {
         this._lastNoteByTrack = new Map();
 
         // Wire hat-block callbacks once. The scheduler picks them up next
-        // time it's built. Each beat/note fires its hats explicitly via
+        // time it's built. Each beat/bar/loop/note fires its hats explicitly via
         // `startHats` (the same path broadcasts and key presses use), so every
-        // matching hat block gets its own thread. The beat/loop counters are
+        // matching hat block gets its own thread. The beat/bar/loop counters are
         // also updated here so the reporters and edge-activated "reaches" hats
-        // can read them.
+        // can read them. NOTE: the playback singleton only invokes these while a
+        // transport it considers block-driven is running, so editor previews
+        // (the Song Maker Play button / library hover) never fire these hats.
         this.runtime.songPlayback.setHatCallbacks({
             onBeat: beatIndex => {
-                this._currentBeat = (typeof beatIndex === 'number' ? beatIndex : 0) + 1;
-                this.runtime.startHats('songs_whenBeat');
+                const beat0 = (typeof beatIndex === 'number' ? beatIndex : 0);
+                this._currentBeat = beat0 + 1;
+                this._currentBar = Math.floor(beat0 / BEATS_PER_BAR) + 1;
+                // `when each beat starts` — every beat.
+                this.runtime.startHats('songs_whenEach', {UNIT: 'beat'});
+                // A new bar (and, at beat 0, a new loop) also begins on this
+                // downbeat. The scheduler resets its beat counter to 0 at every
+                // loop wrap, so beat 0 reliably marks the top of each loop —
+                // firing `loop` here (rather than from onLoop) means it also
+                // fires on the very first pass, staying consistent with beat/bar.
+                if (beat0 % BEATS_PER_BAR === 0) {
+                    this.runtime.startHats('songs_whenEach', {UNIT: 'bar'});
+                }
+                if (beat0 === 0) {
+                    this.runtime.startHats('songs_whenEach', {UNIT: 'loop'});
+                }
             },
             onNote: note => {
                 this._currentNoteTrackId = note.trackId;
@@ -64,7 +91,8 @@ class Scratch3SongsBlocks {
             onLoop: iter => {
                 // `iter` is the completed-loop count; assigning (rather than
                 // incrementing) stays correct even if a backgrounded tab skips
-                // loop wraps.
+                // loop wraps. The `when each loop starts` hat fires from onBeat
+                // (beat 0), not here, so it also covers the first pass.
                 this._loopCount = (typeof iter === 'number' ? iter : this._loopCount + 1);
             }
         });
@@ -90,6 +118,7 @@ class Scratch3SongsBlocks {
 
     _resetPlaybackCounters () {
         this._currentBeat = 0;
+        this._currentBar = 0;
         this._loopCount = 0;
         this._currentNoteTrackId = null;
         this._lastNoteByTrack.clear();
@@ -312,6 +341,15 @@ class Scratch3SongsBlocks {
                     })
                 },
                 {
+                    opcode: 'getCurrentBar',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'songs.getCurrentBar',
+                        default: 'current bar',
+                        description: 'Report the bar position within the current loop'
+                    })
+                },
+                {
                     opcode: 'getLoopCount',
                     blockType: BlockType.REPORTER,
                     text: formatMessage({
@@ -338,59 +376,56 @@ class Scratch3SongsBlocks {
                 },
                 '---',
                 {
-                    opcode: 'whenBeat',
+                    opcode: 'whenEach',
                     blockType: BlockType.HAT,
                     // Fired explicitly from the scheduler's onBeat callback, not
-                    // edge-evaluated every step. Restart so each beat retriggers
+                    // edge-evaluated every step. Restart so each event retriggers
                     // a still-running script (broadcast/green-flag semantics).
+                    // The UNIT dropdown is an inline field (acceptReporters:false),
+                    // so startHats can match on it broadcast-style — firing
+                    // `songs_whenEach` with {UNIT: 'bar'} restarts only the `bar`
+                    // hats and leaves `beat`/`loop` scripts untouched.
                     isEdgeActivated: false,
                     shouldRestartExistingThreads: true,
                     text: formatMessage({
-                        id: 'songs.whenBeat',
-                        default: 'when beat',
-                        description: 'Hat — fires on each transport beat'
-                    })
-                },
-                {
-                    opcode: 'whenBeatCounterReaches',
-                    blockType: BlockType.HAT,
-                    // Edge-activated: the runtime evaluates the predicate every
-                    // frame and fires on each false→true crossing. The beat
-                    // position resets each loop, so this re-arms and fires once
-                    // per loop when the loop reaches beat N.
-                    isEdgeActivated: true,
-                    shouldRestartExistingThreads: false,
-                    text: formatMessage({
-                        id: 'songs.whenBeatCounterReaches',
-                        default: 'when beat counter reaches [N]',
-                        description: 'Hat — fires each loop when the beat reaches a value'
+                        id: 'songs.whenEach',
+                        default: 'when each [UNIT] starts',
+                        description: 'Hat — fires at the start of each beat, bar, or loop'
                     }),
                     arguments: {
-                        N: {type: ArgumentType.NUMBER, defaultValue: 4}
+                        // Menu name matches the arg name (UNIT) on purpose: the
+                        // serialized menu-shadow block names its field after the
+                        // menu, and startHats matches whenEach on the UNIT field
+                        // (see the onBeat callback) — they must line up. This is
+                        // the same convention WHEN / PARAM follow.
+                        UNIT: {type: ArgumentType.STRING, menu: 'UNIT', defaultValue: 'beat'}
                     }
                 },
                 {
-                    opcode: 'whenLoopCounterReaches',
+                    opcode: 'whenCounterReaches',
                     blockType: BlockType.HAT,
-                    // Edge-activated. The loop counter is cumulative (monotonic
-                    // within a run), so this fires once when the count reaches N;
-                    // it re-arms after the counter resets on stop / green flag.
+                    // Edge-activated: the runtime evaluates the predicate every
+                    // frame and fires on each false→true crossing. beat/bar reset
+                    // each loop, so those re-arm and fire once per loop when the
+                    // position reaches N; the loop counter is cumulative, so that
+                    // one fires once and re-arms only after a stop / green flag.
                     isEdgeActivated: true,
                     shouldRestartExistingThreads: false,
                     text: formatMessage({
-                        id: 'songs.whenLoopCounterReaches',
-                        default: 'when loop counter reaches [N]',
-                        description: 'Hat — fires once when the loop counter reaches a value'
+                        id: 'songs.whenCounterReaches',
+                        default: 'when [COUNTER] counter reaches [N]',
+                        description: 'Hat — fires when the beat, bar, or loop counter reaches a value'
                     }),
                     arguments: {
-                        N: {type: ArgumentType.NUMBER, defaultValue: 2}
+                        COUNTER: {type: ArgumentType.STRING, menu: 'COUNTER', defaultValue: 'beat'},
+                        N: {type: ArgumentType.NUMBER, defaultValue: 4}
                     }
                 },
                 {
                     opcode: 'whenTrackPlaysNote',
                     blockType: BlockType.HAT,
                     isEdgeActivated: false,
-                    // NOT restart (unlike whenBeat): every note on any track calls
+                    // NOT restart (unlike whenEach): every note on any track calls
                     // startHats, which re-evaluates ALL whenTrackPlaysNote hats
                     // against the single _currentNoteTrackId. Restarting would
                     // reset a hat another track just triggered and then kill it on
@@ -427,6 +462,25 @@ class Scratch3SongsBlocks {
                     items: [
                         {text: 'now', value: 'now'},
                         {text: 'at next loop', value: 'loop'}
+                    ]
+                },
+                // Menu name == the whenEach arg name (UNIT) so the serialized
+                // menu-shadow field is 'UNIT' — what startHats matches on
+                // broadcast-style (see the onBeat callback).
+                UNIT: {
+                    acceptReporters: false,
+                    items: [
+                        {text: 'beat', value: 'beat'},
+                        {text: 'bar', value: 'bar'},
+                        {text: 'loop', value: 'loop'}
+                    ]
+                },
+                COUNTER: {
+                    acceptReporters: false,
+                    items: [
+                        {text: 'beat', value: 'beat'},
+                        {text: 'bar', value: 'bar'},
+                        {text: 'loop', value: 'loop'}
                     ]
                 },
                 PARAM: {
@@ -619,6 +673,10 @@ class Scratch3SongsBlocks {
         return this._currentBeat;
     }
 
+    getCurrentBar () {
+        return this._currentBar;
+    }
+
     getLoopCount () {
         return this._loopCount;
     }
@@ -632,17 +690,22 @@ class Scratch3SongsBlocks {
         return typeof pitch === 'number' ? pitch : 0;
     }
 
-    whenBeatCounterReaches (args) {
-        return this._currentBeat >= Cast.toNumber(args.N);
+    // Edge-activated: returns whether the selected counter has reached N. beat
+    // and bar reset each loop (so this re-arms per loop); the loop counter is
+    // cumulative (so it fires once per run).
+    whenCounterReaches (args) {
+        const n = Cast.toNumber(args.N);
+        switch (Cast.toString(args.COUNTER)) {
+        case 'bar': return this._currentBar >= n;
+        case 'loop': return this._loopCount >= n;
+        default: return this._currentBeat >= n;
+        }
     }
 
-    whenLoopCounterReaches (args) {
-        return this._loopCount >= Cast.toNumber(args.N);
-    }
-
-    whenBeat () {
-        // Only invoked by the explicit `startHats('songs_whenBeat')` call in
-        // the onBeat callback, so it always fires.
+    whenEach () {
+        // Only invoked by the explicit `startHats('songs_whenEach', {UNIT})`
+        // calls in the onBeat callback. startHats already matched the UNIT field
+        // broadcast-style, so any hat reached here is for the unit that fired.
         return true;
     }
 

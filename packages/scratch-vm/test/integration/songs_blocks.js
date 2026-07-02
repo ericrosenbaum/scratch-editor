@@ -261,15 +261,19 @@ tap.test('rest for beats converts beats to seconds at the current tempo and yiel
         });
 });
 
-tap.test('beat / loop / note reporters track the transport and reset on stop', t => {
+tap.test('beat / bar / loop / note reporters track the transport and reset on stop', t => {
     setup().then(({ext, pb}) => {
         t.equal(ext.getCurrentBeat(), 0, 'current beat is 0 before playback');
+        t.equal(ext.getCurrentBar(), 0, 'current bar is 0 before playback');
         t.equal(ext.getLoopCount(), 0, 'loop counter starts at 0');
         t.equal(ext.getCurrentNote({TRACK: 'lead'}), 0, 'current note is 0 before playback');
         // Drive the hat callbacks exactly as the scheduler would (not via
         // playTrack, whose first tick auto-schedules step-0 notes on every track).
-        pb._hatCallbacks.onBeat(2); // 0-based beat index → 1-based beat 3
+        pb._hatCallbacks.onBeat(2); // 0-based beat index → 1-based beat 3, bar 1
         t.equal(ext.getCurrentBeat(), 3, 'current beat is 1-based within the loop');
+        t.equal(ext.getCurrentBar(), 1, 'beats 1-4 are bar 1');
+        pb._hatCallbacks.onBeat(4); // beat 5 → bar 2 (4 beats/bar)
+        t.equal(ext.getCurrentBar(), 2, 'beat 5 is bar 2');
         pb._hatCallbacks.onLoop(4);
         t.equal(ext.getLoopCount(), 4, 'loop counter reflects completed loops');
         pb._hatCallbacks.onNote({trackId: 'lead', pitch: 67});
@@ -278,6 +282,7 @@ tap.test('beat / loop / note reporters track the transport and reset on stop', t
         // Green-flag / stop resets all of it.
         pb.stop();
         t.equal(ext.getCurrentBeat(), 0, 'current beat reset on stop');
+        t.equal(ext.getCurrentBar(), 0, 'current bar reset on stop');
         t.equal(ext.getLoopCount(), 0, 'loop counter reset on stop');
         t.equal(ext.getCurrentNote({TRACK: 'lead'}), 0, 'current note cleared on stop');
         teardown(pb);
@@ -288,17 +293,62 @@ tap.test('beat / loop / note reporters track the transport and reset on stop', t
         });
 });
 
-tap.test('counter hat predicates are true at/after their threshold', t => {
+tap.test('whenCounterReaches predicate is true at/after the threshold for each counter', t => {
     setup().then(({ext, pb}) => {
         ext.playTrack({TRACK: 'lead', WHEN: 'now'});
-        pb._hatCallbacks.onBeat(1); // beat 2
-        t.notOk(ext.whenBeatCounterReaches({N: 4}), 'beat hat false before beat 4');
-        pb._hatCallbacks.onBeat(3); // beat 4
-        t.ok(ext.whenBeatCounterReaches({N: 4}), 'beat hat true once the beat reaches 4');
+        pb._hatCallbacks.onBeat(1); // beat 2, bar 1
+        t.notOk(ext.whenCounterReaches({COUNTER: 'beat', N: 4}), 'beat false before beat 4');
+        pb._hatCallbacks.onBeat(3); // beat 4, bar 1
+        t.ok(ext.whenCounterReaches({COUNTER: 'beat', N: 4}), 'beat true once the beat reaches 4');
+        t.notOk(ext.whenCounterReaches({COUNTER: 'bar', N: 2}), 'bar false while still in bar 1');
+        pb._hatCallbacks.onBeat(4); // beat 5, bar 2
+        t.ok(ext.whenCounterReaches({COUNTER: 'bar', N: 2}), 'bar true once the bar reaches 2');
         pb._hatCallbacks.onLoop(1);
-        t.notOk(ext.whenLoopCounterReaches({N: 2}), 'loop hat false before 2 loops');
+        t.notOk(ext.whenCounterReaches({COUNTER: 'loop', N: 2}), 'loop false before 2 loops');
         pb._hatCallbacks.onLoop(2);
-        t.ok(ext.whenLoopCounterReaches({N: 2}), 'loop hat true once 2 loops complete');
+        t.ok(ext.whenCounterReaches({COUNTER: 'loop', N: 2}), 'loop true once 2 loops complete');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+// The scheduler's beat/note callbacks are the wrappers song-playback installs;
+// they only forward to the extension (which updates counters + fires hats) when
+// the transport is block-driven. Calling scheduler.onBeat directly exercises
+// that gate through the real wrapper.
+tap.test('editor preview does not drive hat/reporter state (only block-caused playback does)', t => {
+    setup().then(({ext, pb}) => {
+        // Editor Play button → playAll: NOT block-driven.
+        pb.playAll({startStep: 0});
+        t.notOk(pb._blockDriven, 'playAll (editor preview) is not block-driven');
+        pb._scheduler.onBeat(2, 0);
+        t.equal(ext.getCurrentBeat(), 0, 'editor-preview beats do not update the reporters');
+        // Editor adding a track mid-preview (activateTrack) must not flip
+        // ownership — the transport is already running, so it did not start it.
+        pb.setTrackActive('beat', true, 'now');
+        t.notOk(pb._blockDriven, 'mid-preview activateTrack stays not-block-driven');
+        pb._scheduler.onBeat(2, 0);
+        t.equal(ext.getCurrentBeat(), 0, 'still inert after activateTrack');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('block-caused playback drives hat/reporter state and stop clears ownership', t => {
+    setup().then(({ext, pb}) => {
+        // play [track] block spins up an idle transport → block-driven.
+        ext.playTrack({TRACK: 'lead', WHEN: 'now'});
+        t.ok(pb._blockDriven, 'playTrack marks the transport block-driven');
+        pb._scheduler.onBeat(2, 0);
+        t.equal(ext.getCurrentBeat(), 3, 'block-driven beats update the reporters');
+        pb.stop();
+        t.notOk(pb._blockDriven, 'stop clears block-driven ownership');
         teardown(pb);
         t.end();
     })
@@ -329,8 +379,11 @@ const setupHats = () => {
 // Build a `<hat> → change tempo by 10` script on `target`. The numeric input
 // (and, for whenTrackPlaysNote, the TRACK input) is supplied by a native shadow
 // value block (math_number / text), which the interpreter resolves without any
-// extra primitive registration. Pass `trackId` only for whenTrackPlaysNote.
-const addTempoHat = (target, idx, opcode, trackId) => {
+// extra primitive registration. Pass `trackId` only for whenTrackPlaysNote;
+// pass `unit` (e.g. 'bar') only for whenEach — modelled exactly as a real
+// project serializes it: a `songs_menu_UNIT` shadow on the UNIT input whose
+// field startHats matches on broadcast-style.
+const addTempoHat = (target, idx, opcode, trackId, unit) => {
     const hatId = `hat_${idx}`;
     const bodyId = `body_${idx}`;
     const numId = `num_${idx}`;
@@ -346,6 +399,20 @@ const addTempoHat = (target, idx, opcode, trackId) => {
         x: 0,
         y: idx * 200
     };
+    if (typeof unit === 'string') {
+        const unitShadowId = `unit_${idx}`;
+        hat.inputs.UNIT = {name: 'UNIT', block: unitShadowId, shadow: unitShadowId};
+        target.blocks.createBlock({
+            id: unitShadowId,
+            opcode: 'songs_menu_UNIT',
+            next: null,
+            parent: hatId,
+            inputs: {},
+            fields: {UNIT: {name: 'UNIT', value: unit}},
+            topLevel: false,
+            shadow: true
+        });
+    }
     if (typeof trackId === 'string') {
         const trackShadowId = `track_${idx}`;
         hat.inputs.TRACK = {name: 'TRACK', block: trackShadowId, shadow: trackShadowId};
@@ -383,16 +450,39 @@ const addTempoHat = (target, idx, opcode, trackId) => {
     });
 };
 
-tap.test('hat blocks: every whenBeat hat fires on a beat (regression: shared-flag bug fired only one)', t => {
+tap.test('hat blocks: every "when each beat starts" hat fires on a beat (regression: shared-flag bug)', t => {
     setupHats().then(({vm, pb, target}) => {
-        addTempoHat(target, 0, 'songs_whenBeat');
-        addTempoHat(target, 1, 'songs_whenBeat');
+        addTempoHat(target, 0, 'songs_whenEach', null, 'beat');
+        addTempoHat(target, 1, 'songs_whenEach', null, 'beat');
         t.equal(pb.getTempo(), 120, 'tempo starts at the song value');
-        // Simulate one transport beat — the scheduler's onBeat callback fires the
-        // hats via startHats; the step runs their queued bodies.
-        pb._hatCallbacks.onBeat();
+        // Simulate the transport's first downbeat — onBeat(0) fires beat, bar,
+        // and loop hats via startHats; the step runs their queued bodies.
+        pb._hatCallbacks.onBeat(0);
         vm.runtime._step();
-        t.equal(pb.getTempo(), 140, 'BOTH whenBeat hats ran (+10 each); the old bug left it at 130');
+        t.equal(pb.getTempo(), 140, 'BOTH "when each beat starts" hats ran (+10 each); the old bug left it at 130');
+        teardown(pb);
+        t.end();
+    })
+        .catch(e => {
+            t.fail(e.stack || e); t.end();
+        });
+});
+
+tap.test('hat blocks: "when each [unit] starts" fires only the hats for the unit that started', t => {
+    setupHats().then(({vm, pb, target}) => {
+        addTempoHat(target, 0, 'songs_whenEach', null, 'beat');
+        addTempoHat(target, 1, 'songs_whenEach', null, 'bar');
+        addTempoHat(target, 2, 'songs_whenEach', null, 'loop');
+        t.equal(pb.getTempo(), 120, 'tempo starts at the song value');
+        // Mid-loop beat that is NOT a bar/loop boundary (beat 6 → bar 2, not a
+        // downbeat): only the `beat` hat should fire.
+        pb._hatCallbacks.onBeat(5);
+        vm.runtime._step();
+        t.equal(pb.getTempo(), 130, 'only the beat hat fired on a non-boundary beat (+10)');
+        // Downbeat of the loop (beat 0): beat + bar + loop all start.
+        pb._hatCallbacks.onBeat(0);
+        vm.runtime._step();
+        t.equal(pb.getTempo(), 160, 'beat + bar + loop hats all fired on the downbeat (+30)');
         teardown(pb);
         t.end();
     })

@@ -236,17 +236,21 @@ test('Song Maker: Songs extension getInfo returns the new block set', t => {
         'playTrack', 'stopTrack',
         'changeTrackParam', 'setTrackParam', 'restForBeats',
         'setSongTempo', 'changeTempoBy', 'setSongKey', 'changeKeyBy',
-        'getTempo', 'getCurrentBeat', 'getLoopCount', 'getCurrentNote',
-        'whenBeat', 'whenBeatCounterReaches', 'whenLoopCounterReaches', 'whenTrackPlaysNote'
+        'getTempo', 'getCurrentBeat', 'getCurrentBar', 'getLoopCount', 'getCurrentNote',
+        'whenEach', 'whenCounterReaches', 'whenTrackPlaysNote'
     ]) {
         t.ok(opcodes.indexOf(op) >= 0, `has ${op} block`);
     }
     // Removed blocks should no longer appear.
     t.equal(opcodes.indexOf('fadeTrack'), -1, 'fadeTrack removed');
     t.equal(opcodes.indexOf('setSongScale'), -1, 'setSongScale removed');
+    // Combined into whenEach / whenCounterReaches.
+    t.equal(opcodes.indexOf('whenBeat'), -1, 'whenBeat replaced by whenEach');
+    t.equal(opcodes.indexOf('whenBeatCounterReaches'), -1, 'whenBeatCounterReaches folded into whenCounterReaches');
+    t.equal(opcodes.indexOf('whenLoopCounterReaches'), -1, 'whenLoopCounterReaches folded into whenCounterReaches');
     const hats = info.blocks.filter(b => b.blockType === 'hat');
-    t.equal(hats.length, 4,
-        'four hat blocks (whenBeat, whenBeatCounterReaches, whenLoopCounterReaches, whenTrackPlaysNote)');
+    t.equal(hats.length, 3,
+        'three hat blocks (whenEach, whenCounterReaches, whenTrackPlaysNote)');
     t.end();
 });
 

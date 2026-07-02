@@ -405,6 +405,54 @@ class SongScheduler {
     }
 
     /**
+     * Change the tempo override on a running transport WITHOUT restarting it,
+     * re-anchoring the timeline so the audible playhead stays continuous.
+     *
+     * The transport's ctx-time anchor (`_startCtxTime`) is computed once at
+     * start() from the tempo in effect then. `secondsPerStep` and `iterDuration`
+     * are derived from the live tempo, so simply mutating `tempoOverride` leaves
+     * a stale anchor: `_tick`'s current-iteration and beat/note math is computed
+     * as `_startCtxTime + iter * iterDuration + step * secondsPerStep`, and with
+     * the anchor fixed at the old rate the current iteration's start jumps away
+     * from `now`. Slowing down (larger iterDuration) pushes it into the future,
+     * so nothing is scheduled or heard until real time catches up — a long
+     * silent pause. Re-anchor so `now` still maps to the same iteration and
+     * fractional step at the new rate, then resume scheduling forward from now.
+     * @param {number} bpm - new tempo override (falsy → revert to song tempo)
+     */
+    setTempoOverride (bpm) {
+        if (!this._started) {
+            // Not running: start() will anchor with whatever's set here.
+            this.tempoOverride = bpm;
+            return;
+        }
+        const now = this.audioContext.currentTime;
+        const spsOld = this.secondsPerStep;
+        const dOld = this.iterDuration;
+        const length = (this.song && this.song.lengthSteps) || 32;
+        const stepsPerBeat = (this.song && this.song.stepsPerBeat) || 4;
+        // Fractional step within the current iteration at the old rate. Under
+        // normal operation _tick keeps _iter = floor((now - anchor) / dOld), so
+        // this lands in [0, length); clamp defensively against any drift.
+        let stepFloat = dOld > 0 ?
+            (now - this._startCtxTime - (this._iter * dOld)) / spsOld : 0;
+        if (!Number.isFinite(stepFloat) || stepFloat < 0) stepFloat = 0;
+        if (stepFloat >= length) stepFloat %= length;
+        // Apply the new tempo, then re-derive the anchor from it so the playhead
+        // is where it was — same iteration, same fractional step.
+        this.tempoOverride = bpm;
+        const spsNew = this.secondsPerStep;
+        const dNew = this.iterDuration;
+        this._startCtxTime = now - (this._iter * dNew) - (stepFloat * spsNew);
+        // Resume note/beat scheduling from now at the new rate. Notes already
+        // scheduled in the ≤0.1s lookahead keep their old timing (they're locked
+        // on their AudioBufferSourceNodes); everything past now uses spsNew.
+        this._enqueuedThroughCtxTime = now;
+        this._lastStepFiredAt = Math.floor(stepFloat);
+        this._nextBeatToFire = Math.floor(stepFloat / stepsPerBeat) + 1;
+    }
+
+    /**
      * Spin up the transport. Idempotent — calling start() on an already-running
      * scheduler is a no-op. The transport then loops forever until the active
      * set empties out (or stop() is called explicitly).

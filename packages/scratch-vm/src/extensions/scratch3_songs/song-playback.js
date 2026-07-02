@@ -77,6 +77,16 @@ class SongPlayback {
         // scheduler is constructed lazily, so we apply these whenever a new
         // scheduler comes online.
         this._hatCallbacks = {};
+        // Whether the CURRENT transport session was started by project blocks
+        // (playTrack / stopTrack) rather than an editor preview (the Song Maker
+        // Play button or a library hover). Song hat blocks (`when each …`,
+        // `when … plays note`) should only fire for block-driven playback — an
+        // editor preview must not run the user's scripts — so the scheduler's
+        // beat/bar/loop/note callbacks are gated on this flag. Set when a block
+        // spins up an idle transport; the editor's mid-preview activateTrack
+        // leaves it alone (the transport is already running, so it can't be the
+        // one that started it). Reset on stop.
+        this._blockDriven = false;
         // Block-driven overrides for per-track effects and volume. Editor
         // sliders write to `track.effects` / `track.volume` on the song;
         // blocks write here instead so their changes are temporary, audible,
@@ -170,14 +180,17 @@ class SongPlayback {
             scaleTypeOverride: this._scaleTypeOverride,
             onStart: () => this._fire('start', this.runtime.song),
             onStep: (step, time) => this._fire('step', step, time),
+            // Only dispatch hat callbacks for block-driven playback — an editor
+            // preview shares this transport but must not fire the user's `when
+            // each …` / `when … plays note` scripts (see _blockDriven).
             onBeat: (b, t) => {
-                if (hat.onBeat) hat.onBeat(b, t);
+                if (this._blockDriven && hat.onBeat) hat.onBeat(b, t);
             },
             onNote: (n, t) => {
-                if (hat.onNote) hat.onNote(n, t);
+                if (this._blockDriven && hat.onNote) hat.onNote(n, t);
             },
             onLoop: iter => {
-                if (hat.onLoop) hat.onLoop(iter);
+                if (this._blockDriven && hat.onLoop) hat.onLoop(iter);
             },
             onEnd: () => {
                 const endedSong = this.runtime.song;
@@ -207,8 +220,14 @@ class SongPlayback {
      * @param {string} [when] - 'now' or 'loop'
      */
     setTrackActive (trackId, active, when) {
+        // A block that spins the transport up from idle owns this session, so
+        // its hats should fire. If the transport is already running it's an
+        // editor preview adding a track mid-play (activateTrack) — leave the
+        // ownership flag as-is so we don't start firing hats under the editor.
+        const wasRunning = this.isPlaying();
         const sched = this._ensureScheduler();
         if (!sched) return;
+        if (!wasRunning) this._blockDriven = true;
         sched.setTrackActive(trackId, !!active, when || 'now');
     }
 
@@ -221,8 +240,11 @@ class SongPlayback {
      * @param {string} [when] - 'now' or 'loop'
      */
     setTracksActive (trackIds, active, when) {
+        // See setTrackActive: block-driven only when starting from idle.
+        const wasRunning = this.isPlaying();
         const sched = this._ensureScheduler();
         if (!sched) return;
+        if (!wasRunning) this._blockDriven = true;
         sched.setTracksActive(trackIds || [], !!active, when || 'now');
     }
 
@@ -238,6 +260,8 @@ class SongPlayback {
         if (this._scheduler) {
             this._scheduler.stop();
         }
+        // Editor preview: hats must not fire (see _blockDriven).
+        this._blockDriven = false;
         const sched = this._ensureScheduler();
         if (!sched) return;
         const tracks = (this.runtime.song && this.runtime.song.tracks) || [];
@@ -268,6 +292,8 @@ class SongPlayback {
         if (!this._previewing) {
             this._previewRestoreSong = this.runtime.song;
         }
+        // Editor library preview: hats must not fire (see _blockDriven).
+        this._blockDriven = false;
         this._previewing = true;
         this.runtime.song = song;
         const sched = this._ensureScheduler();
@@ -303,6 +329,8 @@ class SongPlayback {
         this._tempoOverride = null;
         this._rootPitchOverride = null;
         this._scaleTypeOverride = null;
+        // Next session re-establishes ownership; default back to not-block-driven.
+        this._blockDriven = false;
         this._endPreview();
         this._fire('stop');
     }
@@ -495,7 +523,10 @@ class SongPlayback {
         const v = Number(bpm);
         this._tempoOverride = Number.isFinite(v) ? v : null;
         if (this._scheduler) {
-            this._scheduler.tempoOverride = this._tempoOverride;
+            // Re-anchor the running transport so the playhead stays continuous;
+            // a bare `tempoOverride =` assignment leaves the old anchor in place
+            // and can strand playback in a long silent pause (see scheduler).
+            this._scheduler.setTempoOverride(this._tempoOverride);
         }
     }
 
