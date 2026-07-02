@@ -50,7 +50,8 @@ test('Drag the right edge of a note resizes its duration', async ({page}) => {
     await page.mouse.move(startX + 44, startY, {steps: 5});
     await page.mouse.up();
 
-    const afterBox = await page.locator('svg.piano-roll rect.note').first().boundingBox();
+    const afterBox = await page.locator('svg.piano-roll rect.note').first()
+        .boundingBox();
     // Width should have grown by roughly 2 cells (CELL_W = 22).
     expect(afterBox.width).toBeGreaterThan(beforeBox.width + 30);
 });
@@ -107,7 +108,7 @@ test('Notes use pitch-class colors', async ({page}) => {
     // Place two notes on different rows (different pitches) at the same step.
     const pbox = await pianoClickBox(page);
     await page.mouse.click(pbox.x + 80, pbox.y + 60);
-    await page.mouse.click(pbox.x + 80, pbox.y + 80); // different pitch
+    await page.mouse.click(pbox.x + 80, pbox.y + 110); // different pitch (3+ rows away, beyond scale snap)
 
     const fills = await page.locator('svg.piano-roll rect.note').evaluateAll(els =>
         els.map(el => el.getAttribute('fill')));
@@ -124,7 +125,8 @@ test('AI Edit button on each track opens the AI edit modal', async ({page}) => {
     await openSongMaker(page);
 
     // Each track row gets an AI Edit button.
-    const aiBtn = page.locator('.track-row').first().locator('.track-btn-ai');
+    const aiBtn = page.locator('.track-row').first()
+        .locator('.track-btn-ai');
     await expect(aiBtn).toBeVisible();
     await expect(aiBtn).toHaveAttribute('aria-label', /AI Edit/i);
 
@@ -133,13 +135,13 @@ test('AI Edit button on each track opens the AI edit modal', async ({page}) => {
     await expect(page.locator('.ai-song-modal-title')).toBeVisible();
     await expect(page.locator('.ai-song-modal-title')).toContainText(/AI Edit Track/i);
 
-    // The textarea + Apply button are present.
-    await expect(page.locator('#aiEditTrackPrompt')).toBeVisible();
-    await expect(page.getByRole('button', {name: /^Apply$/})).toBeDisabled();
+    // The modal offers edit controls for the active provider: either the
+    // structured dropdowns (local model) or a free-text prompt.
+    await expect(page.locator('#aiEditSeedFrom, #aiEditTrackPrompt').first()).toBeVisible();
+    // The action button reads "Generate variation" (local model) or "Apply".
+    await expect(page.getByRole('button', {name: /^(Apply|Generate variation)$/})).toBeVisible();
 
-    // Typing enables Apply; Cancel closes the modal.
-    await page.locator('#aiEditTrackPrompt').fill('harmonize this');
-    await expect(page.getByRole('button', {name: /^Apply$/})).toBeEnabled();
+    // Cancel closes the modal.
     await page.getByRole('button', {name: /^Cancel$/}).click();
     await expect(page.locator('.ai-song-modal-title')).toHaveCount(0);
 });
@@ -202,7 +204,8 @@ test('Drum-track resize works the same way', async ({page}) => {
     await page.mouse.click(dbox.x + 80, dbox.y + 14);
     await expect(page.locator('svg.drum-grid rect.note')).toHaveCount(1);
 
-    const beforeBox = await page.locator('svg.drum-grid rect.note').first().boundingBox();
+    const beforeBox = await page.locator('svg.drum-grid rect.note').first()
+        .boundingBox();
     const startX = beforeBox.x + beforeBox.width - 2;
     const startY = beforeBox.y + (beforeBox.height / 2);
     await page.mouse.move(startX, startY);
@@ -210,6 +213,7 @@ test('Drum-track resize works the same way', async ({page}) => {
     await page.mouse.move(startX + 44, startY, {steps: 5});
     await page.mouse.up();
 
-    const afterBox = await page.locator('svg.drum-grid rect.note').first().boundingBox();
+    const afterBox = await page.locator('svg.drum-grid rect.note').first()
+        .boundingBox();
     expect(afterBox.width).toBeGreaterThan(beforeBox.width + 30);
 });

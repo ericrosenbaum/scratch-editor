@@ -1,5 +1,17 @@
 @import "../../css/colors.css";
 
+/* The modal's inner Box (header + body column) renders as a plain block, so
+   without this the editor grows to its content's intrinsic size and the
+   whole modal scrolls. Make it a bounded column flex so the header stays
+   pinned and the editor's own grid/track scrollers do the scrolling. */
+.modal-content > div {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+}
+
 /* The editor needs the full remaining height under the modal header, and its
    own scrolling (the track list scrolls internally). */
 .body {
