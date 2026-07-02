@@ -174,6 +174,79 @@ test('renameSprite does not increment when renaming to the same name', t => {
     t.end();
 });
 
+test('renameTrack de-duplicates against other track names', t => {
+    const vm = new VirtualMachine();
+    vm.runtime.song = {
+        tracks: [
+            {trackId: 't1', kind: 'instrument', instrument: 1, name: 'Lead'},
+            {trackId: 't2', kind: 'instrument', instrument: 1, name: 'Bass'}
+        ]
+    };
+    vm.renameTrack('t1', 'Bass');
+    t.equal(vm.runtime.song.tracks[0].name, 'Bass2');
+    t.equal(vm.runtime.song.tracks[1].name, 'Bass');
+    t.end();
+});
+
+test('renameTrack rejects empty names and keeps the current one', t => {
+    const vm = new VirtualMachine();
+    vm.runtime.song = {tracks: [{trackId: 't1', kind: 'instrument', instrument: 1, name: 'Lead'}]};
+    vm.renameTrack('t1', '   ');
+    t.equal(vm.runtime.song.tracks[0].name, 'Lead');
+    t.end();
+});
+
+test('renameTrack rejects the all-tracks sentinel', t => {
+    const vm = new VirtualMachine();
+    vm.runtime.song = {tracks: [{trackId: 't1', kind: 'instrument', instrument: 1, name: 'Lead'}]};
+    vm.renameTrack('t1', '__all__');
+    t.equal(vm.runtime.song.tracks[0].name, 'Lead');
+    t.end();
+});
+
+test('renameTrack rewrites block references when the old name was unique', t => {
+    const vm = new VirtualMachine();
+    const spr = new Sprite(null, vm.runtime);
+    const target = spr.createClone();
+    target.blocks.createBlock({
+        id: 'b1',
+        opcode: 'songs_playTrack',
+        fields: {TRACK: {name: 'TRACK', value: 'Lead'}}
+    });
+    vm.runtime.targets = [target];
+    vm.runtime.song = {tracks: [{trackId: 't1', kind: 'instrument', instrument: 1, name: 'Lead'}]};
+
+    vm.renameTrack('t1', 'Melody');
+    t.equal(vm.runtime.song.tracks[0].name, 'Melody');
+    t.equal(target.blocks.getBlock('b1').fields.TRACK.value, 'Melody');
+    t.end();
+});
+
+test('renameTrack leaves block references alone when the old name was ambiguous', t => {
+    const vm = new VirtualMachine();
+    const spr = new Sprite(null, vm.runtime);
+    const target = spr.createClone();
+    target.blocks.createBlock({
+        id: 'b1',
+        opcode: 'songs_playTrack',
+        fields: {TRACK: {name: 'TRACK', value: 'Piano'}}
+    });
+    vm.runtime.targets = [target];
+    // Two tracks share the display name "Piano", so renaming one must not
+    // redirect a "Piano" block reference (it could belong to the other track).
+    vm.runtime.song = {
+        tracks: [
+            {trackId: 't1', kind: 'instrument', instrument: 1, name: 'Piano'},
+            {trackId: 't2', kind: 'instrument', instrument: 1, name: 'Piano'}
+        ]
+    };
+
+    vm.renameTrack('t1', 'Keys');
+    t.equal(vm.runtime.song.tracks[0].name, 'Keys');
+    t.equal(target.blocks.getBlock('b1').fields.TRACK.value, 'Piano');
+    t.end();
+});
+
 test('deleteSprite throws when used on a non-sprite target', t => {
     const vm = new VirtualMachine();
     vm.runtime.targets = [{

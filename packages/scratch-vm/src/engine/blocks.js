@@ -1017,6 +1017,8 @@ class Blocks {
             getAssetField = this._getBackdropField.bind(this);
         } else if (assetType === 'sprite') {
             getAssetField = this._getSpriteField.bind(this);
+        } else if (assetType === 'track') {
+            getAssetField = this._getTrackField.bind(this);
         } else {
             return;
         }
@@ -1120,6 +1122,28 @@ class Blocks {
             if (Object.prototype.hasOwnProperty.call(block.fields, menuName)) {
                 return block.fields[menuName];
             }
+        }
+        return null;
+    }
+
+    /**
+     * Helper function to retrieve a song-track menu field from a block given its
+     * id. The Songs extension exposes two track menus (TRACK, which includes an
+     * "all tracks" option, and TRACK_NO_ALL) whose stored value is the track's
+     * display name — see the songs extension's _trackByMenuValue.
+     * @param {string} blockId A unique identifier for a block
+     * @returns {?object} The track menu field of the block, or null if none.
+     */
+    _getTrackField (blockId) {
+        const block = this.getBlock(blockId);
+        if (!block) {
+            return null;
+        }
+        if (Object.prototype.hasOwnProperty.call(block.fields, 'TRACK')) {
+            return block.fields.TRACK;
+        }
+        if (Object.prototype.hasOwnProperty.call(block.fields, 'TRACK_NO_ALL')) {
+            return block.fields.TRACK_NO_ALL;
         }
         return null;
     }

@@ -22,6 +22,7 @@ const newBlockIds = require('./util/new-block-ids');
 const {loadCostume} = require('./import/load-costume.js');
 const {loadSound} = require('./import/load-sound.js');
 const {serializeSounds, serializeCostumes} = require('./serialization/serialize-assets');
+const {displayNameForTrack} = require('./extensions/scratch3_songs/song-defaults');
 require('canvas-toBlob');
 
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
@@ -897,6 +898,49 @@ class VirtualMachine extends EventEmitter {
         }
         this.runtime.emitProjectChanged();
         this.runtime.emit('SONGS_CHANGED');
+    }
+
+    /**
+     * Rename a track in the project song. Mirrors renameSprite/renameCostume:
+     * de-duplicates the requested name against the other tracks' display names,
+     * then rewrites any song blocks that referenced the old display name so
+     * existing scripts keep working (the TRACK menus store the track's display
+     * name, not its trackId — see the songs extension's _trackByMenuValue).
+     * @param {string} trackId The trackId of the track to rename.
+     * @param {string} newName The requested new name.
+     */
+    renameTrack (trackId, newName) {
+        const song = this.runtime.song;
+        if (!song || !Array.isArray(song.tracks)) return;
+        const track = song.tracks.find(t => t.trackId === trackId);
+        if (!track) return;
+        // Reject empty names (keep the current one) and the all-tracks sentinel
+        // used by the TRACK menu, which a track named "__all__" would shadow.
+        const trimmed = (newName || '').trim();
+        if (!trimmed || trimmed === '__all__') return;
+
+        const oldName = displayNameForTrack(track);
+        const otherNames = song.tracks
+            .filter(t => t !== track)
+            .map(t => displayNameForTrack(t));
+        const newUnusedName = StringUtil.unusedName(trimmed, otherNames);
+        track.name = newUnusedName;
+
+        // Rewrite block references from the old display name to the new one,
+        // but only when the old name unambiguously identified this track. If
+        // another track still reports the old name (e.g. two "Piano" tracks),
+        // leave references alone rather than hijacking the other track's blocks.
+        if (newUnusedName !== oldName) {
+            const oldNameStillUsed = song.tracks.some(t => displayNameForTrack(t) === oldName);
+            if (!oldNameStillUsed) {
+                const targets = this.runtime.targets;
+                for (let i = 0; i < targets.length; i++) {
+                    targets[i].blocks.updateAssetName(oldName, newUnusedName, 'track');
+                }
+            }
+        }
+
+        this.updateSong(song);
     }
 
     /**

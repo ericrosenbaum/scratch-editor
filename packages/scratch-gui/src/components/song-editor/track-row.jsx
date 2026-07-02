@@ -7,6 +7,10 @@ import MiniGrid from './mini-grid.jsx';
 import VelocityStrip from './velocity-strip.jsx';
 import {computeCellWidth, DEFAULT_CELL_W} from './grid-sizing.js';
 import {INSTRUMENT_NAMES, DRUM_NAMES, DEFAULT_VELOCITY, getTrackEffects, displayNameForTrack, SYNTH_PRESETS, DEFAULT_SYNTH, getTrackSynth, SYNTH_DRUM_PRESETS, SYNTH_DRUM_PRESET_NAMES, getDrumVoice, voiceParamsForPreset} from '../../lib/song-defaults.js';
+import Input from '../forms/input.jsx';
+import BufferedInputHOC from '../forms/buffered-input-hoc.jsx';
+
+const BufferedInput = BufferedInputHOC(Input);
 
 class TrackRow extends React.Component {
     constructor (props) {
@@ -43,6 +47,7 @@ class TrackRow extends React.Component {
         this.handleSoloToggle = this.handleSoloToggle.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
         this.handleEditToggle = this.handleEditToggle.bind(this);
+        this.handleNameSubmit = this.handleNameSubmit.bind(this);
 
         this.handleEffectChange = this.handleEffectChange.bind(this);
         this.handleSynthPresetChange = this.handleSynthPresetChange.bind(this);
@@ -749,6 +754,10 @@ class TrackRow extends React.Component {
         this.props.onSelectionChange(keys);
     }
 
+    handleNameSubmit (name) {
+        if (this.props.onRename) this.props.onRename(name);
+    }
+
     renderEditToggleButton () {
         const {isEditing} = this.props;
         return (
@@ -1323,10 +1332,21 @@ class TrackRow extends React.Component {
                             fill="currentColor"
                         /></svg>
                     )}</span>
-                <span
-                    className="track-name"
-                    aria-label="Track name"
-                >{displayNameForTrack(track)}</span>
+                {this.props.isEditing ? (
+                    <BufferedInput
+                        className="track-name-input"
+                        type="text"
+                        maxLength={40}
+                        aria-label="Track name"
+                        value={displayNameForTrack(track)}
+                        onSubmit={this.handleNameSubmit}
+                    />
+                ) : (
+                    <span
+                        className="track-name"
+                        aria-label="Track name"
+                    >{displayNameForTrack(track)}</span>
+                )}
                 {this.renderEditToggleButton()}
             </div>
         );
@@ -1761,6 +1781,8 @@ TrackRow.propTypes = {
     // Optional: cheap live audio update during a slider drag (no song commit).
     onLiveUpdate: PropTypes.func,
     onDelete: PropTypes.func.isRequired,
+    // Optional: rename the track (submitted from the Edit-mode name field).
+    onRename: PropTypes.func,
     onToggleEdit: PropTypes.func.isRequired,
     onSelectionChange: PropTypes.func.isRequired,
     onMoveUp: PropTypes.func.isRequired,

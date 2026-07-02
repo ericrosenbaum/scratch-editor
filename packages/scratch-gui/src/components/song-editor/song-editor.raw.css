@@ -503,17 +503,24 @@
 }
 
 /* Rename input: looks like the static name label until the user clicks
-   into it, at which point it gets a subtle outline. Inherits sizing from
-   .track-name above. */
-.track-name-input {
+   into it, at which point it gets a subtle outline. Matches the sizing of
+   .track-name so the row stays single-line and the Edit toggle stays right. */
+.track-row-controls .track-name-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 5px;
     padding: 2px 5px;
     margin: 0;
     font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c2c2c;
     line-height: 1.2;
     cursor: text;
+    box-sizing: border-box;
     transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 

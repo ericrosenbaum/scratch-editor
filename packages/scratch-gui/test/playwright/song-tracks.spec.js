@@ -1,6 +1,6 @@
 // @ts-check
 const {test, expect} = require('@playwright/test');
-const {openSongMaker, pianoClickBox} = require('./song-test-helpers');
+const {openSongMaker, pianoClickBox, songData} = require('./song-test-helpers');
 
 const PAGE = 'index.html';
 
@@ -95,6 +95,107 @@ test('Track reorder: move up/down/top/bottom', async ({page}) => {
     // Top button is disabled on the first row.
     await expect(rows.nth(0).getByLabel('Move track up')).toBeDisabled();
     await expect(rows.nth(2).getByLabel('Move track down')).toBeDisabled();
+});
+
+test('Rename a track: the name field only shows while editing and persists', async ({page}) => {
+    await addSong(page);
+
+    // The first track auto-opens for editing, so its name is an editable field.
+    const firstRow = page.locator('.track-row').first();
+    const nameInput = firstRow.locator('.track-name-input');
+    await expect(nameInput).toBeVisible();
+
+    await nameInput.fill('My Melody');
+    await nameInput.press('Enter');
+
+    // Persisted to the live project song.
+    await expect.poll(async () => (await songData(page)).tracks[0].name).toBe('My Melody');
+
+    // Collapse the track (Done): the name becomes a static label, not an input.
+    await firstRow.locator('.edit-toggle-btn').click();
+    await expect(firstRow.locator('.track-name-input')).toHaveCount(0);
+    await expect(firstRow.locator('.track-name')).toHaveText('My Melody');
+});
+
+test('Renaming a track to an existing name gets a numeric suffix', async ({page}) => {
+    await addSong(page);
+
+    // Name the first (auto-editing) track.
+    const first = page.locator('.track-row').first()
+        .locator('.track-name-input');
+    await first.fill('Bass');
+    await first.press('Enter');
+
+    // Add a second instrument track — it becomes the editing one.
+    await page.getByRole('button', {name: /Add Instrument Track/i}).click();
+    const second = page.locator('.track-row').nth(1)
+        .locator('.track-name-input');
+    await expect(second).toBeVisible();
+    await second.fill('Bass');
+    await second.press('Enter');
+
+    // The duplicate is de-duplicated to "Bass2".
+    await expect.poll(async () => (await songData(page)).tracks.map(t => t.name))
+        .toEqual(['Bass', 'Bass2']);
+});
+
+test('Undo reverts a track rename', async ({page}) => {
+    await addSong(page);
+
+    const nameInput = page.locator('.track-row').first()
+        .locator('.track-name-input');
+    const original = await nameInput.inputValue();
+
+    await nameInput.fill('Renamed Track');
+    await nameInput.press('Enter');
+    await expect(nameInput).toHaveValue('Renamed Track');
+
+    // Rename goes through the same history stack as every other edit.
+    await page.getByRole('button', {name: 'Undo'}).click();
+    await expect(nameInput).toHaveValue(original);
+});
+
+test('Renaming a track rewrites existing song block references', async ({page}) => {
+    await openSongMaker(page);
+
+    const nameInput = page.locator('.track-row').first()
+        .locator('.track-name-input');
+    const original = await nameInput.inputValue();
+
+    // Create a "play [track] now" block that references the track by its
+    // current display name — the same value the block menu would store.
+    await page.evaluate(name => {
+        const vm = window.__SONG_TEST__.vm;
+        const target = vm.runtime.targets.find(t => !t.isStage) || vm.runtime.targets[0];
+        target.blocks.createBlock({
+            id: 'test-play-block',
+            opcode: 'songs_playTrack',
+            inputs: {},
+            fields: {
+                TRACK: {name: 'TRACK', value: name},
+                WHEN: {name: 'WHEN', value: 'now'}
+            },
+            topLevel: true,
+            shadow: false,
+            x: 0,
+            y: 0
+        });
+    }, original);
+
+    await nameInput.fill('Bassline');
+    await nameInput.press('Enter');
+    await expect(nameInput).toHaveValue('Bassline');
+
+    // The block field followed the rename, so the script still targets the track.
+    const fieldValue = await page.evaluate(() => {
+        const vm = window.__SONG_TEST__.vm;
+        for (const t of vm.runtime.targets) {
+            const b = t.blocks.getBlock('test-play-block');
+            if (b) return b.fields.TRACK.value;
+        }
+        return null;
+    });
+    expect(fieldValue).toBe('Bassline');
 });
 
 test('Song editor stays within the container when steps is large', async ({page}) => {

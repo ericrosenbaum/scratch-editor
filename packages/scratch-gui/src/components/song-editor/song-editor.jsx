@@ -467,12 +467,21 @@ class SongEditor extends React.Component {
         if (!target) return;
         const trimmed = (newName || '').trim();
         if (!trimmed) return;
+        // Predict the de-duplicated name the VM will settle on and bail when it
+        // matches the current display name. This ignores empty/no-op edits and,
+        // crucially, makes BufferedInput's Enter-then-blur double submit
+        // idempotent — otherwise the second call would push a redundant
+        // (post-rename) undo snapshot. Uses the same dedupe algorithm as the VM.
         const used = tracks
             .filter((_, i) => i !== trackIdx)
             .map(t => displayNameForTrack(t));
-        const unique = unusedTrackName(trimmed, used);
-        if (unique === displayNameForTrack(target)) return;
-        this.updateTrack(trackIdx, {...target, name: unique});
+        if (unusedTrackName(trimmed, used) === displayNameForTrack(target)) return;
+        // Snapshot the pre-rename song so the rename participates in the
+        // editor's undo/redo like every other edit. The VM then owns trimming,
+        // de-duplication, and rewriting the song blocks that reference this
+        // track; it emits SONGS_CHANGED, which re-renders from runtime.song.
+        this._pushHistory();
+        this.props.vm.renameTrack(target.trackId, trimmed);
     }
 
     // Cheap, audio-only application of a track edit to the running scheduler:

@@ -758,6 +758,34 @@ test('updateAssetName function updates name in backdrop field', t => {
     t.end();
 });
 
+test('updateAssetName function updates name in song track fields', t => {
+    const b = new Blocks(new Runtime());
+    b.createBlock({
+        id: 'playBlock',
+        fields: {
+            TRACK: {
+                name: 'TRACK',
+                value: 'name1'
+            }
+        }
+    });
+    b.createBlock({
+        id: 'noteBlock',
+        fields: {
+            TRACK_NO_ALL: {
+                name: 'TRACK_NO_ALL',
+                value: 'name1'
+            }
+        }
+    });
+    t.equal(b.getBlock('playBlock').fields.TRACK.value, 'name1');
+    t.equal(b.getBlock('noteBlock').fields.TRACK_NO_ALL.value, 'name1');
+    b.updateAssetName('name1', 'name2', 'track');
+    t.equal(b.getBlock('playBlock').fields.TRACK.value, 'name2');
+    t.equal(b.getBlock('noteBlock').fields.TRACK_NO_ALL.value, 'name2');
+    t.end();
+});
+
 test('updateAssetName function updates name in all sprite fields', t => {
     const b = new Blocks(new Runtime());
     b.createBlock({
