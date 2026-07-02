@@ -1,5 +1,6 @@
 import {sanitizeSong} from '../../../src/lib/song-ai.js';
 import {INSTRUMENT_NAMES, DRUM_NAMES} from '../../../src/lib/song-defaults.js';
+import {MAX_LENGTH_STEPS} from '../../../src/lib/scale-utils.js';
 
 describe('song-ai sanitizeSong', () => {
     test('clamps tempo and lengthSteps out of range', () => {
@@ -10,7 +11,7 @@ describe('song-ai sanitizeSong', () => {
             tracks: [{kind: 'instrument', instrument: 1, volume: 80, notes: []}]
         }, 'Fallback');
         expect(song.tempo).toBeLessThanOrEqual(500);
-        expect(song.lengthSteps).toBeLessThanOrEqual(128);
+        expect(song.lengthSteps).toBe(MAX_LENGTH_STEPS);
     });
 
     test('drops notes whose step is >= lengthSteps', () => {
@@ -79,7 +80,9 @@ describe('song-ai sanitizeSong', () => {
         expect(song.tracks[1].notes[0]).toEqual({step: 0, durationSteps: 1});
     });
 
-    test('clamps durationSteps to at least 1', () => {
+    test('clamps invalid durationSteps to a small positive minimum', () => {
+        // The floor is a small fraction (not 1) so un-quantized MIDI imports can
+        // keep sub-step note lengths; zero/negative durations still clamp up.
         const song = sanitizeSong({
             name: 'T',
             tempo: 120,
@@ -94,7 +97,7 @@ describe('song-ai sanitizeSong', () => {
                 ]
             }]
         }, 'F');
-        expect(song.tracks[0].notes.map(n => n.durationSteps)).toEqual([1, 1]);
+        expect(song.tracks[0].notes.map(n => n.durationSteps)).toEqual([0.25, 0.25]);
     });
 
     test('regenerates songId and trackId regardless of model output', () => {

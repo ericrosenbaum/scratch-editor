@@ -13,6 +13,8 @@ import {
     PITCH_CLASS_NAMES,
     DEFAULT_ROOT_PITCH,
     DEFAULT_SCALE_TYPE_LEGACY,
+    MIN_LENGTH_STEPS,
+    MAX_LENGTH_STEPS,
     snapNotesToScale
 } from '../scale-utils.js';
 import {
@@ -50,6 +52,11 @@ const synthParamsFromPresetName = name => {
 };
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+// Floor for a note's length. Small enough not to alter real (integer) note
+// durations, but keeps un-quantized imports from producing near-zero,
+// click-prone notes. Onset timing is never floored, only length.
+const MIN_NOTE_DURATION_STEPS = 0.25;
 
 const effectsForModel = track => {
     const fx = (track && track.effects) || {};
@@ -142,9 +149,18 @@ const sanitizeTrack = (rt, lengthSteps, baseEffects) => {
     track.notes = [];
     for (const rn of rawNotes) {
         if (rn && rn.rest === true) continue;
-        const step = Math.round(Number(rn?.step));
+        // Timing is kept as-is (not rounded to the step grid): the scheduler
+        // plays notes at step * secondsPerStep, so fractional steps/durations —
+        // e.g. from an un-quantized MIDI import — play at their exact positions.
+        // Every other source (AI, library, editor) emits integers, which pass
+        // through unchanged.
+        const step = Number(rn?.step);
         if (!Number.isFinite(step) || step < 0 || step >= lengthSteps) continue;
-        const durationSteps = Math.max(1, Math.round(Number(rn?.durationSteps) || 1));
+        const rawDuration = Number(rn?.durationSteps);
+        const durationSteps = Math.max(
+            MIN_NOTE_DURATION_STEPS,
+            Number.isFinite(rawDuration) ? rawDuration : 1
+        );
         const rawVelocity = Number(rn?.velocity);
         const velocity = clamp(
             Math.round(Number.isFinite(rawVelocity) ? rawVelocity : 80),
@@ -197,8 +213,8 @@ const sanitizeSong = (raw, fallbackName) => {
     );
     song.lengthSteps = clamp(
         Math.round(Number(raw?.lengthSteps) || 32),
-        4,
-        128
+        MIN_LENGTH_STEPS,
+        MAX_LENGTH_STEPS
     );
     song.stepsPerBeat = 4;
 

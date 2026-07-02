@@ -11,6 +11,7 @@ import AiSongModal from './ai-song-modal.jsx';
 import KeyboardEntryModal from './keyboard-entry-modal.jsx';
 import SongLibrary from '../../containers/song-library.jsx';
 import SongPlayer from '../../lib/song-player.js';
+import {handleFileUpload} from '../../lib/file-uploader.js';
 import {createBlankTrack, displayNameForTrack, unusedTrackName} from '../../lib/song-defaults.js';
 import {reconcileTrackForSong, songFromLibraryItem} from '../../lib/song-library/import.js';
 import {editTrackWithPrompt, generateSongFromPrompt, generateTrackWithPrompt, SongAiError} from '../../lib/song-ai.js';
@@ -21,6 +22,8 @@ import {
     DEFAULT_SCALE_TYPE_LEGACY,
     MIN_PITCH,
     MAX_PITCH,
+    MIN_LENGTH_STEPS,
+    MAX_LENGTH_STEPS,
     transposeNotes,
     snapNotesToScale
 } from '../../lib/scale-utils.js';
@@ -75,8 +78,14 @@ class SongEditor extends React.Component {
             // Song library browser: null (closed), 'track' (add a track), or
             // 'song' (start from a section). Each opens the shared library
             // container filtered to that item type.
-            songLibraryMode: null
+            songLibraryMode: null,
+            // MIDI import: busy while parsing a chosen .mid; error holds a
+            // user-facing message when a file can't be imported.
+            midiImporting: false,
+            midiImportError: null
         };
+        // Hidden <input type="file"> for MIDI import, clicked programmatically.
+        this.midiInputRef = React.createRef();
         // Undo/redo history stack of song snapshots. The current song is held
         // in props (owned by the parent), so we record snapshots *before* each
         // commit and step the props.song forward via onChange on undo/redo.
@@ -123,6 +132,9 @@ class SongEditor extends React.Component {
         this.handleCloseSongLibrary = this.handleCloseSongLibrary.bind(this);
         this.handleAddLibraryTrack = this.handleAddLibraryTrack.bind(this);
         this.handleReplaceWithLibrarySong = this.handleReplaceWithLibrarySong.bind(this);
+        this.handleImportMidiClick = this.handleImportMidiClick.bind(this);
+        this.handleMidiFileChange = this.handleMidiFileChange.bind(this);
+        this.handleDismissMidiError = this.handleDismissMidiError.bind(this);
         this.handleUndo = this.handleUndo.bind(this);
         this.handleRedo = this.handleRedo.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -355,7 +367,7 @@ class SongEditor extends React.Component {
     }
 
     handleLengthChange (lengthSteps) {
-        const clamped = Math.max(4, Math.min(256, parseInt(lengthSteps, 10) || 32));
+        const clamped = Math.max(MIN_LENGTH_STEPS, Math.min(MAX_LENGTH_STEPS, parseInt(lengthSteps, 10) || 32));
         if (clamped === (this.props.song.lengthSteps || 32)) return;
         const tracks = (this.props.song.tracks || []).map(t => ({
             ...t,
@@ -835,11 +847,11 @@ class SongEditor extends React.Component {
         });
     }
 
-    // Start a new arrangement from a library section. Adopts the section's
-    // key/scale/tempo/length (musically correct) but keeps the existing songId
-    // so undo can step back. Mirrors handleApplyAiSong.
-    handleReplaceWithLibrarySong (item) {
-        const generated = songFromLibraryItem(item);
+    // Replace the whole arrangement with a freshly-built song (from a library
+    // section, an AI generation, or a MIDI import). Adopts the new song's
+    // key/scale/tempo/length but keeps the existing songId so undo can step
+    // back. Returns the first track (for setting editing focus).
+    _replaceSong (generated) {
         this._commit({
             name: generated.name,
             tempo: generated.tempo,
@@ -849,17 +861,72 @@ class SongEditor extends React.Component {
             scaleType: generated.scaleType,
             tracks: generated.tracks
         });
-        const firstTrack = generated.tracks[0];
         if (this.state.playing) {
             for (const t of generated.tracks) {
                 this.player.activateTrack(t.trackId);
             }
         }
+        return (generated.tracks && generated.tracks[0]) || null;
+    }
+
+    // Start a new arrangement from a library section. Adopts the section's
+    // key/scale/tempo/length (musically correct) but keeps the existing songId
+    // so undo can step back. Mirrors handleApplyAiSong.
+    handleReplaceWithLibrarySong (item) {
+        const firstTrack = this._replaceSong(songFromLibraryItem(item));
         this.setState({
             songLibraryMode: null,
             editingTrackId: firstTrack ? firstTrack.trackId : null,
             selectedKeys: new Set()
         });
+    }
+
+    // Open the OS file picker for a .mid file. Parsing/conversion happens in
+    // handleMidiFileChange once a file is chosen.
+    handleImportMidiClick () {
+        this.player.stop();
+        this.setState({playing: false, playStep: -1, midiImportError: null});
+        if (this.midiInputRef.current) {
+            this.midiInputRef.current.click();
+        }
+    }
+
+    // Read the chosen .mid into an ArrayBuffer, convert it to a song (the
+    // converter and its midi-file dependency are code-split via dynamic import
+    // so they only load on first use), then replace the current song. Like the
+    // library/AI paths, this flows through _commit so it is undoable.
+    handleMidiFileChange (e) {
+        const input = e.target;
+        if (!input || !input.files || input.files.length === 0) return;
+        this.setState({midiImporting: true, midiImportError: null});
+        handleFileUpload(
+            input,
+            (buffer, fileType, fileName) => {
+                import(/* webpackChunkName: "midi-import" */ '../../lib/song-library/midi-to-song.js')
+                    .then(({parseMidiToSong}) => {
+                        const song = parseMidiToSong(buffer, fileName);
+                        const firstTrack = this._replaceSong(song);
+                        this.setState({
+                            midiImporting: false,
+                            editingTrackId: firstTrack ? firstTrack.trackId : null,
+                            selectedKeys: new Set()
+                        });
+                    })
+                    .catch(err => {
+                        this.setState({
+                            midiImporting: false,
+                            midiImportError: (err && err.message) || 'Could not import that MIDI file.'
+                        });
+                    });
+            },
+            () => {
+                this.setState({midiImporting: false, midiImportError: 'Could not read that file.'});
+            }
+        );
+    }
+
+    handleDismissMidiError () {
+        this.setState({midiImportError: null});
     }
 
     renderSelectionToolbar () {
@@ -1083,7 +1150,8 @@ class SongEditor extends React.Component {
                             label="Bars"
                             value={Math.max(1, Math.round((song.lengthSteps || 32) / ((song.stepsPerBeat || 4) * 4)))}
                             min={1}
-                            max={16}
+                            max={Math.floor(MAX_LENGTH_STEPS / ((song.stepsPerBeat || 4) * 4))}
+                            sliderMax={16}
                             sliderStep={1}
                             onCommit={this.handleBarsChange}
                         />
@@ -1182,8 +1250,53 @@ class SongEditor extends React.Component {
                                 fill="currentColor"
                             /></svg>
                     </button>
+                    <button
+                        type="button"
+                        className="import-midi"
+                        onClick={this.handleImportMidiClick}
+                        disabled={this.state.midiImporting}
+                        title="Import a MIDI file as a new song (replaces current song)"
+                        aria-label="Import a MIDI file"
+                    >
+                        <svg
+                            viewBox="0 0 16 16"
+                            width="13"
+                            height="13"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M8 2v6.2M5.4 5.8 8 8.4l2.6-2.6M3 10.8v1.7a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1.7"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.6"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </button>
+                    <input
+                        className="import-midi-input"
+                        type="file"
+                        accept=".mid,.midi,audio/midi"
+                        ref={this.midiInputRef}
+                        onChange={this.handleMidiFileChange}
+                    />
                     {this.renderSelectionToolbar()}
                 </div>
+                {this.state.midiImportError ? (
+                    <div
+                        className="midi-import-error"
+                        role="alert"
+                    >
+                        <span>{this.state.midiImportError}</span>
+                        <button
+                            type="button"
+                            className="midi-import-error-dismiss"
+                            onClick={this.handleDismissMidiError}
+                            aria-label="Dismiss"
+                        >{'×'}</button>
+                    </div>
+                ) : null}
                 <div className="song-editor-tracks">
                     {tracks.map((track, idx) => (
                         <TrackRow

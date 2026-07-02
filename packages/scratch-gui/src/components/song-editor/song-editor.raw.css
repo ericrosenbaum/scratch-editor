@@ -1199,6 +1199,65 @@
     background: linear-gradient(135deg, #3373CC 0%, #2860AD 100%);
 }
 
+/* MIDI import sits with the other "replace the whole song" actions; a teal
+   accent distinguishes "bring in a file" from library (blue) and AI (purple). */
+.import-midi {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    background: linear-gradient(135deg, #2EC9B0 0%, #1F9E96 100%);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(31, 158, 150, 0.3);
+    flex-shrink: 0;
+}
+
+.import-midi:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1F9E96 0%, #178077 100%);
+}
+
+.import-midi:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.import-midi-input {
+    display: none;
+}
+
+/* Inline, dismissible error shown when a MIDI file can't be imported. */
+.midi-import-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 12px 0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #fdecec;
+    border: 1px solid #f4b9b9;
+    color: #b3261e;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.midi-import-error-dismiss {
+    margin-left: auto;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+}
+
 /* The "Add from Library" track button is a filled blue (vs the dashed
    per-kind add buttons) so it stands out as the browse-everything entry. */
 .add-track-library {

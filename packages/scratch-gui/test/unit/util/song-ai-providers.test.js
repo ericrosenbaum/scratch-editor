@@ -8,6 +8,7 @@ import {
     SongAiError
 } from '../../../src/lib/song-ai.js';
 import {createBlankSong, createBlankTrack} from '../../../src/lib/song-defaults.js';
+import {MAX_LENGTH_STEPS} from '../../../src/lib/scale-utils.js';
 
 describe('song-ai provider registry', () => {
     test('listProviders returns anthropic, anthropic-opus, gemini-nano, gemma4, magenta', () => {
@@ -130,7 +131,7 @@ describe('song-ai orchestration via a stub provider', () => {
                 fallbackName: 'Fallback'
             });
             expect(song.tempo).toBeLessThanOrEqual(500);
-            expect(song.lengthSteps).toBeLessThanOrEqual(128);
+            expect(song.lengthSteps).toBeLessThanOrEqual(MAX_LENGTH_STEPS);
             expect(song.tracks).toHaveLength(1);
             expect(song.tracks[0].notes).toHaveLength(1);
         } finally {

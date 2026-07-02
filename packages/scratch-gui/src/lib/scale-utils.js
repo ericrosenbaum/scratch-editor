@@ -7,6 +7,14 @@
 const MIN_PITCH = 24; // C1 — mirrors piano-roll-grid.jsx
 const MAX_PITCH = 108; // C8
 
+// Song length bounds, in steps (4 steps = 1 beat, 16 steps = 1 bar of 4/4).
+// 256 steps = 16 bars of 4/4 — the practical maximum the (pre-zoom) grid stays
+// usable at, and the cap MIDI import windows to. It is the one place the cap
+// lives — sanitizeSong and SongEditor both read it. AI generation keeps its own
+// smaller LENGTH_MAX (prompts.js).
+const MIN_LENGTH_STEPS = 4;
+const MAX_LENGTH_STEPS = 256;
+
 const SCALE_OFFSETS = {
     major: [0, 2, 4, 5, 7, 9, 11],
     minor: [0, 2, 3, 5, 7, 8, 10],
@@ -109,6 +117,8 @@ export {
     DEFAULT_SCALE_TYPE_LEGACY,
     MIN_PITCH,
     MAX_PITCH,
+    MIN_LENGTH_STEPS,
+    MAX_LENGTH_STEPS,
     isInScale,
     snapToScale,
     transposeNotes,
