@@ -20,6 +20,7 @@ import {
     sanitizeSong,
     stripIdsFromSong
 } from './sanitize.js';
+import {analyzeSong, formatSongBrief} from './analyze-song.js';
 import {
     anthropicProvider,
     anthropicOpusProvider,
@@ -148,10 +149,30 @@ const editTrackWithPrompt = async ({prompt, editParams, song, trackIndex, signal
                 [originalTrack.drum || 1]
         )}`;
     }
+    const editRoot = (typeof song.rootPitch === 'number') ?
+        song.rootPitch :
+        DEFAULT_ROOT_PITCH;
+    const editScale = SCALE_TYPE_NAMES.indexOf(song.scaleType) >= 0 ?
+        song.scaleType :
+        DEFAULT_SCALE_TYPE_LEGACY;
+    // Explicit harmony + structure brief so the edited track stays coherent with
+    // the rest of the song (same chord progression, phrasing) — the row being
+    // edited is marked in the structure grid.
+    const brief = formatSongBrief(
+        analyzeSong({
+            tracks: song.tracks,
+            rootPitch: editRoot,
+            scaleType: editScale,
+            lengthSteps: song.lengthSteps
+        }),
+        {rootPitch: editRoot, scaleType: editScale, editTrackIndex: trackIndex}
+    );
     const userMessage = [
         `trackIndex to edit: ${trackIndex}`,
         `original track kind: ${originalTrack.kind} (DO NOT CHANGE)`,
         `${lockedFields} (DO NOT CHANGE)`,
+        '',
+        brief,
         '',
         'Full song JSON:',
         '```json',
@@ -224,12 +245,6 @@ const editTrackWithPrompt = async ({prompt, editParams, song, trackIndex, signal
     }
     sanitized.trackId = originalTrack.trackId;
     sanitized.muted = !!originalTrack.muted;
-    const editRoot = (typeof song.rootPitch === 'number') ?
-        song.rootPitch :
-        DEFAULT_ROOT_PITCH;
-    const editScale = SCALE_TYPE_NAMES.indexOf(song.scaleType) >= 0 ?
-        song.scaleType :
-        DEFAULT_SCALE_TYPE_LEGACY;
     sanitized.notes = snapNotesToScale([sanitized], editRoot, editScale)[0].notes;
     logAiEditResponse({prompt: text, payload: raw, toolInput, sanitized, providerId: provider.id});
 
@@ -256,8 +271,28 @@ const generateTrackWithPrompt = async ({prompt, song, kind, signal, providerId} 
     }
 
     const cleanSong = stripIdsFromSong(song);
+    const genRoot = (typeof song.rootPitch === 'number') ?
+        song.rootPitch :
+        DEFAULT_ROOT_PITCH;
+    const genScale = SCALE_TYPE_NAMES.indexOf(song.scaleType) >= 0 ?
+        song.scaleType :
+        DEFAULT_SCALE_TYPE_LEGACY;
+    // Pre-analyze the existing tracks into an explicit harmony + structure brief
+    // so the model doesn't have to reverse-engineer the chord progression and
+    // form from the raw note arrays (which it does unreliably).
+    const brief = formatSongBrief(
+        analyzeSong({
+            tracks: song.tracks,
+            rootPitch: genRoot,
+            scaleType: genScale,
+            lengthSteps: song.lengthSteps
+        }),
+        {rootPitch: genRoot, scaleType: genScale}
+    );
     const userMessage = [
         `kind of new track to add: ${kind}`,
+        '',
+        brief,
         '',
         'Existing song JSON:',
         '```json',
@@ -303,12 +338,6 @@ const generateTrackWithPrompt = async ({prompt, song, kind, signal, providerId} 
         toolInput.kind = kind;
     }
     const sanitized = sanitizeTrack(toolInput, song.lengthSteps);
-    const genRoot = (typeof song.rootPitch === 'number') ?
-        song.rootPitch :
-        DEFAULT_ROOT_PITCH;
-    const genScale = SCALE_TYPE_NAMES.indexOf(song.scaleType) >= 0 ?
-        song.scaleType :
-        DEFAULT_SCALE_TYPE_LEGACY;
     sanitized.notes = snapNotesToScale([sanitized], genRoot, genScale)[0].notes;
     logAiEditResponse({prompt: text, payload: raw, toolInput, sanitized, providerId: provider.id});
 
