@@ -165,6 +165,19 @@ class Scratch3SongsBlocks {
             blockIconURI,
             blocks: [
                 {
+                    // Entry point to the Song Maker editor: a toolbox button
+                    // at the top of the category (like "Make a Block" in My
+                    // Blocks). The GUI registers the OPEN_SONG_MAKER callback
+                    // on its toolbox workspace and opens the editor modal.
+                    blockType: BlockType.BUTTON,
+                    text: formatMessage({
+                        id: 'songs.openSongMaker',
+                        default: 'Open Song Maker',
+                        description: 'Toolbox button that opens the Song Maker editor'
+                    }),
+                    func: 'OPEN_SONG_MAKER'
+                },
+                {
                     opcode: 'playTrack',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({

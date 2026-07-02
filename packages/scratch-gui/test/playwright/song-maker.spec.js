@@ -1,5 +1,9 @@
 // @ts-check
+// Core Song Maker flows: the editor lives in a full-screen modal opened from
+// the "Open Song Maker" toolbox button at the top of the Songs extension
+// category (there is no Song Maker tab).
 const {test, expect} = require('@playwright/test');
+const {openSongMaker, dismissSongsExamplesModal} = require('./song-test-helpers');
 
 // Use the playwright config's baseURL (the local build/ directory) unless overridden.
 const PAGE = process.env.SONG_TEST_BASE ? `${process.env.SONG_TEST_BASE}` : 'index.html';
@@ -11,34 +15,36 @@ test.beforeEach(async ({page}) => {
     });
 });
 
-test('Song Maker: tab appears next to Sounds', async ({page}) => {
+test('Song Maker: no editor tab; the Songs toolbox button opens the modal', async ({page}) => {
     await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
+    await dismissSongsExamplesModal(page);
     await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
     const tabs = await page.locator('[role="tab"]').allInnerTexts();
-    expect(tabs).toEqual(['Code', 'Costumes', 'Sounds', 'Song Maker']);
+    expect(tabs).toEqual(['Code', 'Costumes', 'Sounds']);
+
+    // Add the Songs extension; its category gains an "Open Song Maker" button.
+    await page.evaluate(() => window.__SONG_TEST__.vm.extensionManager.loadExtensionIdSync('songs'));
+    await page.locator('.blocklyToolboxCategory').filter({hasText: 'Songs'})
+        .click();
+    const openButton = page.locator('.blocklyFlyoutButton').filter({hasText: 'Open Song Maker'});
+    await expect(openButton).toBeVisible();
+
+    await openButton.click();
+    await expect(page.locator('.song-editor')).toBeVisible();
+
+    // The Back button closes the modal and returns to the workspace.
+    await page.getByRole('button', {name: /Back/i}).click();
+    await expect(page.locator('.song-editor')).toHaveCount(0);
 });
 
-test('Song Maker: add a song, edit notes on piano and drum, play/stop', async ({page}) => {
+test('Song Maker: edit notes on piano and drum, play/stop', async ({page}) => {
     const pageErrors = [];
     page.on('pageerror', err => pageErrors.push(err.stack || err.message || String(err)));
 
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-
-    // Add a song
-    await page.getByLabel('Add Song', {exact: true}).first().click();
-
-    // BPM input visible
-    await expect(page.locator('.song-editor input[type="number"]').first()).toBeVisible();
-
-    // Edit song name
-    await page.locator('input[aria-label="Song name"]').fill('Test Song');
+    await openSongMaker(page);
 
     // Place a note on the piano roll
     const piano = page.locator('svg.piano-roll').first();
-    await expect(piano).toBeVisible();
     const pbox = await piano.boundingBox();
     expect(pbox).not.toBeNull();
     await page.mouse.click(pbox.x + 80, pbox.y + 40);
@@ -50,9 +56,8 @@ test('Song Maker: add a song, edit notes on piano and drum, play/stop', async ({
     await expect(drum).toBeVisible();
     await drum.scrollIntoViewIfNeeded();
     const dbox = await drum.boundingBox();
-    // Click in the middle of the first cell — past the 32px label gutter that
-    // aligns drum cells with piano-roll cells, then ~10px into cell 0.
-    // Click past the Edit corner button (which overlays the top-left ~50px).
+    // Click past the 32px label gutter that aligns drum cells with
+    // piano-roll cells, then ~10px into cell 0.
     await page.mouse.click(dbox.x + 80, dbox.y + 14);
     await expect(page.locator('svg.drum-grid rect.note')).toHaveCount(1);
 
@@ -65,55 +70,21 @@ test('Song Maker: add a song, edit notes on piano and drum, play/stop', async ({
     expect(pageErrors).toEqual([]);
 });
 
-test('Song Maker: switching tabs preserves song state', async ({page}) => {
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
+test('Song Maker: closing and reopening the modal preserves song state', async ({page}) => {
+    await openSongMaker(page);
     await page.getByRole('button', {name: /Add Drum Track/i}).click();
     await expect(page.locator('.track-row')).toHaveCount(2);
 
-    await page.getByRole('tab', {name: /^Code$/}).click();
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
+    await page.getByRole('button', {name: /Back/i}).click();
+    await expect(page.locator('.song-editor')).toHaveCount(0);
+    await page.locator('.blocklyFlyoutButton').filter({hasText: 'Open Song Maker'})
+        .click();
     await expect(page.locator('.track-row')).toHaveCount(2);
-});
-
-test('Song Maker: rename song updates the selector list', async ({page}) => {
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
-    await page.locator('input[aria-label="Song name"]').fill('Renamed');
-    // Blur to commit if needed:
-    await page.locator('input[aria-label="Song name"]').press('Tab');
-
-    // The selector list (left column) should reflect the new name somewhere on the page.
-    await expect(page.getByText('Renamed').first()).toBeVisible();
-});
-
-test('Song Maker: BPM and length update', async ({page}) => {
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
-
-    const bpmInput = page.locator('.song-editor input[type="number"]').first();
-    await bpmInput.fill('90');
-    await bpmInput.press('Tab');
-    await expect(bpmInput).toHaveValue('90');
-
-    // Length input is the second number input in the header
-    const lengthInput = page.locator('.song-editor input[type="number"]').nth(1);
-    await lengthInput.fill('16');
-    await lengthInput.press('Tab');
-    await expect(lengthInput).toHaveValue('16');
 });
 
 test('Songs extension appears in the extension library', async ({page}) => {
     await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
+    await dismissSongsExamplesModal(page);
     await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
 
     const extButton = page.locator('[class*="extension-button"]').first();
@@ -142,13 +113,9 @@ test('Song Maker: Play actually schedules audio buffer sources', async ({page}) 
         }
     });
 
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
+    await openSongMaker(page);
     // Give the music extension time to decode its sample MP3s.
     await page.waitForTimeout(4000);
-
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
 
     // Place 3 notes
     const piano = page.locator('svg.piano-roll').first();
@@ -166,19 +133,16 @@ test('Song Maker: Play actually schedules audio buffer sources', async ({page}) 
 });
 
 test('Song Maker: piano notes can be removed via the Delete toolbar button', async ({page}) => {
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
+    await openSongMaker(page);
 
     const piano = page.locator('svg.piano-roll').first();
     const pbox = await piano.boundingBox();
-    await page.mouse.click(pbox.x + 80, pbox.y + 40);
+    await page.mouse.click(pbox.x + 80, pbox.y + 60);
     await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(1);
 
-    // Click the note to select it, then click Delete in the selection toolbar.
-    await page.locator('svg.piano-roll rect.note').first().click();
+    // Select the note, then delete it with the toolbar button.
+    await page.locator('svg.piano-roll rect.note').first()
+        .click();
     await page.locator('.selection-toolbar button', {hasText: 'Delete'}).click();
     await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(0);
 });

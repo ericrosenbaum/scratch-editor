@@ -1,17 +1,12 @@
 // @ts-check
 const {test, expect} = require('@playwright/test');
+const {openSongMaker} = require('./song-test-helpers');
 
 const PAGE = 'index.html';
 
-// The Song Maker tab auto-loads the project song (one instrument track open),
-// so opening the tab is all that's needed — there is no "add song" step.
-const addSong = async page => {
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await expect(page.locator('.song-editor')).toBeVisible();
-    await expect(page.locator('svg.piano-roll').first()).toBeVisible();
-};
+// Open the Song Maker modal; the editor auto-loads the project song (one
+// instrument track open), so there is no "add song" step.
+const addSong = page => openSongMaker(page);
 
 test('Compact tracks render mini grid; editing track shows full piano roll', async ({page}) => {
     await addSong(page);

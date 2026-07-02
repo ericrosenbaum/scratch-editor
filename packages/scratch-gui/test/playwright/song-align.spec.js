@@ -1,13 +1,10 @@
 // @ts-check
 const {test, expect} = require('@playwright/test');
+const {openSongMaker} = require('./song-test-helpers');
 
 test('Drum grid time columns align with piano roll', async ({page}) => {
     await page.setViewportSize({width: 1280, height: 800});
-    await page.goto('index.html', {waitUntil: 'domcontentloaded'});
-    await page.waitForTimeout(3000);
-
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
+    await openSongMaker(page);
     await page.getByRole('button', {name: /Add Drum Track/i}).click();
 
     // The drum track is auto-edited; expand the piano track back into edit mode.

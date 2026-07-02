@@ -1268,8 +1268,9 @@ class Runtime extends EventEmitter {
      * @private
      */
     _convertButtonForScratchBlocks (buttonInfo) {
-        // for now we only support these pre-defined callbacks handled in scratch-blocks
-        const supportedCallbackKeys = ['MAKE_A_LIST', 'MAKE_A_PROCEDURE', 'MAKE_A_VARIABLE'];
+        // Pre-defined callbacks handled in scratch-blocks, plus keys the GUI
+        // registers itself on its toolbox workspace (OPEN_SONG_MAKER).
+        const supportedCallbackKeys = ['MAKE_A_LIST', 'MAKE_A_PROCEDURE', 'MAKE_A_VARIABLE', 'OPEN_SONG_MAKER'];
         if (supportedCallbackKeys.indexOf(buttonInfo.func) < 0) {
             log.error(`Custom button callbacks not supported yet: ${buttonInfo.func}`);
         }

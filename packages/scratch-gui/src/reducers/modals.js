@@ -13,6 +13,7 @@ const MODAL_SOUND_RECORDER = 'soundRecorder';
 const MODAL_CONNECTION = 'connectionModal';
 const MODAL_TIPS_LIBRARY = 'tipsLibrary';
 const MODAL_SONGS_EXAMPLES = 'songsExamplesModal';
+const MODAL_SONG_MAKER = 'songMakerModal';
 
 const initialState = {
     [MODAL_BACKDROP_LIBRARY]: false,
@@ -28,7 +29,10 @@ const initialState = {
     [MODAL_TIPS_LIBRARY]: false,
     // Songs examples welcome modal — opens automatically on editor load so a
     // newcomer sees what the Songs extension can do. Dismiss to reach the editor.
-    [MODAL_SONGS_EXAMPLES]: true
+    [MODAL_SONGS_EXAMPLES]: true,
+    // Song Maker editor — opened from the toolbox button at the top of the
+    // Songs extension category.
+    [MODAL_SONG_MAKER]: false
 };
 
 const reducer = function (state, action) {
@@ -94,6 +98,9 @@ const openTipsLibrary = function () {
 const openSongsExamplesModal = function () {
     return openModal(MODAL_SONGS_EXAMPLES);
 };
+const openSongMakerModal = function () {
+    return openModal(MODAL_SONG_MAKER);
+};
 const closeBackdropLibrary = function () {
     return closeModal(MODAL_BACKDROP_LIBRARY);
 };
@@ -130,6 +137,9 @@ const closeConnectionModal = function () {
 const closeSongsExamplesModal = function () {
     return closeModal(MODAL_SONGS_EXAMPLES);
 };
+const closeSongMakerModal = function () {
+    return closeModal(MODAL_SONG_MAKER);
+};
 export {
     reducer as default,
     initialState as modalsInitialState,
@@ -145,6 +155,7 @@ export {
     openTipsLibrary,
     openConnectionModal,
     openSongsExamplesModal,
+    openSongMakerModal,
     closeBackdropLibrary,
     closeCostumeLibrary,
     closeDebugModal,
@@ -156,5 +167,6 @@ export {
     closeTelemetryModal,
     closeTipsLibrary,
     closeConnectionModal,
-    closeSongsExamplesModal
+    closeSongsExamplesModal,
+    closeSongMakerModal
 };

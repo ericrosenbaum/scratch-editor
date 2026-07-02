@@ -1,13 +1,11 @@
 // @ts-check
 const {test, expect} = require('@playwright/test');
+const {openSongMaker} = require('./song-test-helpers');
 
 const PAGE = 'index.html';
 
 const setupSongWithNote = async (page, x, y) => {
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
+    await openSongMaker(page);
     const piano = page.locator('svg.piano-roll').first();
     const pbox = await piano.boundingBox();
     await page.mouse.click(pbox.x + x, pbox.y + y);
@@ -15,10 +13,7 @@ const setupSongWithNote = async (page, x, y) => {
 };
 
 test('Edit toggle sits in the track info panel and toggles edit mode', async ({page}) => {
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
+    await openSongMaker(page);
 
     // Add a second track so the first is in compact mode and has an "Edit" button.
     await page.getByRole('button', {name: /Add Instrument Track/i}).click();
@@ -109,10 +104,7 @@ test('Cut + Paste round-trips selected notes', async ({page}) => {
 });
 
 test('Notes use pitch-class colors', async ({page}) => {
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
+    await openSongMaker(page);
 
     // Place two notes on different rows (different pitches) at the same step.
     const piano = page.locator('svg.piano-roll').first();
@@ -132,10 +124,7 @@ test('Notes use pitch-class colors', async ({page}) => {
 });
 
 test('AI Edit button on each track opens the AI edit modal', async ({page}) => {
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
+    await openSongMaker(page);
 
     // Each track row gets an AI Edit button.
     const aiBtn = page.locator('.track-row').first().locator('.track-btn-ai');
@@ -207,10 +196,7 @@ test('Space toggles play and stop', async ({page}) => {
 });
 
 test('Drum-track resize works the same way', async ({page}) => {
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
+    await openSongMaker(page);
     await page.getByRole('button', {name: /Add Drum Track/i}).click();
 
     const drum = page.locator('svg.drum-grid').first();

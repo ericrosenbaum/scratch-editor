@@ -1,0 +1,12 @@
+@import "../../css/colors.css";
+
+/* The editor needs the full remaining height under the modal header, and its
+   own scrolling (the track list scrolls internally). */
+.body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: $ui-white;
+    overflow: hidden;
+}

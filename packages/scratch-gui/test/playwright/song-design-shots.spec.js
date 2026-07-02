@@ -4,6 +4,7 @@
 //   npx playwright test --project=chromium test/playwright/song-design-shots.spec.js
 // Output PNGs land in test-results/design/*.png.
 const {test, expect} = require('@playwright/test');
+const {openSongMaker, dismissSongsExamplesModal} = require('./song-test-helpers');
 const path = require('path');
 
 const PAGE = 'index.html';
@@ -13,9 +14,7 @@ const VIEWPORT = {width: 1440, height: 900};
 
 const gotoEditor = async (page) => {
     await page.setViewportSize(VIEWPORT);
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
+    await openSongMaker(page);
 };
 
 const editorOnly = async (page) => {
@@ -216,6 +215,7 @@ test('Velocity actually changes rendered audio amplitude', async ({page}) => {
     // should be far above the soft note's peak.
     await page.setViewportSize(VIEWPORT);
     await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
+    await dismissSongsExamplesModal(page);
     await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
     await page.waitForTimeout(3000);
 
@@ -355,13 +355,9 @@ test('Velocity changes produce distinct gain values at note time', async ({page}
     });
 
     await page.setViewportSize(VIEWPORT);
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
+    await openSongMaker(page);
     // Let the music extension decode its samples.
     await page.waitForTimeout(3000);
-
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
 
     // Place 3 notes on the piano roll.
     const piano = page.locator('svg.piano-roll').first();
@@ -439,12 +435,8 @@ test('Drum lane clicks request the correct drum buffer', async ({page}) => {
     });
 
     await page.setViewportSize(VIEWPORT);
-    await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
-    await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
+    await openSongMaker(page);
     await page.waitForTimeout(3000); // let music extension samples decode
-
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
-    await page.getByLabel('Add Song', {exact: true}).first().click();
     await page.getByRole('button', {name: /Add Drum Track/i}).click();
 
     // The default drum lanes are [4, 5, 6, 1, 2, 8] = Crash, OHH, CHH,

@@ -39,13 +39,15 @@ test('a block "stop all tracks" clears the editor play state', async ({page}) =>
     await expect(isPlaying(page)).toHaveCount(0);
 });
 
-test('rapid play then tab-switch does not leave a stuck play state', async ({page}) => {
+test('rapid play then modal close does not leave a stuck play state', async ({page}) => {
     await openSongMaker(page);
     await playBtn(page).click();
-    // Immediately leave the tab (unmounts the editor, which stops playback)…
-    await page.getByRole('tab', {name: /^Code$/}).click();
-    // …then return. The editor remounts fresh and must not show "playing".
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
+    // Immediately close the modal (unmounts the editor, which stops playback)…
+    await page.getByRole('button', {name: /Back/i}).click();
+    // …then reopen from the toolbox button. The editor remounts fresh and
+    // must not show "playing".
+    await page.locator('.blocklyFlyoutButton').filter({hasText: 'Open Song Maker'})
+        .click();
     await expect(page.locator('.song-editor')).toBeVisible();
     await expect(isPlaying(page)).toHaveCount(0);
     expect(await page.evaluate(() => window.__SONG_TEST__.vm.runtime.songPlayback.isPlaying())).toBe(false);
