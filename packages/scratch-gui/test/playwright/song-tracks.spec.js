@@ -1,6 +1,6 @@
 // @ts-check
 const {test, expect} = require('@playwright/test');
-const {openSongMaker} = require('./song-test-helpers');
+const {openSongMaker, pianoClickBox} = require('./song-test-helpers');
 
 const PAGE = 'index.html';
 
@@ -34,8 +34,7 @@ test('Compact tracks render mini grid; editing track shows full piano roll', asy
 
 test('Muted track is visually grayed', async ({page}) => {
     await addSong(page);
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     await page.mouse.click(pbox.x + 80, pbox.y + 40);
 
     // Mute the track
@@ -100,12 +99,13 @@ test('Track reorder: move up/down/top/bottom', async ({page}) => {
 
 test('Song editor stays within the container when steps is large', async ({page}) => {
     await addSong(page);
-    // Use a long song (8 bars → 128 steps) to force a wide grid.
+    // Use the longest song (16 bars → 256 steps) to force a wide grid: even
+    // at the minimum cell width the grid is wider than the full-screen modal.
     const bars = page.getByLabel('Bars', {exact: true});
-    await bars.fill('8');
+    await bars.fill('16');
     await bars.press('Enter');
 
-    // The song-editor container should not be wider than the AssetPanel detail area.
+    // The song-editor container should not be wider than its parent.
     const editorWidth = await page.locator('.song-editor').evaluate(el => el.getBoundingClientRect().width);
     // The detail area is the parent's nearest div.
     const parentWidth = await page.locator('.song-editor').evaluate(el =>
@@ -123,11 +123,11 @@ test('Song editor stays within the container when steps is large', async ({page}
 
 test('Many tracks: outer container scrolls vertically', async ({page}) => {
     await addSong(page);
-    // Add ~6 tracks to overflow the viewport.
-    for (let i = 0; i < 6; i++) {
+    // Add enough tracks to overflow even the full-screen modal's viewport.
+    for (let i = 0; i < 9; i++) {
         await page.getByRole('button', {name: /Add Drum Track/i}).click();
     }
-    await expect(page.locator('.track-row')).toHaveCount(7);
+    await expect(page.locator('.track-row')).toHaveCount(10);
 
     const scroller = page.locator('.song-editor-tracks');
     const canScroll = await scroller.evaluate(el => el.scrollHeight > el.clientHeight);

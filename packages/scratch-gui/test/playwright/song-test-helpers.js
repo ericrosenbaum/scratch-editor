@@ -37,13 +37,22 @@ const songData = page => page.evaluate(() => {
     return vm ? JSON.parse(JSON.stringify(vm.runtime.song || null)) : null;
 });
 
-// Place a note near the top-left of the first piano-roll and return its bbox.
+// The piano-roll SVG is much taller than its scroll viewport and auto-scrolls
+// to centre the melody, so the SVG's bounding box usually starts hundreds of
+// pixels ABOVE the visible area. Cell clicks must therefore be computed from
+// the VISIBLE grid — the scroller's box — not the SVG's.
+const pianoClickBox = async page => {
+    const scroller = page.locator('.track-row-grid.is-editing').first();
+    await expect(scroller).toBeVisible();
+    return scroller.boundingBox();
+};
+
+// Place a note near the top-left of the visible piano-roll area and return
+// the visible-area bbox the click was relative to.
 const clickPianoCell = async (page, dx = 80, dy = 40) => {
-    const piano = page.locator('svg.piano-roll').first();
-    await expect(piano).toBeVisible();
-    const box = await piano.boundingBox();
+    const box = await pianoClickBox(page);
     await page.mouse.click(box.x + dx, box.y + dy);
     return box;
 };
 
-module.exports = {PAGE, dismissSongsExamplesModal, openSongMaker, songData, clickPianoCell};
+module.exports = {PAGE, dismissSongsExamplesModal, openSongMaker, songData, pianoClickBox, clickPianoCell};

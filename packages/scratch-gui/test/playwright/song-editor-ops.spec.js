@@ -1,13 +1,13 @@
 // @ts-check
 const {test, expect} = require('@playwright/test');
-const {openSongMaker} = require('./song-test-helpers');
+const {openSongMaker, pianoClickBox} = require('./song-test-helpers');
 
 const PAGE = 'index.html';
 
 const setupSongWithNote = async (page, x, y) => {
     await openSongMaker(page);
     const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     await page.mouse.click(pbox.x + x, pbox.y + y);
     return {piano, pbox};
 };
@@ -58,8 +58,7 @@ test('Drag the right edge of a note resizes its duration', async ({page}) => {
 test('Drag selection rect highlights notes; toolbar enables Delete/Cut/Copy', async ({page}) => {
     await setupSongWithNote(page, 80, 60);
     // Add two more notes
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     await page.mouse.click(pbox.x + 130, pbox.y + 60);
     await page.mouse.click(pbox.x + 180, pbox.y + 60);
     await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(3);
@@ -82,8 +81,7 @@ test('Drag selection rect highlights notes; toolbar enables Delete/Cut/Copy', as
 
 test('Cut + Paste round-trips selected notes', async ({page}) => {
     await setupSongWithNote(page, 80, 60);
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     await page.mouse.click(pbox.x + 130, pbox.y + 60);
     await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(2);
 
@@ -107,8 +105,7 @@ test('Notes use pitch-class colors', async ({page}) => {
     await openSongMaker(page);
 
     // Place two notes on different rows (different pitches) at the same step.
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     await page.mouse.click(pbox.x + 80, pbox.y + 60);
     await page.mouse.click(pbox.x + 80, pbox.y + 80); // different pitch
 
@@ -129,7 +126,7 @@ test('AI Edit button on each track opens the AI edit modal', async ({page}) => {
     // Each track row gets an AI Edit button.
     const aiBtn = page.locator('.track-row').first().locator('.track-btn-ai');
     await expect(aiBtn).toBeVisible();
-    await expect(aiBtn).toHaveText(/AI Edit/i);
+    await expect(aiBtn).toHaveAttribute('aria-label', /AI Edit/i);
 
     // Clicking it opens the modal with the track name in the title.
     await aiBtn.click();

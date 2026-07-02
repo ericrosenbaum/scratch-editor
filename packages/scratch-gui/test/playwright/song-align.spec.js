@@ -1,6 +1,6 @@
 // @ts-check
 const {test, expect} = require('@playwright/test');
-const {openSongMaker} = require('./song-test-helpers');
+const {openSongMaker, pianoClickBox} = require('./song-test-helpers');
 
 test('Drum grid time columns align with piano roll', async ({page}) => {
     await page.setViewportSize({width: 1280, height: 800});
@@ -11,8 +11,7 @@ test('Drum grid time columns align with piano roll', async ({page}) => {
     await page.locator('.track-row').first().locator('.edit-toggle-btn').click();
 
     // Place a piano note on the first step
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     await page.mouse.click(pbox.x + 80, pbox.y + 60);
 
     // Re-edit the drum track to show its full grid.

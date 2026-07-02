@@ -3,7 +3,7 @@
 // the "Open Song Maker" toolbox button at the top of the Songs extension
 // category (there is no Song Maker tab).
 const {test, expect} = require('@playwright/test');
-const {openSongMaker, dismissSongsExamplesModal} = require('./song-test-helpers');
+const {openSongMaker, dismissSongsExamplesModal, pianoClickBox} = require('./song-test-helpers');
 
 // Use the playwright config's baseURL (the local build/ directory) unless overridden.
 const PAGE = process.env.SONG_TEST_BASE ? `${process.env.SONG_TEST_BASE}` : 'index.html';
@@ -44,8 +44,7 @@ test('Song Maker: edit notes on piano and drum, play/stop', async ({page}) => {
     await openSongMaker(page);
 
     // Place a note on the piano roll
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     expect(pbox).not.toBeNull();
     await page.mouse.click(pbox.x + 80, pbox.y + 40);
     await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(1);
@@ -118,8 +117,7 @@ test('Song Maker: Play actually schedules audio buffer sources', async ({page}) 
     await page.waitForTimeout(4000);
 
     // Place 3 notes
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     await page.mouse.click(pbox.x + 50, pbox.y + 60);
     await page.mouse.click(pbox.x + 120, pbox.y + 80);
     await page.mouse.click(pbox.x + 200, pbox.y + 100);
@@ -135,8 +133,7 @@ test('Song Maker: Play actually schedules audio buffer sources', async ({page}) 
 test('Song Maker: piano notes can be removed via the Delete toolbar button', async ({page}) => {
     await openSongMaker(page);
 
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     await page.mouse.click(pbox.x + 80, pbox.y + 60);
     await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(1);
 

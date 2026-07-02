@@ -4,7 +4,7 @@
 //   npx playwright test --project=chromium test/playwright/song-design-shots.spec.js
 // Output PNGs land in test-results/design/*.png.
 const {test, expect} = require('@playwright/test');
-const {openSongMaker, dismissSongsExamplesModal} = require('./song-test-helpers');
+const {openSongMaker, dismissSongsExamplesModal, pianoClickBox} = require('./song-test-helpers');
 const path = require('path');
 
 const PAGE = 'index.html';
@@ -29,19 +29,15 @@ test('design: empty state (no songs)', async ({page}) => {
 
 test('design: fresh song (one default track)', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
     await expect(page.locator('.song-editor')).toBeVisible();
     await (await editorOnly(page)).screenshot({path: OUT('01-fresh-song.png')});
 });
 
 test('design: song with notes, drum, mixed editing', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
 
     // Put a few notes on the piano roll.
-    const piano = page.locator('svg.piano-roll').first();
-    await expect(piano).toBeVisible();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     // A short ascending phrase
     for (let i = 0; i < 6; i++) {
         await page.mouse.click(pbox.x + 50 + i * 22, pbox.y + 120 - i * 12);
@@ -72,7 +68,6 @@ test('design: song with notes, drum, mixed editing', async ({page}) => {
 
 test('design: many tracks (scrolling)', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
     for (let i = 0; i < 3; i++) {
         await page.getByRole('button', {name: /Add Drum Track/i}).click();
     }
@@ -84,25 +79,21 @@ test('design: many tracks (scrolling)', async ({page}) => {
 
 test('design: header only (full width focus)', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
     const header = page.locator('.song-editor-header');
     await header.screenshot({path: OUT('04-header.png')});
 });
 
 test('design: single track controls panel', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
     const controls = page.locator('.track-row-controls').first();
     await controls.screenshot({path: OUT('05-track-controls.png')});
 });
 
 test('design: auto-scroll piano roll to existing low melody', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
 
     // Place a few notes (these land at the top of the grid, pitches near C8).
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     for (let i = 0; i < 5; i++) {
         await page.mouse.click(pbox.x + 50 + i * 22, pbox.y + 30 + i * 8);
     }
@@ -132,19 +123,13 @@ test('design: auto-scroll piano roll to existing low melody', async ({page}) => 
 
 test('design: AI generate-song modal', async ({page}) => {
     await gotoEditor(page);
-    // The Add Song button is a hover-expanding action menu; AI lives in the
-    // secondary "more buttons" list. Hover to reveal, then click.
-    const addSong = page.getByLabel('Add Song', {exact: true}).first();
-    await addSong.hover();
-    await page.waitForTimeout(150);
-    await page.getByLabel('AI', {exact: true}).first().click();
+    await page.getByLabel('Generate a whole song with AI').click();
     await page.waitForTimeout(250);
     await page.screenshot({path: OUT('08-ai-modal.png'), fullPage: false});
 });
 
 test('design: AI edit-track modal', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
     await page.locator('.track-row .track-btn-ai').first().click();
     await page.waitForTimeout(150);
     await page.screenshot({path: OUT('09-ai-edit-modal.png'), fullPage: false});
@@ -152,10 +137,8 @@ test('design: AI edit-track modal', async ({page}) => {
 
 test('Drag a selected note up to move its pitch', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
 
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     // Place a single note in the middle of the visible area.
     await page.mouse.click(pbox.x + 100, pbox.y + 100);
     await expect(page.locator('svg.piano-roll rect.note')).toHaveCount(1);
@@ -177,9 +160,7 @@ test('Drag a selected note up to move its pitch', async ({page}) => {
 
 test('Shift+click on grid sets cursor position', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     // Click somewhere ~step 8 (LABEL_W=32, cellWidth ~17 → x ≈ 32 + 8*17 = 168)
     await page.keyboard.down('Shift');
     await page.mouse.click(pbox.x + 168, pbox.y + 100);
@@ -191,9 +172,7 @@ test('Shift+click on grid sets cursor position', async ({page}) => {
 
 test('Reset button moves cursor back to start', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     await page.keyboard.down('Shift');
     await page.mouse.click(pbox.x + 200, pbox.y + 100);
     await page.keyboard.up('Shift');
@@ -360,8 +339,7 @@ test('Velocity changes produce distinct gain values at note time', async ({page}
     await page.waitForTimeout(3000);
 
     // Place 3 notes on the piano roll.
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     await page.mouse.click(pbox.x + 50, pbox.y + 60);
     await page.mouse.click(pbox.x + 120, pbox.y + 60);
     await page.mouse.click(pbox.x + 190, pbox.y + 60);
@@ -468,7 +446,6 @@ test('Drum lane clicks request the correct drum buffer', async ({page}) => {
 
 test('design: multi-lane drum machine', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
     await page.getByRole('button', {name: /Add Drum Track/i}).click();
 
     // The new drum track is editing by default. It exposes a lane picker on
@@ -493,11 +470,9 @@ test('design: multi-lane drum machine', async ({page}) => {
 
 test('design: velocity strip below piano roll', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
 
     // Scatter notes across the grid so the velocity lollipops show varied heights.
-    const piano = page.locator('svg.piano-roll').first();
-    const pbox = await piano.boundingBox();
+    const pbox = await pianoClickBox(page);
     const points = [
         [50, 40], [80, 70], [110, 35], [160, 95], [200, 50],
         [260, 110], [310, 60], [360, 80]
@@ -524,7 +499,6 @@ test('design: velocity strip below piano roll', async ({page}) => {
 
 test('design: extended pitch range scrolled to low end', async ({page}) => {
     await gotoEditor(page);
-    await page.getByLabel('Add Song', {exact: true}).first().click();
 
     // Programmatically scroll to expose the new low-end of the grid so we can
     // see that C1..C2 is now reachable.
