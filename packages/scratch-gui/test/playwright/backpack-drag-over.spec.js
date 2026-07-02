@@ -1,5 +1,6 @@
 // @ts-check
 const {test, expect} = require('@playwright/test');
+const {dismissSongsExamplesModal} = require('./song-test-helpers');
 
 // Regression test for the backpack drag-over highlight.
 //
@@ -18,6 +19,7 @@ const {test, expect} = require('@playwright/test');
 
 test('backpack highlights when a block is dragged over it', async ({page}) => {
     await page.goto('index.html?backpack_host=fake');
+    await dismissSongsExamplesModal(page);
 
     // Expand the backpack.
     await page.getByText('Backpack', {exact: true}).click();

@@ -4,13 +4,28 @@ const {expect} = require('@playwright/test');
 
 const PAGE = process.env.SONG_TEST_BASE ? `${process.env.SONG_TEST_BASE}` : 'index.html';
 
-// Load the playground, wait for the editor shell, and switch to the Song Maker
-// tab. The tab auto-loads the project song (one instrument track open for
-// editing), so no explicit "add song" step is needed.
+// The songs welcome (examples) modal opens on every fresh page load and — as
+// an open react-modal — removes the rest of the app from the accessibility
+// tree, so it must be dismissed before any getByRole() query can see the
+// editor tabs.
+const dismissSongsExamplesModal = async page => {
+    await page.getByRole('button', {name: 'Close'}).click({timeout: 30000});
+};
+
+// Add the Songs extension to the project (via the VM test hook — same code
+// path as picking it in the extension library) and click the "Open Song
+// Maker" button at the top of its toolbox category, which opens the Song
+// Maker editor modal. The editor auto-loads the project song (one instrument
+// track open for editing), so no explicit "add song" step is needed.
 const openSongMaker = async page => {
     await page.goto(PAGE, {waitUntil: 'domcontentloaded'});
+    await dismissSongsExamplesModal(page);
     await expect(page.getByRole('tab', {name: /^Code$/})).toBeVisible({timeout: 30000});
-    await page.getByRole('tab', {name: /Song Maker/i}).click();
+    await page.evaluate(() => window.__SONG_TEST__.vm.extensionManager.loadExtensionIdSync('songs'));
+    await page.locator('.blocklyToolboxCategory').filter({hasText: 'Songs'})
+        .click();
+    await page.locator('.blocklyFlyoutButton').filter({hasText: 'Open Song Maker'})
+        .click();
     await expect(page.locator('.song-editor')).toBeVisible();
     await expect(page.locator('svg.piano-roll').first()).toBeVisible();
 };
@@ -31,4 +46,4 @@ const clickPianoCell = async (page, dx = 80, dy = 40) => {
     return box;
 };
 
-module.exports = {PAGE, openSongMaker, songData, clickPianoCell};
+module.exports = {PAGE, dismissSongsExamplesModal, openSongMaker, songData, clickPianoCell};
