@@ -732,10 +732,14 @@ const serialize = function (runtime, targetId) {
 
     obj.targets = serializedTargets;
 
-    // Project-level Song Maker data. The song belongs to the project as a
-    // whole (not per-sprite). There is at most one song.
-    if (runtime.song) {
-        obj.song = serializeSong(runtime.song);
+    // Project-level Song Maker data. Songs belong to the project as a whole
+    // (not per-sprite). `activeSongIndex` picks the song the blocks play and
+    // the editor shows — serialized like the current costume. We only write
+    // the `songs[]` form: older builds already migrate a top-level `songs[]`
+    // array by taking the first song, so new files degrade gracefully.
+    if (runtime.songs && runtime.songs.length > 0) {
+        obj.songs = runtime.songs.map(serializeSong);
+        obj.activeSongIndex = Math.max(0, Math.min(runtime.songs.length - 1, runtime.activeSongIndex || 0));
     }
 
     obj.monitors = serializeMonitors(runtime.getMonitorState());
@@ -1551,43 +1555,48 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         .map((t, i) => Object.assign(t, {targetPaneOrder: i}))
         .sort((a, b) => a.layerOrder - b.layerOrder);
 
-    // Project-level song. Only set for whole-project loads (not single-sprite
-    // imports, which would otherwise wipe the existing project song). Prefer
-    // the new top-level `song` object; otherwise migrate from legacy multi-
-    // song formats (`songs[]` at the top level or per-sprite `songs` arrays)
-    // by taking the first song found.
+    // Project-level songs. Only set for whole-project loads (not single-sprite
+    // imports, which would otherwise wipe the existing project songs). Prefer
+    // the top-level `songs[]` array (+ `activeSongIndex`); otherwise migrate
+    // from the older shapes — a single top-level `song` object, or legacy
+    // per-sprite `song`/`songs` fields (collected in target order).
     if (isSingleSprite) {
         // Single-sprite import: drop any legacy per-sprite songs the sprite
         // carries (they belong to the source project, not this one) so they
         // don't get re-emitted by serializeTarget. Leave existing
-        // runtime.song untouched.
+        // runtime.songs untouched.
         for (const t of targetObjects) {
             if (t.song) delete t.song;
             if (Array.isArray(t.songs)) delete t.songs;
         }
     } else {
-        let firstSong = null;
+        const songs = [];
         const considerSong = song => {
-            if (firstSong || !song || !song.songId) return;
-            firstSong = JSON.parse(JSON.stringify(song));
+            if (!song || !song.songId) return;
+            if (songs.some(s => s.songId === song.songId)) return;
+            songs.push(JSON.parse(JSON.stringify(song)));
         };
-        if (json.song) {
-            considerSong(json.song);
-        } else if (Array.isArray(json.songs)) {
+        if (Array.isArray(json.songs)) {
             for (const s of json.songs) considerSong(s);
+        } else if (json.song) {
+            considerSong(json.song);
         }
         for (const t of targetObjects) {
-            if (!firstSong) {
-                if (t.song) considerSong(t.song);
-                else if (Array.isArray(t.songs)) {
-                    for (const s of t.songs) considerSong(s);
-                }
+            if (t.song) considerSong(t.song);
+            else if (Array.isArray(t.songs)) {
+                for (const s of t.songs) considerSong(s);
             }
             // Don't carry legacy fields forward into target parsing.
             if (t.song) delete t.song;
             if (Array.isArray(t.songs)) delete t.songs;
         }
-        runtime.song = firstSong;
+        // Always assign (possibly []) — this is what clears song state
+        // between project loads.
+        runtime.songs = songs;
+        const rawIndex = typeof json.activeSongIndex === 'number' ? json.activeSongIndex : 0;
+        runtime.activeSongIndex = songs.length > 0 ?
+            Math.max(0, Math.min(songs.length - 1, Math.floor(rawIndex))) :
+            0;
     }
 
     const monitorObjects = json.monitors || [];

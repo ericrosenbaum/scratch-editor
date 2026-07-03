@@ -17,11 +17,13 @@ const ALL_TRACKS = '__all__';
 const BEATS_PER_BAR = 4;
 
 /**
- * Songs extension — real-time controls for the single project-wide track set
- * authored in the Song Maker tab. The transport always loops; blocks toggle
- * tracks active/inactive (immediately or quantized to the next loop), tweak
- * per-track effect parameters live, and report/react to the transport's beat,
- * loop, and note position.
+ * Songs extension — real-time controls for the project's songs authored in
+ * the Song Maker tab. One song is ACTIVE at a time (backdrop-style); track
+ * blocks act on the active song's tracks by display name, and `switch to
+ * song` changes which song that is, carrying active tracks over by name. The
+ * transport always loops; blocks toggle tracks active/inactive (immediately
+ * or quantized to the next loop), tweak per-track effect parameters live, and
+ * report/react to the transport's beat, loop, and note position.
  */
 class Scratch3SongsBlocks {
     constructor (runtime) {
@@ -55,6 +57,12 @@ class Scratch3SongsBlocks {
         // Most-recent MIDI pitch played per track, keyed by trackId. Fed by the
         // onNote callback and read by the `current note on [track]` reporter.
         this._lastNoteByTrack = new Map();
+
+        // songId of the song most recently switched TO. Set immediately before
+        // the `whenSongSwitches` startHats call so every matching hat's
+        // predicate sees it during synchronous evaluation (same pattern as
+        // _currentNoteTrackId).
+        this._currentSwitchSongId = null;
 
         // Wire hat-block callbacks once. The scheduler picks them up next
         // time it's built. Each beat/bar/loop/note fires its hats explicitly via
@@ -94,6 +102,12 @@ class Scratch3SongsBlocks {
                 // loop wraps. The `when each loop starts` hat fires from onBeat
                 // (beat 0), not here, so it also covers the first pass.
                 this._loopCount = (typeof iter === 'number' ? iter : this._loopCount + 1);
+            },
+            onSongSwitch: song => {
+                // Dispatched by SongPlayback.switchToSong when a switch is
+                // applied (block-driven playback only, like the other hats).
+                this._currentSwitchSongId = (song && song.songId) || null;
+                this.runtime.startHats('songs_whenSongSwitches');
             }
         });
 
@@ -121,6 +135,7 @@ class Scratch3SongsBlocks {
         this._currentBar = 0;
         this._loopCount = 0;
         this._currentNoteTrackId = null;
+        this._currentSwitchSongId = null;
         this._lastNoteByTrack.clear();
     }
 
@@ -128,9 +143,56 @@ class Scratch3SongsBlocks {
         return this.runtime.song || null;
     }
 
+    _songs () {
+        return this.runtime.songs || [];
+    }
+
+    /**
+     * Resolve a SONG menu value to its song object. Menus store the song's
+     * name (like TRACK menus store track display names); fall back to a
+     * songId match for reporter-supplied ids.
+     * @param value
+     */
+    _songByMenuValue (value) {
+        const v = Cast.toString(value);
+        if (!v) return null;
+        for (const s of this._songs()) {
+            if (s.name === v) return s;
+        }
+        for (const s of this._songs()) {
+            if (s.songId === v) return s;
+        }
+        return null;
+    }
+
+    // Tracks of the ACTIVE song — what play/stop/param blocks act on. The
+    // TRACK menus list a union of names across all songs (see getInfo), but
+    // resolution always happens here, so a name the active song doesn't have
+    // silently no-ops.
     _tracks () {
         const s = this._song();
         return (s && s.tracks) || [];
+    }
+
+    /**
+     * Union of track display names across every song in the project, in song
+     * then track order, deduplicated. Menu values stay plain track names so
+     * single-song projects (and everything saved before multi-song) load
+     * unchanged — and so consistently-named tracks ("Drums", "Bass") make the
+     * same script drive any song after a `switch to song`.
+     */
+    _unionTrackNames () {
+        const names = [];
+        const seen = new Set();
+        for (const s of this._songs()) {
+            for (const t of (s.tracks || [])) {
+                const name = displayNameForTrack(t);
+                if (seen.has(name)) continue;
+                seen.add(name);
+                names.push(name);
+            }
+        }
+        return names;
     }
 
     _trackById (trackId) {
@@ -173,16 +235,21 @@ class Scratch3SongsBlocks {
     }
 
     getInfo () {
-        const tracks = this._tracks();
         // Menu values are the track's display name (not its trackId), so the
         // block always shows a human-readable label — the same pattern the
         // "switch costume to" block uses (see _trackByMenuValue for lookup).
+        // Names are a union across ALL songs; at runtime they resolve against
+        // the active song only (see _tracks / _trackByMenuValue).
+        const trackNames = this._unionTrackNames();
         const trackMenu = [{text: 'all tracks', value: ALL_TRACKS}];
-        for (const t of tracks) {
-            const name = displayNameForTrack(t);
+        for (const name of trackNames) {
             trackMenu.push({text: name, value: name});
         }
         const defaultTrack = trackMenu[0].value;
+        // SONG menu values are the song's name (unique — renameSong enforces
+        // it), matching how the backdrop menu stores backdrop names.
+        const songMenu = this._songs().map(s => ({text: s.name, value: s.name}));
+        const defaultSong = songMenu.length > 0 ? songMenu[0].value : '';
 
         return {
             id: 'songs',
@@ -229,6 +296,24 @@ class Scratch3SongsBlocks {
                     }),
                     arguments: {
                         TRACK: {type: ArgumentType.STRING, menu: 'TRACK', defaultValue: defaultTrack},
+                        WHEN: {type: ArgumentType.STRING, menu: 'WHEN', defaultValue: 'now'}
+                    }
+                },
+                {
+                    // Backdrop-style song switch: the new song becomes the one
+                    // every track block acts on. Tracks carry over BY NAME —
+                    // an active "Drums" keeps playing if the new song has a
+                    // "Drums" too — so consistently-named songs can be
+                    // switched mid-groove like verse/chorus scenes.
+                    opcode: 'switchToSong',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'songs.switchToSong',
+                        default: 'switch to song [SONG] [WHEN]',
+                        description: 'Make a different song the active one'
+                    }),
+                    arguments: {
+                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: defaultSong},
                         WHEN: {type: ArgumentType.STRING, menu: 'WHEN', defaultValue: 'now'}
                     }
                 },
@@ -370,9 +455,18 @@ class Scratch3SongsBlocks {
                         TRACK: {
                             type: ArgumentType.STRING,
                             menu: 'TRACK_NO_ALL',
-                            defaultValue: (tracks[0] && displayNameForTrack(tracks[0])) || ''
+                            defaultValue: trackNames[0] || ''
                         }
                     }
+                },
+                {
+                    opcode: 'getSongName',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'songs.getSongName',
+                        default: 'song name',
+                        description: 'Report the name of the active song'
+                    })
                 },
                 '---',
                 {
@@ -441,8 +535,30 @@ class Scratch3SongsBlocks {
                         TRACK: {
                             type: ArgumentType.STRING,
                             menu: 'TRACK_NO_ALL',
-                            defaultValue: (tracks[0] && displayNameForTrack(tracks[0])) || ''
+                            defaultValue: trackNames[0] || ''
                         }
+                    }
+                },
+                {
+                    opcode: 'whenSongSwitches',
+                    blockType: BlockType.HAT,
+                    // Fired explicitly from the playback's onSongSwitch callback
+                    // when a switch is APPLIED (immediately for 'now', at the
+                    // loop boundary for 'at next loop') — block-driven playback
+                    // only, like the other song hats. Restart matches the
+                    // backdrop hat's semantics: a fresh switch re-triggers a
+                    // still-running script. Only one switch happens per
+                    // startHats call, so restart can't clobber another song's
+                    // thread the way whenTrackPlaysNote's per-note fan-out could.
+                    isEdgeActivated: false,
+                    shouldRestartExistingThreads: true,
+                    text: formatMessage({
+                        id: 'songs.whenSongSwitches',
+                        default: 'when song switches to [SONG]',
+                        description: 'Hat — fires when the active song switches to the chosen one'
+                    }),
+                    arguments: {
+                        SONG: {type: ArgumentType.STRING, menu: 'SONG', defaultValue: defaultSong}
                     }
                 }
             ],
@@ -450,12 +566,13 @@ class Scratch3SongsBlocks {
                 TRACK: {acceptReporters: true, items: trackMenu},
                 TRACK_NO_ALL: {
                     acceptReporters: true,
-                    items: tracks.length > 0 ?
-                        tracks.map(t => {
-                            const name = displayNameForTrack(t);
-                            return {text: name, value: name};
-                        }) :
+                    items: trackNames.length > 0 ?
+                        trackNames.map(name => ({text: name, value: name})) :
                         [{text: '—', value: ''}]
+                },
+                SONG: {
+                    acceptReporters: true,
+                    items: songMenu.length > 0 ? songMenu : [{text: '—', value: ''}]
                 },
                 WHEN: {
                     acceptReporters: false,
@@ -531,6 +648,13 @@ class Scratch3SongsBlocks {
         const ids = this._resolveTrackIds(args.TRACK);
         if (ids.length === 0) return;
         this.runtime.songPlayback.setTracksActive(ids, false, when);
+    }
+
+    switchToSong (args) {
+        const when = Cast.toString(args.WHEN) === 'loop' ? 'loop' : 'now';
+        const song = this._songByMenuValue(args.SONG);
+        if (!song) return;
+        this.runtime.songPlayback.switchToSong(song.songId, when);
     }
 
     // Block writes never mutate runtime.song — they go through the playback's
@@ -690,6 +814,11 @@ class Scratch3SongsBlocks {
         return typeof pitch === 'number' ? pitch : 0;
     }
 
+    getSongName () {
+        const song = this._song();
+        return (song && song.name) || '';
+    }
+
     // Edge-activated: returns whether the selected counter has reached N. beat
     // and bar reset each loop (so this re-arms per loop); the loop counter is
     // cumulative (so it fires once per run).
@@ -715,6 +844,14 @@ class Scratch3SongsBlocks {
         const track = this._trackByMenuValue(args.TRACK);
         if (!track) return false;
         return track.trackId === this._currentNoteTrackId;
+    }
+
+    whenSongSwitches (args) {
+        // args.SONG is a song name; compare the resolved songId against the
+        // song the transport just switched to.
+        const song = this._songByMenuValue(args.SONG);
+        if (!song) return false;
+        return song.songId === this._currentSwitchSongId;
     }
 }
 

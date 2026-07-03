@@ -1,4 +1,5 @@
 const SongScheduler = require('./scheduler');
+const {displayNameForTrack} = require('./song-defaults');
 const {getTrackSynth} = require('./synth-defaults');
 const {buildPercussionVoice} = require('./synth-drum-voice');
 const {midiToFreq} = require('./scheduler');
@@ -107,12 +108,13 @@ class SongPlayback {
         this._rootPitchOverride = null;
         this._scaleTypeOverride = null;
         // Editor library preview: when previewing a not-yet-added track/section
-        // we temporarily swap runtime.song to a detached preview song WITHOUT
-        // emitting project/SONGS events, then restore it on stop/end. This lets
-        // the existing scheduler (which reads runtime.song) render the preview
-        // without dirtying the project or the editor's song state.
+        // we play a detached preview song held here (NOT written into
+        // runtime.songs — with multiple songs the runtime list is the saved
+        // project, so a swap would corrupt it). Everything that needs "the
+        // song being played" goes through _currentSong(), which prefers the
+        // preview when one is in flight.
         this._previewing = false;
-        this._previewRestoreSong = null;
+        this._previewSong = null;
         this._ensureMusicLoaded();
         runtime.on('PROJECT_STOP_ALL', () => this.stop());
     }
@@ -121,8 +123,30 @@ class SongPlayback {
         return !!(this._scheduler && this._scheduler.isRunning());
     }
 
+    /**
+     * The song the transport plays (or would play if started now): the
+     * detached library-preview song when one is in flight, else the project's
+     * active song.
+     * @returns {?object}
+     */
+    _currentSong () {
+        return this._previewSong || this.runtime.song;
+    }
+
     activeTrackIds () {
         return this._scheduler ? this._scheduler.activeTrackIds() : [];
+    }
+
+    /**
+     * The songId of the song the transport is currently playing, or null when
+     * idle. Note this can differ from runtime.song's id — the scheduler keeps
+     * its own reference (e.g. a detached library preview, or editor CRUD that
+     * moved the selection mid-playback).
+     * @returns {?string}
+     */
+    playingSongId () {
+        if (!this.isPlaying()) return null;
+        return (this._scheduler.song && this._scheduler.song.songId) || null;
     }
 
     /**
@@ -151,8 +175,9 @@ class SongPlayback {
 
     /**
      * Register hat-block callbacks. The extension calls this once at startup;
-     * the scheduler picks them up the next time it is built.
-     * @param {object} callbacks - {onBeat, onNote}
+     * the scheduler picks them up the next time it is built. `onSongSwitch`
+     * is dispatched directly from switchToSong when a switch is applied.
+     * @param {object} callbacks - {onBeat, onNote, onLoop, onSongSwitch}
      */
     setHatCallbacks (callbacks) {
         this._hatCallbacks = callbacks || {};
@@ -166,7 +191,7 @@ class SongPlayback {
             ctx.resume().catch(() => {});
         }
         this._ensureMusicLoaded();
-        const song = this.runtime.song;
+        const song = this._currentSong();
         if (!song) return null;
         const hat = this._hatCallbacks;
         this._scheduler = new SongScheduler({
@@ -178,7 +203,7 @@ class SongPlayback {
             tempoOverride: this._tempoOverride === null ? void 0 : this._tempoOverride,
             rootPitchOverride: this._rootPitchOverride,
             scaleTypeOverride: this._scaleTypeOverride,
-            onStart: () => this._fire('start', this.runtime.song),
+            onStart: () => this._fire('start', this._currentSong()),
             onStep: (step, time) => this._fire('step', step, time),
             // Only dispatch hat callbacks for block-driven playback — an editor
             // preview shares this transport but must not fire the user's `when
@@ -193,7 +218,7 @@ class SongPlayback {
                 if (this._blockDriven && hat.onLoop) hat.onLoop(iter);
             },
             onEnd: () => {
-                const endedSong = this.runtime.song;
+                const endedSong = this._currentSong();
                 this._scheduler = null;
                 this._endPreview();
                 this._fire('end', endedSong);
@@ -264,7 +289,8 @@ class SongPlayback {
         this._blockDriven = false;
         const sched = this._ensureScheduler();
         if (!sched) return;
-        const tracks = (this.runtime.song && this.runtime.song.tracks) || [];
+        const song = this._currentSong();
+        const tracks = (song && song.tracks) || [];
         sched.start({
             startStep: (opts && opts.startStep) || 0,
             activeTracks: tracks.map(t => t.trackId)
@@ -272,30 +298,25 @@ class SongPlayback {
     }
 
     /**
-     * Play a detached song (not runtime.song) for editor library preview. The
-     * supplied song is swapped into runtime.song WITHOUT emitting project /
-     * SONGS_CHANGED events, every track activated, and the original song
-     * restored when playback stops or ends. Mirrors playAll()'s teardown so it
-     * composes with any in-flight transport (editor preview or blocks).
+     * Play a detached song (not part of runtime.songs) for editor library
+     * preview. The supplied song is held in _previewSong — never written into
+     * the project's song list — with every track activated, and dropped when
+     * playback stops or ends. Mirrors playAll()'s teardown so it composes
+     * with any in-flight transport (editor preview or blocks).
      * @param {object} song - a fully-formed, playable song (see sanitizeSong).
      * @param {object} [opts] - {startStep?: number}
      */
     previewSong (song, opts) {
         if (!song) return;
         // Tear down the current transport first (synchronously fires onEnd,
-        // which restores any prior preview song and nulls the scheduler).
+        // which drops any prior preview song and nulls the scheduler).
         if (this._scheduler) {
             this._scheduler.stop();
-        }
-        // Capture the real song to restore later (only the first time — chained
-        // previews must not capture a preview song as the restore target).
-        if (!this._previewing) {
-            this._previewRestoreSong = this.runtime.song;
         }
         // Editor library preview: hats must not fire (see _blockDriven).
         this._blockDriven = false;
         this._previewing = true;
-        this.runtime.song = song;
+        this._previewSong = song;
         const sched = this._ensureScheduler();
         if (!sched) {
             this._endPreview();
@@ -307,12 +328,102 @@ class SongPlayback {
         });
     }
 
-    /** Restore the real song after a library preview. Idempotent. */
+    /** Drop the detached preview song after a library preview. Idempotent. */
     _endPreview () {
         if (!this._previewing) return;
         this._previewing = false;
-        this.runtime.song = this._previewRestoreSong || null;
-        this._previewRestoreSong = null;
+        this._previewSong = null;
+    }
+
+    /**
+     * Switch the active song — the backdrop-style block (`switch to song`)
+     * and the editor's song selector both land here. Selection state
+     * (runtime.activeSongIndex) always updates; when the shared transport is
+     * running, the audio switches too, carrying over active tracks BY DISPLAY
+     * NAME: a playing "Drums" keeps playing if the new song also has a track
+     * named "Drums", and non-matching tracks stop. If nothing carries over,
+     * the transport idles out naturally.
+     *
+     * `when` follows playTrack's pattern: 'now' switches immediately; 'loop'
+     * defers to the next loop boundary so the transition lands in musical
+     * phase (collapsed to 'now' when the transport is idle — no boundary to
+     * wait for). Block-driven param overrides are intentionally left alone:
+     * they're keyed by trackId, so they simply stop matching until you switch
+     * back (cleared, as always, on green-flag stop). Tempo/key overrides are
+     * song-agnostic and persist across the switch.
+     * @param {string} songId The songId of the song to switch to.
+     * @param {string} [when] - 'now' or 'loop'
+     */
+    switchToSong (songId, when = 'now') {
+        const runtime = this.runtime;
+        const index = runtime.songs.findIndex(s => s.songId === songId);
+        if (index === -1) return;
+        const newSong = runtime.songs[index];
+
+        const applySwitch = () => {
+            runtime.activeSongIndex = index;
+            runtime.emit('ACTIVE_SONG_CHANGED');
+            // Hat blocks (`when song switches to …`) fire only for
+            // block-driven playback, like every other song hat.
+            if (this._blockDriven && this._hatCallbacks.onSongSwitch) {
+                this._hatCallbacks.onSongSwitch(newSong);
+            }
+        };
+
+        // A library preview transport plays a detached song — stop it rather
+        // than trying to "switch" a song that isn't in the project.
+        if (this._previewing && this._scheduler) {
+            this._scheduler.stop();
+        }
+
+        const sched = this._scheduler;
+        if (!sched || !sched.isRunning()) {
+            if (index !== runtime.activeSongIndex) applySwitch();
+            return;
+        }
+        if (index === runtime.activeSongIndex) return;
+
+        if (when === 'loop') {
+            // Carried tracks are resolved at APPLY time from the then-current
+            // active set (and the then-current old song reference), so tracks
+            // played/stopped between now and the boundary are honored.
+            sched.scheduleSongSwitch(
+                newSong,
+                () => this._carryTracksByName(sched.song, newSong, sched.activeTrackIds()),
+                applySwitch
+            );
+            return;
+        }
+        const carried = this._carryTracksByName(sched.song, newSong, sched.activeTrackIds());
+        sched.switchSong(newSong, carried, this._audioContext().currentTime);
+        applySwitch();
+    }
+
+    /**
+     * Map active track ids in `fromSong` to the ids of same-display-name
+     * tracks in `toSong` — the carry-over-by-name rule for song switches.
+     * First name match wins when a song has duplicate display names.
+     * @param {object} fromSong
+     * @param {object} toSong
+     * @param {Array.<string>} activeIds
+     * @returns {Array.<string>} track ids in `toSong` to keep active.
+     */
+    _carryTracksByName (fromSong, toSong, activeIds) {
+        const nameById = new Map(
+            ((fromSong && fromSong.tracks) || []).map(t => [t.trackId, displayNameForTrack(t)])
+        );
+        const idByName = new Map();
+        for (const t of ((toSong && toSong.tracks) || [])) {
+            const name = displayNameForTrack(t);
+            if (!idByName.has(name)) idByName.set(name, t.trackId);
+        }
+        const carried = [];
+        for (const id of activeIds || []) {
+            const name = nameById.get(id);
+            const newTrackId = typeof name === 'string' && idByName.get(name);
+            if (newTrackId) carried.push(newTrackId);
+        }
+        return carried;
     }
 
     /** Immediately stop the transport and tear down all audio nodes. */
@@ -336,12 +447,17 @@ class SongPlayback {
     }
 
     /**
-     * Push an updated song reference (live editing).
+     * Push an updated song reference (live editing). Only forwarded when the
+     * scheduler is actually playing that song — edits to a non-playing song
+     * (or during a detached library preview) must not clobber the transport's
+     * song reference.
      * @param song
      */
     updateSong (song) {
         if (!song) return;
-        if (this._scheduler && this._scheduler.updateSong) {
+        if (this._previewing) return;
+        if (this._scheduler && this._scheduler.updateSong &&
+            this._scheduler.song && this._scheduler.song.songId === song.songId) {
             this._scheduler.updateSong(song);
         }
     }
@@ -473,7 +589,8 @@ class SongPlayback {
      */
     getTempo () {
         if (this._tempoOverride !== null) return this._tempoOverride;
-        return (this.runtime.song && this.runtime.song.tempo) || 120;
+        const song = this._currentSong();
+        return (song && song.tempo) || 120;
     }
 
     /**
@@ -483,12 +600,14 @@ class SongPlayback {
      */
     getRootPitch () {
         if (this._rootPitchOverride !== null) return this._rootPitchOverride;
-        const root = this.runtime.song && this.runtime.song.rootPitch;
+        const song = this._currentSong();
+        const root = song && song.rootPitch;
         return (typeof root === 'number') ? root : 60;
     }
 
     _trackById (trackId) {
-        for (const t of ((this.runtime.song && this.runtime.song.tracks) || [])) {
+        const song = this._currentSong();
+        for (const t of ((song && song.tracks) || [])) {
             if (t.trackId === trackId) return t;
         }
         return null;

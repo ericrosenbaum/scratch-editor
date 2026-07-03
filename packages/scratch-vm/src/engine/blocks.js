@@ -1019,6 +1019,8 @@ class Blocks {
             getAssetField = this._getSpriteField.bind(this);
         } else if (assetType === 'track') {
             getAssetField = this._getTrackField.bind(this);
+        } else if (assetType === 'song') {
+            getAssetField = this._getSongField.bind(this);
         } else {
             return;
         }
@@ -1144,6 +1146,22 @@ class Blocks {
         }
         if (Object.prototype.hasOwnProperty.call(block.fields, 'TRACK_NO_ALL')) {
             return block.fields.TRACK_NO_ALL;
+        }
+        return null;
+    }
+
+    /**
+     * Helper function to retrieve a song menu field from a block given its
+     * id. The Songs extension's SONG menu stores the song's name (the way
+     * TRACK menus store track display names) — used by `switch to song` and
+     * the `when song switches to` hat.
+     * @param {string} blockId A unique identifier for a block
+     * @returns {?object} The song menu field of the block, or null if none.
+     */
+    _getSongField (blockId) {
+        const block = this.getBlock(blockId);
+        if (block && Object.prototype.hasOwnProperty.call(block.fields, 'SONG')) {
+            return block.fields.SONG;
         }
         return null;
     }

@@ -84,6 +84,9 @@ class SongScheduler {
         // Pending activate/deactivate changes to apply at the next loop
         // boundary. Map<trackId, boolean>. Last write wins.
         this._pendingTrackChanges = new Map();
+        // Pending song switch to apply at the next loop boundary:
+        // {newSong, getCarriedIds, onApplied} or null. Last write wins.
+        this._pendingSongSwitch = null;
 
         // Per-track FX chains, keyed by trackId. Built lazily on first note of
         // a track so empty / muted tracks cost nothing.
@@ -597,6 +600,91 @@ class SongScheduler {
     }
 
     /**
+     * Cancel every source scheduled to start at or after `ctxTime`, on any
+     * track. Used by song switches: the ≤0.1s lookahead may already have
+     * enqueued the OLD song's notes past the switch boundary (at a loop wrap,
+     * the first slice of its next iteration is in flight). Sources already
+     * sounding before the boundary are left to ring out naturally.
+     * @param {number} ctxTime - context-time boundary.
+     */
+    _cancelScheduledFrom (ctxTime) {
+        const boundary = ctxTime - 0.001;
+        for (let i = this._activeSources.length - 1; i >= 0; i--) {
+            const src = this._activeSources[i];
+            if (typeof src._scheduledStart === 'number' && src._scheduledStart >= boundary) {
+                try {
+                    src.stop();
+                    src.disconnect();
+                } catch (e) { /* already stopped */ }
+                this._activeSources.splice(i, 1);
+            }
+        }
+    }
+
+    /**
+     * Swap the transport to a different song WITHOUT stopping it — the core
+     * of the `switch to song` block. The boundary `tB` becomes step 0 of the
+     * new song's first iteration, so a 'now' switch (tB ≈ now) restarts the
+     * musical timeline immediately and a quantized switch (tB = the loop
+     * wrap) lands exactly in phase. The new song's tempo / length / key flow
+     * automatically: secondsPerStep and iterDuration derive from `this.song`,
+     * and the re-anchor mirrors setTempoOverride's (which see for why a bare
+     * reference swap would strand the playhead).
+     *
+     * Track chains are intentionally left in place: carried tracks have NEW
+     * trackIds (carry-over maps by display name), so their chains lazily
+     * build with the new song's baseline volume/effects, and orphaned old
+     * chains are torn down at stop() like any other.
+     * @param {object} newSong - the song to switch to.
+     * @param {Array.<string>} carriedTrackIds - trackIds IN THE NEW SONG to
+     *   keep active (see SongPlayback._carryTracksByName). Empty = the
+     *   transport idles out naturally.
+     * @param {number} [boundaryCtxTime] - ctx time of the switch boundary;
+     *   defaults to now. May be slightly in the past at a loop wrap (wrap
+     *   detection lags ≤ one 25ms tick); past-scheduled sources start
+     *   immediately, the same accuracy class as the existing 'now' paths.
+     */
+    switchSong (newSong, carriedTrackIds, boundaryCtxTime) {
+        if (!newSong) return;
+        const now = this.audioContext.currentTime;
+        const tB = typeof boundaryCtxTime === 'number' ? boundaryCtxTime : now;
+        this._cancelScheduledFrom(tB);
+        this.song = newSong;
+        this._activeTracks = new Set(carriedTrackIds || []);
+        this._pendingTrackChanges.clear();
+        // Last write wins: an immediate switch supersedes any still-pending
+        // quantized one.
+        this._pendingSongSwitch = null;
+        this._lastPitchByTrack.clear();
+        // Re-anchor: tB is the start of iteration 0 of the new song. Resume
+        // scheduling from the boundary — floored just below `now` so a
+        // late-detected wrap doesn't burst a backlog of stale notes (a
+        // backgrounded tab can lag wrap detection by ~1s).
+        this._iter = 0;
+        this._startCtxTime = tB;
+        this._enqueuedThroughCtxTime = Math.max(tB, now - 0.05);
+        this._lastStepFiredAt = -1;
+        this._nextBeatToFire = 0;
+        this._notes = this._flattenNotes();
+    }
+
+    /**
+     * Defer a song switch to the next loop boundary (the `at next loop` case
+     * of the `switch to song` block). Last write wins if called again before
+     * the wrap. Carried track ids are resolved at APPLY time via
+     * `getCarriedIds` so play/stop blocks between now and the boundary are
+     * honored; `onApplied` runs right after the swap (the playback layer uses
+     * it to update the active-song selection and fire the switch hat).
+     * @param {object} newSong
+     * @param {function} getCarriedIds - () => Array<string>
+     * @param {function} [onApplied]
+     */
+    scheduleSongSwitch (newSong, getCarriedIds, onApplied) {
+        if (!newSong) return;
+        this._pendingSongSwitch = {newSong, getCarriedIds, onApplied};
+    }
+
+    /**
      * Swap in a new song reference and re-flatten the note list. Used by the
      * editor so edits made during one loop iteration are heard in the next.
      * If track set changed (e.g. tracks added/removed), prune stale entries
@@ -692,6 +780,7 @@ class SongScheduler {
         this._volumeCache = {};
         this._activeTracks.clear();
         this._pendingTrackChanges.clear();
+        this._pendingSongSwitch = null;
         this._lastPitchByTrack.clear();
         if (!this._ended) {
             this._ended = true;
@@ -713,12 +802,31 @@ class SongScheduler {
         // Loop wraps based on audible position.
         const iterNow = Math.max(0, Math.floor((now - this._startCtxTime) / iterDuration));
         if (iterNow > this._iter) {
+            if (this._pendingSongSwitch) {
+                // Apply a quantized song switch AT the wrap. The boundary is
+                // computed with the OLD song's math before anything mutates,
+                // then the rest of this tick is skipped: every local above
+                // (sps, iterDuration, length) is stale once the song swaps,
+                // and letting the tick continue would schedule old-song notes
+                // and beats. The next tick (≤25ms out, well inside the 0.1s
+                // lookahead) resumes cleanly from the new anchor.
+                const pending = this._pendingSongSwitch;
+                this._pendingSongSwitch = null;
+                const boundary = this._startCtxTime + (iterNow * iterDuration);
+                const carried = pending.getCarriedIds ? pending.getCarriedIds() : [];
+                this.switchSong(pending.newSong, carried, boundary);
+                if (pending.onApplied) pending.onApplied();
+                return;
+            }
             this._onLoopWrap(iterNow);
         }
 
-        // Idle-out when nothing is active and no pending work remains.
+        // Idle-out when nothing is active and no pending work remains. A
+        // pending song switch counts as pending work — the transport must
+        // survive to the boundary so the switch (and its hat) still applies.
         if (this._activeTracks.size === 0 &&
             this._pendingTrackChanges.size === 0 &&
+            !this._pendingSongSwitch &&
             this._activeSources.length === 0) {
             // Defer to next tick to give onStep a final flush, then halt.
             this._started = false;

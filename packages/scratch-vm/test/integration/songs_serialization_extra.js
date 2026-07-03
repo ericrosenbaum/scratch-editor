@@ -70,7 +70,7 @@ const assertSongIntact = (t, song, label) => {
 tap.test('load → runtime.song carries the full schema (singular project song)', t => {
     const vm = makeVm();
     vm.loadProject(JSON.stringify(project)).then(() => {
-        t.notOk(vm.runtime.songs, 'no legacy plural runtime.songs array');
+        t.equal(vm.runtime.songs.length, 1, 'songs list holds the one song');
         assertSongIntact(t, vm.runtime.song, 'load');
         t.end();
     })
@@ -79,15 +79,15 @@ tap.test('load → runtime.song carries the full schema (singular project song)'
         });
 });
 
-tap.test('JSON serialize emits a top-level song with effects + key/scale', t => {
+tap.test('JSON serialize emits top-level songs with effects + key/scale', t => {
     const vm = makeVm();
     vm.loadProject(JSON.stringify(project)).then(() => {
         const serialized = JSON.parse(vm.toJSON());
-        t.ok(serialized.song, 'top-level song object emitted');
-        t.notOk(Array.isArray(serialized.songs), 'no legacy songs[] array emitted');
+        t.ok(Array.isArray(serialized.songs), 'top-level songs array emitted');
+        t.notOk(serialized.song, 'no legacy singular song emitted');
         const targetHasSong = serialized.targets.some(tg => tg.song || Array.isArray(tg.songs));
         t.notOk(targetHasSong, 'no target carries song data');
-        assertSongIntact(t, serialized.song, 'serialized');
+        assertSongIntact(t, serialized.songs[0], 'serialized');
         t.end();
     })
         .catch(e => {
@@ -134,7 +134,7 @@ tap.test('effects survive save when set on every track kind (regression)', t => 
     const vm = makeVm();
     vm.loadProject(JSON.stringify(project)).then(() => {
         const serialized = JSON.parse(vm.toJSON());
-        for (const track of serialized.song.tracks) {
+        for (const track of serialized.songs[0].tracks) {
             t.ok(track.effects, `track ${track.trackId} retains its effects bag after serialize`);
         }
         t.end();

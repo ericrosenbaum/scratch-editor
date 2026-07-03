@@ -54,13 +54,16 @@ test('Song Maker: vm.setSong stores the project song on runtime.song', t => {
         t.ok(song, 'song stored on runtime');
         t.equal(song.name, 'Beat 1', 'name correct');
         t.equal(song.tracks.length, 2, 'two tracks');
+        t.equal(vm.runtime.songs.length, 1, 'song list holds the one song');
+        t.equal(vm.runtime.songs[0], song, 'active song is the stored one');
         t.notOk(vm.editingTarget.sprite.songs,
             'sprite does not carry a songs array');
         t.end();
-    }).catch(err => {
-        t.fail(err.message);
-        t.end();
-    });
+    })
+        .catch(err => {
+            t.fail(err.message);
+            t.end();
+        });
 });
 
 test('Song Maker: sb3 round-trip preserves the project song', t => {
@@ -69,9 +72,11 @@ test('Song Maker: sb3 round-trip preserves the project song', t => {
         vm.runtime.song = sampleSong();
 
         const serialized = sb3.serialize(vm.runtime);
-        t.ok(serialized.song, 'project-level song object present');
-        t.notOk(Array.isArray(serialized.songs), 'no legacy songs array emitted');
-        const song = serialized.song;
+        t.ok(Array.isArray(serialized.songs), 'project-level songs array present');
+        t.equal(serialized.songs.length, 1, 'one song emitted');
+        t.equal(serialized.activeSongIndex, 0, 'active song index emitted');
+        t.notOk(serialized.song, 'no legacy singular song emitted');
+        const song = serialized.songs[0];
         t.equal(song.tempo, 90, 'tempo preserved');
         t.equal(song.tracks[0].notes.length, 2, 'piano notes preserved');
         t.equal(song.tracks[1].notes.length, 2, 'drum notes preserved');
@@ -96,10 +101,11 @@ test('Song Maker: sb3 round-trip preserves the project song', t => {
             t.equal(vm2.runtime.song.tracks[1].name, 'Beatz', 'drum track name round-trips');
             t.end();
         });
-    }).catch(err => {
-        t.fail(err.message);
-        t.end();
-    });
+    })
+        .catch(err => {
+            t.fail(err.message);
+            t.end();
+        });
 });
 
 test('Song Maker: sb3 round-trip preserves a synthDrum track (lanes, voices, notes)', t => {
@@ -133,7 +139,7 @@ test('Song Maker: sb3 round-trip preserves a synthDrum track (lanes, voices, not
         };
 
         const serialized = sb3.serialize(vm.runtime);
-        const track = serialized.song.tracks[0];
+        const track = serialized.songs[0].tracks[0];
         t.equal(track.kind, 'synthDrum', 'synthDrum kind preserved');
         t.same(track.drumLanes, [1, 2, 3], 'drumLanes preserved');
         t.ok(track.drumVoices, 'drumVoices present');
@@ -151,16 +157,64 @@ test('Song Maker: sb3 round-trip preserves a synthDrum track (lanes, voices, not
             t.equal(rt.notes[2].drum, 3, 'per-note drum round-trips');
             t.end();
         });
-    }).catch(err => {
-        t.fail(err.message);
-        t.end();
-    });
+    })
+        .catch(err => {
+            t.fail(err.message);
+            t.end();
+        });
 });
 
-test('Song Maker: sb3 deserialize migrates legacy multi-song format (first wins)', t => {
+test('Song Maker: sb3 round-trip preserves multiple songs and the active index', t => {
     const vm = new VirtualMachine();
     loadDefaultProject(vm).then(() => {
-        // Hand-craft a legacy serialized form with a top-level songs[] array.
+        vm.runtime.songs = [
+            sampleSong(),
+            Object.assign(sampleSong(), {songId: 'second', name: 'Beat 2'})
+        ];
+        vm.runtime.activeSongIndex = 1;
+
+        const serialized = sb3.serialize(vm.runtime);
+        t.equal(serialized.songs.length, 2, 'both songs serialized');
+        t.equal(serialized.activeSongIndex, 1, 'active index serialized');
+
+        const vm2 = new VirtualMachine();
+        sb3.deserialize(serialized, vm2.runtime).then(() => {
+            t.equal(vm2.runtime.songs.length, 2, 'both songs round-trip');
+            t.equal(vm2.runtime.activeSongIndex, 1, 'active index round-trips');
+            t.equal(vm2.runtime.song.songId, 'second', 'active song is the second one');
+            t.equal(vm2.runtime.songs[0].name, 'Beat 1', 'first song content preserved');
+            t.end();
+        });
+    })
+        .catch(err => {
+            t.fail(err.message);
+            t.end();
+        });
+});
+
+test('Song Maker: sb3 deserialize clamps an out-of-range activeSongIndex', t => {
+    const vm = new VirtualMachine();
+    loadDefaultProject(vm).then(() => {
+        const serialized = sb3.serialize(vm.runtime);
+        serialized.songs = [sampleSong()];
+        serialized.activeSongIndex = 7;
+
+        const vm2 = new VirtualMachine();
+        sb3.deserialize(serialized, vm2.runtime).then(() => {
+            t.equal(vm2.runtime.activeSongIndex, 0, 'index clamped into range');
+            t.ok(vm2.runtime.song, 'active song resolves');
+            t.end();
+        });
+    })
+        .catch(err => {
+            t.fail(err.message);
+            t.end();
+        });
+});
+
+test('Song Maker: sb3 deserialize keeps every song from a multi-song project', t => {
+    const vm = new VirtualMachine();
+    loadDefaultProject(vm).then(() => {
         const serialized = sb3.serialize(vm.runtime);
         delete serialized.song;
         serialized.songs = [
@@ -170,15 +224,39 @@ test('Song Maker: sb3 deserialize migrates legacy multi-song format (first wins)
 
         const vm2 = new VirtualMachine();
         sb3.deserialize(serialized, vm2.runtime).then(() => {
-            t.ok(vm2.runtime.song, 'song hoisted to runtime');
-            t.equal(vm2.runtime.song.songId, 'song-abc', 'first song wins');
+            t.equal(vm2.runtime.songs.length, 2, 'both songs kept');
+            t.equal(vm2.runtime.song.songId, 'song-abc', 'first song active by default');
             t.equal(vm2.runtime.song.name, 'Beat 1', 'song content preserved');
             t.end();
         });
-    }).catch(err => {
-        t.fail(err.message);
-        t.end();
-    });
+    })
+        .catch(err => {
+            t.fail(err.message);
+            t.end();
+        });
+});
+
+test('Song Maker: sb3 deserialize migrates legacy singular song', t => {
+    const vm = new VirtualMachine();
+    loadDefaultProject(vm).then(() => {
+        // Hand-craft the pre-multi-song serialized form: a single top-level
+        // `song` object and no `songs[]` array.
+        const serialized = sb3.serialize(vm.runtime);
+        delete serialized.songs;
+        delete serialized.activeSongIndex;
+        serialized.song = sampleSong();
+
+        const vm2 = new VirtualMachine();
+        sb3.deserialize(serialized, vm2.runtime).then(() => {
+            t.equal(vm2.runtime.songs.length, 1, 'song hoisted into the songs list');
+            t.equal(vm2.runtime.song.songId, 'song-abc', 'song is active');
+            t.end();
+        });
+    })
+        .catch(err => {
+            t.fail(err.message);
+            t.end();
+        });
 });
 
 test('Song Maker: sb3 deserialize migrates legacy per-sprite songs', t => {
@@ -186,6 +264,7 @@ test('Song Maker: sb3 deserialize migrates legacy per-sprite songs', t => {
     loadDefaultProject(vm).then(() => {
         const serialized = sb3.serialize(vm.runtime);
         delete serialized.song;
+        delete serialized.songs;
         // Older builds put songs on a target as a `.songs` array.
         const firstSprite = serialized.targets.find(tt => !tt.isStage);
         firstSprite.songs = [sampleSong()];
@@ -197,10 +276,11 @@ test('Song Maker: sb3 deserialize migrates legacy per-sprite songs', t => {
             t.notOk(firstSprite.songs, 'legacy field stripped from target');
             t.end();
         });
-    }).catch(err => {
-        t.fail(err.message);
-        t.end();
-    });
+    })
+        .catch(err => {
+            t.fail(err.message);
+            t.end();
+        });
 });
 
 test('Song Maker: Songs extension getInfo returns the new block set', t => {
@@ -209,7 +289,8 @@ test('Song Maker: Songs extension getInfo returns the new block set', t => {
     class FakeRuntime {
         constructor () {
             this.targets = [];
-            this.song = null;
+            this.songs = [];
+            this.activeSongIndex = 0;
             this.extensionManager = {
                 isExtensionLoaded: () => false,
                 loadExtensionIdSync: () => null
@@ -221,10 +302,19 @@ test('Song Maker: Songs extension getInfo returns the new block set', t => {
                 on: () => {}
             };
         }
-        get songPlayback () { return this._songPlayback; }
-        on (e, fn) { (this._handlers[e] = this._handlers[e] || []).push(fn); }
+        get songPlayback () {
+            return this._songPlayback;
+        }
+        get song () {
+            return this.songs[this.activeSongIndex] || null;
+        }
+        on (e, fn) {
+            (this._handlers[e] = this._handlers[e] || []).push(fn);
+        }
         emit () { /* no-op */ }
-        getEditingTarget () { return null; }
+        getEditingTarget () {
+            return null;
+        }
     }
 
     const runtime = new FakeRuntime();
@@ -233,11 +323,11 @@ test('Song Maker: Songs extension getInfo returns the new block set', t => {
     t.equal(info.id, 'songs', 'extension id correct');
     const opcodes = info.blocks.map(b => b.opcode);
     for (const op of [
-        'playTrack', 'stopTrack',
+        'playTrack', 'stopTrack', 'switchToSong',
         'changeTrackParam', 'setTrackParam', 'restForBeats',
         'setSongTempo', 'changeTempoBy', 'setSongKey', 'changeKeyBy',
-        'getTempo', 'getCurrentBeat', 'getCurrentBar', 'getLoopCount', 'getCurrentNote',
-        'whenEach', 'whenCounterReaches', 'whenTrackPlaysNote'
+        'getTempo', 'getCurrentBeat', 'getCurrentBar', 'getLoopCount', 'getCurrentNote', 'getSongName',
+        'whenEach', 'whenCounterReaches', 'whenTrackPlaysNote', 'whenSongSwitches'
     ]) {
         t.ok(opcodes.indexOf(op) >= 0, `has ${op} block`);
     }
@@ -249,8 +339,77 @@ test('Song Maker: Songs extension getInfo returns the new block set', t => {
     t.equal(opcodes.indexOf('whenBeatCounterReaches'), -1, 'whenBeatCounterReaches folded into whenCounterReaches');
     t.equal(opcodes.indexOf('whenLoopCounterReaches'), -1, 'whenLoopCounterReaches folded into whenCounterReaches');
     const hats = info.blocks.filter(b => b.blockType === 'hat');
-    t.equal(hats.length, 3,
-        'three hat blocks (whenEach, whenCounterReaches, whenTrackPlaysNote)');
+    t.equal(hats.length, 4,
+        'four hat blocks (whenEach, whenCounterReaches, whenTrackPlaysNote, whenSongSwitches)');
+    t.end();
+});
+
+test('Song Maker: TRACK menus union track names across songs; SONG menu lists songs', t => {
+    const Scratch3SongsBlocks = require('../../src/extensions/scratch3_songs');
+
+    class FakeRuntime {
+        constructor () {
+            this.targets = [];
+            this.songs = [
+                {
+                    songId: 's1',
+                    name: 'Verse',
+                    tracks: [
+                        {trackId: 'a', kind: 'drum', name: 'Drums'},
+                        {trackId: 'b', kind: 'instrument', instrument: 6, name: 'Bass'}
+                    ]
+                },
+                {
+                    songId: 's2',
+                    name: 'Chorus',
+                    tracks: [
+                        {trackId: 'c', kind: 'drum', name: 'Drums'},
+                        {trackId: 'd', kind: 'instrument', instrument: 1, name: 'Lead'}
+                    ]
+                }
+            ];
+            this.activeSongIndex = 0;
+            this.extensionManager = {
+                isExtensionLoaded: () => false,
+                loadExtensionIdSync: () => null
+            };
+            this.audioEngine = null;
+            this._handlers = {};
+            this._songPlayback = {
+                setHatCallbacks: () => {},
+                on: () => {}
+            };
+        }
+        get songPlayback () {
+            return this._songPlayback;
+        }
+        get song () {
+            return this.songs[this.activeSongIndex] || null;
+        }
+        on (e, fn) {
+            (this._handlers[e] = this._handlers[e] || []).push(fn);
+        }
+        emit () { /* no-op */ }
+        getEditingTarget () {
+            return null;
+        }
+    }
+
+    const runtime = new FakeRuntime();
+    const ext = new Scratch3SongsBlocks(runtime);
+    const info = ext.getInfo();
+    const trackValues = info.menus.TRACK.items.map(i => i.value);
+    t.same(trackValues, ['__all__', 'Drums', 'Bass', 'Lead'],
+        'TRACK menu is the deduped union across songs (song order)');
+    const songValues = info.menus.SONG.items.map(i => i.value);
+    t.same(songValues, ['Verse', 'Chorus'], 'SONG menu lists song names');
+    // Runtime resolution stays scoped to the ACTIVE song: "Lead" only exists
+    // in the inactive song, so it resolves to nothing (the block no-ops).
+    t.same(ext._resolveTrackIds('Lead'), [], 'name absent from active song resolves empty');
+    t.same(ext._resolveTrackIds('Drums'), ['a'], 'shared name resolves to the ACTIVE song\'s track');
+    runtime.activeSongIndex = 1;
+    t.same(ext._resolveTrackIds('Drums'), ['c'], 'after a switch the same name resolves in the new song');
+    t.same(ext._resolveTrackIds('Bass'), [], 'name only in the old song no longer resolves');
     t.end();
 });
 
@@ -304,7 +463,9 @@ test('Song Maker: scheduler schedules notes & fires beat callback for active tra
         onended: null
     });
     const audioCtx = {
-        get currentTime () { return currentTime; },
+        get currentTime () {
+            return currentTime;
+        },
         sampleRate: 44100,
         createBufferSource: stubBufferSource,
         createGain: stubGain,
@@ -386,7 +547,9 @@ test('Song Maker: inactive tracks are filtered out of the schedule', t => {
         onended: null
     });
     const audioCtx = {
-        get currentTime () { return currentTime; },
+        get currentTime () {
+            return currentTime;
+        },
         sampleRate: 44100,
         createBufferSource: stubBufferSource,
         createGain: stubGain,

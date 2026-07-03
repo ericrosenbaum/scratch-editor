@@ -183,7 +183,11 @@ class SongEditor extends React.Component {
 
     componentDidUpdate (prevProps) {
         if (prevProps.song && this.props.song && prevProps.song.songId !== this.props.song.songId) {
-            this.player.stop();
+            // Only stop a preview WE started. A `switch to song` block can
+            // change the active song while this editor is open — killing the
+            // block-driven transport (which just carried tracks over to the
+            // new song) would silence the user's own script.
+            if (this.player.isPlaying()) this.player.stop();
             const firstTrack = (this.props.song.tracks || [])[0];
             this.setState({
                 playing: false,

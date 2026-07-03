@@ -786,6 +786,23 @@ test('updateAssetName function updates name in song track fields', t => {
     t.end();
 });
 
+test('updateAssetName function updates name in song fields', t => {
+    const b = new Blocks(new Runtime());
+    b.createBlock({
+        id: 'switchBlock',
+        fields: {
+            SONG: {
+                name: 'SONG',
+                value: 'Verse'
+            }
+        }
+    });
+    t.equal(b.getBlock('switchBlock').fields.SONG.value, 'Verse');
+    b.updateAssetName('Verse', 'Chorus', 'song');
+    t.equal(b.getBlock('switchBlock').fields.SONG.value, 'Chorus');
+    t.end();
+});
+
 test('updateAssetName function updates name in all sprite fields', t => {
     const b = new Blocks(new Runtime());
     b.createBlock({

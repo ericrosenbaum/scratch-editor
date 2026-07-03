@@ -197,12 +197,22 @@ class Runtime extends EventEmitter {
         this.executableTargets = [];
 
         /**
-         * Project-level song (Song Maker). A single JSON object:
+         * Project-level songs (Song Maker). An array of JSON objects:
          * {songId, name, tempo, lengthSteps, stepsPerBeat, tracks: [...]}.
-         * Null until the editor or a loaded project populates it.
-         * @type {?object}
+         * Empty until the editor or a loaded project populates it. Exactly one
+         * song is "active" at a time (`activeSongIndex`) — the one the blocks
+         * play and the Song Maker edits, analogous to the stage's current
+         * backdrop. Read/write the active song via the `song` accessor.
+         * @type {Array.<object>}
          */
-        this.song = null;
+        this.songs = [];
+
+        /**
+         * Index into `songs` of the active song. Serialized with the project
+         * (like the current costume) and clamped on load.
+         * @type {number}
+         */
+        this.activeSongIndex = 0;
 
         /**
          * A list of threads that are currently running in the VM.
@@ -432,6 +442,36 @@ class Runtime extends EventEmitter {
             this._songPlayback = new SongPlayback(this);
         }
         return this._songPlayback;
+    }
+
+    /**
+     * The active song — the one the Songs blocks play and the Song Maker
+     * edits. Compatibility accessor over `songs`/`activeSongIndex` so the many
+     * single-song read sites (extension, scheduler, GUI) keep working.
+     * @returns {?object} The active song, or null when the project has none.
+     */
+    get song () {
+        return this.songs[this.activeSongIndex] || null;
+    }
+
+    /**
+     * Replace the active song (compatibility setter). Pushes when the project
+     * has no songs yet; `null` clears the whole list (pre-multi-song callers
+     * used null to mean "no song in this project").
+     * @param {?object} song The song object, or null to clear.
+     */
+    set song (song) {
+        if (!song) {
+            this.songs = [];
+            this.activeSongIndex = 0;
+            return;
+        }
+        if (this.songs.length === 0) {
+            this.songs = [song];
+            this.activeSongIndex = 0;
+            return;
+        }
+        this.songs[this.activeSongIndex] = song;
     }
 
     /**

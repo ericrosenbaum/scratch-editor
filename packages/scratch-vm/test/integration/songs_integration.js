@@ -50,7 +50,8 @@ tap.test('load → runtime.song is populated from the top-level project song', t
         t.equal(vm.runtime.song.name, 'Main Theme', 'song name preserved');
         t.equal(vm.runtime.song.tempo, 128, 'tempo preserved');
         t.equal(vm.runtime.song.tracks.length, 4, 'all tracks loaded');
-        t.notOk(vm.runtime.songs, 'no legacy plural runtime.songs array');
+        t.equal(vm.runtime.songs.length, 1, 'songs list holds the one song');
+        t.equal(vm.runtime.activeSongIndex, 0, 'the song is active');
         t.ok(noTargetCarriesSong(vm), 'no target carries per-sprite song data');
         t.end();
     })
@@ -59,12 +60,14 @@ tap.test('load → runtime.song is populated from the top-level project song', t
         });
 });
 
-tap.test('save → project JSON serializes the song at the top level (not per-target)', t => {
+tap.test('save → project JSON serializes the songs at the top level (not per-target)', t => {
     const vm = makeVm();
     vm.loadProject(projectSingleSong).then(() => {
         const serialized = JSON.parse(vm.toJSON());
-        t.ok(serialized.song, 'top-level song object present');
-        t.notOk(Array.isArray(serialized.songs), 'no legacy songs[] array');
+        t.ok(Array.isArray(serialized.songs), 'top-level songs array present');
+        t.equal(serialized.songs.length, 1, 'the one song emitted');
+        t.equal(serialized.activeSongIndex, 0, 'active index emitted');
+        t.notOk(serialized.song, 'no legacy singular song emitted');
         const targetHasSong = serialized.targets.some(target => target.song || Array.isArray(target.songs));
         t.notOk(targetHasSong, 'no target carries song data');
         t.end();
@@ -92,12 +95,12 @@ tap.test('save → load round-trip preserves the song', t => {
         });
 });
 
-tap.test('legacy top-level songs[] migrates to the first song', t => {
+tap.test('top-level songs[] loads every song with the first active', t => {
     const vm = makeVm();
     vm.loadProject(projectLegacyPlural).then(() => {
-        t.ok(vm.runtime.song, 'a single song is hoisted');
-        t.equal(vm.runtime.song.songId, 'song-verse', 'first song in the legacy array is taken');
-        t.notOk(vm.runtime.songs, 'no plural runtime.songs array left behind');
+        t.equal(vm.runtime.songs.length, 2, 'both songs loaded');
+        t.equal(vm.runtime.song.songId, 'song-verse', 'first song is active (no activeSongIndex in file)');
+        t.equal(vm.runtime.songs[1].songId, 'song-bridge', 'second song preserved');
         t.end();
     })
         .catch(e => {
@@ -105,11 +108,15 @@ tap.test('legacy top-level songs[] migrates to the first song', t => {
         });
 });
 
-tap.test('legacy per-sprite songs migrate to runtime.song and are stripped from targets', t => {
+tap.test('legacy per-sprite songs migrate to runtime.songs and are stripped from targets', t => {
     const vm = makeVm();
     vm.loadProject(projectLegacyPerSprite).then(() => {
         t.ok(vm.runtime.song, 'a project song is hoisted from the per-sprite shape');
-        t.equal(vm.runtime.song.songId, 'song-legacy-stage', 'first song found (stage) is taken');
+        t.equal(vm.runtime.song.songId, 'song-legacy-stage', 'first song found (stage) is active');
+        // The fixture's sprite carries song-legacy-sprite plus a duplicate of
+        // the stage song — the duplicate is dropped, the rest are kept.
+        t.equal(vm.runtime.songs.length, 2, 'all distinct legacy songs are kept');
+        t.equal(vm.runtime.songs[1].songId, 'song-legacy-sprite', 'sprite song preserved');
         t.ok(noTargetCarriesSong(vm), 'no target retains a per-sprite songs/song field');
         t.end();
     })

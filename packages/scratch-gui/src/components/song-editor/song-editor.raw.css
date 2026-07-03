@@ -1602,15 +1602,140 @@
 /* Fills the full width/height of the TabPanel so the song editor (and the
    empty-state placeholder) don't collapse to fit content. The parent
    `.tab-panel.is-selected` is a row flex, so we need flex-grow on this
-   child to take all the available horizontal space. */
+   child to take all the available horizontal space. A row itself:
+   [song selector column | song editor]. */
 .song-tab-root {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     flex: 1 1 auto;
     width: 100%;
     height: 100%;
     min-width: 0;
     overflow: hidden;
+}
+
+.song-tab-root > .song-editor {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* ===== Song selector =====
+   Left-hand column listing the project's songs — the sound/costume asset
+   panel pattern. Clicking a card selects the song for editing and makes it
+   the active one the blocks play. */
+.song-selector {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 148px;
+    min-height: 0;
+    border-right: 1px solid #e6e8f0;
+    background: #fff;
+}
+
+.song-selector-list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.song-selector-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 2px solid #e6e8f0;
+    background: #f7f8fc;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.song-selector-item:hover {
+    border-color: #c9cdf0;
+}
+
+.song-selector-item.is-selected {
+    border-color: hsl(260, 60%, 60%);
+    background: #fff;
+    cursor: default;
+}
+
+.song-selector-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #2c2c2c;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.song-selector-name-input {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 2px 4px;
+}
+
+.song-selector-meta {
+    font-size: 0.65rem;
+    color: #7a7f96;
+    white-space: nowrap;
+}
+
+.song-selector-item-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.song-selector-action-btn {
+    flex: 1 1 0;
+    font-size: 0.65rem;
+    padding: 3px 4px;
+    border-radius: 4px;
+    border: 1px solid #d4d7e5;
+    background: #fff;
+    color: #4a4f66;
+    cursor: pointer;
+}
+
+.song-selector-action-btn:hover:not(:disabled) {
+    background: #f0f1fa;
+}
+
+.song-selector-action-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.song-selector-delete-btn:hover:not(:disabled) {
+    border-color: #e08a8a;
+    color: #b34444;
+}
+
+.song-selector-new-btn {
+    flex-shrink: 0;
+    margin: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px dashed #b9bede;
+    background: #fff;
+    color: hsl(260, 60%, 55%);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.song-selector-new-btn:hover {
+    background: #f4f1fc;
+    border-color: hsl(260, 60%, 60%);
 }
 
 /* ===== Keyboard Entry Modal =====

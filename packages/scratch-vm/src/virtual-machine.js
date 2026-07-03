@@ -22,7 +22,7 @@ const newBlockIds = require('./util/new-block-ids');
 const {loadCostume} = require('./import/load-costume.js');
 const {loadSound} = require('./import/load-sound.js');
 const {serializeSounds, serializeCostumes} = require('./serialization/serialize-assets');
-const {displayNameForTrack} = require('./extensions/scratch3_songs/song-defaults');
+const {displayNameForTrack, createBlankSong, newId} = require('./extensions/scratch3_songs/song-defaults');
 require('canvas-toBlob');
 
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
@@ -874,8 +874,9 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
-     * Replace the project's song wholesale (used by AI generation, Surprise,
-     * and initial editor population on an empty project).
+     * Replace the ACTIVE song wholesale (used by AI generation, Surprise,
+     * MIDI import, and initial editor population on an empty project).
+     * Pushes when the project has no songs yet.
      * @param {!object} song A song JSON object (see Song Maker schema).
      */
     setSong (song) {
@@ -886,18 +887,193 @@ class VirtualMachine extends EventEmitter {
 
     /**
      * Push a modified song reference back to the runtime (used by the editor
-     * after authoring edits). Forwards the latest reference to the live
-     * scheduler so loop wraps pick up note edits.
+     * after authoring edits). Matches by songId so edits land on the right
+     * entry even if the selection changed mid-flight. Forwards the latest
+     * reference to the live scheduler so loop wraps pick up note edits.
      * @param {!object} song
      */
     updateSong (song) {
         if (!song) return;
-        this.runtime.song = song;
+        const songs = this.runtime.songs;
+        const idx = songs.findIndex(s => s.songId === song.songId);
+        if (idx === -1) {
+            // Unknown songId — fall back to replacing the active song so
+            // legacy callers that regenerate ids still land somewhere sane.
+            this.runtime.song = song;
+        } else {
+            songs[idx] = song;
+        }
         if (this.runtime.songPlayback && this.runtime.songPlayback.updateSong) {
             this.runtime.songPlayback.updateSong(song);
         }
         this.runtime.emitProjectChanged();
         this.runtime.emit('SONGS_CHANGED');
+    }
+
+    /**
+     * Add a song to the project and make it the active one. Mirrors the
+     * addSound/addCostume asset pattern, but songs are project-level.
+     * @param {object} [song] A song JSON object; a blank song when omitted.
+     *     The song's name is de-duplicated against the existing songs.
+     * @returns {object} The song that was added.
+     */
+    addSong (song) {
+        const runtime = this.runtime;
+        const newSong = song || createBlankSong('Song');
+        const otherNames = runtime.songs.map(s => s.name).filter(n => typeof n === 'string');
+        newSong.name = StringUtil.unusedName(newSong.name || 'Song', otherNames);
+        runtime.songs.push(newSong);
+        runtime.activeSongIndex = runtime.songs.length - 1;
+        runtime.emitProjectChanged();
+        runtime.emit('SONGS_CHANGED');
+        runtime.emit('ACTIVE_SONG_CHANGED');
+        return newSong;
+    }
+
+    /**
+     * Delete a song from the project. If the deleted song was active, the
+     * song that takes its place (or the new last song) becomes active.
+     * @param {string} songId The songId of the song to delete.
+     * @returns {?Function} A restore function (re-inserts the song at its old
+     *     index and restores the active selection), or null if nothing was
+     *     deleted. Mirrors deleteSound's undo affordance.
+     */
+    deleteSong (songId) {
+        const runtime = this.runtime;
+        const index = runtime.songs.findIndex(s => s.songId === songId);
+        if (index === -1) return null;
+        // Deleting the song the transport is playing must silence it — the
+        // scheduler holds its own song reference and would keep looping a
+        // song that no longer exists in the project.
+        const playback = runtime._songPlayback;
+        if (playback && playback.playingSongId() === songId) {
+            playback.stop();
+        }
+        const wasActiveId = runtime.song && runtime.song.songId;
+        const [deleted] = runtime.songs.splice(index, 1);
+        // Keep the active pointer on the same song object when possible;
+        // otherwise land on the song now occupying the deleted slot (or the
+        // new last song).
+        const activeIdx = runtime.songs.findIndex(s => s.songId === wasActiveId);
+        runtime.activeSongIndex = activeIdx === -1 ?
+            Math.max(0, Math.min(index, runtime.songs.length - 1)) :
+            activeIdx;
+        runtime.emitProjectChanged();
+        runtime.emit('SONGS_CHANGED');
+        runtime.emit('ACTIVE_SONG_CHANGED');
+        return () => {
+            runtime.songs.splice(Math.min(index, runtime.songs.length), 0, deleted);
+            runtime.activeSongIndex = runtime.songs.indexOf(deleted);
+            runtime.emitProjectChanged();
+            runtime.emit('SONGS_CHANGED');
+            runtime.emit('ACTIVE_SONG_CHANGED');
+        };
+    }
+
+    /**
+     * Duplicate a song, inserting the copy right after the original and
+     * making it active. The copy gets a fresh songId AND fresh trackIds:
+     * playback effect/volume overrides and the scheduler's per-track audio
+     * chains are keyed by trackId, so shared ids would bleed state between
+     * the two songs. Track display names are kept (they're what the blocks
+     * reference).
+     * @param {string} songId The songId of the song to duplicate.
+     * @returns {?object} The new song, or null if the source wasn't found.
+     */
+    duplicateSong (songId) {
+        const runtime = this.runtime;
+        const index = runtime.songs.findIndex(s => s.songId === songId);
+        if (index === -1) return null;
+        const copy = JSON.parse(JSON.stringify(runtime.songs[index]));
+        copy.songId = newId('song');
+        for (const track of copy.tracks || []) {
+            track.trackId = newId('track');
+        }
+        const otherNames = runtime.songs.map(s => s.name).filter(n => typeof n === 'string');
+        copy.name = StringUtil.unusedName(copy.name || 'Song', otherNames);
+        runtime.songs.splice(index + 1, 0, copy);
+        runtime.activeSongIndex = index + 1;
+        runtime.emitProjectChanged();
+        runtime.emit('SONGS_CHANGED');
+        runtime.emit('ACTIVE_SONG_CHANGED');
+        return copy;
+    }
+
+    /**
+     * Rename a song. Song names are kept unique (the blocks' SONG menu stores
+     * the song's name, like TRACK menus store track display names), and any
+     * blocks referencing the old name are rewritten — the same treatment
+     * renameTrack gives track references.
+     * @param {string} songId The songId of the song to rename.
+     * @param {string} newName The requested new name.
+     */
+    renameSong (songId, newName) {
+        const runtime = this.runtime;
+        const song = runtime.songs.find(s => s.songId === songId);
+        if (!song) return;
+        const trimmed = (newName || '').trim();
+        if (!trimmed) return;
+        const oldName = song.name;
+        const otherNames = runtime.songs
+            .filter(s => s !== song)
+            .map(s => s.name)
+            .filter(n => typeof n === 'string');
+        const newUnusedName = StringUtil.unusedName(trimmed, otherNames);
+        if (newUnusedName === oldName) return;
+        song.name = newUnusedName;
+        // Song names are unique at this API level, so the old name can't
+        // still identify another song — always rewrite block references.
+        const targets = runtime.targets;
+        for (let i = 0; i < targets.length; i++) {
+            targets[i].blocks.updateAssetName(oldName, newUnusedName, 'song');
+        }
+        runtime.emitProjectChanged();
+        runtime.emit('SONGS_CHANGED');
+    }
+
+    /**
+     * Move a song in the project's song list. The active song follows its
+     * object (same as reorderCostume keeps the current costume selected).
+     * @param {number} oldIndex The song's current index.
+     * @param {number} newIndex The index to move it to.
+     * @returns {boolean} Whether a reorder actually happened.
+     */
+    reorderSong (oldIndex, newIndex) {
+        const runtime = this.runtime;
+        const len = runtime.songs.length;
+        const from = Math.max(0, Math.min(len - 1, oldIndex));
+        const to = Math.max(0, Math.min(len - 1, newIndex));
+        if (len === 0 || from === to) return false;
+        const activeId = runtime.song && runtime.song.songId;
+        const [moved] = runtime.songs.splice(from, 1);
+        runtime.songs.splice(to, 0, moved);
+        const activeIdx = runtime.songs.findIndex(s => s.songId === activeId);
+        if (activeIdx !== -1) runtime.activeSongIndex = activeIdx;
+        runtime.emitProjectChanged();
+        runtime.emit('SONGS_CHANGED');
+        return true;
+    }
+
+    /**
+     * Select the active song (editor selection == the song the blocks play,
+     * one concept like the current costume). If the shared transport is
+     * running, the audio switches too, carrying over tracks by display name.
+     * @param {string} songId The songId of the song to activate.
+     */
+    setActiveSong (songId) {
+        const runtime = this.runtime;
+        const index = runtime.songs.findIndex(s => s.songId === songId);
+        if (index === -1 || index === runtime.activeSongIndex) return;
+        // Avoid instantiating the audio singleton just to change selection —
+        // only route through it when it already exists.
+        const playback = runtime._songPlayback;
+        if (playback) {
+            playback.switchToSong(songId, 'now');
+        } else {
+            runtime.activeSongIndex = index;
+            runtime.emit('ACTIVE_SONG_CHANGED');
+        }
+        runtime.emitProjectChanged();
     }
 
     /**
@@ -928,10 +1104,14 @@ class VirtualMachine extends EventEmitter {
 
         // Rewrite block references from the old display name to the new one,
         // but only when the old name unambiguously identified this track. If
-        // another track still reports the old name (e.g. two "Piano" tracks),
-        // leave references alone rather than hijacking the other track's blocks.
+        // another track still reports the old name — in this song (e.g. two
+        // "Piano" tracks) or in ANY other song (TRACK menus are a union across
+        // songs, and blocks resolve names against whichever song is active) —
+        // leave references alone rather than hijacking that track's blocks.
         if (newUnusedName !== oldName) {
-            const oldNameStillUsed = song.tracks.some(t => displayNameForTrack(t) === oldName);
+            const oldNameStillUsed = this.runtime.songs.some(
+                s => Array.isArray(s.tracks) && s.tracks.some(t => displayNameForTrack(t) === oldName)
+            );
             if (!oldNameStillUsed) {
                 const targets = this.runtime.targets;
                 for (let i = 0; i < targets.length; i++) {
