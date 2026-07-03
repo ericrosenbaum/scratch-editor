@@ -36,7 +36,7 @@ test('3D Pop-Up diorama: backdrop becomes a back wall, sprites sit at different 
 
     // Add the 3D Pop-Up extension.
     await page.getByRole('button', {name: 'Add Extension'}).click();
-    await page.getByText('3D Pop-Up', {exact: true}).click();
+    await page.getByRole('button', {name: /^3D Pop-Up /}).click();
     await expect(page.getByText('set camera to', {exact: false}).first()).toBeVisible();
 
     // Push the Balloon deep into the scene: select it, then click "change depth by".

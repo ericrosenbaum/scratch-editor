@@ -33,7 +33,7 @@ test('3D Pop-Up: the extruded sprite follows the sprite direction', async ({page
 
     // Go 3D. The arrow should still point up (direction is honoured), not right.
     await page.getByRole('button', {name: 'Add Extension'}).click();
-    await page.getByText('3D Pop-Up', {exact: true}).click();
+    await page.getByRole('button', {name: /^3D Pop-Up /}).click();
     await clickBlock(page, 'set sky to');
     await clickBlock(page, 'set camera to');
     await page.waitForTimeout(1200);

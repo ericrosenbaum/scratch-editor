@@ -25,7 +25,7 @@ test('3D Pop-Up: add extension, set camera, drag the stage to spin into 3D', asy
 
     // Open the extension library and add "3D Pop-Up".
     await page.getByRole('button', {name: 'Add Extension'}).click();
-    const card = page.getByText('3D Pop-Up', {exact: true});
+    const card = page.getByRole('button', {name: /^3D Pop-Up /});
     await expect(card).toBeVisible();
     await card.click();
 

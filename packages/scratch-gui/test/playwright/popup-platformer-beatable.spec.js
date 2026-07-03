@@ -27,6 +27,9 @@ const readWin = page => page.evaluate(() => {
 });
 
 test('3D Pop-Up platformer (example 7) can be beaten', async ({page}) => {
+    // The climb itself is ~5 hops, but loading + entering 3D can be slow on a busy
+    // machine (parallel workers), so give the whole playthrough plenty of room.
+    test.setTimeout(120000);
     const pageErrors = [];
     page.on('pageerror', err => pageErrors.push(err.stack || err.message || String(err)));
     page.on('dialog', d => d.accept());

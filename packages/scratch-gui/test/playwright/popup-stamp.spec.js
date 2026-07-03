@@ -30,9 +30,10 @@ test('3D Pop-Up: "stamp in 3D" leaves a persistent copy where the sprite was', a
 
     // Add the extension and select the Star.
     await page.getByRole('button', {name: 'Add Extension'}).click();
-    await page.getByText('3D Pop-Up', {exact: true}).click();
+    await page.getByRole('button', {name: /^3D Pop-Up /}).click();
     await expect(page.getByText('stamp in 3D', {exact: false}).first()).toBeVisible();
-    await page.getByText('Star', {exact: true}).click();
+    // Palette dropdowns also read "Star", so target the sprite-selector item's button.
+    await page.getByRole('button', {name: 'Star', exact: true}).click();
 
     // Stamp the Star at its current spot, then move the live Star to the right.
     await clickBlock(page, 'stamp in 3D');
