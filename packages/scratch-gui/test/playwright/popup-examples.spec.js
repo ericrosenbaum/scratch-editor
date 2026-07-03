@@ -55,7 +55,14 @@ const examples = [
     // Carousel: clones are placed + revolved with the orbit block; camera auto-orbits.
     {file: 'popup-example-12.sb3',
         shot: 'example-carousel.png',
-        drag: false}
+        drag: false},
+    // Platform run: a long row of platforms beyond the stage edges; the camera sits
+    // behind the hero (over-the-shoulder), so no stage drag is needed. A full beatable
+    // playthrough is covered by popup-platform-run-beatable.spec.js.
+    {file: 'popup-example-13.sb3',
+        shot: 'example-platform-run.png',
+        drag: false,
+        keys: ['ArrowRight', 'ArrowRight', 'Space']}
 ];
 
 for (const ex of examples) {

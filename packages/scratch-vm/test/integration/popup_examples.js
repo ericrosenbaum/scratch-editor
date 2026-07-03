@@ -59,6 +59,38 @@ test('3D Pop-Up example 7 (platformer): platforms clone with inherited depths', 
     });
 });
 
+test('3D Pop-Up example 13 (platform run): platforms spread far beyond the stage', {skip: !haveStarters}, t => {
+    loadAndRun('popup-example-13.sb3', 30).then(({vm, errors}) => {
+        t.equal(errors.length, 0, 'no runtime errors');
+
+        // The extension is loaded by this project, so sprite fencing defaults to off:
+        // that's what lets the row of platforms extend past the old stage bounds.
+        t.equal(vm.runtime.fencingEnabled, false, 'fencing is off while the extension is loaded');
+
+        const platforms = vm.runtime.targets.filter(
+            target => target.sprite && target.sprite.name === 'Platform' && !target.isOriginal
+        );
+        t.equal(platforms.length, 8, 'all eight platform clones were created');
+        const xs = platforms.map(p => p.x).sort((a, b) => a - b);
+        t.equal(xs[0], 0, 'the row starts at the spawn platform');
+        t.equal(xs[xs.length - 1], 2800, 'the row reaches ~6 stage-widths out (unfenced)');
+        t.ok(xs.every(x => Number.isFinite(x)), 'every platform has a finite x');
+        // All the climbing platforms share one modest depth, in reach of the hero at 0.
+        const depths = platforms.map(p => popupState(p).depth);
+        t.ok(depths.every(d => d === 26), 'clones inherited the shared depth');
+
+        const goal = vm.runtime.targets.find(target => target.sprite && target.sprite.name === 'Goal');
+        t.ok(goal, 'the goal flag sprite exists');
+        t.equal(goal.x, 2800, 'the goal stands at the far end of the row');
+
+        const stage = vm.runtime.getTargetForStage();
+        const winVar = Object.values(stage.variables).find(v => v.name === 'Win');
+        t.ok(winVar, 'the global Win flag exists');
+        t.equal(Number(winVar && winVar.value), 0, 'Win is 0 before the goal is reached');
+        t.end();
+    });
+});
+
 test('3D Pop-Up example 9 (crystal): crossed clones inherit distinct spins', {skip: !haveStarters}, t => {
     loadAndRun('popup-example-9.sb3', 30).then(({vm, errors}) => {
         t.equal(errors.length, 0, 'no runtime errors');

@@ -16,6 +16,7 @@ import thumbCrystal from './starters/popup-example-9.png';
 import thumbSolar from './starters/popup-example-10.png';
 import thumbGems from './starters/popup-example-11.png';
 import thumbCarousel from './starters/popup-example-12.png';
+import thumbPlatformRun from './starters/popup-example-13.png';
 
 import sb3Card from './starters/popup-example-1.sb3';
 import sb3Fish from './starters/popup-example-2.sb3';
@@ -29,6 +30,7 @@ import sb3Crystal from './starters/popup-example-9.sb3';
 import sb3Solar from './starters/popup-example-10.sb3';
 import sb3Gems from './starters/popup-example-11.sb3';
 import sb3Carousel from './starters/popup-example-12.sb3';
+import sb3PlatformRun from './starters/popup-example-13.sb3';
 
 const starters = [
     {
@@ -122,6 +124,15 @@ const starters = [
             'as they bob up and down — all with the orbit block.',
         thumbnail: thumbCarousel,
         sb3: sb3Carousel
+    },
+    {
+        id: 'platform-run',
+        title: 'Platform Run',
+        description: 'Race down a long row of platforms stretching far beyond the stage, ' +
+            'with the camera over your shoulder. Arrows run (and turn you around), space ' +
+            'jumps. Reach the flag to win!',
+        thumbnail: thumbPlatformRun,
+        sb3: sb3PlatformRun
     }
 ];
 

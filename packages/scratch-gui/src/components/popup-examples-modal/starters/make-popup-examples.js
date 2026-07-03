@@ -12,6 +12,8 @@
 //   popup-example-10.sb3  Solar System    (planets orbit the sun in the ground plane)
 //   popup-example-11.sb3  Gem Hunt        (a scored game: roam in 3D, collect gems)
 //   popup-example-12.sb3  Carousel        (clones placed + revolved with "orbit")
+//   popup-example-13.sb3  Platform Run    (a long row of platforms far beyond the
+//                                          stage edges; over-the-shoulder camera)
 //
 // Run: node src/components/popup-examples-modal/starters/make-popup-examples.js
 
@@ -106,6 +108,11 @@ const setCamera = view => ({op: 'popup_setCamera', fields: {VIEW: [view, null]}}
 const followCamera = spriteName => ({op: 'popup_followCamera',
     inputs: {SPRITE: {op: 'popup_menu_spriteMenu', menu: true, shadow: true,
         fields: {spriteMenu: [spriteName, null]}}}});
+// `set camera behind [sprite]` — over-the-shoulder camera that looks along the sprite's
+// spin heading, so turning the sprite turns the view the way it's about to move.
+const cameraBehind = spriteName => ({op: 'popup_shoulderCamera',
+    inputs: {SPRITE: {op: 'popup_menu_spriteMenu', menu: true, shadow: true,
+        fields: {spriteMenu: [spriteName, null]}}}});
 // 'shown' | 'hidden' — when hidden the sky shows behind the sprites instead of the backdrop.
 const setBackdrop = visible => ({op: 'popup_setBackdrop', fields: {VISIBLE: [visible, null]}});
 const setThickness = v => ({op: 'popup_setThickness', inputs: {AMOUNT: num(v)}});
@@ -125,7 +132,7 @@ const whenClone = (...specs) => [{op: 'control_start_as_clone'}, ...specs];
 
 // More motion / looks / control / sensing helpers (each returns a stack-block spec,
 // or a reporter/boolean spec for the conditions and value slots).
-const setX = v => ({op: 'motion_setx', inputs: {X: num(v)}});
+const setX = v => ({op: 'motion_setx', inputs: {X: typeof v === 'number' ? num(v) : v}});
 const setY = v => ({op: 'motion_sety', inputs: {Y: num(v)}});
 const changeYBy = v => ({op: 'motion_changeyby', inputs: {DY: typeof v === 'number' ? num(v) : v}});
 const changeXBy = v => ({op: 'motion_changexby', inputs: {DX: typeof v === 'number' ? num(v) : v}});
@@ -982,6 +989,120 @@ const carousel = [
         layer: 3, blocks: horseRiderBlocks(60, '#8fd0ff', '#1c6fd0')})
 ];
 
+// ---- example 13: Platform Run (a long row of platforms; over-the-shoulder cam) ----
+// The same platforming style as example 7, but the platforms are spread out into a
+// long row along x (from 0 to 2800 — about six stage-widths past where the old sprite
+// fence used to stop everything), which only works because fencing defaults to off
+// while the extension is loaded. The camera sits BEHIND the hero (`set camera behind`),
+// looking along its spin heading, so running right means running into the screen and
+// turning around swings the whole view with you.
+//
+// The layout and physics (run 8/frame, jump velocity 15, thin slabs) were chosen by
+// simulating the exact loop below frame-by-frame over a range of plausible hero hitbox
+// sizes: holding right+space always reaches the goal (a fall respawns you at the last
+// platform you stood on, never the start; at most one fall in simulation), while
+// holding right WITHOUT jumping always falls in — the gaps are real, but every jump
+// is makeable (hop length ~208 units vs ~156-unit effective gaps). Playability is
+// enforced end-to-end by test/playwright/popup-platform-run-beatable.spec.js.
+const runSlabSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="150" height="32" viewBox="0 0 150 32">
+  <rect x="3" y="3" width="144" height="26" rx="9" fill="#8bd17c" stroke="#4f9a40" stroke-width="4"/>
+  <rect x="3" y="3" width="144" height="11" rx="6" fill="#a7e29a"/></svg>`);
+const RUN_PLATFORMS = [
+    [0, -125], [400, -125], [800, -125], [1200, -125],
+    [1600, -125], [2000, -125], [2400, -125], [2800, -125]
+];
+const RUN_GOAL_X = RUN_PLATFORMS[RUN_PLATFORMS.length - 1][0];
+const runPlatformBlocks = {};
+const placeRunPlatforms = [setThickness(40)];
+for (const [x, y] of RUN_PLATFORMS) placeRunPlatforms.push(gotoXY(x, y), setDepth(26), createClone());
+placeRunPlatforms.push(hide()); // hide the original once every clone exists
+buildScript(runPlatformBlocks, flag(...placeRunPlatforms), 30, 30);
+buildScript(runPlatformBlocks, whenClone(show()), 320, 30);
+
+const runVy = mkVar('vy'); // vertical velocity (hero-local)
+const runOnGround = mkVar('onGround'); // 1 while standing on a platform (hero-local)
+const runCheckpointX = mkVar('checkpoint x'); // x of the last landing (hero-local)
+const runWon = mkVar('Win'); // 1 once the goal is reached (global: shared with Goal + monitor)
+const runHeroBlocks = {};
+buildScript(runHeroBlocks, flag(
+    setThickness(22), setSize(75),
+    setVar(runWon, 0), setVar(runVy, 0), setVar(runOnGround, 0), setVar(runCheckpointX, 0),
+    gotoXY(0, -75), setDepth(0), setSpin(0),
+    forever(
+        // Controls, polled every frame (frozen once you've won). Left/right first spin
+        // the hero to face that way, then step along its heading, so the shoulder
+        // camera always looks down the row the hero is about to run along.
+        ifThen(eq(varRep(runWon), 0),
+            ifThen(keyPressed('right arrow'), setSpin(0), move3D(8)),
+            ifThen(keyPressed('left arrow'), setSpin(180), move3D(8)),
+            // Jump only from the ground (no mid-air jumps / flying).
+            ifThen(and(keyPressed('space'), eq(varRep(runOnGround), 1)),
+                setVar(runVy, 15), setVar(runOnGround, 0))
+        ),
+        // Gravity, with a terminal velocity so a long fall can't tunnel through a slab.
+        changeVar(runVy, -1.2),
+        ifThen(lt(varRep(runVy), -14), setVar(runVy, -14)),
+        changeYBy(varRep(runVy)),
+        // Land: while falling/resting, pop up out of the slab in 1px steps, then settle
+        // one step back onto its surface. Each landing records a checkpoint.
+        setVar(runOnGround, 0),
+        ifThen(and(touching3D('Platform'), not(gt(varRep(runVy), 0))),
+            repeatUntil(not(touching3D('Platform')), changeYBy(1)),
+            changeYBy(-1),
+            setVar(runVy, 0),
+            setVar(runOnGround, 1),
+            setVar(runCheckpointX, xPos())
+        ),
+        // Fell into a gap: respawn above the last platform you stood on.
+        ifThen(lt(yPos(), -175),
+            setX(varRep(runCheckpointX)), setY(-30), setDepth(0), setVar(runVy, 0))
+    )
+), 30, 30);
+// Reaching the goal wins: touching the flag, or landing on the last platform (grounded
+// and far enough along the row), sets Win = 1 and the hero does a celebratory spin.
+buildScript(runHeroBlocks, flag(
+    waitUntil(or(touching3D('Goal'), and(eq(varRep(runOnGround), 1), gt(xPos(), RUN_GOAL_X - 50)))),
+    setVar(runWon, 1),
+    repeatN(18, changeSpin(20), changeEffect('color', 6), changeSize(2)),
+    repeatN(18, changeSpin(20), changeEffect('color', 6), changeSize(-2)),
+    setEffect('color', 0)
+), 360, 30);
+
+const runGoalBlocks = {};
+buildScript(runGoalBlocks, flag(
+    setThickness(18), setSize(95), setDepth(0),
+    gotoXY(RUN_GOAL_X, -43), show(),
+    // Idle: bob gently until the player arrives.
+    forever(ifThen(eq(varRep(runWon), 0),
+        repeatN(16, changeYBy(0.7)),
+        repeatN(16, changeYBy(-0.7))
+    ))
+), 30, 30);
+buildScript(runGoalBlocks, flag(
+    waitUntil(eq(varRep(runWon), 1)),
+    setSky('dream'), // the sky bursts into colour to celebrate
+    repeatN(24, changeSpin(12), changeEffect('color', 8), changeSize(2)),
+    repeatN(24, changeSpin(12), changeEffect('color', 8), changeSize(-2))
+), 360, 30);
+
+const platformRun = [
+    stage(platformBgSVG,
+        buildScript({}, flag(setSky('day'), setBackdrop('hidden'), cameraBehind('Hero')), 30, 30),
+        [runWon]),
+    sprite({
+        name: 'Platform', svg: runSlabSVG, rcx: 75, rcy: 16, x: 0, y: -125, size: 125,
+        layer: 1, blocks: runPlatformBlocks
+    }),
+    sprite({
+        name: 'Goal', svg: goalFlagSVG, rcx: 40, rcy: 65, x: RUN_GOAL_X, y: -43, size: 95,
+        layer: 3, blocks: runGoalBlocks
+    }),
+    sprite({
+        name: 'Hero', svg: hopperSVG, rcx: 40, rcy: 40, x: 0, y: -75, size: 75,
+        layer: 2, vars: [runVy, runOnGround, runCheckpointX], blocks: runHeroBlocks
+    })
+];
+
 Promise.resolve()
     .then(() => writeProject('popup-example-1.sb3', card))
     .then(() => writeProject('popup-example-2.sb3', tank))
@@ -994,4 +1115,5 @@ Promise.resolve()
     .then(() => writeProject('popup-example-9.sb3', crystal))
     .then(() => writeProject('popup-example-10.sb3', solarSystem))
     .then(() => writeProject('popup-example-11.sb3', gemHunt, [varMonitor(score, 5, 5)]))
-    .then(() => writeProject('popup-example-12.sb3', carousel));
+    .then(() => writeProject('popup-example-12.sb3', carousel))
+    .then(() => writeProject('popup-example-13.sb3', platformRun, [varMonitor(runWon, 5, 5)]));
