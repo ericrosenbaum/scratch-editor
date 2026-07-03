@@ -27,6 +27,34 @@ test('setxy', t => {
     t.end();
 });
 
+test('setxy fences through the renderer only while fencing is enabled', t => {
+    const r = new Runtime();
+    const s = new Sprite(null, r);
+    const a = new RenderedTarget(s, r);
+    const renderer = new FakeRenderer();
+    // Fence like the real renderer: clamp to the stage bounds.
+    renderer.getFencedPositionOfDrawable = (d, p) => [
+        Math.max(-240, Math.min(240, p[0])),
+        Math.max(-180, Math.min(180, p[1]))
+    ];
+    a.renderer = renderer;
+
+    a.setXY(1000, -1000);
+    t.equal(a.x, 240, 'x is fenced to the stage by default');
+    t.equal(a.y, -180, 'y is fenced to the stage by default');
+
+    r.setFencing(false);
+    a.setXY(1000, -1000);
+    t.equal(a.x, 1000, 'x is unfenced while fencing is disabled');
+    t.equal(a.y, -1000, 'y is unfenced while fencing is disabled');
+
+    r.setFencing(true);
+    a.setXY(1000, -1000);
+    t.equal(a.x, 240, 'x is fenced again once fencing is re-enabled');
+    t.equal(a.y, -180, 'y is fenced again once fencing is re-enabled');
+    t.end();
+});
+
 test('blocks get new id on duplicate', t => {
     const r = new Runtime();
     const s = new Sprite(null, r);

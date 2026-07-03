@@ -233,6 +233,47 @@ test('PopupScene._updateCamera eases the focus toward the followed sprite (smoot
     t.end();
 });
 
+test('PopupScene shoulder camera turns to look along the sprite heading', t => {
+    const hero = makeTarget({id: 'hero', x: 0, y: 0});
+    const runtime = {
+        renderer: null,
+        targets: [hero],
+        on: () => {},
+        getSpriteTargetByName: name => (name === 'Hero' ? hero : null)
+    };
+    const scene = new PopupScene(runtime);
+    scene._camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, 5000);
+    scene._clock = null; // null -> deterministic dt = 1/60 per frame
+
+    scene.shoulderSprite('Hero');
+    t.equal(scene._mode, 'shoulder', 'shoulderSprite enters shoulder mode');
+    t.equal(scene._followName, 'Hero', 'shoulderSprite tracks the named sprite');
+
+    // Facing right (+x, the rest heading): the camera should settle behind the sprite
+    // (offset -x) looking +x, i.e. heading yaw -PI/2. The camera angle additionally
+    // hangs 0.45 rad off the heading axis (SHOULDER_YAW_OFFSET) so the card sprite
+    // isn't seen exactly edge-on.
+    const offset = 0.45;
+    t.ok(Math.abs(scene._shoulderYaw() - (-Math.PI / 2)) < 1e-9, 'heading +x puts the heading yaw at -PI/2');
+    for (let i = 0; i < 300; i++) scene._updateCamera();
+    t.ok(Math.abs(scene._angle - (-Math.PI / 2) - offset) < 0.01, 'the yaw converges onto the offset heading');
+    t.ok(scene._camera.position.x < -100, 'the camera sits behind the sprite (on -x)');
+
+    // Turn left (spin 90 -> heading -z, into the page): the yaw eases toward 0, smoothly.
+    getPopupState(hero).spin = 90;
+    scene._updateCamera();
+    t.ok(scene._angle > -Math.PI / 2 && scene._angle < offset, 'one frame turns the yaw only part-way (no snap)');
+    for (let i = 0; i < 300; i++) scene._updateCamera();
+    t.ok(Math.abs(scene._angle - offset) < 0.01, 'the yaw converges onto the new (offset) heading');
+
+    // A straight-up heading (direction 0 -> +y) has no ground-plane component:
+    // keep the current yaw.
+    getPopupState(hero).spin = 0;
+    hero.direction = 0;
+    t.equal(scene._shoulderYaw(), null, 'a vertical heading reports no yaw (keep the current one)');
+    t.end();
+});
+
 test('PopupScene._handlePointer orbits empty space in follow mode too', t => {
     const mouse = makeMouse();
     const runtime = {renderer: null, targets: [], on: () => {}, ioDevices: {mouse}};
@@ -245,5 +286,27 @@ test('PopupScene._handlePointer orbits empty space in follow mode too', t => {
     mouse._y = 0;
     scene._handlePointer();
     t.equal(scene._gesture, 'camera', 'pressing empty space while following orbits the camera around the sprite');
+    t.end();
+});
+
+test('Pop-Up extension defaults fencing off; the block and stop control it', t => {
+    const Runtime = require('../../src/engine/runtime');
+    const Scratch3PopupBlocks = require('../../src/extensions/scratch3_popup/index.js');
+
+    const runtime = new Runtime();
+    t.equal(runtime.fencingEnabled, true, 'a bare runtime starts with fencing on');
+
+    const ext = new Scratch3PopupBlocks(runtime);
+    t.equal(runtime.fencingEnabled, false, 'loading the extension switches fencing off');
+
+    ext.setFencing({FENCING: 'on'});
+    t.equal(runtime.fencingEnabled, true, 'the block can switch fencing back on');
+    ext.setFencing({FENCING: 'off'});
+    t.equal(runtime.fencingEnabled, false, 'the block can switch fencing off again');
+
+    // The stop button (and each green flag) returns to the extension default: off.
+    ext.setFencing({FENCING: 'on'});
+    runtime.emit('PROJECT_STOP_ALL');
+    t.equal(runtime.fencingEnabled, false, 'stop resets fencing to the extension default (off)');
     t.end();
 });

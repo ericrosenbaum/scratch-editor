@@ -268,7 +268,11 @@ class RenderedTarget extends Target {
         const oldX = this.x;
         const oldY = this.y;
         if (this.renderer) {
-            const position = this.renderer.getFencedPositionOfDrawable(this.drawableID, [x, y]);
+            // Fencing keeps sprites within the stage bounds; extensions that build
+            // worlds larger than the stage (e.g. 3D Pop-Up) switch it off.
+            const position = this.runtime.fencingEnabled ?
+                this.renderer.getFencedPositionOfDrawable(this.drawableID, [x, y]) :
+                [x, y];
             this.x = position[0];
             this.y = position[1];
 

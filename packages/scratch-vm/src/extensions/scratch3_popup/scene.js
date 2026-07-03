@@ -71,6 +71,16 @@ const WALL_Z = -160;
 const CAM_RADIUS = 520;
 const CAM_HEIGHT = 150;
 const AUTO_SPIN = 0.006;
+// Over-the-shoulder camera: sits closer and lower than the orbit camera, behind the
+// sprite, and turns to look along the sprite's heading with its own (slower) ease so
+// a snap turn (e.g. `spin to 180`) swings the view around smoothly. The camera hangs
+// slightly OFF the heading axis (like a third-person game camera): a sprite card seen
+// exactly along its own heading is edge-on (only its thickness shows), so the offset
+// keeps the character readable while still looking down its line of travel.
+const SHOULDER_RADIUS = 300;
+const SHOULDER_HEIGHT = 90;
+const SHOULDER_TURN_HALFLIFE = 0.3;
+const SHOULDER_YAW_OFFSET = 0.45;
 // Follow-camera smoothing: the half-life (in seconds) of the exponential ease applied to
 // the camera's focus point. A sprite that teleports/jumps is then tracked with a smooth
 // glide rather than a snap. Frame-rate independent (see _updateCamera); lower = snappier.
@@ -175,9 +185,10 @@ class PopupScene {
         this._raf = null;
 
         // Camera state: 'front' (flat 2D), 'orbit' (auto-spin), 'drag' (drag to spin),
-        // or 'follow' (orbit a chosen sprite and translate with it; see _followName).
+        // 'follow' (orbit a chosen sprite and translate with it; see _followName), or
+        // 'shoulder' (stay behind the chosen sprite, looking along its spin heading).
         this._mode = 'front';
-        this._followName = null; // sprite name the 'follow' camera tracks
+        this._followName = null; // sprite name the 'follow'/'shoulder' camera tracks
         this._angle = 0;
         this._camHeight = CAM_HEIGHT;
         this._lastDragX = 0;
@@ -310,6 +321,20 @@ class PopupScene {
     followSprite (name) {
         this._followName = name;
         this._mode = 'follow';
+        this.start();
+    }
+
+    /**
+     * Enter 'shoulder' (over-the-shoulder) camera mode: the camera stays behind the
+     * named sprite and looks the way the sprite faces, so turning the sprite (its spin
+     * heading) turns the view to look along the axis it is about to move on. The
+     * camera translates with the sprite like the 'follow' camera; unlike 'follow',
+     * its orbit angle is driven by the sprite's heading rather than by dragging.
+     * @param {string} name - the sprite to sit behind.
+     */
+    shoulderSprite (name) {
+        this._followName = name;
+        this._mode = 'shoulder';
         this.start();
     }
 
@@ -455,30 +480,63 @@ class PopupScene {
             this._angle += AUTO_SPIN;
         }
         const dt = this._clock ? Math.min(this._clock.getDelta(), 0.1) : 1 / 60;
+        if (this._mode === 'shoulder') {
+            // Turn the orbit angle toward the sprite's heading yaw (shortest way
+            // around), with its own ease so snap turns swing the view smoothly.
+            const yaw = this._shoulderYaw();
+            if (yaw !== null) {
+                const turn = 1 - Math.pow(2, -dt / SHOULDER_TURN_HALFLIFE);
+                const tau = 2 * Math.PI;
+                const target = yaw + SHOULDER_YAW_OFFSET;
+                const delta = (((((target - this._angle) + Math.PI) % tau) + tau) % tau) - Math.PI;
+                this._angle += delta * turn;
+            }
+        }
         const t = 1 - Math.pow(2, -dt / CAM_SMOOTH_HALFLIFE);
         const target = this._focusPoint();
         this._focus.x += (target.x - this._focus.x) * t;
         this._focus.y += (target.y - this._focus.y) * t;
         this._focus.z += (target.z - this._focus.z) * t;
+        const shoulder = this._mode === 'shoulder';
+        const radius = shoulder ? SHOULDER_RADIUS : CAM_RADIUS;
+        const height = shoulder ? SHOULDER_HEIGHT : this._camHeight;
         this._camera.position.set(
-            this._focus.x + (Math.sin(this._angle) * CAM_RADIUS),
-            this._focus.y + this._camHeight,
-            this._focus.z + (Math.cos(this._angle) * CAM_RADIUS)
+            this._focus.x + (Math.sin(this._angle) * radius),
+            this._focus.y + height,
+            this._focus.z + (Math.cos(this._angle) * radius)
         );
         this._camera.lookAt(this._focus.x, this._focus.y, this._focus.z);
     }
 
     /**
+     * The orbit angle that puts the camera directly behind the followed sprite,
+     * looking along its heading (the ground-plane component of its forward vector).
+     * The camera's position offset from the focus is (sin(angle), cos(angle)) * r,
+     * so "behind" means the offset opposes the heading: angle = atan2(-f.x, -f.z).
+     * @returns {?number} the target yaw in radians, or null when there is no sprite
+     *   to follow or its heading points straight up/down (keep the current yaw).
+     * @private
+     */
+    _shoulderYaw () {
+        if (!this._followName) return null;
+        const target = this.runtime.getSpriteTargetByName(this._followName);
+        if (!target) return null;
+        const f = this.forwardVector(target);
+        if (Math.hypot(f.x, f.z) < 1e-6) return null;
+        return Math.atan2(-f.x, -f.z);
+    }
+
+    /**
      * The point the camera orbits and looks at: the followed sprite's 3D position in
-     * 'follow' mode, or the stage centre otherwise. Prefers the built mesh group's
-     * position, falling back to the sprite's 2D coords + depth before its mesh exists
-     * (e.g. the first frame after entering 3D), and to the centre if the sprite is gone.
-     * Safe to call headless.
+     * 'follow'/'shoulder' mode, or the stage centre otherwise. Prefers the built mesh
+     * group's position, falling back to the sprite's 2D coords + depth before its mesh
+     * exists (e.g. the first frame after entering 3D), and to the centre if the sprite
+     * is gone. Safe to call headless.
      * @returns {{x: number, y: number, z: number}} the focus point in world space.
      * @private
      */
     _focusPoint () {
-        if (this._mode === 'follow' && this._followName) {
+        if ((this._mode === 'follow' || this._mode === 'shoulder') && this._followName) {
             const target = this.runtime.getSpriteTargetByName(this._followName);
             if (target) {
                 const entry = this._meshes.get(target.id);

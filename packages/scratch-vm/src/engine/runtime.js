@@ -335,6 +335,16 @@ class Runtime extends EventEmitter {
          */
         this.redrawRequested = false;
 
+        /**
+         * Whether sprite fencing is enabled: when true (the default), sprite
+         * positions set through `RenderedTarget.setXY` are kept within the
+         * stage bounds by the renderer. Extensions that build worlds larger
+         * than the stage (e.g. 3D Pop-Up) can switch fencing off so sprites
+         * may travel beyond the stage edges.
+         * @type {boolean}
+         */
+        this.fencingEnabled = true;
+
         // Register all given block packages.
         this._registerBlockPackages();
 
@@ -1621,6 +1631,16 @@ class Runtime extends EventEmitter {
     attachRenderer (renderer) {
         this.renderer = renderer;
         this.renderer.setLayerGroupOrdering(StageLayering.LAYER_GROUPS);
+    }
+
+    /**
+     * Enable or disable sprite fencing. While disabled, `RenderedTarget.setXY`
+     * no longer clamps sprite positions to the stage bounds, allowing worlds
+     * larger than the stage.
+     * @param {boolean} enabled True to fence sprites within the stage (default).
+     */
+    setFencing (enabled) {
+        this.fencingEnabled = Boolean(enabled);
     }
 
     /**

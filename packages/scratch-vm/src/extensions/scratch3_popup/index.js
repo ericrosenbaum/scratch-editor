@@ -22,9 +22,11 @@ const THICKNESS_RANGE = {min: 0, max: 200};
 
 /**
  * Limits for the depth (in/out) axis, in stage units. Clamped so any input works.
+ * Wide enough to build worlds much larger than the stage, while staying inside
+ * the 3D camera's far plane so distant objects remain drawable.
  * @type {{min: number, max: number}}
  */
-const DEPTH_RANGE = {min: -480, max: 480};
+const DEPTH_RANGE = {min: -4800, max: 4800};
 
 /**
  * Camera view menu values. These strings are part of the saved project format, so
@@ -55,6 +57,10 @@ class Scratch3PopupBlocks {
          * @type {PopupScene}
          */
         this._scene = new PopupScene(runtime);
+
+        // A 3D world extends beyond the stage edges, so sprite fencing defaults to
+        // off while this extension is loaded (the `set fencing` block re-enables it).
+        this.runtime.setFencing(false);
 
         this._reset = this._reset.bind(this);
         this._dispose = this._dispose.bind(this);
@@ -140,6 +146,21 @@ class Scratch3PopupBlocks {
                     }
                 },
                 {
+                    opcode: 'shoulderCamera',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.shoulderCamera',
+                        default: 'set camera behind [SPRITE]',
+                        description: 'Over-the-shoulder camera: stay behind a sprite, looking the way it faces'
+                    }),
+                    arguments: {
+                        SPRITE: {
+                            type: ArgumentType.STRING,
+                            menu: 'spriteMenu'
+                        }
+                    }
+                },
+                {
                     opcode: 'setSky',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -168,6 +189,22 @@ class Scratch3PopupBlocks {
                             type: ArgumentType.STRING,
                             menu: 'backdropVisibility',
                             defaultValue: 'hidden'
+                        }
+                    }
+                },
+                {
+                    opcode: 'setFencing',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.setFencing',
+                        default: 'set fencing [FENCING]',
+                        description: 'Turn sprite fencing (clamping positions to the stage edges) on or off'
+                    }),
+                    arguments: {
+                        FENCING: {
+                            type: ArgumentType.STRING,
+                            menu: 'fencing',
+                            defaultValue: 'off'
                         }
                     }
                 },
@@ -442,6 +479,27 @@ class Scratch3PopupBlocks {
                         }
                     ]
                 },
+                fencing: {
+                    acceptReporters: false,
+                    items: [
+                        {
+                            text: formatMessage({
+                                id: 'popup.fencing.off',
+                                default: 'off',
+                                description: 'Sprites may move beyond the stage edges (the default in 3D)'
+                            }),
+                            value: 'off'
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'popup.fencing.on',
+                                default: 'on',
+                                description: 'Sprites are kept within the stage edges'
+                            }),
+                            value: 'on'
+                        }
+                    ]
+                },
                 spriteMenu: {
                     acceptReporters: true,
                     items: '_spriteMenu'
@@ -512,12 +570,15 @@ class Scratch3PopupBlocks {
     /**
      * Return to the flat view (used by the stop button). Also restores the backdrop
      * wall to its default (shown), so a project that hid it doesn't leave the wall
-     * hidden for the next project run. Runs on every green flag (via PROJECT_STOP_ALL).
+     * hidden for the next project run, and fencing to its extension default (off),
+     * so a project that fenced itself in doesn't constrain the next run. Runs on
+     * every green flag (via PROJECT_STOP_ALL).
      * @private
      */
     _reset () {
         this._scene.setMode('front');
         this._scene.setWallVisible(true);
+        this.runtime.setFencing(false);
     }
 
     /**
@@ -555,6 +616,27 @@ class Scratch3PopupBlocks {
     followCamera (args) {
         this._scene.followSprite(Cast.toString(args.SPRITE));
         this._visualChange();
+    }
+
+    /**
+     * `set camera behind [SPRITE]` - over-the-shoulder camera: stay behind the chosen
+     * sprite and look the way it faces (its spin heading), so turning the sprite turns
+     * the view to look along the axis it is about to move on.
+     * @param {object} args - the block arguments.
+     */
+    shoulderCamera (args) {
+        this._scene.shoulderSprite(Cast.toString(args.SPRITE));
+        this._visualChange();
+    }
+
+    /**
+     * `set fencing [on | off]` - re-enable (or disable again) clamping of sprite
+     * positions to the stage edges. Fencing defaults to off while this extension is
+     * loaded, making room for worlds larger than the stage.
+     * @param {object} args - the block arguments.
+     */
+    setFencing (args) {
+        this.runtime.setFencing(Cast.toString(args.FENCING) === 'on');
     }
 
     /**
