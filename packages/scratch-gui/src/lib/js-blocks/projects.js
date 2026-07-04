@@ -39,6 +39,8 @@ const makeBuilder = salt => {
     const num = (parent, value) => shadow(parent, 'math_number', 'NUM', value);
     const posNum = (parent, value) => shadow(parent, 'math_positive_number', 'NUM', value);
     const text = (parent, value) => shadow(parent, 'text', 'TEXT', value);
+    // A dropdown shadow (e.g. sound_sounds_menu) — a single-field menu block.
+    const menu = (parent, opcode, fieldName, value) => shadow(parent, opcode, fieldName, value);
     const colour = (parent, value) => {
         const id = uid();
         add({
@@ -98,7 +100,7 @@ const makeBuilder = salt => {
         };
     };
 
-    return {blocks, uid, num, posNum, text, colour, block};
+    return {blocks, uid, num, posNum, text, colour, menu, block};
 };
 
 /**
@@ -323,6 +325,32 @@ const PROJECTS = [
             hat.setNext(setSize.id);
             setSize.setNext(clearFx.id);
             clearFx.setNext(invert.id);
+        }
+    },
+    {
+        id: 'audio-spectrum',
+        name: 'Audio Spectrum (FFT)',
+        family: 'Spectrum',
+        blurb: 'Run an FFT on the project’s own live audio output and draw the frequency bars.',
+        build (libId, b) {
+            // Stack 1: keep some audio playing — the spectrum listens to the
+            // project's own output, not the microphone.
+            const hat = b.block('event_whenflagclicked', {topLevel: true, x: 40, y: 40});
+            const playLoop = b.block('control_forever', {parent: hat.id});
+            const play = b.block('sound_playuntildone', {parent: playLoop.id});
+            const soundMenu = b.menu(play.id, 'sound_sounds_menu', 'SOUND_MENU', 'Meow');
+            play.input('SOUND_MENU', soundMenu, soundMenu);
+            playLoop.input('SUBSTACK', play.id, null);
+            hat.setNext(playLoop.id);
+
+            // Stack 2: reset, then FFT + draw the bars every frame.
+            const hat2 = b.block('event_whenflagclicked', {topLevel: true, x: 360, y: 40});
+            const reset = b.block(`${libId}_ex3`, {parent: hat2.id}); // reset the spectrum
+            const drawLoop = b.block('control_forever', {parent: reset.id});
+            const draw = b.block(`${libId}_ex0`, {parent: drawLoop.id}); // draw the audio spectrum
+            drawLoop.input('SUBSTACK', draw.id, null);
+            hat2.setNext(reset.id);
+            reset.setNext(drawLoop.id);
         }
     },
     {

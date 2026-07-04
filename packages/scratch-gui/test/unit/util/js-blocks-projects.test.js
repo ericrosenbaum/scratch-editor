@@ -13,10 +13,10 @@ describe('example projects', () => {
         const libIds = built.libraries.map(lib => lib.id);
         built.libraries.forEach(lib => lib.blocks.forEach(blk => libOpcodes.add(`${lib.id}_${blk.opcode}`)));
 
-        // Exactly one top-level green-flag hat.
+        // At least one top-level stack, each starting with a green-flag hat.
         const tops = blocks.filter(b => b.topLevel);
-        expect(tops).toHaveLength(1);
-        expect(tops[0].opcode).toBe('event_whenflagclicked');
+        expect(tops.length).toBeGreaterThanOrEqual(1);
+        tops.forEach(top => expect(top.opcode).toBe('event_whenflagclicked'));
 
         let referencesLibraryBlock = false;
         for (const block of blocks) {

@@ -591,7 +591,183 @@ Scratch.data.set("ready", 0);`
     ]
 };
 
-const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND, CANVAS, LIFE, GRID, IMAGE, SCOPE];
+/** Spectrum — a real FFT over the project's live audio output (Audio Spectrum project). */
+const SPECTRUM = {
+    name: 'Spectrum',
+    color1: '#7C4DFF',
+    color2: '#6A3DF0',
+    color3: '#5B32D6',
+    docs: [
+`---
+type: command
+text: "draw the audio spectrum"
+warp: true
+inputs:
+---
+var N = 256;
+var W = 480;
+var H = 120;
+var BANDS = 32;
+if (Number(Scratch.data.get("ready")) !== 1) {
+  Scratch.canvas.resize(W, H);
+  Scratch.canvas.goToXY(0, -120);
+  Scratch.data.set("ready", 1);
+}
+Scratch.canvas.fill([10, 12, 28, 255]);
+var samples = Scratch.audioOutputSamples(N);
+if (samples.length < N) return;
+// FFT (radix-2 Cooley-Tukey) over a Hann-windowed slice of the live output.
+var re = new Array(N);
+var im = new Array(N);
+for (var i = 0; i < N; i++) {
+  var w = 0.5 - (0.5 * Math.cos((2 * Math.PI * i) / (N - 1)));
+  re[i] = samples[i] * w;
+  im[i] = 0;
+}
+var j = 0;
+for (var k = 0; k < N; k++) {
+  if (k < j) {
+    var t = re[j]; re[j] = re[k]; re[k] = t;
+    t = im[j]; im[j] = im[k]; im[k] = t;
+  }
+  var m = N >> 1;
+  while (m >= 1 && j >= m) { j -= m; m >>= 1; }
+  j += m;
+}
+for (var size = 2; size <= N; size *= 2) {
+  var wr = Math.cos((2 * Math.PI) / size);
+  var wi = -Math.sin((2 * Math.PI) / size);
+  for (var start = 0; start < N; start += size) {
+    var cr = 1;
+    var ci = 0;
+    for (var p = 0; p < size / 2; p++) {
+      var a = start + p;
+      var b = a + (size / 2);
+      var tr = (cr * re[b]) - (ci * im[b]);
+      var ti = (cr * im[b]) + (ci * re[b]);
+      re[b] = re[a] - tr;
+      im[b] = im[a] - ti;
+      re[a] += tr;
+      im[a] += ti;
+      var nc = (cr * wr) - (ci * wi);
+      ci = (cr * wi) + (ci * wr);
+      cr = nc;
+    }
+  }
+}
+re[0] = 0;
+im[0] = 0;
+// Group the N/2 magnitude bins into bars: bass on the left, treble on the right.
+var perBand = (N / 2) / BANDS;
+var barW = W / BANDS;
+for (var band = 0; band < BANDS; band++) {
+  var sum = 0;
+  for (var q = 0; q < perBand; q++) {
+    var bin = (band * perBand) + q;
+    sum += Math.sqrt((re[bin] * re[bin]) + (im[bin] * im[bin]));
+  }
+  var level = Math.min(1, (sum / perBand) / (N / 8));
+  var barH = Math.round(Math.sqrt(level) * (H - 2));
+  var f = band / BANDS;
+  var col = [70 + Math.round(f * 185), 230 - Math.round(f * 150), 140, 255];
+  var x0 = Math.round(band * barW) + 1;
+  var x1 = Math.round((band + 1) * barW) - 1;
+  for (var x = x0; x < x1; x++) {
+    for (var y = 0; y < barH; y++) {
+      Scratch.canvas.setPixel(x, H - 1 - y, col);
+    }
+  }
+}`,
+`---
+type: reporter
+text: "loudest frequency in Hz"
+inputs:
+---
+var N = 256;
+var samples = Scratch.audioOutputSamples(N);
+var rate = Scratch.audioSampleRate();
+if (samples.length < N || rate < 1) return 0;
+var re = new Array(N);
+var im = new Array(N);
+for (var i = 0; i < N; i++) {
+  var w = 0.5 - (0.5 * Math.cos((2 * Math.PI * i) / (N - 1)));
+  re[i] = samples[i] * w;
+  im[i] = 0;
+}
+var j = 0;
+for (var k = 0; k < N; k++) {
+  if (k < j) {
+    var t = re[j]; re[j] = re[k]; re[k] = t;
+    t = im[j]; im[j] = im[k]; im[k] = t;
+  }
+  var m = N >> 1;
+  while (m >= 1 && j >= m) { j -= m; m >>= 1; }
+  j += m;
+}
+for (var size = 2; size <= N; size *= 2) {
+  var wr = Math.cos((2 * Math.PI) / size);
+  var wi = -Math.sin((2 * Math.PI) / size);
+  for (var start = 0; start < N; start += size) {
+    var cr = 1;
+    var ci = 0;
+    for (var p = 0; p < size / 2; p++) {
+      var a = start + p;
+      var b = a + (size / 2);
+      var tr = (cr * re[b]) - (ci * im[b]);
+      var ti = (cr * im[b]) + (ci * re[b]);
+      re[b] = re[a] - tr;
+      im[b] = im[a] - ti;
+      re[a] += tr;
+      im[a] += ti;
+      var nc = (cr * wr) - (ci * wi);
+      ci = (cr * wi) + (ci * wr);
+      cr = nc;
+    }
+  }
+}
+var mags = new Array(N / 2);
+var best = 1;
+var bestMag = 0;
+for (var bin = 1; bin < N / 2; bin++) {
+  mags[bin] = Math.sqrt((re[bin] * re[bin]) + (im[bin] * im[bin]));
+  if (mags[bin] > bestMag) {
+    bestMag = mags[bin];
+    best = bin;
+  }
+}
+if (bestMag < 0.5) return 0;
+// Parabolic interpolation between neighboring bins for sub-bin precision.
+var shift = 0;
+if (best > 1 && best < (N / 2) - 1) {
+  var l = mags[best - 1];
+  var r = mags[best + 1];
+  var d = l - (2 * bestMag) + r;
+  if (d !== 0) shift = (0.5 * (l - r)) / d;
+}
+return Math.round(((best + shift) * rate) / N);`,
+`---
+type: reporter
+text: "audio output level"
+inputs:
+---
+var samples = Scratch.audioOutputSamples(256);
+if (samples.length < 1) return 0;
+var sum = 0;
+for (var i = 0; i < samples.length; i++) {
+  sum += samples[i] * samples[i];
+}
+return Math.round(Math.min(100, Math.sqrt(sum / samples.length) * 100));`,
+`---
+type: command
+text: "reset the spectrum"
+inputs:
+---
+Scratch.canvas.clear();
+Scratch.data.set("ready", 0);`
+    ]
+};
+
+const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND, CANVAS, LIFE, GRID, IMAGE, SCOPE, SPECTRUM];
 
 /**
  * Build a fully-compiled example library ready for installCustomLibrary.

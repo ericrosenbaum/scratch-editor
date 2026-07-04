@@ -391,7 +391,15 @@ const HARDWARE_LIBRARY = {
         {opcode: 'dur',
             type: 'reporter',
             signature: {text: 'duration of [n]', arguments: {n: {type: 'number', defaultValue: 1}}},
-            jsCompiled: 'return Scratch.soundDuration(Scratch.args.n);'}
+            jsCompiled: 'return Scratch.soundDuration(Scratch.args.n);'},
+        {opcode: 'out',
+            type: 'reporter',
+            signature: {text: 'output samples [n]', arguments: {n: {type: 'number', defaultValue: 4}}},
+            jsCompiled: 'return Scratch.audioOutputSamples(Scratch.args.n);'},
+        {opcode: 'rate',
+            type: 'reporter',
+            signature: {text: 'sample rate', arguments: {}},
+            jsCompiled: 'return Scratch.audioSampleRate();'}
     ]
 };
 
@@ -453,6 +461,52 @@ test('soundLoudness and soundDuration read decoded audio', t => {
     const loud = runtime._primitives['jslib_hw_loud']({n: 1}, makeUtil(runtime, target, {}));
     t.ok(Math.abs(loud - 50) < 1, `RMS of a 0.5 amplitude tone is ~50 (got ${loud})`);
     t.equal(runtime._primitives['jslib_hw_dur']({n: 1}, makeUtil(runtime, target, {})), 1.5, 'duration in seconds');
+    t.end();
+});
+
+test('audioOutputSamples and audioSampleRate tap the live audio output', t => {
+    const runtime = new Runtime();
+    runtime.installCustomLibrary(HARDWARE_LIBRARY);
+    const target = makeRichTarget();
+
+    // No audio engine attached: degrade to an empty read, never throw.
+    t.equal(runtime._primitives['jslib_hw_out']({n: 4}, makeUtil(runtime, target, {})), '[]',
+        'no engine -> empty sample list');
+    t.equal(runtime._primitives['jslib_hw_rate']({}, makeUtil(runtime, target, {})), 0,
+        'no engine -> sample rate 0');
+
+    // A fake engine whose analyser reports a ramp: buffer[i] = i / length.
+    let analysersCreated = 0;
+    const connected = [];
+    runtime.attachAudioEngine({
+        audioContext: {
+            sampleRate: 48000,
+            createAnalyser: () => {
+                analysersCreated++;
+                return {
+                    fftSize: 0,
+                    getFloatTimeDomainData (buffer) {
+                        for (let i = 0; i < buffer.length; i++) buffer[i] = i / buffer.length;
+                    }
+                };
+            }
+        },
+        getInputNode: () => ({connect: node => connected.push(node)})
+    });
+
+    const json = runtime._primitives['jslib_hw_out']({n: 4}, makeUtil(runtime, target, {}));
+    const samples = JSON.parse(json);
+    t.equal(samples.length, 4, 'returns the requested number of samples');
+    // The MOST RECENT samples are returned: the last 4 of the 2048-sample window.
+    t.ok(Math.abs(samples[3] - (2047 / 2048)) < 1e-9, 'newest sample is last');
+    t.ok(Math.abs(samples[0] - (2044 / 2048)) < 1e-9, 'window is the tail of the buffer');
+
+    t.equal(runtime._primitives['jslib_hw_rate']({}, makeUtil(runtime, target, {})), 48000,
+        'sample rate comes from the audio context');
+
+    runtime._primitives['jslib_hw_out']({n: 8}, makeUtil(runtime, target, {}));
+    t.equal(analysersCreated, 1, 'the analyser tap is created once and reused');
+    t.equal(connected.length, 1, 'the tap is connected to the output mix once');
     t.end();
 });
 

@@ -261,6 +261,42 @@ trigger events when the level crosses a threshold.
 
 ---
 
+## 9. Audio Spectrum (FFT) — library: **Spectrum**
+
+**What it does:** A dancing frequency-bar visualizer. One script loops the Meow
+sound; the other grabs the project's live audio output every frame, runs a real
+FFT (fast Fourier transform) on it, and draws 32 bars on a canvas strip along the
+bottom of the stage — bass on the left, treble on the right.
+
+**Beyond Scratch:** hearing the project's *own* output. Vanilla Scratch's
+"loudness" reads only the microphone; nothing can observe the audio the project
+itself is playing, let alone split it into frequencies. The new
+`Scratch.audioOutputSamples()` taps the audio engine's output mix (an
+AnalyserNode on the node every sound flows through), and the block's JS runs a
+textbook radix-2 Cooley-Tukey FFT — with a Hann window and all — right in the
+authored code.
+
+**Script (Sprite1, two stacks):**
+```
+when green flag clicked
+forever
+  play sound [Meow v] until done
+
+when green flag clicked
+reset the spectrum                            // Spectrum
+forever
+  draw the audio spectrum                     // Spectrum (warp: FFT + draw, once per frame)
+```
+
+**Blocks used:** `draw the audio spectrum`, `reset the spectrum`,
+`loudest frequency in Hz` (peak bin with parabolic interpolation — play a note,
+see its pitch), `audio output level` (RMS of the live output). Invites tinkering:
+swap in your own music; drive a sprite's size from `audio output level`; say the
+`loudest frequency in Hz` while whistling into a Play Note block; change the
+number of bars or the colors.
+
+---
+
 ## Notes for the generator
 
 - Each project embeds only its own library in `customLibraries`.

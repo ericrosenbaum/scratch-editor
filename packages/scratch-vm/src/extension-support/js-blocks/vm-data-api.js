@@ -232,6 +232,71 @@ const readSoundSamples = (target, indexOrName) => {
 };
 
 /**
+ * AnalyserNode taps on each audio engine's output, created lazily and reused.
+ * The tap hangs off the engine's input node — the mix point every project sound
+ * flows through on its way to the speakers — so reading it observes the live
+ * audio OUTPUT (not the microphone) without altering the signal path.
+ * @type {WeakMap.<object, object>}
+ */
+const outputTaps = new WeakMap();
+
+/** Time-domain window the output tap keeps readable (the AnalyserNode fftSize). */
+const OUTPUT_TAP_SIZE = 2048;
+
+/**
+ * Get (or lazily create and connect) the analyser tapping a runtime's audio output.
+ * @param {Runtime} runtime - the VM runtime.
+ * @returns {?AnalyserNode} the tap, or null when the audio engine is unavailable.
+ */
+const getOutputTap = runtime => {
+    const engine = runtime && runtime.audioEngine;
+    if (!engine || !engine.audioContext || typeof engine.getInputNode !== 'function') return null;
+    let tap = outputTaps.get(engine);
+    if (!tap) {
+        try {
+            tap = engine.audioContext.createAnalyser();
+            tap.fftSize = OUTPUT_TAP_SIZE;
+            engine.getInputNode().connect(tap);
+        } catch (e) {
+            return null;
+        }
+        outputTaps.set(engine, tap);
+    }
+    return tap;
+};
+
+/**
+ * The most recent time-domain samples (-1…1) of the project's live audio output.
+ * @param {Runtime} runtime - the VM runtime.
+ * @param {*} count - how many samples to return (capped at the tap window);
+ *   anything non-numeric means "the whole window".
+ * @returns {Array.<number>} samples, newest last; empty when audio is unavailable.
+ */
+const readOutputSamples = (runtime, count) => {
+    const tap = getOutputTap(runtime);
+    if (!tap || typeof tap.getFloatTimeDomainData !== 'function') return [];
+    const size = tap.fftSize;
+    const requested = Math.round(Number(count));
+    const n = requested >= 1 ? Math.min(requested, size) : size;
+    const buffer = new Float32Array(size);
+    tap.getFloatTimeDomainData(buffer);
+    const out = new Array(n);
+    const offset = size - n;
+    for (let i = 0; i < n; i++) out[i] = buffer[offset + i];
+    return out;
+};
+
+/**
+ * The audio output sample rate in Hz. 0 when the audio engine is unavailable.
+ * @param {Runtime} runtime - the VM runtime.
+ * @returns {number} samples per second.
+ */
+const readAudioSampleRate = runtime => {
+    const engine = runtime && runtime.audioEngine;
+    return (engine && engine.audioContext && engine.audioContext.sampleRate) || 0;
+};
+
+/**
  * Format an r,g,b triple (0-255) as a #rrggbb hex string.
  * @param {number} r - red.
  * @param {number} g - green.
@@ -364,6 +429,8 @@ const install = (interp, Scratch, ctx) => {
     fn('soundSamples', indexOrName => toPseudo(readSoundSamples(target, native(indexOrName))));
     fn('soundLoudness', indexOrName => readSoundLoudness(target, native(indexOrName)));
     fn('soundDuration', indexOrName => readSoundDuration(target, native(indexOrName)));
+    fn('audioOutputSamples', count => toPseudo(readOutputSamples(runtime, native(count))));
+    fn('audioSampleRate', () => readAudioSampleRate(runtime));
     fn('colorAtStage', (x, y) => toPseudo(readStageColor(runtime, native(x), native(y))));
 
     // pixelColor reads the sprite's own rendered costume pixels; cache the

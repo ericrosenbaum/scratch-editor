@@ -36,7 +36,9 @@ const API_REFERENCE = [
             {sig: 'Scratch.costumeSVG(indexOrName)', desc: 'The SVG source of a vector costume.'},
             {sig: 'Scratch.soundLoudness(indexOrName)', desc: "A sound's overall loudness, 0–100 (RMS)."},
             {sig: 'Scratch.soundDuration(indexOrName)', desc: "A sound's length in seconds."},
-            {sig: 'Scratch.soundSamples(indexOrName)', desc: "A sound's waveform as an array of samples (-1…1)."}
+            {sig: 'Scratch.soundSamples(indexOrName)', desc: "A sound's waveform as an array of samples (-1…1)."},
+            {sig: 'Scratch.audioOutputSamples(count)', desc: "The most recent samples (-1…1) of the project's LIVE audio output — everything currently playing, not the mic. Up to 2048; newest last."},
+            {sig: 'Scratch.audioSampleRate()', desc: 'Samples per second of the audio output (usually 44100 or 48000). 0 when audio is unavailable.'}
         ]
     },
     {
