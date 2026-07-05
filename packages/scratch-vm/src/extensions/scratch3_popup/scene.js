@@ -73,14 +73,13 @@ const CAM_HEIGHT = 150;
 const AUTO_SPIN = 0.006;
 // Over-the-shoulder camera: sits closer and lower than the orbit camera, behind the
 // sprite, and turns to look along the sprite's heading with its own (slower) ease so
-// a snap turn (e.g. `spin to 180`) swings the view around smoothly. The camera hangs
-// slightly OFF the heading axis (like a third-person game camera): a sprite card seen
-// exactly along its own heading is edge-on (only its thickness shows), so the offset
-// keeps the character readable while still looking down its line of travel.
+// a snap turn (e.g. `spin to 180`) swings the view around smoothly. The heading is
+// the card's face normal, so from directly behind the camera sees the card's (whole)
+// back face — the character stays readable while the view looks down its line of
+// travel.
 const SHOULDER_RADIUS = 300;
 const SHOULDER_HEIGHT = 90;
 const SHOULDER_TURN_HALFLIFE = 0.3;
-const SHOULDER_YAW_OFFSET = 0.45;
 // Follow-camera smoothing: the half-life (in seconds) of the exponential ease applied to
 // the camera's focus point. A sprite that teleports/jumps is then tracked with a smooth
 // glide rather than a snap. Frame-rate independent (see _updateCamera); lower = snappier.
@@ -487,8 +486,7 @@ class PopupScene {
             if (yaw !== null) {
                 const turn = 1 - Math.pow(2, -dt / SHOULDER_TURN_HALFLIFE);
                 const tau = 2 * Math.PI;
-                const target = yaw + SHOULDER_YAW_OFFSET;
-                const delta = (((((target - this._angle) + Math.PI) % tau) + tau) % tau) - Math.PI;
+                const delta = (((((yaw - this._angle) + Math.PI) % tau) + tau) % tau) - Math.PI;
                 this._angle += delta * turn;
             }
         }
@@ -813,7 +811,7 @@ class PopupScene {
 
         // Orient the card from the sprite's direction + rotation style and the Pop-Up
         // tilt/spin (see _orientation). Shared with forwardVector so "move in 3D" always
-        // travels the way the card's nose points (its rightward heading).
+        // travels the way the card faces (its front-face normal).
         const o = this._orientation(target, state);
         entry.group.rotation.set(o.x, o.y, o.z);
 
@@ -852,19 +850,20 @@ class PopupScene {
     }
 
     /**
-     * The unit vector the card's "nose" points in world space — i.e. its local +x (the
-     * drawing's rightward / direction-90 heading), rotated by the card's full 3D
-     * orientation. At rest (direction 90, no spin/tilt) this is +x (right), so `move ...
-     * steps in 3D` matches 2D `move 10 steps`; `direction` then steers it in the wall
-     * plane just like 2D, spin (yaw) angles it into/out of the page, and tilt rolls it.
-     * Built from the same orientation as the rendered mesh, so movement always matches
-     * where the card points. Safe to call headless.
+     * The unit vector the card FACES in world space — its local +z (the front-face
+     * normal), rotated by the card's full 3D orientation. At rest (no spin/tilt) this
+     * is +z: out of the page, toward the camera and away from the backdrop, so `move
+     * ... steps in 3D` carries the sprite forward along the depth axis. Spin (yaw)
+     * steers the heading left/right, tilt pitches it up/down, and a left-right flip
+     * turns it around; `direction` (rotation within the card's own plane) leaves the
+     * heading unchanged. Built from the same orientation as the rendered mesh, so
+     * movement always goes the way the card faces. Safe to call headless.
      * @param {Target} target - the sprite to read orientation from.
      * @returns {THREE.Vector3} the world-space heading direction (unit length).
      */
     forwardVector (target) {
         const o = this._orientation(target, getPopupState(target));
-        return new THREE.Vector3(1, 0, 0).applyEuler(new THREE.Euler(o.x, o.y, o.z, 'XYZ'));
+        return new THREE.Vector3(0, 0, 1).applyEuler(new THREE.Euler(o.x, o.y, o.z, 'XYZ'));
     }
 
     /**

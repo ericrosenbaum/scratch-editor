@@ -364,7 +364,7 @@ class Scratch3PopupBlocks {
                     text: formatMessage({
                         id: 'popup.move3D',
                         default: 'move [STEPS] steps in 3D',
-                        description: 'Move this sprite along its 3D heading (spin + tilt)'
+                        description: 'Move this sprite the way it faces (toward the camera at rest; spin/tilt steer)'
                     }),
                     arguments: {
                         STEPS: {
@@ -783,11 +783,12 @@ class Scratch3PopupBlocks {
     }
 
     /**
-     * `move [STEPS] steps in 3D` - move along the sprite's heading, the direction its nose
-     * points. At rest (direction 90, no spin/tilt) the nose points right, so this matches
-     * 2D `move 10 steps`; the sprite's `direction` then steers it in the wall plane exactly
-     * like 2D, while spin (yaw) angles the heading into/out of the page and tilt rolls it.
-     * Sharing the scene's orientation maths guarantees movement matches what's rendered.
+     * `move [STEPS] steps in 3D` - move forward along the depth axis, the way the
+     * sprite faces (its front-face normal). At rest (no spin/tilt) that is out of the
+     * page: toward the camera and away from the backdrop, so depth decreases. Spin
+     * (yaw) steers the heading left/right, tilt pitches it up/down, and a left-right
+     * flip turns it around. Sharing the scene's orientation maths guarantees movement
+     * matches what's rendered.
      * @param {object} args - the block arguments.
      * @param {object} util - block utility (provides the current target).
      */

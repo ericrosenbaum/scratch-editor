@@ -70,34 +70,35 @@ test('PopupScene._hideSprites hides every non-stage drawable, including clones',
     t.end();
 });
 
-test('PopupScene.forwardVector points along the heading (2D-compatible) across all axes', t => {
+test('PopupScene.forwardVector points the way the card faces (depth axis at rest)', t => {
     const runtime = {renderer: null, targets: [], on: () => {}};
     const scene = new PopupScene(runtime);
     const near = (a, b) => Math.abs(a - b) < 1e-9;
 
-    // At rest (direction 90, no spin/tilt) the heading is +x (right), like 2D `move`.
+    // At rest (no spin/tilt) the heading is the face normal +z: out of the page,
+    // toward the camera and away from the backdrop.
     let f = scene.forwardVector(makeTarget({direction: 90}));
-    t.ok(near(f.x, 1) && near(f.y, 0) && near(f.z, 0), 'rest (dir 90) heads +x (right), like 2D move');
+    t.ok(near(f.x, 0) && near(f.y, 0) && near(f.z, 1), 'rest heads +z (toward the camera)');
 
-    // `direction` steers the heading in the wall plane exactly like 2D: dir 0 -> up (+y).
+    // `direction` rotates the card within its own plane, so the heading is unchanged.
     f = scene.forwardVector(makeTarget({direction: 0}));
-    t.ok(near(f.x, 0) && near(f.y, 1) && near(f.z, 0), 'direction 0 heads +y (up), like 2D move');
+    t.ok(near(f.x, 0) && near(f.y, 0) && near(f.z, 1), 'direction spins in-plane; heading stays +z');
 
-    // Spin (yaw about y) angles the heading into the page: spin 90 -> -z.
+    // Spin (yaw about y) steers the heading sideways: spin 90 -> +x (right).
     const spun = makeTarget({direction: 90});
     getPopupState(spun).spin = 90;
     f = scene.forwardVector(spun);
-    t.ok(near(f.x, 0) && near(f.y, 0) && near(f.z, -1), 'spin 90 angles the heading into the page (-z)');
+    t.ok(near(f.x, 1) && near(f.y, 0) && near(f.z, 0), 'spin 90 steers the heading to +x (right)');
 
-    // Tilt about the heading axis is a roll: a straight-ahead (+x) heading is unchanged.
+    // Tilt (pitch about x) tips the heading vertically: tilt 90 dives straight down.
     const tilted = makeTarget({direction: 90});
     getPopupState(tilted).tilt = 90;
     f = scene.forwardVector(tilted);
-    t.ok(near(f.x, 1) && near(f.y, 0) && near(f.z, 0), 'tilt 90 rolls the card; +x heading unchanged');
+    t.ok(near(f.x, 0) && near(f.y, -1) && near(f.z, 0), 'tilt 90 pitches the heading straight down');
 
-    // A left-right flip (facing left) reverses the heading to -x (left).
+    // A left-right flip (facing left) turns the card around: heading -z (into the page).
     f = scene.forwardVector(makeTarget({rotationStyle: 'left-right', direction: -90}));
-    t.ok(near(f.x, -1) && near(f.y, 0) && near(f.z, 0), 'left-right flip heads -x (left)');
+    t.ok(near(f.x, 0) && near(f.y, 0) && near(f.z, -1), 'left-right flip heads -z (into the page)');
 
     t.end();
 });
@@ -249,27 +250,31 @@ test('PopupScene shoulder camera turns to look along the sprite heading', t => {
     t.equal(scene._mode, 'shoulder', 'shoulderSprite enters shoulder mode');
     t.equal(scene._followName, 'Hero', 'shoulderSprite tracks the named sprite');
 
-    // Facing right (+x, the rest heading): the camera should settle behind the sprite
-    // (offset -x) looking +x, i.e. heading yaw -PI/2. The camera angle additionally
-    // hangs 0.45 rad off the heading axis (SHOULDER_YAW_OFFSET) so the card sprite
-    // isn't seen exactly edge-on.
-    const offset = 0.45;
-    t.ok(Math.abs(scene._shoulderYaw() - (-Math.PI / 2)) < 1e-9, 'heading +x puts the heading yaw at -PI/2');
-    for (let i = 0; i < 300; i++) scene._updateCamera();
-    t.ok(Math.abs(scene._angle - (-Math.PI / 2) - offset) < 0.01, 'the yaw converges onto the offset heading');
-    t.ok(scene._camera.position.x < -100, 'the camera sits behind the sprite (on -x)');
+    // Angles are eased without wrapping, so compare them modulo 2*PI.
+    const tau = 2 * Math.PI;
+    const angDist = (a, b) => Math.abs((((((a - b) + Math.PI) % tau) + tau) % tau) - Math.PI);
 
-    // Turn left (spin 90 -> heading -z, into the page): the yaw eases toward 0, smoothly.
+    // At rest the heading is +z (toward the camera): the shoulder camera settles
+    // behind the sprite on -z (the backdrop side) looking +z, i.e. yaw PI, and sees
+    // the card's back face full on.
+    t.ok(angDist(scene._shoulderYaw(), Math.PI) < 1e-9, 'rest heading (+z) puts the camera yaw at PI');
+    for (let i = 0; i < 300; i++) scene._updateCamera();
+    t.ok(angDist(scene._angle, Math.PI) < 0.01, 'the yaw converges onto the heading');
+    t.ok(scene._camera.position.z < -100, 'the camera sits behind the sprite (on -z)');
+
+    // Turn right (spin 90 -> heading +x): the yaw eases toward -PI/2, smoothly.
     getPopupState(hero).spin = 90;
+    const before = scene._angle;
     scene._updateCamera();
-    t.ok(scene._angle > -Math.PI / 2 && scene._angle < offset, 'one frame turns the yaw only part-way (no snap)');
+    const step = angDist(scene._angle, before);
+    t.ok(step > 0 && step < Math.PI / 2, 'one frame turns the yaw only part-way (no snap)');
     for (let i = 0; i < 300; i++) scene._updateCamera();
-    t.ok(Math.abs(scene._angle - offset) < 0.01, 'the yaw converges onto the new (offset) heading');
+    t.ok(angDist(scene._angle, -Math.PI / 2) < 0.01, 'the yaw converges onto the new heading');
 
-    // A straight-up heading (direction 0 -> +y) has no ground-plane component:
+    // A vertical heading (tilt 90 -> straight down) has no ground-plane component:
     // keep the current yaw.
     getPopupState(hero).spin = 0;
-    hero.direction = 0;
+    getPopupState(hero).tilt = 90;
     t.equal(scene._shoulderYaw(), null, 'a vertical heading reports no yaw (keep the current one)');
     t.end();
 });
