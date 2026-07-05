@@ -359,3 +359,27 @@ test('PopupScene.bubbleBounds projects the mesh box into stage coordinates', t =
     t.equal(scene.bubbleBounds(hero), null, 'a hidden mesh reports no bounds');
     t.end();
 });
+
+test('PopupScene.pivotOffset puts the costume rotation centre at the group origin', t => {
+    const scene = new PopupScene({renderer: null, targets: [], on: () => {}});
+
+    // A centred rotation centre (all the classic art): no offset.
+    t.same(scene.pivotOffset({rotationCenterX: 50, rotationCenterY: 40}, 1, 100, 80), {x: 0, y: 0},
+        'centred rotation centre needs no offset');
+
+    // A shoulder pivot at the top-middle of a hanging arm: the content hangs below.
+    t.same(scene.pivotOffset({rotationCenterX: 11, rotationCenterY: 9}, 1, 22, 78), {x: 0, y: -30},
+        'a top pivot shifts the content down');
+
+    // A neck pivot at the bottom-middle of a head: the content sits above.
+    t.same(scene.pivotOffset({rotationCenterX: 30, rotationCenterY: 56}, 1, 60, 58), {x: 0, y: 27},
+        'a bottom pivot shifts the content up');
+
+    // bitmapResolution divides costume-pixel coordinates.
+    t.same(scene.pivotOffset({rotationCenterX: 100, rotationCenterY: 80}, 2, 100, 80), {x: 0, y: 0},
+        'bitmap resolution is applied to the rotation centre');
+
+    // No rotation centre recorded: assume centred.
+    t.same(scene.pivotOffset(null, 1, 100, 80), {x: 0, y: 0}, 'a missing costume assumes centred');
+    t.end();
+});

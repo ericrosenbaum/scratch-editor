@@ -896,14 +896,15 @@ class PopupScene {
             const res = costume.bitmapResolution || 1;
             const w = ((tex.image && tex.image.width) || 100) / res;
             const h = ((tex.image && tex.image.height) || 100) / res;
+            const offset = this.pivotOffset(costume, res, w, h);
 
             let built = false;
             try {
-                built = this._applySilhouette(entry, tex, thickness, w, h);
+                built = this._applySilhouette(entry, tex, thickness, w, h, offset);
             } catch {
                 built = false;
             }
-            if (!built) this._applyBox(entry, w, h, thickness, tex);
+            if (!built) this._applyBox(entry, w, h, thickness, tex, offset);
             this.runtime.requestRedraw();
         });
     }
@@ -918,11 +919,12 @@ class PopupScene {
      * @param {number} thickness - extrusion depth.
      * @param {number} w - display width in stage units.
      * @param {number} h - display height in stage units.
+     * @param {{x: number, y: number}} offset - rotation-centre offset (see pivotOffset).
      * @returns {boolean} true if the silhouette was built.
      * @private
      */
-    _applySilhouette (entry, tex, thickness, w, h) {
-        const built = this._buildExtrudedMeshes(tex, thickness, w, h);
+    _applySilhouette (entry, tex, thickness, w, h, offset) {
+        const built = this._buildExtrudedMeshes(tex, thickness, w, h, offset);
         if (!built) return false;
         for (const mesh of built.meshes) entry.group.add(mesh);
         entry.materials = built.materials;
@@ -932,17 +934,40 @@ class PopupScene {
     }
 
     /**
+     * The offset that puts a costume's rotation centre at the card group's origin.
+     * Scratch sprites rotate (and sit) around their costume's rotation centre, not
+     * the costume's middle, so the card's geometry is shifted by this amount: the
+     * sprite's x/y then marks the pivot, and rotating `direction`/spin/tilt swings
+     * the card around it exactly like 2D — which is what makes articulated parts
+     * (an arm pivoting at its shoulder) work in 3D. Centred rotation centres (all
+     * the classic art) yield a zero offset. Safe to call headless.
+     * @param {?object} costume - the costume (rotationCenterX/Y in costume pixels).
+     * @param {number} res - the costume's bitmapResolution.
+     * @param {number} w - display width in stage units.
+     * @param {number} h - display height in stage units.
+     * @returns {{x: number, y: number}} the content offset in stage units.
+     */
+    pivotOffset (costume, res, w, h) {
+        const rcx = costume && Number.isFinite(costume.rotationCenterX) ? costume.rotationCenterX / res : w / 2;
+        const rcy = costume && Number.isFinite(costume.rotationCenterY) ? costume.rotationCenterY / res : h / 2;
+        // Costume coords run y-down from the top-left; card coords run y-up, centred.
+        return {x: (w / 2) - rcx, y: rcy - (h / 2)};
+    }
+
+    /**
      * Build the meshes for a silhouette extrusion (side walls + front/back faces)
      * from a costume texture. Reused for both live sprites and stamps.
      * @param {THREE.Texture} tex - the costume texture (its image is rasterized).
      * @param {number} thickness - extrusion depth.
      * @param {number} w - display width in stage units.
      * @param {number} h - display height in stage units.
+     * @param {{x: number, y: number}} offset - content offset that puts the costume's
+     *   rotation centre at the group origin (see pivotOffset).
      * @returns {?{meshes: THREE.Mesh[], materials: THREE.Material[], textures: THREE.Texture[]}}
      *   the built resources, or null if the costume has no opaque pixels.
      * @private
      */
-    _buildExtrudedMeshes (tex, thickness, w, h) {
+    _buildExtrudedMeshes (tex, thickness, w, h, offset) {
         const img = tex.image;
         if (!img || !img.width || !img.height) return null;
 
@@ -973,15 +998,17 @@ class PopupScene {
         if (!any) return null;
 
         const th = Math.max(thickness, 0.01);
+        const o = offset || {x: 0, y: 0};
 
         // Side walls along the alpha boundary, coloured from the costume's own pixels.
         const edgeMat = new THREE.MeshBasicMaterial({vertexColors: true, side: THREE.DoubleSide});
         const sideMesh = new THREE.Mesh(this._buildSideGeometry(mask, pixels, mw, mh, w, h, th), edgeMat);
+        sideMesh.position.set(o.x, o.y, 0);
 
         // Front face: the drawing, masked to its own silhouette via alphaTest.
         const faceMat = new THREE.MeshBasicMaterial({map: tex, transparent: true, alphaTest: 0.05});
         const front = new THREE.Mesh(new THREE.PlaneGeometry(w, h), faceMat);
-        front.position.z = th / 2;
+        front.position.set(o.x, o.y, th / 2);
 
         // Back face: same drawing, but mirrored horizontally so that (combined with
         // facing the other way) it reads the right way round from behind.
@@ -993,7 +1020,7 @@ class PopupScene {
         backTex.needsUpdate = true;
         const backMat = new THREE.MeshBasicMaterial({map: backTex, transparent: true, alphaTest: 0.05});
         const back = new THREE.Mesh(new THREE.PlaneGeometry(w, h), backMat);
-        back.position.z = -th / 2;
+        back.position.set(o.x, o.y, -th / 2);
         back.rotation.y = Math.PI;
 
         // Graphic effects: full colour/brightness/ghost on the textured faces, ghost
@@ -1143,9 +1170,10 @@ class PopupScene {
      * @param {number} h - native costume height in stage units.
      * @param {number} thickness - extrusion depth.
      * @param {THREE.Texture} tex - the loaded costume texture.
+     * @param {{x: number, y: number}} offset - rotation-centre offset (see pivotOffset).
      * @private
      */
-    _applyBox (entry, w, h, thickness, tex) {
+    _applyBox (entry, w, h, thickness, tex, offset) {
         const depth = Math.max(thickness, 0.01);
         const geo = new THREE.BoxGeometry(w, h, depth);
         const face = new THREE.MeshBasicMaterial({map: tex, transparent: true, alphaTest: 0.05});
@@ -1158,6 +1186,8 @@ class PopupScene {
 
         // BoxGeometry material group order: +x, -x, +y, -y, +z (front), -z (back).
         const mesh = new THREE.Mesh(geo, [edge, edge, edge, edge, face, face]);
+        const o = offset || {x: 0, y: 0};
+        mesh.position.set(o.x, o.y, 0);
         entry.group.add(mesh);
     }
 
@@ -1200,7 +1230,7 @@ class PopupScene {
             tex.colorSpace = THREE.SRGBColorSpace;
             const w = ((tex.image && tex.image.width) || 100) / res;
             const h = ((tex.image && tex.image.height) || 100) / res;
-            const built = this._buildExtrudedMeshes(tex, thickness, w, h);
+            const built = this._buildExtrudedMeshes(tex, thickness, w, h, this.pivotOffset(costume, res, w, h));
             if (!built) {
                 tex.dispose();
                 return;
@@ -1293,6 +1323,11 @@ class PopupScene {
         for (const target of this.runtime.targets) {
             const looksState = target.getCustomState && target.getCustomState('Scratch.looks');
             if (looksState && typeof looksState.drawableId === 'number') {
+                // Bubbles must sit above the (opaque, full-stage) 3D composite. A bubble
+                // whose drawable was created before the scene's — e.g. a `say` in the
+                // same green-flag tick that first enters 3D — would otherwise be stuck
+                // behind it, so re-assert its place at the top of the layer.
+                this._renderer.setDrawableOrder(looksState.drawableId, Infinity, StageLayering.SPRITE_LAYER);
                 // The constant lives on RenderedTarget.EVENT_TARGET_VISUAL_CHANGE; use the
                 // literal to avoid pulling the whole class in here.
                 target.emit('EVENT_TARGET_VISUAL_CHANGE', target);
