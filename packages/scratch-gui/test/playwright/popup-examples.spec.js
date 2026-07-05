@@ -69,7 +69,14 @@ const examples = [
     {file: 'popup-example-14.sb3',
         shot: 'example-race.png',
         drag: false,
-        keys: ['ArrowUp', 'ArrowUp', 'ArrowUp', 'ArrowUp']}
+        keys: ['ArrowUp', 'ArrowUp', 'ArrowUp', 'ArrowUp']},
+    // Tiny town: walk a few steps into the world; the camera rides behind the cat.
+    // Bumping the welcome sign (and its 3D-anchored say bubble) is covered by
+    // popup-town-explorable.spec.js.
+    {file: 'popup-example-15.sb3',
+        shot: 'example-town.png',
+        drag: false,
+        keys: ['ArrowUp', 'ArrowUp', 'ArrowLeft', 'ArrowUp']}
 ];
 
 for (const ex of examples) {

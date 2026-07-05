@@ -148,6 +148,49 @@ test('3D Pop-Up example 14 (race day): a giant track map with gates, trees and h
     });
 });
 
+test('3D Pop-Up example 15 (tiny town): an explorable world of talking discoveries', {skip: !haveStarters}, t => {
+    loadAndRun('popup-example-15.sb3', 30).then(({vm, errors}) => {
+        t.equal(errors.length, 0, 'no runtime errors');
+        t.equal(vm.runtime.fencingEnabled, false, 'fencing is off while the extension is loaded');
+        t.ok(vm.runtime.bubblePositionProvider,
+            'the extension registered a bubble position provider (3D-anchored say bubbles)');
+
+        const map = vm.runtime.targets.find(target => target.sprite && target.sprite.name === 'Map');
+        t.ok(map, 'the town map sprite exists');
+        t.equal(popupState(map).tilt, -90, 'the map lies flat, front face up');
+
+        const trees = vm.runtime.targets.filter(
+            target => target.sprite && target.sprite.name === 'Tree' && !target.isOriginal
+        );
+        t.equal(trees.length, 20, 'ten tree spots, two crossed clones each');
+        const houses = vm.runtime.targets.filter(
+            target => target.sprite && target.sprite.name === 'House' && !target.isOriginal
+        );
+        t.equal(houses.length, 4, 'all four town houses were built');
+
+        // The eight discoveries stand at their hiding spots; the welcome sign is
+        // straight ahead of the spawn so the first find is unmissable.
+        const names = ['Sign', 'Fountain', 'Mailbox', 'Duck', 'Mushroom', 'Gnome', 'Hat', 'Ghost'];
+        for (const name of names) {
+            t.ok(vm.runtime.targets.some(target => target.sprite && target.sprite.name === name),
+                `the ${name} discovery exists`);
+        }
+        const sign = vm.runtime.targets.find(target => target.sprite && target.sprite.name === 'Sign');
+        t.equal(sign.x, 0, 'the welcome sign is straight ahead of the spawn');
+        t.equal(popupState(sign).depth, 230, 'the welcome sign is a short walk in');
+
+        const cat = vm.runtime.targets.find(target => target.sprite && target.sprite.name === 'Cat');
+        t.ok(cat, 'the cat explorer exists');
+        t.equal(popupState(cat).spin, 180, 'the cat faces into the world');
+
+        const stage = vm.runtime.getTargetForStage();
+        const foundVar = Object.values(stage.variables).find(v => v.name === 'Found');
+        t.ok(foundVar, 'the global Found counter exists');
+        t.equal(Number(foundVar && foundVar.value), 0, 'nothing is found at the start');
+        t.end();
+    });
+});
+
 test('3D Pop-Up example 9 (crystal): crossed clones inherit distinct spins', {skip: !haveStarters}, t => {
     loadAndRun('popup-example-9.sb3', 30).then(({vm, errors}) => {
         t.equal(errors.length, 0, 'no runtime errors');

@@ -18,6 +18,7 @@ import thumbGems from './starters/popup-example-11.png';
 import thumbCarousel from './starters/popup-example-12.png';
 import thumbPlatformRun from './starters/popup-example-13.png';
 import thumbRace from './starters/popup-example-14.png';
+import thumbTown from './starters/popup-example-15.png';
 
 import sb3Card from './starters/popup-example-1.sb3';
 import sb3Fish from './starters/popup-example-2.sb3';
@@ -33,6 +34,7 @@ import sb3Gems from './starters/popup-example-11.sb3';
 import sb3Carousel from './starters/popup-example-12.sb3';
 import sb3PlatformRun from './starters/popup-example-13.sb3';
 import sb3Race from './starters/popup-example-14.sb3';
+import sb3Town from './starters/popup-example-15.sb3';
 
 const starters = [
     {
@@ -144,6 +146,15 @@ const starters = [
             'checkered gates to set your time!',
         thumbnail: thumbRace,
         sb3: sb3Race
+    },
+    {
+        id: 'tiny-town',
+        title: 'Tiny Town',
+        description: 'Drop into a little town with a forest next door and see what you ' +
+            'can find. Up walks, left/right turn. Bump into things — eight of them have ' +
+            'something to say!',
+        thumbnail: thumbTown,
+        sb3: sb3Town
     }
 ];
 

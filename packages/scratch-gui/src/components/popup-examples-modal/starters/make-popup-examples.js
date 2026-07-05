@@ -16,6 +16,8 @@
 //                                          tiles along the depth axis; shoulder cam)
 //   popup-example-14.sb3  Race Day        (first-person racing: a giant SVG track
 //                                          map, spin steering, gates, trees, houses)
+//   popup-example-15.sb3  Tiny Town       (an explorable town + forest of hidden
+//                                          discoveries that talk when bumped)
 //
 // Run: node src/components/popup-examples-modal/starters/make-popup-examples.js
 
@@ -1298,6 +1300,210 @@ const raceDay = [
     })
 ];
 
+// ---- example 15: Tiny Town (an explorable town + forest full of discoveries) ------
+// A little open world: one giant map SVG (grass, a dirt path, a town plaza, a pond
+// and a forest floor) laid flat, a town of houses on one side, a forest of
+// crossed-card trees on the other, and eight small discoveries hidden around the
+// world. You drop in knowing nothing; walk around (up walks the way you face,
+// left/right turn — the shoulder camera turns with you) and bump into things to see
+// what they are: each discovery SAYS something when the Scratch Cat touches it, with
+// its speech bubble anchored in screen space to its projected 3D position (the
+// runtime's bubblePositionProvider, fed by the scene). A "Found" counter ticks up
+// the first time you meet each one; find all eight and the cat celebrates. The cat
+// itself is the real Scratch library costume (committed under assets/), per the
+// use-library-art-where-possible rule; the CDN isn't reachable from this repo so the
+// other props are hand-drawn in the same style as the rest of the examples.
+const catSVG = regFile('cat-a.svg');
+const townMapSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1440" viewBox="0 0 1920 1440">
+  <rect width="1920" height="1440" fill="#7cc95f"/>
+  <ellipse cx="430" cy="600" rx="500" ry="520" fill="#5fae4b"/>
+  <ellipse cx="1610" cy="310" rx="160" ry="95" fill="#6ec6e8" stroke="#4a9fc4" stroke-width="8"/>
+  <circle cx="1380" cy="640" r="175" fill="#d9c9a3" stroke="#c4b28a" stroke-width="10"/>
+  <path d="M960 1160 Q 990 900 1180 780 T 1380 640 M1230 750 Q 950 690 640 620"
+    fill="none" stroke="#d2b48c" stroke-width="70" stroke-linecap="round"/>
+  <g fill="#ffffff"><circle cx="1120" cy="1050" r="9"/><circle cx="820" cy="1100" r="9"/>
+  <circle cx="1500" cy="900" r="9"/><circle cx="1050" cy="500" r="9"/></g>
+  <g fill="#ffd23f"><circle cx="1120" cy="1050" r="4"/><circle cx="820" cy="1100" r="4"/>
+  <circle cx="1500" cy="900" r="4"/><circle cx="1050" cy="500" r="4"/></g></svg>`);
+const signSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="70" height="110" viewBox="0 0 70 110">
+  <rect x="31" y="30" width="8" height="78" rx="3" fill="#8a5f33"/>
+  <rect x="4" y="6" width="62" height="26" rx="6" fill="#d9a55b" stroke="#8a5f33" stroke-width="4"/>
+  <rect x="10" y="38" width="50" height="22" rx="5" fill="#d9a55b" stroke="#8a5f33" stroke-width="4"/>
+  <rect x="12" y="14" width="46" height="4" rx="2" fill="#8a5f33"/>
+  <rect x="16" y="22" width="38" height="4" rx="2" fill="#8a5f33"/>
+  <rect x="18" y="46" width="34" height="4" rx="2" fill="#8a5f33"/></svg>`);
+const fountainSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="140" height="110" viewBox="0 0 140 110">
+  <ellipse cx="70" cy="92" rx="64" ry="16" fill="#b9c2cc" stroke="#8a949e" stroke-width="4"/>
+  <ellipse cx="70" cy="86" rx="50" ry="11" fill="#6ec6e8"/>
+  <rect x="62" y="40" width="16" height="42" fill="#b9c2cc" stroke="#8a949e" stroke-width="3"/>
+  <ellipse cx="70" cy="38" rx="26" ry="8" fill="#b9c2cc" stroke="#8a949e" stroke-width="3"/>
+  <path d="M70 30 Q 60 12 48 22 M70 30 Q 70 8 70 18 M70 30 Q 80 12 92 22"
+    fill="none" stroke="#9fd8ff" stroke-width="5" stroke-linecap="round"/></svg>`);
+const mailboxSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="60" height="95" viewBox="0 0 60 95">
+  <rect x="26" y="44" width="8" height="50" rx="3" fill="#8a5f33"/>
+  <rect x="6" y="12" width="48" height="34" rx="12" fill="#e04040" stroke="#9b1f1f" stroke-width="4"/>
+  <rect x="12" y="24" width="36" height="4" rx="2" fill="#ffffff"/>
+  <rect x="46" y="2" width="5" height="18" fill="#ffd23f"/><rect x="42" y="2" width="14" height="6" fill="#ffd23f"/></svg>`);
+const duckSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="70" height="60" viewBox="0 0 70 60">
+  <ellipse cx="32" cy="42" rx="26" ry="16" fill="#ffd23f" stroke="#d9a93a" stroke-width="3"/>
+  <circle cx="50" cy="22" r="13" fill="#ffd23f" stroke="#d9a93a" stroke-width="3"/>
+  <polygon points="61,20 70,24 61,28" fill="#f28d2e"/>
+  <circle cx="53" cy="19" r="2.5" fill="#26282e"/>
+  <path d="M14 40 Q 6 42 10 48" fill="none" stroke="#d9a93a" stroke-width="3"/></svg>`);
+const mushroomSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="70" height="60" viewBox="0 0 70 60">
+  <rect x="26" y="30" width="18" height="26" rx="7" fill="#f6ead0" stroke="#cbb890" stroke-width="3"/>
+  <path d="M4 32 Q 35 -14 66 32 Z" fill="#e04040" stroke="#9b1f1f" stroke-width="3"/>
+  <circle cx="22" cy="20" r="5" fill="#ffffff"/><circle cx="42" cy="12" r="4" fill="#ffffff"/>
+  <circle cx="52" cy="24" r="4" fill="#ffffff"/>
+  <circle cx="31" cy="40" r="2" fill="#26282e"/><circle cx="39" cy="40" r="2" fill="#26282e"/>
+  <path d="M31 47 Q 35 50 39 47" fill="none" stroke="#26282e" stroke-width="2" stroke-linecap="round"/></svg>`);
+const gnomeSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="60" height="90" viewBox="0 0 60 90">
+  <circle cx="30" cy="18" r="13" fill="#f2c9a0"/>
+  <path d="M12 62 Q 12 30 30 30 Q 48 30 48 62 Z" fill="#4a7fd0" stroke="#2f5da8" stroke-width="3"/>
+  <path d="M18 26 Q 30 44 42 26 L 42 40 Q 30 52 18 40 Z" fill="#f5f5f5"/>
+  <circle cx="25" cy="16" r="2.2" fill="#26282e"/><circle cx="35" cy="16" r="2.2" fill="#26282e"/>
+  <circle cx="30" cy="21" r="3" fill="#e88a75"/>
+  <rect x="14" y="60" width="12" height="26" rx="5" fill="#7a4a1e"/>
+  <rect x="34" y="60" width="12" height="26" rx="5" fill="#7a4a1e"/></svg>`);
+const pointyHatSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="70" height="60" viewBox="0 0 70 60">
+  <path d="M35 2 L 58 48 L 12 48 Z" fill="#e04040" stroke="#9b1f1f" stroke-width="3"/>
+  <ellipse cx="35" cy="50" rx="28" ry="8" fill="#e04040" stroke="#9b1f1f" stroke-width="3"/>
+  <circle cx="35" cy="4" r="4" fill="#ffd23f"/></svg>`);
+const ghostSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="95" viewBox="0 0 80 95">
+  <path d="M8 92 L8 42 Q 8 6 40 6 Q 72 6 72 42 L72 92 L60 80 L50 92 L40 80 L30 92 L20 80 Z"
+    fill="#f5f5ff" stroke="#c9c9e8" stroke-width="4"/>
+  <circle cx="28" cy="38" r="5" fill="#26282e"/><circle cx="52" cy="38" r="5" fill="#26282e"/>
+  <ellipse cx="40" cy="54" rx="7" ry="9" fill="#26282e"/></svg>`);
+
+// World layout (x, depth): the cat drops in at (0, 0) facing into the world; the
+// town (plaza, houses, fountain, mailbox, duck pond) lies to the right, the forest
+// (trees, mushroom, gnome, lost hat, ghost) to the left. The welcome sign stands
+// straight ahead of the spawn, so the first discovery is unmissable.
+const TOWN_HOUSES = [ // [x, depth, spin]
+    [250, 380, -15], [500, 300, 10], [620, 620, -30], [330, 750, 20]
+];
+const TOWN_TREES = [ // [x, depth]: crossed-card pairs
+    [-180, 280], [-380, 220], [-560, 350], [-720, 500], [-300, 480],
+    [-480, 620], [-650, 780], [-250, 720], [-820, 300], [-400, 900]
+];
+const townFound = mkVar('Found'); // global: discoveries met so far (monitor + finale)
+
+// One interactive discovery sprite: stands at its spot and, whenever the cat bumps
+// it, says its line (the bubble hangs over its projected 3D spot). The first bump
+// also ticks the global Found counter, via a sprite-local "seen" flag.
+const discovery = ({name, svg, rcx, rcy, x, y, depth, size, thickness, line, layer, extra}) => {
+    const seen = mkVar('seen');
+    const blocks = {};
+    buildScript(blocks, flag(
+        setThickness(thickness), setSize(size), gotoXY(x, y), setDepth(depth),
+        setVar(seen, 0),
+        ...(extra || []),
+        // Wait a beat before sensing: until the stage script has switched the 3D view
+        // on, `touching in 3D?` falls back to the flat 2D overlap test, and several
+        // discoveries share 2D stage spots with the cat before everything spreads out.
+        wait(0.5),
+        forever(
+            ifThen(touching3D('Cat'),
+                ifThen(eq(varRep(seen), 0), setVar(seen, 1), changeVar(townFound, 1)),
+                sayForSecs(line, 2.5)
+            )
+        )
+    ), 30, 30);
+    return sprite({name, svg, rcx, rcy, x, y, size, layer, vars: [seen], blocks});
+};
+
+const townMapBlocks = {};
+buildScript(townMapBlocks, flag(
+    setThickness(10), setTilt(-90), setSpin(0), gotoXY(0, -60), setDepth(440)
+), 30, 30);
+
+const townHouseBlocks = {};
+const placeTownHouses = [setThickness(60), setSize(120)];
+for (const [x, d, spin] of TOWN_HOUSES) {
+    placeTownHouses.push(gotoXY(x, 11), setDepth(d), setSpin(spin), createClone());
+}
+placeTownHouses.push(hide());
+buildScript(townHouseBlocks, flag(...placeTownHouses), 30, 30);
+buildScript(townHouseBlocks, whenClone(show()), 320, 30);
+
+const townTreeBlocks = {};
+const placeTownTrees = [setThickness(10), setSize(130)];
+for (const [x, d] of TOWN_TREES) {
+    placeTownTrees.push(gotoXY(x, 23), setDepth(d), setSpin(0), createClone(), setSpin(90), createClone());
+}
+placeTownTrees.push(hide());
+buildScript(townTreeBlocks, flag(...placeTownTrees), 30, 30);
+buildScript(townTreeBlocks, whenClone(show()), 320, 30);
+
+// The explorer: the Scratch Cat. Up walks the way it faces, left/right turn (the
+// shoulder camera swings along), down backs up. Finding all eight discoveries earns
+// a little celebration.
+const townCatBlocks = {};
+buildScript(townCatBlocks, flag(
+    setThickness(14), setSize(85),
+    setVar(townFound, 0),
+    gotoXY(0, -13), setDepth(0), setSpin(180), setTilt(0),
+    forever(
+        ifThen(keyPressed('up arrow'), move3D(7)),
+        ifThen(keyPressed('down arrow'), move3D(-4)),
+        ifThen(keyPressed('right arrow'), changeSpin(-4)),
+        ifThen(keyPressed('left arrow'), changeSpin(4))
+    )
+), 30, 30);
+buildScript(townCatBlocks, flag(
+    waitUntil(eq(varRep(townFound), 8)),
+    sayForSecs('You found all 8! What a town.', 4),
+    repeatN(18, changeSpin(20), changeEffect('color', 6)),
+    setEffect('color', 0)
+), 360, 30);
+
+const tinyTown = [
+    stage(grassBgSVG,
+        buildScript({}, flag(setSky('day'), setBackdrop('hidden'), cameraBehind('Cat')), 30, 30),
+        [townFound]),
+    sprite({
+        name: 'Map', svg: townMapSVG, rcx: 960, rcy: 720, x: 0, y: -60, size: 100,
+        layer: 1, blocks: townMapBlocks
+    }),
+    sprite({
+        name: 'House', svg: houseSVG, rcx: 70, rcy: 55, x: 250, y: 11, size: 120,
+        layer: 2, blocks: townHouseBlocks
+    }),
+    sprite({
+        name: 'Tree', svg: treeSVG, rcx: 45, rcy: 60, x: -180, y: 23, size: 130,
+        layer: 3, blocks: townTreeBlocks
+    }),
+    discovery({name: 'Sign', svg: signSVG, rcx: 35, rcy: 55, x: 0, y: 0, depth: 230,
+        size: 100, thickness: 10, layer: 4,
+        line: 'Welcome to Tiny Town! 8 things are waiting to be found.'}),
+    discovery({name: 'Fountain', svg: fountainSVG, rcx: 70, rcy: 55, x: 420, y: 5, depth: 520,
+        size: 110, thickness: 30, layer: 5,
+        line: 'Splash! Toss in a coin and make a wish.'}),
+    discovery({name: 'Mailbox', svg: mailboxSVG, rcx: 30, rcy: 47, x: 180, y: -8, depth: 300,
+        size: 100, thickness: 12, layer: 6,
+        line: `You've got mail! It's a postcard from a fish.`}),
+    discovery({name: 'Duck', svg: duckSVG, rcx: 35, rcy: 30, x: 650, y: -28, depth: 850,
+        size: 90, thickness: 14, layer: 7,
+        line: 'Quack. Quack quack. ...That means hello.'}),
+    discovery({name: 'Mushroom', svg: mushroomSVG, rcx: 35, rcy: 30, x: -450, y: -25, depth: 470,
+        size: 100, thickness: 16, layer: 8,
+        line: 'Hey! Watch where you are stepping!'}),
+    discovery({name: 'Gnome', svg: gnomeSVG, rcx: 30, rcy: 45, x: -230, y: -10, depth: 580,
+        size: 100, thickness: 14, layer: 9,
+        line: 'Brrr, my head is cold. Have you seen my pointy hat?'}),
+    discovery({name: 'Hat', svg: pointyHatSVG, rcx: 35, rcy: 30, x: -750, y: -25, depth: 650,
+        size: 100, thickness: 14, layer: 10,
+        line: 'A pointy little hat! Somebody must be missing it.'}),
+    discovery({name: 'Ghost', svg: ghostSVG, rcx: 40, rcy: 47, x: -600, y: 20, depth: 950,
+        size: 100, thickness: 10, layer: 11,
+        line: 'Boooo! ...Did I get you? I have been practicing.',
+        extra: [setEffect('ghost', 35)]}),
+    sprite({
+        name: 'Cat', svg: catSVG, rcx: 48, rcy: 50, x: 0, y: -13, size: 85,
+        layer: 12, blocks: townCatBlocks
+    })
+];
+
 Promise.resolve()
     .then(() => writeProject('popup-example-1.sb3', card))
     .then(() => writeProject('popup-example-2.sb3', tank))
@@ -1313,4 +1519,5 @@ Promise.resolve()
     .then(() => writeProject('popup-example-12.sb3', carousel))
     .then(() => writeProject('popup-example-13.sb3', platformRun, [varMonitor(runWon, 5, 5)]))
     .then(() => writeProject('popup-example-14.sb3', raceDay,
-        [varMonitor(raceGates, 5, 5), varMonitor(raceTime, 5, 35)]));
+        [varMonitor(raceGates, 5, 5), varMonitor(raceTime, 5, 35)]))
+    .then(() => writeProject('popup-example-15.sb3', tinyTown, [varMonitor(townFound, 5, 5)]));
