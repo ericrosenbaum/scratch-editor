@@ -19,6 +19,7 @@ import thumbCarousel from './starters/popup-example-12.png';
 import thumbPlatformRun from './starters/popup-example-13.png';
 import thumbRace from './starters/popup-example-14.png';
 import thumbTown from './starters/popup-example-15.png';
+import thumbRobot from './starters/popup-example-16.png';
 
 import sb3Card from './starters/popup-example-1.sb3';
 import sb3Fish from './starters/popup-example-2.sb3';
@@ -35,6 +36,7 @@ import sb3Carousel from './starters/popup-example-12.sb3';
 import sb3PlatformRun from './starters/popup-example-13.sb3';
 import sb3Race from './starters/popup-example-14.sb3';
 import sb3Town from './starters/popup-example-15.sb3';
+import sb3Robot from './starters/popup-example-16.sb3';
 
 const starters = [
     {
@@ -155,6 +157,15 @@ const starters = [
             'something to say!',
         thumbnail: thumbTown,
         sb3: sb3Town
+    },
+    {
+        id: 'robot-builder',
+        title: 'Robot Builder',
+        description: 'A robot built from six sprites with real joints: Q/A and P/L move ' +
+            'the arms, arrow keys march the legs and nod the head, space jumps. Drag the ' +
+            'stage to walk around it!',
+        thumbnail: thumbRobot,
+        sb3: sb3Robot
     }
 ];
 

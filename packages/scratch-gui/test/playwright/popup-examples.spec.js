@@ -76,7 +76,13 @@ const examples = [
     {file: 'popup-example-15.sb3',
         shot: 'example-town.png',
         drag: false,
-        keys: ['ArrowUp', 'ArrowUp', 'ArrowLeft', 'ArrowUp']}
+        keys: ['ArrowUp', 'ArrowUp', 'ArrowLeft', 'ArrowUp']},
+    // Robot builder: raise the arms and march a step, then peek from an angle.
+    // Full articulation is covered by popup-robot-articulated.spec.js.
+    {file: 'popup-example-16.sb3',
+        shot: 'example-robot.png',
+        drag: true,
+        keys: ['q', 'q', 'q', 'q', 'p', 'p', 'p', 'ArrowLeft', 'ArrowLeft']}
 ];
 
 for (const ex of examples) {

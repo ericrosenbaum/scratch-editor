@@ -18,6 +18,8 @@
 //                                          map, spin steering, gates, trees, houses)
 //   popup-example-15.sb3  Tiny Town       (an explorable town + forest of hidden
 //                                          discoveries that talk when bumped)
+//   popup-example-16.sb3  Robot Builder   (an articulated robot of jointed sprites;
+//                                          keys move each part around its pivot)
 //
 // Run: node src/components/popup-examples-modal/starters/make-popup-examples.js
 
@@ -144,6 +146,7 @@ const pointDir = v => ({op: 'motion_pointindirection', inputs: {DIRECTION: num(v
 const turn = v => ({op: 'motion_turnright', inputs: {DEGREES: num(v)}});
 const yPos = () => ({op: 'motion_yposition'});
 const xPos = () => ({op: 'motion_xposition'});
+const dirRep = () => ({op: 'motion_direction'});
 
 // `key [key] pressed?` boolean — poll a key every frame (in a forever-if) for smooth,
 // continuous movement, unlike the `when key pressed` hat which stutters on the OS repeat.
@@ -185,6 +188,7 @@ const changeSpin = v => ({op: 'popup_changeSpin', inputs: {ANGLE: num(v)}});
 const move3D = v => ({op: 'popup_move3D', inputs: {STEPS: num(v)}});
 const orbit = v => ({op: 'popup_orbit', inputs: {DEGREES: num(v)}});
 const getDepth3D = () => ({op: 'popup_getDepth'});
+const tiltRep = () => ({op: 'popup_getTilt'});
 const changeDepthBy = v => ({op: 'popup_changeDepth', inputs: {AMOUNT: typeof v === 'number' ? num(v) : v}});
 const touching3D = spriteName => ({
     op: 'popup_touchingSprite', boolean: true,
@@ -1504,6 +1508,144 @@ const tinyTown = [
     })
 ];
 
+// ---- example 16: Robot Builder (an articulated robot made of jointed sprites) -----
+// A robot assembled from SIX separate sprites — torso, head, two arms, two legs —
+// each an extruded card at its own depth (arms in front, legs behind) so the figure
+// reads as a layered 3D machine from any angle (set camera to drag and spin around
+// it). The joints are real Scratch rotation centres: each limb costume's rotation
+// centre sits at its joint (the arm's shoulder bolt, the leg's hip bolt, the head's
+// neck), which the 3D scene now honours (see scene.pivotOffset), so turning a part's
+// `direction` swings it around its joint exactly like a 2D marionette — but in 3D.
+//
+// Keyboard controls move the parts directly, polled every frame:
+//   Q / A       raise / lower the left arm     (direction 90..175, pivot at shoulder)
+//   P / L       raise / lower the right arm    (direction 5..90)
+//   left/right  march the legs (they scissor around their hips)
+//   up / down   nod the head in 3D (tilt about its neck)
+//   space       the whole robot hops (all parts jump together)
+const robotBgSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360">
+  <rect width="480" height="360" fill="#1d2433"/>
+  <g stroke="#2c3750" stroke-width="2">
+    <path d="M0 60H480 M0 120H480 M0 180H480 M0 240H480 M0 300H480"/>
+    <path d="M60 0V360 M120 0V360 M180 0V360 M240 0V360 M300 0V360 M360 0V360 M420 0V360"/>
+  </g>
+  <rect y="312" width="480" height="48" fill="#141a26"/>
+  <circle cx="70" cy="60" r="14" fill="none" stroke="#39c1e0" stroke-width="3"/>
+  <circle cx="410" cy="100" r="9" fill="none" stroke="#39c1e0" stroke-width="3"/></svg>`);
+const robotTorsoSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="74" height="92" viewBox="0 0 74 92">
+  <rect x="5" y="4" width="64" height="84" rx="12" fill="#8a97ab" stroke="#5a6678" stroke-width="4"/>
+  <rect x="16" y="16" width="42" height="30" rx="6" fill="#39c1e0" stroke="#1f7f96" stroke-width="3"/>
+  <rect x="20" y="22" width="34" height="4" rx="2" fill="#bdefff"/>
+  <circle cx="26" cy="60" r="5" fill="#ffd23f" stroke="#b98d1e" stroke-width="2"/>
+  <circle cx="48" cy="60" r="5" fill="#e04040" stroke="#9b1f1f" stroke-width="2"/>
+  <rect x="16" y="72" width="42" height="8" rx="4" fill="#5a6678"/></svg>`);
+const robotHeadSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="60" height="58" viewBox="0 0 60 58">
+  <rect x="27" y="2" width="6" height="10" fill="#5a6678"/>
+  <circle cx="30" cy="4" r="4" fill="#e04040"/>
+  <rect x="6" y="10" width="48" height="38" rx="9" fill="#aab6c8" stroke="#5a6678" stroke-width="4"/>
+  <circle cx="21" cy="28" r="6" fill="#39c1e0" stroke="#1f7f96" stroke-width="2"/>
+  <circle cx="39" cy="28" r="6" fill="#39c1e0" stroke="#1f7f96" stroke-width="2"/>
+  <rect x="20" y="39" width="20" height="4" rx="2" fill="#5a6678"/>
+  <rect x="24" y="48" width="12" height="10" rx="3" fill="#5a6678"/></svg>`);
+const robotArmSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="22" height="78" viewBox="0 0 22 78">
+  <circle cx="11" cy="9" r="8" fill="#5a6678" stroke="#39424f" stroke-width="2"/>
+  <circle cx="11" cy="9" r="3" fill="#ffd23f"/>
+  <rect x="6" y="14" width="10" height="42" rx="5" fill="#8a97ab" stroke="#5a6678" stroke-width="3"/>
+  <circle cx="11" cy="58" r="6" fill="#5a6678"/>
+  <path d="M5 62 Q 2 72 8 76 M17 62 Q 20 72 14 76" fill="none" stroke="#8a97ab" stroke-width="5" stroke-linecap="round"/></svg>`);
+const robotLegSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="26" height="72" viewBox="0 0 26 72">
+  <circle cx="13" cy="8" r="8" fill="#5a6678" stroke="#39424f" stroke-width="2"/>
+  <circle cx="13" cy="8" r="3" fill="#ffd23f"/>
+  <rect x="8" y="13" width="10" height="42" rx="5" fill="#8a97ab" stroke="#5a6678" stroke-width="3"/>
+  <rect x="3" y="55" width="20" height="14" rx="5" fill="#5a6678" stroke="#39424f" stroke-width="3"/></svg>`);
+
+// The whole-robot hop: every part runs this same loop, so a space press lifts all
+// six sprites in step.
+const robotHop = () => forever(
+    ifThen(keyPressed('space'),
+        repeatN(6, changeYBy(5)),
+        repeatN(6, changeYBy(-5))
+    )
+);
+
+const robotTorsoBlocks = {};
+buildScript(robotTorsoBlocks, flag(
+    setThickness(24), gotoXY(0, -8), setDepth(0), pointDir(90)
+), 30, 30);
+buildScript(robotTorsoBlocks, flag(robotHop()), 360, 30);
+
+const robotHeadBlocks = {};
+buildScript(robotHeadBlocks, flag(
+    setThickness(16), gotoXY(0, 38), setDepth(0), pointDir(90), setTilt(0),
+    sayForSecs('Q/A: left arm. P/L: right arm. Arrows: march and nod. Space: jump!', 6),
+    // Nod in 3D: tilt swings the head about its neck pivot, toward/away the camera.
+    forever(
+        ifThen(and(keyPressed('up arrow'), gt(tiltRep(), -30)), changeTilt(-3)),
+        ifThen(and(keyPressed('down arrow'), lt(tiltRep(), 30)), changeTilt(3))
+    )
+), 30, 30);
+buildScript(robotHeadBlocks, flag(robotHop()), 360, 30);
+
+const robotLeftArmBlocks = {};
+buildScript(robotLeftArmBlocks, flag(
+    setThickness(14), gotoXY(-36, 30), setDepth(-12), pointDir(90),
+    // direction 90 hangs the arm as drawn; higher directions swing it out and up
+    // around the shoulder bolt (the costume's rotation centre).
+    forever(
+        ifThen(and(keyPressed('q'), lt(dirRep(), 175)), turn(5)),
+        ifThen(and(keyPressed('a'), gt(dirRep(), 90)), turn(-5))
+    )
+), 30, 30);
+buildScript(robotLeftArmBlocks, flag(robotHop()), 360, 30);
+
+const robotRightArmBlocks = {};
+buildScript(robotRightArmBlocks, flag(
+    setThickness(14), gotoXY(36, 30), setDepth(-12), pointDir(90),
+    forever(
+        ifThen(and(keyPressed('p'), gt(dirRep(), 5)), turn(-5)),
+        ifThen(and(keyPressed('l'), lt(dirRep(), 90)), turn(5))
+    )
+), 30, 30);
+buildScript(robotRightArmBlocks, flag(robotHop()), 360, 30);
+
+const robotLeftLegBlocks = {};
+buildScript(robotLeftLegBlocks, flag(
+    setThickness(14), gotoXY(-16, -50), setDepth(12), pointDir(90),
+    // The legs scissor around their hip bolts: left arrow swings this leg forward
+    // while the right leg swings back, and vice versa.
+    forever(
+        ifThen(and(keyPressed('left arrow'), gt(dirRep(), 60)), turn(-4)),
+        ifThen(and(keyPressed('right arrow'), lt(dirRep(), 120)), turn(4))
+    )
+), 30, 30);
+buildScript(robotLeftLegBlocks, flag(robotHop()), 360, 30);
+
+const robotRightLegBlocks = {};
+buildScript(robotRightLegBlocks, flag(
+    setThickness(14), gotoXY(16, -50), setDepth(12), pointDir(90),
+    forever(
+        ifThen(and(keyPressed('left arrow'), lt(dirRep(), 120)), turn(4)),
+        ifThen(and(keyPressed('right arrow'), gt(dirRep(), 60)), turn(-4))
+    )
+), 30, 30);
+buildScript(robotRightLegBlocks, flag(robotHop()), 360, 30);
+
+const robotBuilder = [
+    stage(robotBgSVG, buildScript({}, flag(setSky('night'), setCamera('drag')), 30, 30)),
+    sprite({name: 'LeftLeg', svg: robotLegSVG, rcx: 13, rcy: 8, x: -16, y: -50, size: 100,
+        layer: 1, blocks: robotLeftLegBlocks}),
+    sprite({name: 'RightLeg', svg: robotLegSVG, rcx: 13, rcy: 8, x: 16, y: -50, size: 100,
+        layer: 2, blocks: robotRightLegBlocks}),
+    sprite({name: 'Torso', svg: robotTorsoSVG, rcx: 37, rcy: 46, x: 0, y: -8, size: 100,
+        layer: 3, blocks: robotTorsoBlocks}),
+    sprite({name: 'Head', svg: robotHeadSVG, rcx: 30, rcy: 56, x: 0, y: 38, size: 100,
+        layer: 4, blocks: robotHeadBlocks}),
+    sprite({name: 'LeftArm', svg: robotArmSVG, rcx: 11, rcy: 9, x: -36, y: 30, size: 100,
+        layer: 5, blocks: robotLeftArmBlocks}),
+    sprite({name: 'RightArm', svg: robotArmSVG, rcx: 11, rcy: 9, x: 36, y: 30, size: 100,
+        layer: 6, blocks: robotRightArmBlocks})
+];
+
 Promise.resolve()
     .then(() => writeProject('popup-example-1.sb3', card))
     .then(() => writeProject('popup-example-2.sb3', tank))
@@ -1520,4 +1662,5 @@ Promise.resolve()
     .then(() => writeProject('popup-example-13.sb3', platformRun, [varMonitor(runWon, 5, 5)]))
     .then(() => writeProject('popup-example-14.sb3', raceDay,
         [varMonitor(raceGates, 5, 5), varMonitor(raceTime, 5, 35)]))
-    .then(() => writeProject('popup-example-15.sb3', tinyTown, [varMonitor(townFound, 5, 5)]));
+    .then(() => writeProject('popup-example-15.sb3', tinyTown, [varMonitor(townFound, 5, 5)]))
+    .then(() => writeProject('popup-example-16.sb3', robotBuilder));

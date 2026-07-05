@@ -191,6 +191,50 @@ test('3D Pop-Up example 15 (tiny town): an explorable world of talking discoveri
     });
 });
 
+test('3D Pop-Up example 16 (robot builder): jointed parts move with the keys', {skip: !haveStarters}, t => {
+    loadAndRun('popup-example-16.sb3', 30).then(({vm, errors}) => {
+        t.equal(errors.length, 0, 'no runtime errors');
+
+        const part = name => vm.runtime.targets.find(
+            target => target.sprite && target.sprite.name === name && target.isOriginal
+        );
+        for (const name of ['Torso', 'Head', 'LeftArm', 'RightArm', 'LeftLeg', 'RightLeg']) {
+            t.ok(part(name), `the ${name} part exists`);
+        }
+
+        // The parts are layered in depth: arms in front of the torso, legs behind.
+        t.equal(popupState(part('LeftArm')).depth, -12, 'arms sit in front of the torso');
+        t.equal(popupState(part('LeftLeg')).depth, 12, 'legs sit behind the torso');
+        t.equal(popupState(part('Torso')).depth, 0, 'the torso sits on the centre plane');
+
+        // Articulation: holding Q swings the left arm up around its shoulder pivot
+        // (its direction rises from the hanging 90), and A brings it back down.
+        const leftArm = part('LeftArm');
+        t.equal(leftArm.direction, 90, 'the left arm hangs at rest');
+        vm.runtime.ioDevices.keyboard.postData({key: 'q', isDown: true});
+        for (let i = 0; i < 12; i++) vm.runtime._step();
+        vm.runtime.ioDevices.keyboard.postData({key: 'q', isDown: false});
+        t.ok(leftArm.direction > 90, 'holding Q raises the left arm');
+        t.ok(leftArm.direction <= 180, 'the arm stops within its joint limit');
+        const raised = leftArm.direction;
+        vm.runtime.ioDevices.keyboard.postData({key: 'a', isDown: true});
+        for (let i = 0; i < 30; i++) vm.runtime._step();
+        vm.runtime.ioDevices.keyboard.postData({key: 'a', isDown: false});
+        t.ok(leftArm.direction < raised, 'holding A lowers the arm again');
+        t.ok(leftArm.direction >= 90, 'the arm never swings past hanging');
+
+        // The legs scissor around their hips: left arrow swings them opposite ways.
+        const leftLeg = part('LeftLeg');
+        const rightLeg = part('RightLeg');
+        vm.runtime.ioDevices.keyboard.postData({key: 'ArrowLeft', isDown: true});
+        for (let i = 0; i < 10; i++) vm.runtime._step();
+        vm.runtime.ioDevices.keyboard.postData({key: 'ArrowLeft', isDown: false});
+        t.ok(leftLeg.direction < 90, 'the left leg swings one way');
+        t.ok(rightLeg.direction > 90, 'the right leg swings the other way');
+        t.end();
+    });
+});
+
 test('3D Pop-Up example 9 (crystal): crossed clones inherit distinct spins', {skip: !haveStarters}, t => {
     loadAndRun('popup-example-9.sb3', 30).then(({vm, errors}) => {
         t.equal(errors.length, 0, 'no runtime errors');
