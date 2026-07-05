@@ -159,18 +159,24 @@ class Scratch3LooksBlocks {
         if (!target.visible) return;
         const bubbleState = this._getBubbleState(target);
         const [bubbleWidth, bubbleHeight] = this.runtime.renderer.getCurrentSkinSize(bubbleState.drawableId);
-        let targetBounds;
-        try {
-            targetBounds = target.getBoundsForBubble();
-        } catch (error_) {
-            // Bounds calculation could fail (e.g. on empty costumes), in that case
-            // use the x/y position of the target.
-            targetBounds = {
-                left: target.x,
-                right: target.x,
-                top: target.y,
-                bottom: target.y
-            };
+        // An extension that draws targets elsewhere (e.g. the 3D Pop-Up scene) can
+        // provide the anchor bounds itself; otherwise use the target's 2D bounds.
+        let targetBounds = this.runtime.bubblePositionProvider ?
+            this.runtime.bubblePositionProvider(target) :
+            null;
+        if (!targetBounds) {
+            try {
+                targetBounds = target.getBoundsForBubble();
+            } catch (error_) {
+                // Bounds calculation could fail (e.g. on empty costumes), in that case
+                // use the x/y position of the target.
+                targetBounds = {
+                    left: target.x,
+                    right: target.x,
+                    top: target.y,
+                    bottom: target.y
+                };
+            }
         }
         const stageSize = this.runtime.renderer.getNativeSize();
         const stageBounds = {

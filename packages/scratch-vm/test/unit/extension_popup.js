@@ -315,3 +315,47 @@ test('Pop-Up extension defaults fencing off; the block and stop control it', t =
     t.equal(runtime.fencingEnabled, false, 'stop resets fencing to the extension default (off)');
     t.end();
 });
+
+test('PopupScene.bubbleBounds projects the mesh box into stage coordinates', t => {
+    const hero = makeTarget({id: 'hero'});
+    const runtime = {renderer: null, targets: [hero], on: () => {}};
+    const scene = new PopupScene(runtime);
+
+    // Inactive scene: no bounds (the looks blocks fall back to 2D behaviour).
+    t.equal(scene.bubbleBounds(hero), null, 'inactive scene reports no bounds');
+
+    // Stand in for _init (browser-only) with a camera in front of the origin and a
+    // simple box mesh for the target.
+    scene.active = true;
+    scene.inited = true;
+    scene._camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, 5000);
+    scene._camera.position.set(0, 0, 300);
+    scene._camera.lookAt(0, 0, 0);
+    scene._camera.updateMatrixWorld();
+    const group = new THREE.Group();
+    group.add(new THREE.Mesh(new THREE.BoxGeometry(60, 60, 20)));
+    scene._meshes.set('hero', {group});
+
+    // A box at the origin projects to a patch centred on the stage centre, with the
+    // bubble anchor sitting on its crown (a thin top slice, like getBoundsForBubble).
+    const bounds = scene.bubbleBounds(hero);
+    t.ok(bounds, 'an on-screen mesh reports bounds');
+    t.ok(Math.abs((bounds.left + bounds.right) / 2) < 1e-6, 'the projection is centred horizontally');
+    t.ok(bounds.top > 10 && bounds.top < 180, 'the crown projects above the stage centre');
+    t.equal(bounds.bottom, bounds.top - 8, 'the anchor is a thin slice below the crown');
+
+    // Moving the mesh left moves the projected anchor left.
+    group.position.set(-120, 0, 0);
+    const leftBounds = scene.bubbleBounds(hero);
+    t.ok(leftBounds.right < bounds.left + 1e-6, 'a mesh to the left projects to the left');
+
+    // Behind the camera there is no meaningful projection.
+    group.position.set(0, 0, 600);
+    t.equal(scene.bubbleBounds(hero), null, 'a mesh behind the camera reports no bounds');
+
+    // A hidden mesh reports no bounds either.
+    group.position.set(0, 0, 0);
+    group.visible = false;
+    t.equal(scene.bubbleBounds(hero), null, 'a hidden mesh reports no bounds');
+    t.end();
+});

@@ -345,6 +345,16 @@ class Runtime extends EventEmitter {
          */
         this.fencingEnabled = true;
 
+        /**
+         * Optional provider of speech-bubble anchor bounds, for extensions that
+         * draw targets somewhere other than their 2D stage position (e.g. the
+         * 3D Pop-Up scene). Given a target, it returns {left, right, top,
+         * bottom} in stage coordinates for the spot the bubble should attach
+         * to, or null to fall back to the target's own 2D bounds.
+         * @type {?function(Target): ?object}
+         */
+        this.bubblePositionProvider = null;
+
         // Register all given block packages.
         this._registerBlockPackages();
 
@@ -1641,6 +1651,17 @@ class Runtime extends EventEmitter {
      */
     setFencing (enabled) {
         this.fencingEnabled = Boolean(enabled);
+    }
+
+    /**
+     * Set (or clear) the speech-bubble anchor provider. See
+     * {@link Runtime#bubblePositionProvider}.
+     * @param {?function(Target): ?object} provider Maps a target to bubble
+     *   anchor bounds in stage coordinates, or returns null to use the
+     *   target's own 2D bounds.
+     */
+    setBubblePositionProvider (provider) {
+        this.bubblePositionProvider = provider;
     }
 
     /**

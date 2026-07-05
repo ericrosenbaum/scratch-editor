@@ -62,6 +62,11 @@ class Scratch3PopupBlocks {
         // off while this extension is loaded (the `set fencing` block re-enables it).
         this.runtime.setFencing(false);
 
+        // While the 3D view is active, speech bubbles should hang over the sprite's
+        // projected 3D position rather than its (hidden) 2D one. The scene returns
+        // null when 3D is inactive, restoring the normal 2D behaviour.
+        this.runtime.setBubblePositionProvider(target => this._scene.bubbleBounds(target));
+
         this._reset = this._reset.bind(this);
         this._dispose = this._dispose.bind(this);
         this._onTargetCreated = this._onTargetCreated.bind(this);

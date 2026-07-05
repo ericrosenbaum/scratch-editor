@@ -450,6 +450,7 @@ class PopupScene {
         this._syncMeshes();
         this._handlePointer();
         this._updateCamera();
+        this._refreshBubbles();
         this._three.render(this._scene, this._camera);
 
         this._copyCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
@@ -1236,6 +1237,67 @@ class PopupScene {
         }
         this._stamps = [];
         if (this._renderer) this.runtime.requestRedraw();
+    }
+
+    /**
+     * Speech-bubble anchor bounds for a target: its 3D mesh's bounding box projected
+     * through the 3D camera into stage coordinates. Mirrors the 2D renderer's
+     * getBoundsForBubble, whose bounds cover just the top slice of the sprite (the
+     * bubble hangs above it): left/right span the whole projected box, top is its
+     * projected crown, and bottom sits a small slice below. Returns null while the
+     * 3D view is inactive, when the target has no mesh yet, or when it is behind
+     * the camera — the caller then falls back to the target's 2D bounds.
+     * @param {Target} target - the target that wants to show a bubble.
+     * @returns {?{left: number, right: number, top: number, bottom: number}}
+     *   anchor bounds in stage coordinates, or null.
+     */
+    bubbleBounds (target) {
+        if (!this.active || !this.inited || !this._camera) return null;
+        const entry = this._meshes.get(target.id);
+        if (!entry || !entry.group.visible) return null;
+        const box = new THREE.Box3().setFromObject(entry.group);
+        if (box.isEmpty()) return null;
+
+        this._camera.updateMatrixWorld();
+        // Behind the camera the projection flips and is meaningless: bail out.
+        const centre = box.getCenter(new THREE.Vector3());
+        if (centre.applyMatrix4(this._camera.matrixWorldInverse).z >= 0) return null;
+
+        let left = Infinity;
+        let right = -Infinity;
+        let top = -Infinity;
+        const v = new THREE.Vector3();
+        for (let i = 0; i < 8; i++) {
+            v.set(
+                (i & 1) === 0 ? box.min.x : box.max.x,
+                (i & 2) === 0 ? box.min.y : box.max.y,
+                (i & 4) === 0 ? box.min.z : box.max.z
+            );
+            v.project(this._camera);
+            left = Math.min(left, v.x * (STAGE_W / 2));
+            right = Math.max(right, v.x * (STAGE_W / 2));
+            top = Math.max(top, v.y * (STAGE_H / 2));
+        }
+        return {left, right, top, bottom: top - 8};
+    }
+
+    /**
+     * Reposition the speech bubble of every target that has one: the 3D camera (and
+     * so each target's projected anchor) can move every frame, not just when the
+     * target itself does. Emitting the target's visual-change event makes the looks
+     * blocks re-run their bubble positioning, which reads bubbleBounds via the
+     * runtime's bubblePositionProvider.
+     * @private
+     */
+    _refreshBubbles () {
+        for (const target of this.runtime.targets) {
+            const looksState = target.getCustomState && target.getCustomState('Scratch.looks');
+            if (looksState && typeof looksState.drawableId === 'number') {
+                // The constant lives on RenderedTarget.EVENT_TARGET_VISUAL_CHANGE; use the
+                // literal to avoid pulling the whole class in here.
+                target.emit('EVENT_TARGET_VISUAL_CHANGE', target);
+            }
+        }
     }
 
     /**

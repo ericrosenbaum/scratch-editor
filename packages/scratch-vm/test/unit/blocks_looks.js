@@ -273,3 +273,43 @@ test('clamp graphic effects', t => {
     }
     t.end();
 });
+
+test('say bubbles anchor to the runtime bubble position provider when one is set', t => {
+    const rt = new Runtime();
+    const looks = new Looks(rt);
+
+    const positions = [];
+    rt.renderer = {
+        createDrawable: () => 99,
+        createTextSkin: () => 100,
+        updateDrawableSkinId: () => {},
+        updateTextSkin: () => {},
+        destroyDrawable: () => {},
+        destroySkin: () => {},
+        getCurrentSkinSize: () => [60, 20],
+        getNativeSize: () => [480, 360],
+        updateDrawablePosition: (id, position) => positions.push(position)
+    };
+
+    const sprite = new Sprite(null, rt);
+    const target = new RenderedTarget(sprite, rt);
+    target.getBoundsForBubble = () => ({left: -10, right: 10, top: 40, bottom: 32});
+
+    // With a provider (e.g. the 3D Pop-Up scene), its bounds win over the 2D ones.
+    rt.setBubblePositionProvider(() => ({left: 90, right: 110, top: 60, bottom: 52}));
+    looks._updateBubble(target, 'say', 'hello');
+    t.same(positions.pop(), [110, 72], 'the bubble anchors to the provider bounds');
+
+    // A provider returning null falls back to the target 2D bounds.
+    rt.setBubblePositionProvider(() => null);
+    looks._positionBubble(target);
+    t.same(positions.pop(), [10, 52], 'a null provider result falls back to the 2D bounds');
+
+    // No provider at all: same 2D fallback.
+    rt.setBubblePositionProvider(null);
+    looks._positionBubble(target);
+    t.same(positions.pop(), [10, 52], 'without a provider the 2D bounds are used');
+
+    looks._onTargetWillExit(target);
+    t.end();
+});
