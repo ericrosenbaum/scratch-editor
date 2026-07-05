@@ -21,7 +21,7 @@ test('3D Pop-Up: welcome modal opens on GUI load with the example projects', asy
 
     // The welcome modal opens on load, showing every example (one card per starter).
     await expect(page.getByText('Open an example to get started:', {exact: false})).toBeVisible();
-    await expect(page.getByTestId('popup-example')).toHaveCount(13);
+    await expect(page.getByTestId('popup-example')).toHaveCount(14);
     await expect(page.getByText('Pop-Up Card', {exact: true})).toBeVisible();
     await expect(page.getByText('Fish Tank', {exact: true})).toBeVisible();
     await expect(page.getByText('Build a Forest', {exact: true})).toBeVisible();

@@ -62,7 +62,14 @@ const examples = [
     {file: 'popup-example-13.sb3',
         shot: 'example-platform-run.png',
         drag: false,
-        keys: ['ArrowUp', 'ArrowUp', 'Space']}
+        keys: ['ArrowUp', 'ArrowUp', 'Space']},
+    // Race day: drive down the opening straight of the giant track map; the camera
+    // rides behind the car. A drive through the first gate is covered by
+    // popup-race-drivable.spec.js.
+    {file: 'popup-example-14.sb3',
+        shot: 'example-race.png',
+        drag: false,
+        keys: ['ArrowUp', 'ArrowUp', 'ArrowUp', 'ArrowUp']}
 ];
 
 for (const ex of examples) {

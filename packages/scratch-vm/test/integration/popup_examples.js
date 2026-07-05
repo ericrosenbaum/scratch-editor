@@ -99,6 +99,55 @@ test('3D Pop-Up example 13 (platform run): a staggered, ascending trail along de
     });
 });
 
+test('3D Pop-Up example 14 (race day): a giant track map with gates, trees and houses', {skip: !haveStarters}, t => {
+    loadAndRun('popup-example-14.sb3', 30).then(({vm, errors}) => {
+        t.equal(errors.length, 0, 'no runtime errors');
+        t.equal(vm.runtime.fencingEnabled, false, 'fencing is off while the extension is loaded');
+
+        // The whole track is one giant flat card: front face up (tilt -90), centred
+        // 440 into the page so the start/finish line sits at depth 0.
+        const track = vm.runtime.targets.find(target => target.sprite && target.sprite.name === 'Track');
+        t.ok(track, 'the track map sprite exists');
+        t.equal(popupState(track).tilt, -90, 'the map lies flat, front face up');
+        t.equal(popupState(track).depth, 440, 'the map is centred 440 into the page');
+
+        // Four checkered gates stand across the road, spun to match their straights.
+        const gates = vm.runtime.targets.filter(
+            target => target.sprite && target.sprite.name === 'Gate' && !target.isOriginal
+        );
+        t.equal(gates.length, 4, 'all four gate clones were created');
+        const gateSpots = gates.map(g => [g.x, popupState(g).depth, popupState(g).spin])
+            .sort((a, b) => a[0] - b[0]);
+        t.same(gateSpots, [[-680, 440, 0], [-400, 0, 90], [0, 880, 90], [680, 440, 0]],
+            'the gates stand across each straight of the ring road');
+
+        // Trees are crossed pairs (spin 0 + 90 at each spot); houses are single clones.
+        const trees = vm.runtime.targets.filter(
+            target => target.sprite && target.sprite.name === 'Tree' && !target.isOriginal
+        );
+        t.equal(trees.length, 16, 'eight tree spots, two crossed clones each');
+        t.equal(trees.filter(tree => popupState(tree).spin === 0).length, 8, 'half the tree cards face front');
+        t.equal(trees.filter(tree => popupState(tree).spin === 90).length, 8, 'half the tree cards are crossed');
+        const houses = vm.runtime.targets.filter(
+            target => target.sprite && target.sprite.name === 'House' && !target.isOriginal
+        );
+        t.equal(houses.length, 4, 'all four house clones were created');
+        t.ok(houses.every(h => popupState(h).thickness === 60), 'houses are thick, boxy extrusions');
+
+        // The car starts on the finish line facing down the bottom straight.
+        const car = vm.runtime.targets.find(target => target.sprite && target.sprite.name === 'Car');
+        t.ok(car, 'the car sprite exists');
+        t.equal(popupState(car).depth, 0, 'the car starts on the finish line');
+        t.equal(popupState(car).spin, -90, 'the car faces down the bottom straight');
+
+        const stage = vm.runtime.getTargetForStage();
+        const gatesVar = Object.values(stage.variables).find(v => v.name === 'Gates');
+        t.ok(gatesVar, 'the global Gates counter exists');
+        t.equal(Number(gatesVar && gatesVar.value), 0, 'no gates are passed at the start');
+        t.end();
+    });
+});
+
 test('3D Pop-Up example 9 (crystal): crossed clones inherit distinct spins', {skip: !haveStarters}, t => {
     loadAndRun('popup-example-9.sb3', 30).then(({vm, errors}) => {
         t.equal(errors.length, 0, 'no runtime errors');

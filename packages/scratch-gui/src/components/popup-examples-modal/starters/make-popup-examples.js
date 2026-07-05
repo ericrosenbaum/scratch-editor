@@ -14,6 +14,8 @@
 //   popup-example-12.sb3  Carousel        (clones placed + revolved with "orbit")
 //   popup-example-13.sb3  Platform Run    (an ascending, staggered trail of square
 //                                          tiles along the depth axis; shoulder cam)
+//   popup-example-14.sb3  Race Day        (first-person racing: a giant SVG track
+//                                          map, spin steering, gates, trees, houses)
 //
 // Run: node src/components/popup-examples-modal/starters/make-popup-examples.js
 
@@ -157,6 +159,10 @@ const hide = () => ({op: 'looks_hide'});
 const say = msg => ({op: 'looks_say', inputs: {MESSAGE: asInput(msg)}});
 const sayForSecs = (msg, secs) => ({op: 'looks_sayforsecs', inputs: {MESSAGE: asInput(msg), SECS: num(secs)}});
 
+// The sensing timer: a reporter for elapsed seconds and a reset, for timing races.
+const timerRep = () => ({op: 'sensing_timer'});
+const resetTimer = () => ({op: 'sensing_resettimer'});
+
 const wait = secs => ({op: 'control_wait', inputs: {DURATION: num(secs)}});
 const ifThen = (cond, ...sub) => ({op: 'control_if', inputs: {CONDITION: cond}, sub});
 const ifElse = (cond, subThen, subElse) => ({op: 'control_if_else', inputs: {CONDITION: cond}, sub: subThen, sub2: subElse});
@@ -185,6 +191,7 @@ const touching3D = spriteName => ({
 });
 
 // Operators (boolean / value reporters) and variables.
+const round = v => ({op: 'operator_round', inputs: {NUM: asInput(v)}});
 const lt = (a, b) => ({op: 'operator_lt', boolean: true, inputs: {OPERAND1: asInput(a), OPERAND2: asInput(b)}});
 const gt = (a, b) => ({op: 'operator_gt', boolean: true, inputs: {OPERAND1: asInput(a), OPERAND2: asInput(b)}});
 const eq = (a, b) => ({op: 'operator_equals', boolean: true, inputs: {OPERAND1: asInput(a), OPERAND2: asInput(b)}});
@@ -1123,6 +1130,174 @@ const platformRun = [
     })
 ];
 
+// ---- example 14: Race Day (first-person racing on a giant track map) --------------
+// A driving game seen from behind the wheel-ish: the whole race track is ONE SVG
+// drawing (1920x1440 — four stage-widths of map) laid flat with tilt -90 (front face
+// up, so the drawing reads unmirrored from above), and the car drives around on top
+// of it with "move in 3D", steering by changing its spin. The over-the-shoulder
+// camera rides behind the car and turns with the spin, so steering swings the whole
+// view around the track. Crossed-card trees (two clones at spin 0/90 so they read as
+// solid from every angle) and thick extruded houses dot the map, and four checkered
+// gates stand across the road: drive through all four to finish the lap, and the
+// timer shows how fast you were. All of this lives far outside the old stage bounds,
+// which is exactly what unfenced sprites + the wide depth range are for.
+const raceTrackSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1440" viewBox="0 0 1920 1440">
+  <rect width="1920" height="1440" fill="#7cc95f"/>
+  <ellipse cx="960" cy="720" rx="480" ry="280" fill="#8fd472"/>
+  <ellipse cx="700" cy="640" rx="60" ry="24" fill="#6ab34d"/>
+  <ellipse cx="1240" cy="820" rx="80" ry="30" fill="#6ab34d"/>
+  <rect x="280" y="280" width="1360" height="880" rx="360" fill="none" stroke="#ffffff" stroke-width="238"/>
+  <rect x="280" y="280" width="1360" height="880" rx="360" fill="none" stroke="#e04040" stroke-width="238" stroke-dasharray="70 70"/>
+  <rect x="280" y="280" width="1360" height="880" rx="360" fill="none" stroke="#5a5f6a" stroke-width="220"/>
+  <rect x="280" y="280" width="1360" height="880" rx="360" fill="none" stroke="#ffffff" stroke-width="7" stroke-dasharray="48 38"/>
+  <g transform="translate(936,1050)">
+    <rect width="48" height="220" fill="#ffffff"/>
+    <rect x="0" y="0" width="24" height="28" fill="#111"/><rect x="24" y="28" width="24" height="28" fill="#111"/>
+    <rect x="0" y="56" width="24" height="28" fill="#111"/><rect x="24" y="84" width="24" height="28" fill="#111"/>
+    <rect x="0" y="112" width="24" height="28" fill="#111"/><rect x="24" y="140" width="24" height="28" fill="#111"/>
+    <rect x="0" y="168" width="24" height="28" fill="#111"/><rect x="24" y="196" width="24" height="24" fill="#111"/>
+  </g></svg>`);
+const raceCarSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="90" height="64" viewBox="0 0 90 64">
+  <rect x="8" y="50" width="18" height="13" rx="4" fill="#26282e"/>
+  <rect x="64" y="50" width="18" height="13" rx="4" fill="#26282e"/>
+  <path d="M14 54 Q13 32 24 27 L66 27 Q77 32 76 54 Z" fill="#e04040" stroke="#9b1f1f" stroke-width="3"/>
+  <rect x="23" y="13" width="44" height="18" rx="7" fill="#e04040" stroke="#9b1f1f" stroke-width="3"/>
+  <rect x="29" y="17" width="32" height="10" rx="4" fill="#9fd8ff"/>
+  <rect x="8" y="6" width="74" height="8" rx="4" fill="#9b1f1f"/>
+  <rect x="14" y="12" width="7" height="10" fill="#9b1f1f"/><rect x="69" y="12" width="7" height="10" fill="#9b1f1f"/>
+  <rect x="17" y="44" width="15" height="7" rx="3" fill="#ffd23f"/>
+  <rect x="58" y="44" width="15" height="7" rx="3" fill="#ffd23f"/></svg>`);
+const houseSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="140" height="110" viewBox="0 0 140 110">
+  <rect x="12" y="46" width="116" height="60" fill="#f2d29b" stroke="#b98d55" stroke-width="4"/>
+  <polygon points="6,50 70,6 134,50" fill="#c1553f" stroke="#8f3a2a" stroke-width="4"/>
+  <rect x="60" y="70" width="24" height="36" fill="#7a4a1e"/>
+  <rect x="26" y="58" width="22" height="20" fill="#9fd8ff" stroke="#5c86a8" stroke-width="3"/>
+  <rect x="92" y="58" width="22" height="20" fill="#9fd8ff" stroke="#5c86a8" stroke-width="3"/></svg>`);
+const raceGateSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="240" height="130" viewBox="0 0 240 130">
+  <rect x="4" y="8" width="12" height="122" rx="4" fill="#8a5f33"/>
+  <rect x="224" y="8" width="12" height="122" rx="4" fill="#8a5f33"/>
+  <rect x="4" y="8" width="232" height="36" fill="#ffffff" stroke="#26282e" stroke-width="4"/>
+  <rect x="8" y="12" width="28" height="14" fill="#111"/><rect x="36" y="26" width="28" height="14" fill="#111"/>
+  <rect x="64" y="12" width="28" height="14" fill="#111"/><rect x="92" y="26" width="28" height="14" fill="#111"/>
+  <rect x="120" y="12" width="28" height="14" fill="#111"/><rect x="148" y="26" width="28" height="14" fill="#111"/>
+  <rect x="176" y="12" width="28" height="14" fill="#111"/><rect x="204" y="26" width="28" height="14" fill="#111"/></svg>`);
+
+// The track map is centred 440 into the page, so the start/finish line (bottom
+// centre of the drawing) sits at depth 0 where the car spawns. The road is a rounded
+// rectangle: straights at depth 0 / 880 (along x) and at x = +/-680 (along depth),
+// each 220 units wide. The lap runs start -> G1 -> G2 -> G3 -> G4 -> start.
+const RACE_GATES = [
+    [-400, 0, 90], [-680, 440, 0], [0, 880, 90], [680, 440, 0] // [x, depth, spin]
+];
+const RACE_TREES = [ // [x, depth]: some in the infield, some outside the ring
+    [-350, 300], [350, 620], [0, 300], [200, 740],
+    [-820, 100], [850, 800], [-800, 750], [900, 150]
+];
+const RACE_HOUSES = [ // [x, depth, spin]: all outside the ring
+    [-850, 420, 60], [880, 460, -60], [-250, 1020, 0], [420, -140, 180]
+];
+const raceGates = mkVar('Gates'); // global: gates passed so far (monitor + win check)
+const raceTime = mkVar('Time'); // global: finishing time in seconds (monitor)
+const raceWon = mkVar('Win'); // global: 1 once all gates are passed
+
+// The ground: one giant flat card. tilt -90 (not 90) so the card's FRONT face points
+// up and the track drawing reads unmirrored from above.
+const raceTrackBlocks = {};
+buildScript(raceTrackBlocks, flag(
+    setThickness(10), setTilt(-90), setSpin(0), gotoXY(0, -60), setDepth(440)
+), 30, 30);
+
+// Gates: each clone stands across the road (spun to match its straight) and counts
+// itself once when the car drives through, then disappears.
+const raceGateBlocks = {};
+const placeRaceGates = [setVar(raceGates, 0), setThickness(12)];
+for (const [x, d, spin] of RACE_GATES) {
+    placeRaceGates.push(gotoXY(x, 10), setDepth(d), setSpin(spin), createClone());
+}
+placeRaceGates.push(hide()); // hide the original once every clone exists
+buildScript(raceGateBlocks, flag(...placeRaceGates), 30, 30);
+buildScript(raceGateBlocks, whenClone(
+    show(),
+    waitUntil(touching3D('Car')),
+    changeVar(raceGates, 1),
+    hide()
+), 320, 30);
+
+// Trees: two crossed clones (spin 0 + spin 90) per spot, so each tree reads as a
+// solid shape from every direction as the car drives past.
+const raceTreeBlocks = {};
+const placeRaceTrees = [setThickness(10), setSize(130)];
+for (const [x, d] of RACE_TREES) {
+    placeRaceTrees.push(gotoXY(x, 23), setDepth(d), setSpin(0), createClone(), setSpin(90), createClone());
+}
+placeRaceTrees.push(hide());
+buildScript(raceTreeBlocks, flag(...placeRaceTrees), 30, 30);
+buildScript(raceTreeBlocks, whenClone(show()), 320, 30);
+
+// Houses: thick extrusions (boxy volumes), one clone per spot at assorted spins.
+const raceHouseBlocks = {};
+const placeRaceHouses = [setThickness(60), setSize(120)];
+for (const [x, d, spin] of RACE_HOUSES) {
+    placeRaceHouses.push(gotoXY(x, 11), setDepth(d), setSpin(spin), createClone());
+}
+placeRaceHouses.push(hide());
+buildScript(raceHouseBlocks, flag(...placeRaceHouses), 30, 30);
+buildScript(raceHouseBlocks, whenClone(show()), 320, 30);
+
+// The car: drive with "move in 3D" and steer by changing spin — the shoulder camera
+// follows the spin, so the view sweeps around the track as you turn. It starts on
+// the finish line facing down the bottom straight (spin -90 heads -x).
+const raceCarBlocks = {};
+buildScript(raceCarBlocks, flag(
+    setThickness(16), setSize(100),
+    setVar(raceWon, 0), setVar(raceTime, 0),
+    gotoXY(0, -25), setDepth(0), setSpin(-90), setTilt(0),
+    resetTimer(),
+    forever(
+        ifThen(eq(varRep(raceWon), 0),
+            ifThen(keyPressed('up arrow'), move3D(10)),
+            ifThen(keyPressed('down arrow'), move3D(-5)),
+            ifThen(keyPressed('right arrow'), changeSpin(-4)),
+            ifThen(keyPressed('left arrow'), changeSpin(4))
+        )
+    )
+), 30, 30);
+// Passing all four gates finishes the lap: record the time and do a victory spin
+// (the camera whirls all the way around with it).
+buildScript(raceCarBlocks, flag(
+    waitUntil(eq(varRep(raceGates), 4)),
+    setVar(raceTime, round(timerRep())),
+    setVar(raceWon, 1),
+    repeatN(18, changeSpin(20), changeEffect('color', 6)),
+    setEffect('color', 0)
+), 360, 30);
+
+const raceDay = [
+    stage(platformBgSVG,
+        buildScript({}, flag(setSky('day'), setBackdrop('hidden'), cameraBehind('Car')), 30, 30),
+        [raceGates, raceTime, raceWon]),
+    sprite({
+        name: 'Track', svg: raceTrackSVG, rcx: 960, rcy: 720, x: 0, y: -60, size: 100,
+        layer: 1, blocks: raceTrackBlocks
+    }),
+    sprite({
+        name: 'Gate', svg: raceGateSVG, rcx: 120, rcy: 65, x: -400, y: 10, size: 100,
+        layer: 2, blocks: raceGateBlocks
+    }),
+    sprite({
+        name: 'Tree', svg: treeSVG, rcx: 45, rcy: 60, x: -350, y: 23, size: 130,
+        layer: 3, blocks: raceTreeBlocks
+    }),
+    sprite({
+        name: 'House', svg: houseSVG, rcx: 70, rcy: 55, x: -850, y: 11, size: 120,
+        layer: 4, blocks: raceHouseBlocks
+    }),
+    sprite({
+        name: 'Car', svg: raceCarSVG, rcx: 45, rcy: 32, x: 0, y: -25, size: 100,
+        layer: 5, blocks: raceCarBlocks
+    })
+];
+
 Promise.resolve()
     .then(() => writeProject('popup-example-1.sb3', card))
     .then(() => writeProject('popup-example-2.sb3', tank))
@@ -1136,4 +1311,6 @@ Promise.resolve()
     .then(() => writeProject('popup-example-10.sb3', solarSystem))
     .then(() => writeProject('popup-example-11.sb3', gemHunt, [varMonitor(score, 5, 5)]))
     .then(() => writeProject('popup-example-12.sb3', carousel))
-    .then(() => writeProject('popup-example-13.sb3', platformRun, [varMonitor(runWon, 5, 5)]));
+    .then(() => writeProject('popup-example-13.sb3', platformRun, [varMonitor(runWon, 5, 5)]))
+    .then(() => writeProject('popup-example-14.sb3', raceDay,
+        [varMonitor(raceGates, 5, 5), varMonitor(raceTime, 5, 35)]));
