@@ -128,9 +128,9 @@ const starters = [
     {
         id: 'platform-run',
         title: 'Platform Run',
-        description: 'Race down a long row of platforms stretching far beyond the stage, ' +
-            'with the camera over your shoulder. Arrows run (and turn you around), space ' +
-            'jumps. Reach the flag to win!',
+        description: 'Run up a climbing trail of tiles that zigzags left and right, far ' +
+            'beyond the stage, with the camera over your shoulder. Up runs, left/right ' +
+            'sidestep, space jumps. Reach the flag to win!',
         thumbnail: thumbPlatformRun,
         sb3: sb3PlatformRun
     }

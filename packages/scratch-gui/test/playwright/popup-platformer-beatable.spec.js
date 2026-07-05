@@ -27,9 +27,10 @@ const readWin = page => page.evaluate(() => {
 });
 
 test('3D Pop-Up platformer (example 7) can be beaten', async ({page}) => {
-    // The climb itself is ~5 hops, but loading + entering 3D can be slow on a busy
-    // machine (parallel workers), so give the whole playthrough plenty of room.
-    test.setTimeout(120000);
+    // The climb itself is ~5 hops (~4s at full frame rate), but headless/software-GL
+    // environments can step the VM at a fraction of real time, so give the whole
+    // playthrough plenty of room.
+    test.setTimeout(330000);
     const pageErrors = [];
     page.on('pageerror', err => pageErrors.push(err.stack || err.message || String(err)));
     page.on('dialog', d => d.accept());
@@ -59,10 +60,11 @@ test('3D Pop-Up platformer (example 7) can be beaten', async ({page}) => {
     await page.evaluate(() => document.activeElement && document.activeElement.blur());
     await page.keyboard.down('Space');
 
-    // Poll the Win monitor; the climb is ~5 hops (~4s), so 20s is a generous margin.
+    // Poll the Win monitor; the climb is ~5 hops (~4s at full frame rate), but leave
+    // a very generous margin for slow (software-GL) environments.
     let won = false;
-    for (let i = 0; i < 80 && !won; i++) {
-        await page.waitForTimeout(250);
+    for (let i = 0; i < 560 && !won; i++) {
+        await page.waitForTimeout(500);
         won = (await readWin(page)) === '1';
     }
     await page.keyboard.up('Space');

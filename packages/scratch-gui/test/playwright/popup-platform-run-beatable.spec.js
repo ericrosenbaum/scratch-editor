@@ -1,14 +1,15 @@
 // @ts-check
 // Verifies the Platform Run example (popup-example-13.sb3) can actually be beaten.
 //
-// The level is a long row of platforms along +x (0..2800 — far beyond the old sprite
-// fence, which the 3D Pop-Up extension now switches off), with an over-the-shoulder
-// camera behind the hero. Holding right + space runs the row auto-hopping on every
-// landing; a fall respawns the hero at the last platform it stood on, so the crude
-// hold-both-keys strategy always converges on the goal (validated against the layout
-// by simulation in make-popup-examples.js, and end-to-end here). Reaching the goal
-// sets the global "Win" flag to 1, which we read from its on-stage monitor.
-// 3D rendering needs WebGL, so this runs in Chromium only.
+// The level is an ascending trail of square tiles along the DEPTH axis (0..-2280 —
+// far beyond the old sprite fence, which the 3D Pop-Up extension now switches off),
+// staggered left and right, with an over-the-shoulder camera behind the hero. "Move
+// in 3D" carries the hero forward along the depth axis, so holding up + space runs
+// the trail auto-hopping on every landing; a fall respawns the hero at the last tile
+// it stood on, so the crude hold-both-keys strategy always converges on the goal
+// (validated against the layout by simulation in make-popup-examples.js, and
+// end-to-end here). Reaching the goal sets the global "Win" flag to 1, which we read
+// from its on-stage monitor. 3D rendering needs WebGL, so this runs in Chromium only.
 const {test, expect} = require('@playwright/test');
 const path = require('path');
 const {dismissExamplesModal} = require('./popup-helpers');
@@ -30,8 +31,10 @@ const readWin = page => page.evaluate(() => {
 });
 
 test('3D Pop-Up platform run (example 13) can be beaten', async ({page}) => {
-    // The full run is ~2800 units at ~8/frame plus a respawn or two: allow well over a minute.
-    test.setTimeout(150000);
+    // The full run is ~15s of play at full frame rate, but headless/software-GL
+    // environments can step the VM at a fraction of real time, so allow several
+    // minutes before giving up.
+    test.setTimeout(330000);
     const pageErrors = [];
     page.on('pageerror', err => pageErrors.push(err.stack || err.message || String(err)));
     page.on('dialog', d => d.accept());
@@ -56,21 +59,22 @@ test('3D Pop-Up platform run (example 13) can be beaten', async ({page}) => {
     // Win starts at 0.
     expect(await readWin(page)).toBe('0');
 
-    // Hold right + space to run the row. The VM keeps both keys "down" until keyup, so
-    // the forever loop sees them pressed every frame: the hero runs right continuously
-    // and auto-hops on every landing.
+    // Hold up + space to run the trail. The VM keeps both keys "down" until keyup, so
+    // the forever loop sees them pressed every frame: the hero runs forward (along the
+    // depth axis) continuously and auto-hops on every landing.
     await page.evaluate(() => document.activeElement && document.activeElement.blur());
-    await page.keyboard.down('ArrowRight');
+    await page.keyboard.down('ArrowUp');
     await page.keyboard.down('Space');
 
-    // Poll the Win monitor; the run is ~20s in simulation, so 90s is a generous margin.
+    // Poll the Win monitor; the run is ~15s in simulation at 30fps, but leave a very
+    // generous margin for slow (software-GL) environments.
     let won = false;
-    for (let i = 0; i < 360 && !won; i++) {
-        await page.waitForTimeout(250);
+    for (let i = 0; i < 560 && !won; i++) {
+        await page.waitForTimeout(500);
         won = (await readWin(page)) === '1';
     }
     await page.keyboard.up('Space');
-    await page.keyboard.up('ArrowRight');
+    await page.keyboard.up('ArrowUp');
 
     expect(won, 'the hero reached the goal flag (Win === 1)').toBe(true);
     expect(pageErrors, 'no uncaught exceptions while playing').toEqual([]);

@@ -12,8 +12,8 @@
 //   popup-example-10.sb3  Solar System    (planets orbit the sun in the ground plane)
 //   popup-example-11.sb3  Gem Hunt        (a scored game: roam in 3D, collect gems)
 //   popup-example-12.sb3  Carousel        (clones placed + revolved with "orbit")
-//   popup-example-13.sb3  Platform Run    (a long row of platforms far beyond the
-//                                          stage edges; over-the-shoulder camera)
+//   popup-example-13.sb3  Platform Run    (an ascending, staggered trail of square
+//                                          tiles along the depth axis; shoulder cam)
 //
 // Run: node src/components/popup-examples-modal/starters/make-popup-examples.js
 
@@ -116,7 +116,7 @@ const cameraBehind = spriteName => ({op: 'popup_shoulderCamera',
 // 'shown' | 'hidden' — when hidden the sky shows behind the sprites instead of the backdrop.
 const setBackdrop = visible => ({op: 'popup_setBackdrop', fields: {VISIBLE: [visible, null]}});
 const setThickness = v => ({op: 'popup_setThickness', inputs: {AMOUNT: num(v)}});
-const setDepth = v => ({op: 'popup_setDepth', inputs: {AMOUNT: num(v)}});
+const setDepth = v => ({op: 'popup_setDepth', inputs: {AMOUNT: asInput(v)}});
 const stamp = () => ({op: 'popup_stampInThreeD'});
 const move = v => ({op: 'motion_movesteps', inputs: {STEPS: num(v)}});
 const bounce = () => ({op: 'motion_ifonedgebounce'});
@@ -133,7 +133,7 @@ const whenClone = (...specs) => [{op: 'control_start_as_clone'}, ...specs];
 // More motion / looks / control / sensing helpers (each returns a stack-block spec,
 // or a reporter/boolean spec for the conditions and value slots).
 const setX = v => ({op: 'motion_setx', inputs: {X: typeof v === 'number' ? num(v) : v}});
-const setY = v => ({op: 'motion_sety', inputs: {Y: num(v)}});
+const setY = v => ({op: 'motion_sety', inputs: {Y: typeof v === 'number' ? num(v) : v}});
 const changeYBy = v => ({op: 'motion_changeyby', inputs: {DY: typeof v === 'number' ? num(v) : v}});
 const changeXBy = v => ({op: 'motion_changexby', inputs: {DX: typeof v === 'number' ? num(v) : v}});
 const pointDir = v => ({op: 'motion_pointindirection', inputs: {DIRECTION: num(v)}});
@@ -431,19 +431,20 @@ const makeKelp = ({name, color, x, y, depth, size, phase, layer}) => sprite({
     ), 30, 30)
 });
 
-// One fish: swim forward with "move in 3D" (which, with no spin/tilt, heads right just
-// like 2D move), wander gently in y and depth, always stay upright (tilt 0 — its heading
-// is steered only by a Y-axis spin, never a flip), and on reaching a side wall do a quick
-// 180-degree spin. Because spin steers the 3D heading, that half-turn both faces the fish
-// the other way and reverses its swim — then it glides clear of the wall. `faceLeft` just
-// picks the starting heading.
+// One fish: swim across the tank with 2D `move` (steered by `direction`, which the
+// "don't rotate" style keeps out of the rendered card), wander gently in y and depth,
+// and always stay upright (tilt 0). On reaching a side wall the fish reverses its
+// `direction` and does a quick 180-degree Y-axis spin — the spin is how the card
+// visibly turns to face the way it now swims ("move in 3D" itself heads along the
+// depth axis, so the swim is driven by 2D motion). `faceLeft` picks the starting side.
 const makeFish = ({name, svg, x, y, depth, size, speed, faceLeft, layer}) => {
     const blocks = {};
     buildScript(blocks, flag(
         setThickness(12), setTilt(0), setSpin(faceLeft ? 180 : 0),
+        pointDir(faceLeft ? -90 : 90),
         gotoXY(x, y), setDepth(depth),
         forever(
-            move3D(speed),
+            move(speed),
             changeYBy(pickRandom(-1.4, 1.4)),
             changeDepthBy(pickRandom(-2.5, 2.5)),
             ifThen(gt(yPos(), 120), changeY(-3)),
@@ -451,8 +452,9 @@ const makeFish = ({name, svg, x, y, depth, size, speed, faceLeft, layer}) => {
             ifThen(gt(getDepth3D(), 210), changeDepthBy(-4)),
             ifThen(lt(getDepth3D(), -110), changeDepthBy(4)),
             ifThen(or(gt(xPos(), 195), lt(xPos(), -195)),
-                repeatN(9, changeSpin(20)),   // quick about-face (a Y-axis spin reverses the heading)
-                repeatN(12, move3D(speed))    // glide clear of the wall before checking again
+                ifElse(gt(xPos(), 0), [pointDir(-90)], [pointDir(90)]), // swim back toward the middle
+                repeatN(9, changeSpin(20)),   // quick about-face so the card faces its new heading
+                repeatN(12, move(speed))      // glide clear of the wall before checking again
             )
         )
     ), 30, 30);
@@ -989,61 +991,72 @@ const carousel = [
         layer: 3, blocks: horseRiderBlocks(60, '#8fd0ff', '#1c6fd0')})
 ];
 
-// ---- example 13: Platform Run (a long row of platforms; over-the-shoulder cam) ----
-// The same platforming style as example 7, but the platforms are spread out into a
-// long row along x (from 0 to 2800 — about six stage-widths past where the old sprite
-// fence used to stop everything), which only works because fencing defaults to off
-// while the extension is loaded. The camera sits BEHIND the hero (`set camera behind`),
-// looking along its spin heading, so running right means running into the screen and
-// turning around swings the whole view with you.
+// ---- example 13: Platform Run (an ascending trail of tiles; over-the-shoulder cam) --
+// A platformer built along the DEPTH axis: square tiles laid flat (tilt 90) climb
+// gradually away from the start, staggered left and right, from depth 0 out to depth
+// -2280 — far past the old sprite fence (fencing defaults to off while the extension
+// is loaded, and the depth range is wide enough for the whole trail). "move in 3D"
+// carries the hero forward along the depth axis (toward the camera at rest), and the
+// over-the-shoulder camera (`set camera behind`) rides behind the hero looking down
+// the trail, so the tiles recede into the distance ahead.
 //
-// The layout and physics (run 8/frame, jump velocity 15, thin slabs) were chosen by
-// simulating the exact loop below frame-by-frame over a range of plausible hero hitbox
-// sizes: holding right+space always reaches the goal (a fall respawns you at the last
-// platform you stood on, never the start; at most one fall in simulation), while
-// holding right WITHOUT jumping always falls in — the gaps are real, but every jump
-// is makeable (hop length ~208 units vs ~156-unit effective gaps). Playability is
-// enforced end-to-end by test/playwright/popup-platform-run-beatable.spec.js.
-const runSlabSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="150" height="32" viewBox="0 0 150 32">
-  <rect x="3" y="3" width="144" height="26" rx="9" fill="#8bd17c" stroke="#4f9a40" stroke-width="4"/>
-  <rect x="3" y="3" width="144" height="11" rx="6" fill="#a7e29a"/></svg>`);
-const RUN_PLATFORMS = [
-    [0, -125], [400, -125], [800, -125], [1200, -125],
-    [1600, -125], [2000, -125], [2400, -125], [2800, -125]
+// The layout and physics (run 8/frame, jump velocity 15, 380-unit tile spacing,
+// 20-unit ascent per tile) were chosen by simulating the exact loop below
+// frame-by-frame over a range of plausible hero hitbox sizes: holding up+space always
+// reaches the goal (a fall respawns you at the last tile you stood on, never the
+// start; at most one fall in simulation), while holding up WITHOUT jumping always
+// falls in — the gaps are real, but every jump is makeable. Playability is enforced
+// end-to-end by test/playwright/popup-platform-run-beatable.spec.js.
+const runTileSVG = reg(`<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <rect x="3" y="3" width="144" height="144" rx="14" fill="#8bd17c" stroke="#4f9a40" stroke-width="5"/>
+  <rect x="18" y="18" width="114" height="114" rx="9" fill="#a7e29a" opacity="0.7"/></svg>`);
+// Tiles: [x, y, depth]. Depth steps away by 380 per tile, y ascends 20 per tile, and
+// x staggers left/right by 55 (well within the tile's ~94-unit half-width, so running
+// straight up the middle still lands — sidestep with the arrows to stay centred).
+const RUN_TILES = [
+    [0, -125, 0], [55, -105, -380], [-55, -85, -760], [55, -65, -1140],
+    [-55, -45, -1520], [55, -25, -1900], [-55, -5, -2280]
 ];
-const RUN_GOAL_X = RUN_PLATFORMS[RUN_PLATFORMS.length - 1][0];
+const RUN_GOAL = RUN_TILES[RUN_TILES.length - 1];
 const runPlatformBlocks = {};
-const placeRunPlatforms = [setThickness(40)];
-for (const [x, y] of RUN_PLATFORMS) placeRunPlatforms.push(gotoXY(x, y), setDepth(26), createClone());
+// Tiles lie flat (tilt 90), so each card's 150x150 face becomes a square floor slab.
+const placeRunPlatforms = [setThickness(40), setTilt(90)];
+for (const [x, y, d] of RUN_TILES) placeRunPlatforms.push(gotoXY(x, y), setDepth(d), createClone());
 placeRunPlatforms.push(hide()); // hide the original once every clone exists
 buildScript(runPlatformBlocks, flag(...placeRunPlatforms), 30, 30);
 buildScript(runPlatformBlocks, whenClone(show()), 320, 30);
 
 const runVy = mkVar('vy'); // vertical velocity (hero-local)
-const runOnGround = mkVar('onGround'); // 1 while standing on a platform (hero-local)
-const runCheckpointX = mkVar('checkpoint x'); // x of the last landing (hero-local)
+const runOnGround = mkVar('onGround'); // 1 while standing on a tile (hero-local)
+const runCheckpointX = mkVar('checkpoint x'); // where the hero last stood (hero-local)
+const runCheckpointY = mkVar('checkpoint y');
+const runCheckpointD = mkVar('checkpoint depth');
 const runWon = mkVar('Win'); // 1 once the goal is reached (global: shared with Goal + monitor)
 const runHeroBlocks = {};
 buildScript(runHeroBlocks, flag(
     setThickness(22), setSize(75),
-    setVar(runWon, 0), setVar(runVy, 0), setVar(runOnGround, 0), setVar(runCheckpointX, 0),
+    setVar(runWon, 0), setVar(runVy, 0), setVar(runOnGround, 0),
+    setVar(runCheckpointX, 0), setVar(runCheckpointY, -35), setVar(runCheckpointD, 0),
     gotoXY(0, -75), setDepth(0), setSpin(0),
     forever(
-        // Controls, polled every frame (frozen once you've won). Left/right first spin
-        // the hero to face that way, then step along its heading, so the shoulder
-        // camera always looks down the row the hero is about to run along.
+        // Controls, polled every frame (frozen once you've won). Up runs forward
+        // along the depth axis — the way the hero faces, straight down the trail the
+        // shoulder camera looks along — and left/right sidestep onto the staggered
+        // tiles. Down backs up.
         ifThen(eq(varRep(runWon), 0),
-            ifThen(keyPressed('right arrow'), setSpin(0), move3D(8)),
-            ifThen(keyPressed('left arrow'), setSpin(180), move3D(8)),
+            ifThen(keyPressed('up arrow'), move3D(8)),
+            ifThen(keyPressed('down arrow'), move3D(-8)),
+            ifThen(keyPressed('right arrow'), changeX(8)),
+            ifThen(keyPressed('left arrow'), changeX(-8)),
             // Jump only from the ground (no mid-air jumps / flying).
             ifThen(and(keyPressed('space'), eq(varRep(runOnGround), 1)),
                 setVar(runVy, 15), setVar(runOnGround, 0))
         ),
-        // Gravity, with a terminal velocity so a long fall can't tunnel through a slab.
+        // Gravity, with a terminal velocity so a long fall can't tunnel through a tile.
         changeVar(runVy, -1.2),
         ifThen(lt(varRep(runVy), -14), setVar(runVy, -14)),
         changeYBy(varRep(runVy)),
-        // Land: while falling/resting, pop up out of the slab in 1px steps, then settle
+        // Land: while falling/resting, pop up out of the tile in 1px steps, then settle
         // one step back onto its surface. Each landing records a checkpoint.
         setVar(runOnGround, 0),
         ifThen(and(touching3D('Platform'), not(gt(varRep(runVy), 0))),
@@ -1051,17 +1064,21 @@ buildScript(runHeroBlocks, flag(
             changeYBy(-1),
             setVar(runVy, 0),
             setVar(runOnGround, 1),
-            setVar(runCheckpointX, xPos())
+            setVar(runCheckpointX, xPos()),
+            setVar(runCheckpointY, yPos()),
+            setVar(runCheckpointD, getDepth3D())
         ),
-        // Fell into a gap: respawn above the last platform you stood on.
+        // Fell into a gap: respawn just above the last tile you stood on.
         ifThen(lt(yPos(), -175),
-            setX(varRep(runCheckpointX)), setY(-30), setDepth(0), setVar(runVy, 0))
+            setX(varRep(runCheckpointX)), setY(varRep(runCheckpointY)), changeYBy(40),
+            setDepth(varRep(runCheckpointD)), setVar(runVy, 0))
     )
 ), 30, 30);
-// Reaching the goal wins: touching the flag, or landing on the last platform (grounded
-// and far enough along the row), sets Win = 1 and the hero does a celebratory spin.
+// Reaching the goal wins: touching the flag, or landing on the last tile (grounded
+// and far enough out along the trail), sets Win = 1 and the hero does a celebratory
+// spin.
 buildScript(runHeroBlocks, flag(
-    waitUntil(or(touching3D('Goal'), and(eq(varRep(runOnGround), 1), gt(xPos(), RUN_GOAL_X - 50)))),
+    waitUntil(or(touching3D('Goal'), and(eq(varRep(runOnGround), 1), lt(getDepth3D(), RUN_GOAL[2] + 50)))),
     setVar(runWon, 1),
     repeatN(18, changeSpin(20), changeEffect('color', 6), changeSize(2)),
     repeatN(18, changeSpin(20), changeEffect('color', 6), changeSize(-2)),
@@ -1070,8 +1087,10 @@ buildScript(runHeroBlocks, flag(
 
 const runGoalBlocks = {};
 buildScript(runGoalBlocks, flag(
-    setThickness(18), setSize(95), setDepth(0),
-    gotoXY(RUN_GOAL_X, -43), show(),
+    // The flag stands on the last tile (its top is at y 15), spun 180 so its front
+    // face greets the hero approaching from the near side of the trail.
+    setThickness(18), setSize(95), setSpin(180),
+    gotoXY(RUN_GOAL[0], 76), setDepth(RUN_GOAL[2]), show(),
     // Idle: bob gently until the player arrives.
     forever(ifThen(eq(varRep(runWon), 0),
         repeatN(16, changeYBy(0.7)),
@@ -1090,16 +1109,17 @@ const platformRun = [
         buildScript({}, flag(setSky('day'), setBackdrop('hidden'), cameraBehind('Hero')), 30, 30),
         [runWon]),
     sprite({
-        name: 'Platform', svg: runSlabSVG, rcx: 75, rcy: 16, x: 0, y: -125, size: 125,
+        name: 'Platform', svg: runTileSVG, rcx: 75, rcy: 75, x: 0, y: -125, size: 125,
         layer: 1, blocks: runPlatformBlocks
     }),
     sprite({
-        name: 'Goal', svg: goalFlagSVG, rcx: 40, rcy: 65, x: RUN_GOAL_X, y: -43, size: 95,
+        name: 'Goal', svg: goalFlagSVG, rcx: 40, rcy: 65, x: RUN_GOAL[0], y: 76, size: 95,
         layer: 3, blocks: runGoalBlocks
     }),
     sprite({
         name: 'Hero', svg: hopperSVG, rcx: 40, rcy: 40, x: 0, y: -75, size: 75,
-        layer: 2, vars: [runVy, runOnGround, runCheckpointX], blocks: runHeroBlocks
+        layer: 2, vars: [runVy, runOnGround, runCheckpointX, runCheckpointY, runCheckpointD],
+        blocks: runHeroBlocks
     })
 ];
 

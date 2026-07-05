@@ -56,13 +56,13 @@ const examples = [
     {file: 'popup-example-12.sb3',
         shot: 'example-carousel.png',
         drag: false},
-    // Platform run: a long row of platforms beyond the stage edges; the camera sits
-    // behind the hero (over-the-shoulder), so no stage drag is needed. A full beatable
-    // playthrough is covered by popup-platform-run-beatable.spec.js.
+    // Platform run: an ascending, staggered trail of tiles along the depth axis; the
+    // camera sits behind the hero (over-the-shoulder), so no stage drag is needed. A
+    // full beatable playthrough is covered by popup-platform-run-beatable.spec.js.
     {file: 'popup-example-13.sb3',
         shot: 'example-platform-run.png',
         drag: false,
-        keys: ['ArrowRight', 'ArrowRight', 'Space']}
+        keys: ['ArrowUp', 'ArrowUp', 'Space']}
 ];
 
 for (const ex of examples) {
