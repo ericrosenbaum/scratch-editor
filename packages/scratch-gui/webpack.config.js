@@ -55,6 +55,22 @@ const baseConfig = new ScratchWebpackConfigBuilder(
                 vm: false
             },
             symlinks: false
+        },
+        // The @scratch/* workspace packages are symlinked into node_modules, and
+        // `resolve.symlinks: false` (above) means webpack sees their modules at the
+        // symlinked node_modules path. Two settings are needed so the dev server
+        // picks up edits to their sources (e.g. scratch-vm):
+        watchOptions: {
+            // On macOS the file watcher reports real paths, which don't match the
+            // symlinked paths webpack watches, so changes never trigger a rebuild.
+            // Resolving symlinks makes it watch both.
+            followSymlinks: true
+        },
+        snapshot: {
+            // Webpack snapshots node_modules content by package version, not file
+            // contents, so a rebuild would still reuse the stale cached modules.
+            // Exclude @scratch packages from that assumption.
+            managedPaths: [/^(.+?[\\/]node_modules[\\/](?!@scratch[\\/])(@.+?[\\/])?.+?[\\/])/]
         }
     })
     .addModuleRule({
