@@ -21,6 +21,25 @@ import thumbRace from './starters/popup-example-14.png';
 import thumbTown from './starters/popup-example-15.png';
 import thumbRobot from './starters/popup-example-16.png';
 
+// Short animated demos of each example, swapped in for the static thumbnail
+// while the card is hovered.
+import gifCard from './starters/popup-example-1.gif';
+import gifFish from './starters/popup-example-2.gif';
+import gifForest from './starters/popup-example-3.gif';
+import gifSpace from './starters/popup-example-4.gif';
+import gifJump from './starters/popup-example-5.gif';
+import gifGarden from './starters/popup-example-6.gif';
+import gifPlatformer from './starters/popup-example-7.gif';
+import gifBirthday from './starters/popup-example-8.gif';
+import gifCrystal from './starters/popup-example-9.gif';
+import gifSolar from './starters/popup-example-10.gif';
+import gifGems from './starters/popup-example-11.gif';
+import gifCarousel from './starters/popup-example-12.gif';
+import gifPlatformRun from './starters/popup-example-13.gif';
+import gifRace from './starters/popup-example-14.gif';
+import gifTown from './starters/popup-example-15.gif';
+import gifRobot from './starters/popup-example-16.gif';
+
 import sb3Card from './starters/popup-example-1.sb3';
 import sb3Fish from './starters/popup-example-2.sb3';
 import sb3Forest from './starters/popup-example-3.sb3';
@@ -44,6 +63,7 @@ const starters = [
         title: 'Pop-Up Card',
         description: 'A heart and a star stand up at different depths. Drag to spin it.',
         thumbnail: thumbCard,
+        animatedThumbnail: gifCard,
         sb3: sb3Card
     },
     {
@@ -52,6 +72,7 @@ const starters = [
         description: 'Real fish glide through a reef of coral and kelp, wandering gently ' +
             'and turning with a quick spin at the edges. Drag to look around.',
         thumbnail: thumbFish,
+        animatedThumbnail: gifFish,
         sb3: sb3Fish
     },
     {
@@ -59,6 +80,7 @@ const starters = [
         title: 'Build a Forest',
         description: 'Stamp a whole row of 3D trees with the green flag.',
         thumbnail: thumbForest,
+        animatedThumbnail: gifForest,
         sb3: sb3Forest
     },
     {
@@ -66,6 +88,7 @@ const starters = [
         title: 'Space Flyer',
         description: 'Fly a rocket through space with the arrow keys (left/right and into the screen).',
         thumbnail: thumbSpace,
+        animatedThumbnail: gifSpace,
         sb3: sb3Space
     },
     {
@@ -73,6 +96,7 @@ const starters = [
         title: 'Jump!',
         description: 'Walk with the arrow keys and jump with the space bar.',
         thumbnail: thumbJump,
+        animatedThumbnail: gifJump,
         sb3: sb3Jump
     },
     {
@@ -80,6 +104,7 @@ const starters = [
         title: 'Magic Garden',
         description: 'Move with the arrow keys and press space to plant 3D flowers.',
         thumbnail: thumbGarden,
+        animatedThumbnail: gifGarden,
         sb3: sb3Garden
     },
     {
@@ -89,6 +114,7 @@ const starters = [
             'walk and step in/out, space jumps, and the camera follows you up. Reach the ' +
             'goal to win!',
         thumbnail: thumbPlatformer,
+        animatedThumbnail: gifPlatformer,
         sb3: sb3Platformer
     },
     {
@@ -97,6 +123,7 @@ const starters = [
         description: 'A 3D greeting that sways and shifts colour. Click the balloons to ' +
             'pop them and click the cake to make a wish.',
         thumbnail: thumbBirthday,
+        animatedThumbnail: gifBirthday,
         sb3: sb3Birthday
     },
     {
@@ -105,6 +132,7 @@ const starters = [
         description: 'Several flat gems are crossed and spun into one solid, faceted ' +
             'crystal — a 3D shape no single drawing could make. The camera orbits it.',
         thumbnail: thumbCrystal,
+        animatedThumbnail: gifCrystal,
         sb3: sb3Crystal
     },
     {
@@ -113,6 +141,7 @@ const starters = [
         description: 'Planets orbit the sun at their own speeds and depths while the ' +
             'camera circles the whole system.',
         thumbnail: thumbSolar,
+        animatedThumbnail: gifSolar,
         sb3: sb3Solar
     },
     {
@@ -121,6 +150,7 @@ const starters = [
         description: 'A game: roam with the arrow keys (in, out and across) and collect ' +
             'all five gems hidden at different depths.',
         thumbnail: thumbGems,
+        animatedThumbnail: gifGems,
         sb3: sb3Gems
     },
     {
@@ -129,6 +159,7 @@ const starters = [
         description: 'Six horses are spaced evenly around a striped big top and revolve ' +
             'as they bob up and down — all with the orbit block.',
         thumbnail: thumbCarousel,
+        animatedThumbnail: gifCarousel,
         sb3: sb3Carousel
     },
     {
@@ -138,6 +169,7 @@ const starters = [
             'beyond the stage, with the camera over your shoulder. Up runs, left/right ' +
             'sidestep, space jumps. Reach the flag to win!',
         thumbnail: thumbPlatformRun,
+        animatedThumbnail: gifPlatformRun,
         sb3: sb3PlatformRun
     },
     {
@@ -147,6 +179,7 @@ const starters = [
             'right behind the wheel. Up drives, left/right steer. Pass all four ' +
             'checkered gates to set your time!',
         thumbnail: thumbRace,
+        animatedThumbnail: gifRace,
         sb3: sb3Race
     },
     {
@@ -156,6 +189,7 @@ const starters = [
             'can find. Up walks, left/right turn. Bump into things — eight of them have ' +
             'something to say!',
         thumbnail: thumbTown,
+        animatedThumbnail: gifTown,
         sb3: sb3Town
     },
     {
@@ -165,6 +199,7 @@ const starters = [
             'the arms, arrow keys march the legs and nod the head, space jumps. Drag the ' +
             'stage to walk around it!',
         thumbnail: thumbRobot,
+        animatedThumbnail: gifRobot,
         sb3: sb3Robot
     }
 ];

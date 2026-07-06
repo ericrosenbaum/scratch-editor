@@ -32,23 +32,38 @@ const messages = defineMessages({
 class StarterCard extends React.PureComponent {
     constructor (props) {
         super(props);
-        bindAll(this, ['handleClick']);
+        bindAll(this, ['handleClick', 'handleMouseEnter', 'handleMouseLeave']);
+        this.state = {hovered: false};
     }
     handleClick () {
         this.props.onSelect(this.props.starter);
     }
+    handleMouseEnter () {
+        this.setState({hovered: true});
+    }
+    handleMouseLeave () {
+        this.setState({hovered: false});
+    }
     render () {
         const starter = this.props.starter;
+        const animate = this.state.hovered && starter.animatedThumbnail;
         return (
             <button
                 className={styles.starterCard}
                 data-testid="popup-example"
                 onClick={this.handleClick}
+                onMouseEnter={this.handleMouseEnter}
+                onMouseLeave={this.handleMouseLeave}
+                onFocus={this.handleMouseEnter}
+                onBlur={this.handleMouseLeave}
             >
                 <div className={styles.thumbnailWrapper}>
+                    {/* Remounting the <img> (via key) restarts the GIF from its
+                        first frame on every hover. */}
                     <img
+                        key={animate ? 'animated' : 'static'}
                         className={styles.thumbnail}
-                        src={starter.thumbnail}
+                        src={animate ? starter.animatedThumbnail : starter.thumbnail}
                         alt={starter.title}
                         draggable={false}
                     />
@@ -63,6 +78,7 @@ class StarterCard extends React.PureComponent {
 StarterCard.propTypes = {
     onSelect: PropTypes.func.isRequired,
     starter: PropTypes.shape({
+        animatedThumbnail: PropTypes.string,
         description: PropTypes.string,
         thumbnail: PropTypes.string,
         title: PropTypes.string

@@ -30,6 +30,16 @@ test('3D Pop-Up: welcome modal opens on GUI load with the example projects', asy
     await expect(page.getByText('Magic Garden', {exact: true})).toBeVisible();
     await page.screenshot({path: path.join(SHOTS, 'modal.png')});
 
+    // Hovering a card swaps its static thumbnail for the animated GIF demo (and
+    // hovering away swaps it back).
+    const firstCard = page.getByTestId('popup-example').first();
+    const thumb = firstCard.locator('img');
+    await expect(thumb).toHaveAttribute('src', /\.png$/);
+    await firstCard.hover();
+    await expect(thumb).toHaveAttribute('src', /\.gif$/);
+    await page.getByText('Open an example to get started:', {exact: false}).hover();
+    await expect(thumb).toHaveAttribute('src', /\.png$/);
+
     // Choosing an example dismisses the modal.
     await page.getByText('Fish Tank', {exact: true}).click();
     await expect(page.getByText('Open an example to get started:', {exact: false})).toHaveCount(0);
