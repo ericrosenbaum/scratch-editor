@@ -26,13 +26,15 @@ const STATE_KEY = 'Scratch.popup';
  *   depth     - where along the in/out axis the object sits (stage units; + = into the page).
  *   tilt      - rotation about the X axis (degrees), tipping the card forward/back.
  *   spin      - rotation about the Y axis (degrees), turning the card left/right.
+ *   moveAxis  - which local axis `move ... in 3D` travels along ('x' | 'y' | 'z').
  * @type {object}
  */
 const DEFAULT_STATE = {
     thickness: 20,
     depth: 0,
     tilt: 0,
-    spin: 0
+    spin: 0,
+    moveAxis: 'z'
 };
 
 /**
@@ -49,6 +51,7 @@ const getPopupState = target => {
     // Backfill keys added after a project may have been saved with older state.
     if (!Number.isFinite(state.tilt)) state.tilt = 0;
     if (!Number.isFinite(state.spin)) state.spin = 0;
+    if (state.moveAxis !== 'x' && state.moveAxis !== 'y') state.moveAxis = 'z';
     return state;
 };
 
@@ -851,20 +854,27 @@ class PopupScene {
     }
 
     /**
-     * The unit vector the card FACES in world space — its local +z (the front-face
-     * normal), rotated by the card's full 3D orientation. At rest (no spin/tilt) this
-     * is +z: out of the page, toward the camera and away from the backdrop, so `move
-     * ... steps in 3D` carries the sprite forward along the depth axis. Spin (yaw)
-     * steers the heading left/right, tilt pitches it up/down, and a left-right flip
-     * turns it around; `direction` (rotation within the card's own plane) leaves the
-     * heading unchanged. Built from the same orientation as the rendered mesh, so
-     * movement always goes the way the card faces. Safe to call headless.
+     * The unit vector the sprite MOVES along in world space — its local move axis
+     * (state.moveAxis, default +z: the front-face normal) rotated by the card's full
+     * 3D orientation. With the default axis, at rest (no spin/tilt) this is +z: out of
+     * the page, toward the camera and away from the backdrop, so `move ... steps in
+     * 3D` carries the sprite forward along the depth axis; spin (yaw) steers the
+     * heading left/right, tilt pitches it up/down, and a left-right flip turns it
+     * around. Choosing 'x' makes the sprite travel along the card's own right — so
+     * `direction` steers it in the wall plane the way 2D `move` does — and 'y' along
+     * the card's own up. Built from the same orientation as the rendered mesh, so
+     * movement always matches what is rendered. Also drives the 'shoulder' camera
+     * (`set camera behind`), which looks along this vector. Safe to call headless.
      * @param {Target} target - the sprite to read orientation from.
      * @returns {THREE.Vector3} the world-space heading direction (unit length).
      */
     forwardVector (target) {
-        const o = this._orientation(target, getPopupState(target));
-        return new THREE.Vector3(0, 0, 1).applyEuler(new THREE.Euler(o.x, o.y, o.z, 'XYZ'));
+        const state = getPopupState(target);
+        const o = this._orientation(target, state);
+        let base = [0, 0, 1];
+        if (state.moveAxis === 'x') base = [1, 0, 0];
+        else if (state.moveAxis === 'y') base = [0, 1, 0];
+        return new THREE.Vector3(...base).applyEuler(new THREE.Euler(o.x, o.y, o.z, 'XYZ'));
     }
 
     /**

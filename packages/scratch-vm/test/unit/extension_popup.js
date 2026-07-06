@@ -103,6 +103,41 @@ test('PopupScene.forwardVector points the way the card faces (depth axis at rest
     t.end();
 });
 
+test('PopupScene.forwardVector honours the per-sprite move axis (set 3D move axis)', t => {
+    const runtime = {renderer: null, targets: [], on: () => {}};
+    const scene = new PopupScene(runtime);
+    const near = (a, b) => Math.abs(a - b) < 1e-9;
+
+    // Old saved state without a moveAxis backfills to the default 'z'.
+    const legacy = makeTarget({direction: 90});
+    legacy._state['Scratch.popup'] = {thickness: 20, depth: 0, tilt: 0, spin: 0};
+    t.equal(getPopupState(legacy).moveAxis, 'z', 'missing moveAxis backfills to z');
+
+    // Axis 'x' travels along the card's own right: at rest that is world +x, and
+    // `direction` steers it in the wall plane the way the 2D move block does.
+    const alongX = makeTarget({direction: 90});
+    getPopupState(alongX).moveAxis = 'x';
+    let f = scene.forwardVector(alongX);
+    t.ok(near(f.x, 1) && near(f.y, 0) && near(f.z, 0), 'axis x at rest heads +x (right)');
+    alongX.direction = 0;
+    f = scene.forwardVector(alongX);
+    t.ok(near(f.x, 0) && near(f.y, 1) && near(f.z, 0), 'axis x with direction 0 heads +y (up), like 2D move');
+
+    // Axis 'x' still follows spin (yaw): spin 90 turns the right edge into the page.
+    getPopupState(alongX).spin = 90;
+    alongX.direction = 90;
+    f = scene.forwardVector(alongX);
+    t.ok(near(f.x, 0) && near(f.y, 0) && near(f.z, -1), 'axis x with spin 90 heads -z (into the page)');
+
+    // Axis 'y' travels along the card's own top: at rest that is world +y.
+    const alongY = makeTarget({direction: 90});
+    getPopupState(alongY).moveAxis = 'y';
+    f = scene.forwardVector(alongY);
+    t.ok(near(f.x, 0) && near(f.y, 1) && near(f.z, 0), 'axis y at rest heads +y (up)');
+
+    t.end();
+});
+
 test('PopupScene._handlePointer grabs any sprite on press, not just draggable ones (2D-editor parity)', t => {
     const mouse = makeMouse();
     const runtime = {renderer: null, targets: [], on: () => {}, ioDevices: {mouse}};

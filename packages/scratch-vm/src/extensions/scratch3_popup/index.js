@@ -379,6 +379,22 @@ class Scratch3PopupBlocks {
                     }
                 },
                 {
+                    opcode: 'setMoveAxis',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'popup.setMoveAxis',
+                        default: 'set 3D move axis to [AXIS]',
+                        description: 'Choose which of the sprite\'s own axes "move in 3D" travels along'
+                    }),
+                    arguments: {
+                        AXIS: {
+                            type: ArgumentType.STRING,
+                            menu: 'moveAxis',
+                            defaultValue: 'z'
+                        }
+                    }
+                },
+                {
                     opcode: 'orbit',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -505,6 +521,35 @@ class Scratch3PopupBlocks {
                         }
                     ]
                 },
+                moveAxis: {
+                    acceptReporters: true,
+                    items: [
+                        {
+                            text: formatMessage({
+                                id: 'popup.moveAxis.z',
+                                default: 'z (the way it faces)',
+                                description: 'Move along the sprite\'s facing (front-face normal); the default'
+                            }),
+                            value: 'z'
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'popup.moveAxis.x',
+                                default: 'x (its right)',
+                                description: 'Move along the sprite\'s own right, so direction steers it like 2D move'
+                            }),
+                            value: 'x'
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'popup.moveAxis.y',
+                                default: 'y (its top)',
+                                description: 'Move along the sprite\'s own up'
+                            }),
+                            value: 'y'
+                        }
+                    ]
+                },
                 spriteMenu: {
                     acceptReporters: true,
                     items: '_spriteMenu'
@@ -569,6 +614,7 @@ class Scratch3PopupBlocks {
         // Backfill keys added after a project may have been saved with older state.
         if (!Number.isFinite(state.tilt)) state.tilt = 0;
         if (!Number.isFinite(state.spin)) state.spin = 0;
+        if (state.moveAxis !== 'x' && state.moveAxis !== 'y') state.moveAxis = 'z';
         return state;
     }
 
@@ -788,12 +834,12 @@ class Scratch3PopupBlocks {
     }
 
     /**
-     * `move [STEPS] steps in 3D` - move forward along the depth axis, the way the
-     * sprite faces (its front-face normal). At rest (no spin/tilt) that is out of the
-     * page: toward the camera and away from the backdrop, so depth decreases. Spin
-     * (yaw) steers the heading left/right, tilt pitches it up/down, and a left-right
-     * flip turns it around. Sharing the scene's orientation maths guarantees movement
-     * matches what's rendered.
+     * `move [STEPS] steps in 3D` - move along the sprite's 3D move axis (see
+     * setMoveAxis; default its front-face normal). At rest (no spin/tilt) that is out
+     * of the page: toward the camera and away from the backdrop, so depth decreases.
+     * Spin (yaw) steers the heading left/right, tilt pitches it up/down, and a
+     * left-right flip turns it around. Sharing the scene's orientation maths
+     * guarantees movement matches what's rendered.
      * @param {object} args - the block arguments.
      * @param {object} util - block utility (provides the current target).
      */
@@ -807,6 +853,22 @@ class Scratch3PopupBlocks {
         // set to -(depth) in the scene.
         state.depth = MathUtil.clamp(state.depth - (steps * f.z), DEPTH_RANGE.min, DEPTH_RANGE.max);
         this._visualChange();
+    }
+
+    /**
+     * `set 3D move axis to [x | y | z]` - choose which of the sprite's own (local) axes
+     * `move ... steps in 3D` travels along. The default, z, is the front-face normal
+     * (out of the page at rest), so spin/tilt steer the sprite the way its card faces.
+     * 'x' is the card's own right — `direction` then steers movement in the wall plane
+     * like the 2D `move` block — and 'y' its own top. The `set camera behind` camera
+     * looks along the same axis, so it stays behind the sprite's travel either way.
+     * @param {object} args - the block arguments.
+     * @param {object} util - block utility (provides the current target).
+     */
+    setMoveAxis (args, util) {
+        const axis = Cast.toString(args.AXIS).toLowerCase();
+        if (axis !== 'x' && axis !== 'y' && axis !== 'z') return;
+        this._getState(util.target).moveAxis = axis;
     }
 
     /**
