@@ -767,7 +767,102 @@ Scratch.data.set("ready", 0);`
     ]
 };
 
-const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND, CANVAS, LIFE, GRID, IMAGE, SCOPE, SPECTRUM];
+/** Sign — rewrite the text painted on a costume, live (Talking Sign project). */
+const SIGN = {
+    name: 'Sign',
+    color1: '#2AA898',
+    color2: '#209183',
+    color3: '#1B7A6E',
+    docs: [
+`---
+type: command
+text: "write {text} on sign line {line}"
+inputs:
+  text: text = "HELLO"
+  line: number = 1
+---
+var line = Math.max(1, Math.round(Scratch.args.line));
+Scratch.svg.setText("line" + line, Scratch.args.text);`,
+`---
+type: command
+text: "color sign line {line} {color}"
+inputs:
+  line: number = 1
+  color: text = "#c0392b"
+---
+var line = Math.max(1, Math.round(Scratch.args.line));
+Scratch.svg.set("line" + line, "fill", Scratch.args.color);`,
+`---
+type: command
+text: "reset the sign"
+inputs:
+---
+Scratch.svg.reset();`
+    ]
+};
+
+/** Puppet — move, turn, recolor and swap the named parts of a costume (Robot Puppet project). */
+const PUPPET = {
+    name: 'Puppet',
+    color1: '#8E5BE8',
+    color2: '#7C49D6',
+    color3: '#6A3BC0',
+    docs: [
+`---
+type: command
+text: "turn part {id} to {deg} degrees"
+inputs:
+  id: text = "arm-left"
+  deg: number = 20
+---
+Scratch.svg.rotate(Scratch.args.id, Scratch.args.deg);`,
+`---
+type: command
+text: "slide part {id} by x {dx} y {dy}"
+inputs:
+  id: text = "pupil-left"
+  dx: number = 0
+  dy: number = 0
+---
+Scratch.svg.move(Scratch.args.id, Scratch.args.dx, Scratch.args.dy);`,
+`---
+type: command
+text: "show part {id}"
+inputs:
+  id: text = "mouth-open"
+---
+Scratch.svg.show(Scratch.args.id);`,
+`---
+type: command
+text: "hide part {id}"
+inputs:
+  id: text = "mouth-open"
+---
+Scratch.svg.hide(Scratch.args.id);`,
+`---
+type: command
+text: "color part {id} {color}"
+inputs:
+  id: text = "light"
+  color: text = "#e74c3c"
+---
+Scratch.svg.setFill(Scratch.args.id, Scratch.args.color);`,
+`---
+type: reporter
+text: "costume part ids"
+inputs:
+---
+return Scratch.svg.ids().join(", ");`,
+`---
+type: command
+text: "reset my costume"
+inputs:
+---
+Scratch.svg.reset();`
+    ]
+};
+
+const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND, CANVAS, LIFE, GRID, IMAGE, SCOPE, SPECTRUM, SIGN, PUPPET];
 
 /**
  * Build a fully-compiled example library ready for installCustomLibrary.

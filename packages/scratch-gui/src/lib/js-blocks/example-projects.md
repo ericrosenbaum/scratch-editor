@@ -297,6 +297,86 @@ number of bars or the colors.
 
 ---
 
+## 10. Talking Sign — library: **Sign**
+
+**What it does:** The sprite wears a wooden-sign costume with two lines of text
+painted on it. Ask the user what the sign should say and write their answer onto
+the top line; the bottom line becomes a live clock showing the project timer.
+The words are part of the costume itself — they move, rotate, and scale with the
+sprite like any painted stroke.
+
+**Beyond Scratch:** writing ON a costume. Vanilla Scratch can only `say` (a
+bubble beside the sprite) or switch between pre-drawn costumes — one per
+possible message. `Scratch.svg.setText()` reaches into the costume's vector
+source and replaces the contents of a `<text>` element by id, live, every frame
+if you like. It is **display only**: the edit goes to the costume's render skin,
+never its stored asset, so saving the project saves the original sign, and the
+green flag / stop button puts the skin back exactly as drawn.
+
+**Costume:** `sign` — ships with the project; text lines have ids `line1`, `line2`.
+
+**Script (Sprite1):**
+```
+when green flag clicked
+ask [What should the sign say?] and wait
+write (answer) on sign line (1)               // Sign
+forever
+  write (join [timer: ] (round (timer))) on sign line (2)   // Sign
+```
+
+**Blocks used:** `write () on sign line ()`, `color sign line () ()`,
+`reset the sign`. Invites tinkering: color the lines; show the mouse position,
+a score variable, or the loudness on the sign; make a countdown.
+
+---
+
+## 11. Robot Puppet — library: **Puppet**
+
+**What it does:** A robot costume whose named parts the blocks puppet, live:
+the arms wave (rotating around `data-pivot` shoulder points), the pupils follow
+the mouse, and holding the mouse button changes its expression — the smile
+swaps for an open mouth, the eyebrows tilt, the antenna light turns red.
+
+**Beyond Scratch:** articulating ONE costume. Vanilla Scratch animates by
+flipping between whole pre-drawn costumes — every arm angle and every
+expression is its own drawing, and combinations multiply (3 arm poses × 3
+mouths = 9 costumes). `Scratch.svg.rotate/move/show/hide` instead transform the
+costume's own parts by id, so every combination is just numbers. Like the sign,
+it is display only and restored on green flag / stop.
+
+**Costume:** `robot` — ships with the project; parts include `arm-left`,
+`arm-right` (with `data-pivot` shoulders), `pupil-left`, `pupil-right`,
+`brow-left`, `brow-right`, `mouth-smile`, `mouth-open` (hidden), `light`.
+
+**Script (Sprite1, two stacks):**
+```
+when green flag clicked
+forever
+  turn part [arm-left] to ((35) * ([sin v] of ((timer) * (300)))) degrees   // Puppet
+  turn part [arm-right] to ((-35) * ([sin v] of ((timer) * (300)))) degrees
+  slide part [pupil-left] by x ((mouse x) / (60)) y ((mouse y) / (60))
+  slide part [pupil-right] by x ((mouse x) / (60)) y ((mouse y) / (60))
+
+when green flag clicked
+forever
+  if <mouse down?> then
+    hide part [mouth-smile] / show part [mouth-open]
+    turn part [brow-left] to (12) degrees / turn part [brow-right] to (-12) degrees
+    color part [light] [#e74c3c]
+  else
+    show part [mouth-smile] / hide part [mouth-open]
+    turn part [brow-left] to (0) degrees / turn part [brow-right] to (0) degrees
+    color part [light] [#f1c40f]
+```
+
+**Blocks used:** `turn part () to () degrees`, `slide part () by x () y ()`,
+`show/hide part ()`, `color part () ()`, `costume part ids` (a reporter that
+lists every id — the discovery tool for puppeting any costume). Invites
+tinkering: nod the head; scale the pupils when the mouse is close; puppet your
+own drawing by adding ids in the paint editor.
+
+---
+
 ## Notes for the generator
 
 - Each project embeds only its own library in `customLibraries`.

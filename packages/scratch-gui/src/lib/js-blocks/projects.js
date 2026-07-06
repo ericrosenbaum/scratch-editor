@@ -1,4 +1,5 @@
 import {FAMILIES, buildExampleLibrary} from './example-libraries';
+import {SIGN_COSTUME, ROBOT_COSTUME} from './svg-costumes';
 
 /**
  * @file Loadable "starter" scripts for the example libraries. Rather than ship
@@ -328,6 +329,181 @@ const PROJECTS = [
         }
     },
     {
+        id: 'talking-sign',
+        name: 'Talking Sign',
+        family: 'Sign',
+        costumes: [SIGN_COSTUME],
+        blurb: 'Rewrite the words painted ON the costume, live — display only, the costume file never changes.',
+        build (libId, b) {
+            const hat = b.block('event_whenflagclicked', {topLevel: true, x: 40, y: 40});
+            const ask = b.block('sensing_askandwait', {parent: hat.id});
+            const askQ = b.text(ask.id, 'What should the sign say?');
+            ask.input('QUESTION', askQ, askQ);
+
+            // write (answer) on sign line (1)
+            const writeTop = b.block(`${libId}_ex0`, {parent: ask.id});
+            const answer = b.block('sensing_answer', {parent: writeTop.id});
+            const topText = b.text(writeTop.id, 'HELLO');
+            const topLine = b.num(writeTop.id, 1);
+            writeTop.input('text', answer.id, topText);
+            writeTop.input('line', topLine, topLine);
+
+            // forever: write (join "timer: " (round (timer))) on sign line (2)
+            const forever = b.block('control_forever', {parent: writeTop.id});
+            const writeClock = b.block(`${libId}_ex0`, {parent: forever.id});
+            const join = b.block('operator_join', {parent: writeClock.id});
+            const joinLabel = b.text(join.id, 'timer: ');
+            const round = b.block('operator_round', {parent: join.id});
+            const timer = b.block('sensing_timer', {parent: round.id});
+            const roundShadow = b.num(round.id, 0);
+            round.input('NUM', timer.id, roundShadow);
+            const joinShadow = b.text(join.id, '');
+            join.input('STRING1', joinLabel, joinLabel);
+            join.input('STRING2', round.id, joinShadow);
+            const clockText = b.text(writeClock.id, '...');
+            const clockLine = b.num(writeClock.id, 2);
+            writeClock.input('text', join.id, clockText);
+            writeClock.input('line', clockLine, clockLine);
+            forever.input('SUBSTACK', writeClock.id, null);
+
+            hat.setNext(ask.id);
+            ask.setNext(writeTop.id);
+            writeTop.setNext(forever.id);
+        }
+    },
+    {
+        id: 'robot-puppet',
+        name: 'Robot Puppet',
+        family: 'Puppet',
+        costumes: [ROBOT_COSTUME],
+        blurb: 'Wave the robot’s arms, make its eyes follow the mouse, and change its expression — all by reshaping the costume’s parts.',
+        build (libId, b) {
+            /**
+             * turn part (id) to ((factor) * (sin of ((timer) * (300)))) — the
+             * arm-wave expression tree, built fresh per use.
+             * @param {string} parentId - the parent block id.
+             * @param {string} partId - which part to turn.
+             * @param {number} factor - degrees amplitude (sign flips the phase).
+             * @returns {object} the turn block.
+             */
+            const turnWave = (parentId, partId, factor) => {
+                const turn = b.block(`${libId}_ex0`, {parent: parentId});
+                const idShadow = b.text(turn.id, partId);
+                turn.input('id', idShadow, idShadow);
+                const mult = b.block('operator_multiply', {parent: turn.id});
+                const sin = b.block('operator_mathop', {parent: mult.id});
+                sin.field('OPERATOR', 'sin');
+                const speed = b.block('operator_multiply', {parent: sin.id});
+                const timer = b.block('sensing_timer', {parent: speed.id});
+                const speedN1 = b.num(speed.id, 0);
+                const speedN2 = b.num(speed.id, 300);
+                speed.input('NUM1', timer.id, speedN1);
+                speed.input('NUM2', speedN2, speedN2);
+                const sinShadow = b.num(sin.id, 0);
+                sin.input('NUM', speed.id, sinShadow);
+                const multN1 = b.num(mult.id, 0);
+                const multN2 = b.num(mult.id, factor);
+                mult.input('NUM1', sin.id, multN1);
+                mult.input('NUM2', multN2, multN2);
+                const degShadow = b.num(turn.id, 0);
+                turn.input('deg', mult.id, degShadow);
+                return turn;
+            };
+
+            /**
+             * slide part (id) by x ((mouse x) / 60) y ((mouse y) / 60) — the
+             * pupil-follows-the-mouse expression tree.
+             * @param {string} parentId - the parent block id.
+             * @param {string} partId - which pupil to slide.
+             * @returns {object} the slide block.
+             */
+            const slideToMouse = (parentId, partId) => {
+                const slide = b.block(`${libId}_ex1`, {parent: parentId});
+                const idShadow = b.text(slide.id, partId);
+                slide.input('id', idShadow, idShadow);
+                const divX = b.block('operator_divide', {parent: slide.id});
+                const mouseX = b.block('sensing_mousex', {parent: divX.id});
+                const divXN1 = b.num(divX.id, 0);
+                const divXN2 = b.num(divX.id, 60);
+                divX.input('NUM1', mouseX.id, divXN1);
+                divX.input('NUM2', divXN2, divXN2);
+                const dxShadow = b.num(slide.id, 0);
+                slide.input('dx', divX.id, dxShadow);
+                const divY = b.block('operator_divide', {parent: slide.id});
+                const mouseY = b.block('sensing_mousey', {parent: divY.id});
+                const divYN1 = b.num(divY.id, 0);
+                const divYN2 = b.num(divY.id, 60);
+                divY.input('NUM1', mouseY.id, divYN1);
+                divY.input('NUM2', divYN2, divYN2);
+                const dyShadow = b.num(slide.id, 0);
+                slide.input('dy', divY.id, dyShadow);
+                return slide;
+            };
+
+            /**
+             * A simple one-text-input library command (show/hide part, turn to a
+             * constant, color a part).
+             * @param {string} opcode - the library opcode suffix (e.g. 'ex2').
+             * @param {string} parentId - the parent block id.
+             * @param {Array.<Array>} inputs - [name, value, isNumber] triples.
+             * @returns {object} the block.
+             */
+            const libCall = (opcode, parentId, inputs) => {
+                const call = b.block(`${libId}_${opcode}`, {parent: parentId});
+                for (const [name, value, isNumber] of inputs) {
+                    const shadow = isNumber ? b.num(call.id, value) : b.text(call.id, value);
+                    call.input(name, shadow, shadow);
+                }
+                return call;
+            };
+
+            // Stack 1: wave the arms, eyes follow the mouse.
+            const hat = b.block('event_whenflagclicked', {topLevel: true, x: 40, y: 40});
+            const forever = b.block('control_forever', {parent: hat.id});
+            const waveLeft = turnWave(forever.id, 'arm-left', 35);
+            const waveRight = turnWave(waveLeft.id, 'arm-right', -35);
+            const lookLeft = slideToMouse(waveRight.id, 'pupil-left');
+            const lookRight = slideToMouse(lookLeft.id, 'pupil-right');
+            waveLeft.setNext(waveRight.id);
+            waveRight.setNext(lookLeft.id);
+            lookLeft.setNext(lookRight.id);
+            forever.input('SUBSTACK', waveLeft.id, null);
+            hat.setNext(forever.id);
+
+            // Stack 2: expression — surprised while the mouse is down, smiling otherwise.
+            const hat2 = b.block('event_whenflagclicked', {topLevel: true, x: 480, y: 40});
+            const forever2 = b.block('control_forever', {parent: hat2.id});
+            const ifElse = b.block('control_if_else', {parent: forever2.id});
+            const mouseDown = b.block('sensing_mousedown', {parent: ifElse.id});
+            ifElse.input('CONDITION', mouseDown.id, null);
+
+            const hideSmile = libCall('ex3', ifElse.id, [['id', 'mouth-smile', false]]);
+            const showOpen = libCall('ex2', hideSmile.id, [['id', 'mouth-open', false]]);
+            const browLeftUp = libCall('ex0', showOpen.id, [['id', 'brow-left', false], ['deg', 12, true]]);
+            const browRightUp = libCall('ex0', browLeftUp.id, [['id', 'brow-right', false], ['deg', -12, true]]);
+            const lightRed = libCall('ex4', browRightUp.id, [['id', 'light', false], ['color', '#e74c3c', false]]);
+            hideSmile.setNext(showOpen.id);
+            showOpen.setNext(browLeftUp.id);
+            browLeftUp.setNext(browRightUp.id);
+            browRightUp.setNext(lightRed.id);
+            ifElse.input('SUBSTACK', hideSmile.id, null);
+
+            const showSmile = libCall('ex2', ifElse.id, [['id', 'mouth-smile', false]]);
+            const hideOpen = libCall('ex3', showSmile.id, [['id', 'mouth-open', false]]);
+            const browLeftFlat = libCall('ex0', hideOpen.id, [['id', 'brow-left', false], ['deg', 0, true]]);
+            const browRightFlat = libCall('ex0', browLeftFlat.id, [['id', 'brow-right', false], ['deg', 0, true]]);
+            const lightYellow = libCall('ex4', browRightFlat.id, [['id', 'light', false], ['color', '#f1c40f', false]]);
+            showSmile.setNext(hideOpen.id);
+            hideOpen.setNext(browLeftFlat.id);
+            browLeftFlat.setNext(browRightFlat.id);
+            browRightFlat.setNext(lightYellow.id);
+            ifElse.input('SUBSTACK2', showSmile.id, null);
+
+            forever2.input('SUBSTACK', ifElse.id, null);
+            hat2.setNext(forever2.id);
+        }
+    },
+    {
         id: 'audio-spectrum',
         name: 'Audio Spectrum (FFT)',
         family: 'Spectrum',
@@ -400,7 +576,8 @@ const buildProject = project => {
         libraries,
         library: libraries[0], // primary, for back-compat
         blocks: builder.blocks,
-        extensions: project.extensions || []
+        extensions: project.extensions || [],
+        costumes: project.costumes || []
     };
 };
 

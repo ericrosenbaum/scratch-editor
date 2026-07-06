@@ -8,6 +8,7 @@ import {createLibrary, defaultDocument, removeBlock} from '../lib/js-blocks/libr
 import {downloadLibrary, parseImportedLibrary} from '../lib/js-blocks/library-io';
 import {exampleLibraryList} from '../lib/js-blocks/example-libraries';
 import {projectList, buildProject, PROJECTS} from '../lib/js-blocks/projects';
+import {addSvgCostume} from '../lib/js-blocks/svg-costumes';
 import {setLibraries, openBlockEditorState} from '../reducers/js-block-libraries';
 import {openJsBlockEditor, closeJsLibraryManager} from '../reducers/modals';
 
@@ -125,7 +126,14 @@ class LibraryManager extends React.Component {
         const loadExtensions = Promise.all((built.extensions || [])
             .filter(extId => !vm.extensionManager.isExtensionLoaded(extId))
             .map(extId => vm.extensionManager.loadExtensionURL(extId)));
-        loadExtensions.then(() => {
+        // Some projects bring their own costume (e.g. a sign or a puppet whose
+        // parts the blocks reach into by id). Add them one at a time; the last
+        // one added becomes the sprite's current costume.
+        const addCostumes = loadExtensions.then(() => (built.costumes || []).reduce(
+            (chain, costumeSource) => chain.then(() => addSvgCostume(vm, costumeSource)),
+            Promise.resolve()
+        ));
+        addCostumes.then(() => {
             built.libraries.forEach(library => vm.addCustomLibrary(library));
             const target = vm.editingTarget;
             if (target) {

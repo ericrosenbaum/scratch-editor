@@ -85,6 +85,20 @@ const API_REFERENCE = [
         ]
     },
     {
+        section: 'Reshape your vector costume (Scratch.svg.*) — display only',
+        entries: [
+            {sig: 'Scratch.svg.isVector()', desc: 'True when the current costume is a vector (SVG) costume — everything below only works on those.'},
+            {sig: 'Scratch.svg.ids()', desc: "Array of the id attributes of the costume's parts. Draw ids onto parts in the paint editor's SVG, or use a costume that ships with them."},
+            {sig: 'Scratch.svg.setText(id, text)', desc: 'Replace the words inside a <text> element — a live scoreboard painted on the costume. Display only: the saved costume never changes, and green flag/stop restores it.'},
+            {sig: 'Scratch.svg.rotate(id, degrees) / move(id, dx, dy) / scale(id, factor)', desc: "Turn, offset, or resize one named part (an arm, an eyebrow). rotate/scale pivot on the part's data-pivot=\"x y\" attribute when present. Values are SET (not accumulated), so feeding in a changing number animates."},
+            {sig: 'Scratch.svg.show(id) / hide(id)', desc: 'Show or hide one part — swap a smile for a frown by hiding one mouth and showing another.'},
+            {sig: 'Scratch.svg.setFill(id, color) / setStroke(id, color)', desc: "Recolor one part (e.g. '#ff8800')."},
+            {sig: 'Scratch.svg.set(id, attribute, value) / get(id, attribute)', desc: "Set or read any other SVG attribute (e.g. a path's 'd' to morph a mouth). Event/link attributes are blocked."},
+            {sig: 'Scratch.svg.reset()', desc: 'Put the current costume back exactly as stored. Also happens automatically on green flag / stop.'},
+            {sig: 'Scratch.svg.update()', desc: 'Optional: show your changes immediately. Edits also upload on their own once per frame.'}
+        ]
+    },
+    {
         section: 'Text helpers (Scratch.text.*)',
         entries: [
             {sig: 'Scratch.text.split(s, sep) / join(list, sep)', desc: 'Split a string into a list, or join a list into a string.'},

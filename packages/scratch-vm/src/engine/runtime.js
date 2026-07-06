@@ -277,6 +277,13 @@ class Runtime extends EventEmitter {
         this._jsCanvases = null;
 
         /**
+         * Manager for `Scratch.svg` temporary costume edits, lazily created the
+         * first time a JS-powered block edits a vector costume. Null until then.
+         * @type {?JsSvgManager}
+         */
+        this._jsSvgSkins = null;
+
+        /**
          * Pending JS-powered block `Scratch.onStop` cleanup handlers, keyed by
          * "<libraryId>:<opcode>" so a looping block only registers one.
          * @type {Map.<string, object>}
@@ -1699,6 +1706,20 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Lazily create and return the JsSvgManager owning the temporary
+     * display-only edits JS-powered blocks make to vector costume skins;
+     * never serialized, restored on green flag / stop.
+     * @returns {JsSvgManager} the manager.
+     */
+    getJsSvgManager () {
+        if (!this._jsSvgSkins) {
+            const JsSvgManager = require('../extension-support/js-blocks/svg-store').JsSvgManager;
+            this._jsSvgSkins = new JsSvgManager(this);
+        }
+        return this._jsSvgSkins;
+    }
+
+    /**
      * Register a JS-powered block's `Scratch.onStop` cleanup. Keyed by
      * library+opcode so a block in a loop only keeps its most recent handler.
      * @param {object} library - the owning library.
@@ -2200,6 +2221,8 @@ class Runtime extends EventEmitter {
     disposeTarget (disposingTarget) {
         // Tear down any Scratch.canvas layers this target (e.g. a deleted clone) owned.
         if (this._jsCanvases) this._jsCanvases.disposeForTarget(disposingTarget.id);
+        // Drop any Scratch.svg costume edits whose skins die with this target.
+        if (this._jsSvgSkins) this._jsSvgSkins.disposeForTarget(disposingTarget);
         this.targets = this.targets.filter(target => {
             if (disposingTarget !== target) return true;
             // Allow target to do dispose actions.
@@ -2270,6 +2293,8 @@ class Runtime extends EventEmitter {
         this._runJsStopHandlers();
         this.clearJsBlockStores();
         if (this._jsCanvases) this._jsCanvases.disposeAll();
+        // Put every temporarily-edited costume skin back to its stored SVG.
+        if (this._jsSvgSkins) this._jsSvgSkins.disposeAll();
 
         // Dispose all clones.
         const newTargets = [];
@@ -2341,6 +2366,8 @@ class Runtime extends EventEmitter {
             // Upload any pixel buffers JS-powered blocks drew into this step, so
             // their layers are current before we draw.
             if (this._jsCanvases) this._jsCanvases.flushDirty();
+            // Likewise any temporary SVG costume edits made this step.
+            if (this._jsSvgSkins) this._jsSvgSkins.flushDirty();
             // @todo: Only render when this.redrawRequested or clones rendered.
             if (this.profiler !== null) {
                 if (rendererDrawProfilerId === -1) {
