@@ -376,7 +376,7 @@ const PROJECTS = [
         name: 'Robot Puppet',
         family: 'Puppet',
         costumes: [ROBOT_COSTUME],
-        blurb: 'Wave the robot’s arms, make its eyes follow the mouse, and change its expression — all by reshaping the costume’s parts.',
+        blurb: 'Wave the arms, let the eyes follow the mouse, change the expression — one costume, reshaped live.',
         build (libId, b) {
             /**
              * turn part (id) to ((factor) * (sin of ((timer) * (300)))) — the

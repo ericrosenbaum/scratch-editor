@@ -49,7 +49,7 @@ class FakeElement {
 const makeTree = () => {
     const label = new FakeElement('text', {id: 'label'});
     label.textContent = 'HELLO';
-    const arm = new FakeElement('g', {id: 'arm', transform: 'translate(2 3)', 'data-pivot': '10 20'});
+    const arm = new FakeElement('g', {'id': 'arm', 'transform': 'translate(2 3)', 'data-pivot': '10 20'});
     const dot = new FakeElement('circle', {id: 'dot', fill: '#ff0000'});
     return new FakeElement('svg', {xmlns: 'http://www.w3.org/2000/svg'}, [label, arm, dot]);
 };
