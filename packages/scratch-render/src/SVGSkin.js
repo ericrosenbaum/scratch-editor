@@ -50,6 +50,13 @@ class SVGSkin extends Skin {
         this._largestMIPScale = 0;
 
         /**
+         * The MIP level most recently requested by getTexture, so setSVG can
+         * rebuild that level as soon as a new image finishes loading.
+         * @type {number}
+         */
+        this._lastRequestedMipLevel = INDEX_OFFSET;
+
+        /**
          * Ratio of the size of the SVG and the max size of the WebGL texture
          * @type {number}
          */
@@ -168,11 +175,29 @@ class SVGSkin extends Skin {
         // Can't use bitwise stuff here because we need to handle negative exponents
         const mipScale = Math.pow(2, mipLevel - INDEX_OFFSET);
 
+        this._lastRequestedMipLevel = mipLevel;
+
         if (this._svgImageLoaded && !this._scaledMIPs[mipLevel]) {
             this._scaledMIPs[mipLevel] = this.createMIP(mipScale);
         }
 
-        return this._scaledMIPs[mipLevel] || super.getTexture();
+        // While a new SVG image is still loading (setSVG is asynchronous), keep
+        // showing the last rendered texture rather than the empty one, so a skin
+        // updated every frame never blinks out between uploads.
+        return this._scaledMIPs[mipLevel] || this._largestExistingMIP() || super.getTexture();
+    }
+
+    /**
+     * @returns {?WebGLTexture} the largest already-rendered MIP of this skin's
+     * current or previous SVG image, or null when none exists. Larger is
+     * preferred because minification looks better than magnification.
+     * @private
+     */
+    _largestExistingMIP () {
+        for (let level = this._scaledMIPs.length - 1; level >= 0; level--) {
+            if (this._scaledMIPs[level]) return this._scaledMIPs[level];
+        }
+        return null;
     }
 
     /**
@@ -227,6 +252,16 @@ class SVGSkin extends Skin {
             this._rotationCenter[1] = rotationCenter[1] - y;
 
             this._svgImageLoaded = true;
+
+            // Rebuild the texture at the scale the renderer last asked for, right
+            // now. Textures are otherwise only rebuilt lazily inside getTexture,
+            // but a skin that is re-uploaded every frame (e.g. `Scratch.svg` edits
+            // in a forever loop) has `_svgImageLoaded` cleared again by the next
+            // setSVG before any draw runs, so the lazy rebuild never happens and
+            // resetMIPs above would leave the skin with nothing to show.
+            const maxMipLevel = Math.round(Math.log2(this._maxTextureScale)) + INDEX_OFFSET;
+            const mipLevel = Math.max(Math.min(this._lastRequestedMipLevel, maxMipLevel), 0);
+            this._scaledMIPs[mipLevel] = this.createMIP(Math.pow(2, mipLevel - INDEX_OFFSET));
 
             this.emit(Skin.Events.WasAltered);
         };
