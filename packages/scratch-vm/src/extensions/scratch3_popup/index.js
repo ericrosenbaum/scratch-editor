@@ -1,5 +1,6 @@
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
+const ScratchBlocksConstants = require('../../engine/scratch-blocks-constants');
 const Cast = require('../../util/cast');
 const Clone = require('../../util/clone');
 const MathUtil = require('../../util/math-util');
@@ -118,6 +119,23 @@ class Scratch3PopupBlocks {
             color2: '#774EA3',
             color3: '#5E3D82',
             blockIconURI,
+            // Custom angle-picker fields with a little rotating 3D cat in the
+            // center. The Blockly Field implementations live in scratch-gui
+            // (the VM has no access to scratch-blocks), so `implementation` is
+            // null here and the GUI resolves the class by field name. See
+            // scratch-gui/src/lib/extension-fields.
+            customFieldTypes: {
+                spinAngle: {
+                    output: 'Number',
+                    outputShape: ScratchBlocksConstants.OUTPUT_SHAPE_ROUND,
+                    implementation: null
+                },
+                tiltAngle: {
+                    output: 'Number',
+                    outputShape: ScratchBlocksConstants.OUTPUT_SHAPE_ROUND,
+                    implementation: null
+                }
+            },
             blocks: [
                 {
                     opcode: 'setCamera',
@@ -295,7 +313,7 @@ class Scratch3PopupBlocks {
                     }),
                     arguments: {
                         ANGLE: {
-                            type: ArgumentType.ANGLE,
+                            type: 'tiltAngle',
                             defaultValue: 0
                         }
                     }
@@ -310,7 +328,7 @@ class Scratch3PopupBlocks {
                     }),
                     arguments: {
                         ANGLE: {
-                            type: ArgumentType.NUMBER,
+                            type: 'tiltAngle',
                             defaultValue: 15
                         }
                     }
@@ -325,7 +343,7 @@ class Scratch3PopupBlocks {
                     }),
                     arguments: {
                         ANGLE: {
-                            type: ArgumentType.ANGLE,
+                            type: 'spinAngle',
                             defaultValue: 0
                         }
                     }
@@ -340,7 +358,7 @@ class Scratch3PopupBlocks {
                     }),
                     arguments: {
                         ANGLE: {
-                            type: ArgumentType.NUMBER,
+                            type: 'spinAngle',
                             defaultValue: 15
                         }
                     }

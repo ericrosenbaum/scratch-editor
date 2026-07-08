@@ -20,6 +20,8 @@ import {BLOCKS_DEFAULT_SCALE, STAGE_DISPLAY_SIZES} from '../lib/layout-constants
 import DropAreaHOC from '../lib/drop-area-hoc.jsx';
 import DragConstants from '../lib/drag-constants';
 import defineDynamicBlock from '../lib/define-dynamic-block';
+import {getExtensionFieldClasses, setSpriteImageProvider} from '../lib/extension-fields';
+import getCostumeUrl from '../lib/get-costume-url';
 import {DEFAULT_MODE, getColorsForMode, colorModeMap} from '../lib/settings/color-mode';
 import {CAT_BLOCKS_THEME} from '../lib/settings/theme';
 import {
@@ -78,6 +80,7 @@ class Blocks extends React.Component {
             'onBlockGlowOff',
             'handleMonitorsUpdate',
             'handleExtensionAdded',
+            'handleExtensionFieldAdded',
             'handleBlocksInfoUpdate',
             'onTargetsUpdate',
             'onVisualReport',
@@ -108,6 +111,19 @@ class Blocks extends React.Component {
         this.ScratchBlocks.FieldColourSlider.activateEyedropper_ = this.props.onActivateColorPicker;
         this.ScratchBlocks.ScratchProcedures.externalProcedureDefCallback = this.props.onActivateCustomProcedures;
         this.ScratchBlocks.ScratchMsgs.setLocale(this.props.locale);
+
+        // Let custom extension fields (e.g. the 3D angle picker) preview the
+        // current editing sprite's costume in their drop-down.
+        setSpriteImageProvider(() => {
+            try {
+                const target = this.props.vm.editingTarget;
+                const costume = target && target.getCurrentCostume();
+                if (!costume || !costume.asset) return null;
+                return getCostumeUrl(this.props.vm.runtime.storage, costume.asset);
+            } catch (e) {
+                return null;
+            }
+        });
 
         const workspaceConfig = defaultsDeep({},
             Blocks.defaultOptions,
@@ -344,6 +360,7 @@ class Blocks extends React.Component {
         this.props.vm.addListener('targetsUpdate', this.onTargetsUpdate);
         this.props.vm.addListener('MONITORS_UPDATE', this.handleMonitorsUpdate);
         this.props.vm.addListener('EXTENSION_ADDED', this.handleExtensionAdded);
+        this.props.vm.addListener('EXTENSION_FIELD_ADDED', this.handleExtensionFieldAdded);
         this.props.vm.addListener('BLOCKSINFO_UPDATE', this.handleBlocksInfoUpdate);
         this.props.vm.addListener('PERIPHERAL_CONNECTED', this.handleStatusButtonUpdate);
         this.props.vm.addListener('PERIPHERAL_DISCONNECTED', this.handleStatusButtonUpdate);
@@ -358,6 +375,7 @@ class Blocks extends React.Component {
         this.props.vm.removeListener('targetsUpdate', this.onTargetsUpdate);
         this.props.vm.removeListener('MONITORS_UPDATE', this.handleMonitorsUpdate);
         this.props.vm.removeListener('EXTENSION_ADDED', this.handleExtensionAdded);
+        this.props.vm.removeListener('EXTENSION_FIELD_ADDED', this.handleExtensionFieldAdded);
         this.props.vm.removeListener('BLOCKSINFO_UPDATE', this.handleBlocksInfoUpdate);
         this.props.vm.removeListener('PERIPHERAL_CONNECTED', this.handleStatusButtonUpdate);
         this.props.vm.removeListener('PERIPHERAL_DISCONNECTED', this.handleStatusButtonUpdate);
@@ -518,6 +536,26 @@ class Blocks extends React.Component {
                 block.isMonitored = isVisible;
             }
         }
+    }
+    handleExtensionFieldAdded (name, implementation) {
+        // Register a custom scratch-blocks field an extension declared via
+        // getInfo().customFieldTypes. `name` is the namespaced field type
+        // (`field_<extensionId>_<typeName>`). `implementation` is the Field
+        // class if the extension could supply one; built-in extensions can't
+        // (the VM has no access to scratch-blocks), so fall back to the GUI's
+        // own name-keyed registry of field classes.
+        const FieldClass = typeof implementation === 'function' ?
+            implementation :
+            getExtensionFieldClasses(this.ScratchBlocks)[name];
+        if (!FieldClass) {
+            log.warn(`No field implementation found for custom extension field: ${name}`);
+            return;
+        }
+        // The event can fire again when an extension is re-added (e.g. switching
+        // projects); Blockly's fieldRegistry throws on a duplicate, so skip it.
+        const registry = this.ScratchBlocks.registry;
+        if (registry.hasItem(registry.Type.FIELD, name)) return;
+        this.ScratchBlocks.fieldRegistry.register(name, FieldClass);
     }
     handleExtensionAdded (categoryInfo) {
         analytics.event({

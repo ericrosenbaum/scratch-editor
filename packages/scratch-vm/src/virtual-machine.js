@@ -111,8 +111,11 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on(Runtime.EXTENSION_ADDED, categoryInfo => {
             this.emit(Runtime.EXTENSION_ADDED, categoryInfo);
         });
-        this.runtime.on(Runtime.EXTENSION_FIELD_ADDED, (fieldName, fieldImplementation) => {
-            this.emit(Runtime.EXTENSION_FIELD_ADDED, fieldName, fieldImplementation);
+        // The runtime emits this event with a single `{name, implementation}`
+        // object (see Runtime._registerExtensionPrimitives), so unpack it here
+        // and re-emit the pieces as positional args for GUI consumers.
+        this.runtime.on(Runtime.EXTENSION_FIELD_ADDED, ({name, implementation}) => {
+            this.emit(Runtime.EXTENSION_FIELD_ADDED, name, implementation);
         });
         this.runtime.on(Runtime.BLOCKSINFO_UPDATE, categoryInfo => {
             this.emit(Runtime.BLOCKSINFO_UPDATE, categoryInfo);
