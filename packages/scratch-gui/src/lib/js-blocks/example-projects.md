@@ -297,6 +297,34 @@ number of bars or the colors.
 
 ---
 
+## 10. Silly Sentences — library: **Markov**
+
+**What it does:** The cat babbles an endless stream of silly sentences, each one
+freshly assembled by a Markov chain from a built-in corpus of nonsense ("The
+wobbly wombat wore a tiny hat to the pancake party…"). No two runs are alike.
+
+**Beyond Scratch:** real generative text. Vanilla Scratch can `join` and pick
+`letter N of`, but it has no way to learn which words tend to follow which and
+remix them — building a word-transition table and walking it needs true string
+tokenization plus a keyed map of successor lists.
+
+**Script (Sprite1):**
+```
+when green flag clicked
+forever
+  say ( a silly sentence ) for (3) seconds        // Markov reporter
+```
+
+**Blocks used:** `a silly sentence`, `make up () silly words`,
+`silly word after ()` (all read the built-in corpus), plus `learn from ()` and
+`remix () words` (the "wide wall": teach it your *own* text — the chain lives in
+`Scratch.data`, cleared on green flag — and remix that instead). Invites
+tinkering: `learn from` your favorite book or your friends' names, then `remix`;
+build your own chain by hand with `silly word after ()` in a loop; drive the say
+time or a sprite from the sentence length.
+
+---
+
 ## Notes for the generator
 
 - Each project embeds only its own library in `customLibraries`.

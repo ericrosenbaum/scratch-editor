@@ -767,7 +767,197 @@ Scratch.data.set("ready", 0);`
     ]
 };
 
-const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND, CANVAS, LIFE, GRID, IMAGE, SCOPE, SPECTRUM];
+/** Markov — generate silly text from a Markov chain (Silly Sentences project). */
+const MARKOV = {
+    name: 'Markov',
+    color1: '#E64980',
+    color2: '#D63D72',
+    color3: '#C42D63',
+    docs: [
+`---
+type: reporter
+text: "make up {n} silly words"
+inputs:
+  n: number = 12
+---
+var corpus = "The wobbly wombat wore a tiny hat to the pancake party. " +
+"My robot sneezed glitter all over the grumpy noodle. " +
+"A sleepy penguin juggled rubber ducks on a squeaky trampoline. " +
+"The purple pickle danced with a soggy spaghetti monster. " +
+"Every banana in my pocket learned to whistle a silly tune. " +
+"The dizzy dragon slurped bubblegum soup for breakfast. " +
+"My grandma taught a walrus to skateboard down the hallway. " +
+"A confused cat painted the moon with strawberry jam. " +
+"The tiny wizard turned my homework into a flock of pigeons. " +
+"Ten fuzzy caterpillars marched into the disco wearing sunglasses. " +
+"The cheese giggled because the mouse told a ridiculous joke. " +
+"A brave marshmallow floated across the ocean on a taco.";
+function wordsOf(text) {
+  var raw = text.toLowerCase().replace(/[^a-z ]+/g, " ").split(" ");
+  var out = [];
+  for (var i = 0; i < raw.length; i++) if (raw[i].length > 0) out.push(raw[i]);
+  return out;
+}
+// Build an order-1 word chain: for each word, the words seen right after it.
+var next = {};
+var starters = [];
+var sentences = corpus.split(/[.!?]+/);
+for (var s = 0; s < sentences.length; s++) {
+  var w = wordsOf(sentences[s]);
+  if (w.length === 0) continue;
+  starters.push(w[0]);
+  for (var i = 0; i < w.length - 1; i++) {
+    if (!Array.isArray(next[w[i]])) next[w[i]] = [];
+    next[w[i]].push(w[i + 1]);
+  }
+}
+if (starters.length === 0) return "";
+var n = Math.max(1, Math.min(200, Math.round(Scratch.args.n)));
+var cur = starters[Math.floor(Math.random() * starters.length)];
+var out = [];
+for (var k = 0; k < n; k++) {
+  out.push(cur);
+  var succ = next[cur];
+  if (Array.isArray(succ) && succ.length > 0) cur = succ[Math.floor(Math.random() * succ.length)];
+  else cur = starters[Math.floor(Math.random() * starters.length)];
+}
+out[0] = out[0].charAt(0).toUpperCase() + out[0].slice(1);
+return out.join(" ");`,
+`---
+type: reporter
+text: "a silly sentence"
+inputs:
+---
+var corpus = "The wobbly wombat wore a tiny hat to the pancake party. " +
+"My robot sneezed glitter all over the grumpy noodle. " +
+"A sleepy penguin juggled rubber ducks on a squeaky trampoline. " +
+"The purple pickle danced with a soggy spaghetti monster. " +
+"Every banana in my pocket learned to whistle a silly tune. " +
+"The dizzy dragon slurped bubblegum soup for breakfast. " +
+"My grandma taught a walrus to skateboard down the hallway. " +
+"A confused cat painted the moon with strawberry jam. " +
+"The tiny wizard turned my homework into a flock of pigeons. " +
+"Ten fuzzy caterpillars marched into the disco wearing sunglasses. " +
+"The cheese giggled because the mouse told a ridiculous joke. " +
+"A brave marshmallow floated across the ocean on a taco.";
+function wordsOf(text) {
+  var raw = text.toLowerCase().replace(/[^a-z ]+/g, " ").split(" ");
+  var out = [];
+  for (var i = 0; i < raw.length; i++) if (raw[i].length > 0) out.push(raw[i]);
+  return out;
+}
+var next = {};
+var starters = [];
+var sentences = corpus.split(/[.!?]+/);
+for (var s = 0; s < sentences.length; s++) {
+  var w = wordsOf(sentences[s]);
+  if (w.length === 0) continue;
+  starters.push(w[0]);
+  for (var i = 0; i < w.length - 1; i++) {
+    if (!Array.isArray(next[w[i]])) next[w[i]] = [];
+    next[w[i]].push(w[i + 1]);
+  }
+}
+if (starters.length === 0) return "";
+// Walk from a sentence-starter until a word has no successor (a natural end) or we hit the cap.
+var cur = starters[Math.floor(Math.random() * starters.length)];
+var out = [];
+while (out.length < 18) {
+  out.push(cur);
+  var succ = next[cur];
+  if (Array.isArray(succ) && succ.length > 0) cur = succ[Math.floor(Math.random() * succ.length)];
+  else break;
+}
+var sentence = out.join(" ");
+return sentence.charAt(0).toUpperCase() + sentence.slice(1) + ".";`,
+`---
+type: reporter
+text: "silly word after {word}"
+inputs:
+  word: text = "the"
+---
+var corpus = "The wobbly wombat wore a tiny hat to the pancake party. " +
+"My robot sneezed glitter all over the grumpy noodle. " +
+"A sleepy penguin juggled rubber ducks on a squeaky trampoline. " +
+"The purple pickle danced with a soggy spaghetti monster. " +
+"Every banana in my pocket learned to whistle a silly tune. " +
+"The dizzy dragon slurped bubblegum soup for breakfast. " +
+"My grandma taught a walrus to skateboard down the hallway. " +
+"A confused cat painted the moon with strawberry jam. " +
+"The tiny wizard turned my homework into a flock of pigeons. " +
+"Ten fuzzy caterpillars marched into the disco wearing sunglasses. " +
+"The cheese giggled because the mouse told a ridiculous joke. " +
+"A brave marshmallow floated across the ocean on a taco.";
+function wordsOf(text) {
+  var raw = text.toLowerCase().replace(/[^a-z ]+/g, " ").split(" ");
+  var out = [];
+  for (var i = 0; i < raw.length; i++) if (raw[i].length > 0) out.push(raw[i]);
+  return out;
+}
+var next = {};
+var sentences = corpus.split(/[.!?]+/);
+for (var s = 0; s < sentences.length; s++) {
+  var w = wordsOf(sentences[s]);
+  for (var i = 0; i < w.length - 1; i++) {
+    if (!Array.isArray(next[w[i]])) next[w[i]] = [];
+    next[w[i]].push(w[i + 1]);
+  }
+}
+var asked = wordsOf(Scratch.args.word);
+var target = asked.length > 0 ? asked[0] : "";
+var succ = next[target];
+if (Array.isArray(succ) && succ.length > 0) return succ[Math.floor(Math.random() * succ.length)];
+return "";`,
+`---
+type: command
+text: "learn from {text}"
+inputs:
+  text: text = "I like to eat pizza. I like to eat tacos. You like to dance all night."
+---
+function wordsOf(text) {
+  var raw = text.toLowerCase().replace(/[^a-z ]+/g, " ").split(" ");
+  var out = [];
+  for (var i = 0; i < raw.length; i++) if (raw[i].length > 0) out.push(raw[i]);
+  return out;
+}
+// Add this text to the chain kept in Scratch.data (cleared on green flag / stop).
+var sentences = Scratch.args.text.split(/[.!?]+/);
+for (var s = 0; s < sentences.length; s++) {
+  var w = wordsOf(sentences[s]);
+  if (w.length === 0) continue;
+  Scratch.data.push("starters", w[0]);
+  for (var i = 0; i < w.length - 1; i++) {
+    var existing = Scratch.data.mapGet("chain", w[i]);
+    Scratch.data.mapSet("chain", w[i], existing === "" ? w[i + 1] : existing + " " + w[i + 1]);
+  }
+}`,
+`---
+type: reporter
+text: "remix {n} words"
+inputs:
+  n: number = 12
+---
+var count = Scratch.data.length("starters");
+if (count < 1) return "learn from some text first";
+var n = Math.max(1, Math.min(200, Math.round(Scratch.args.n)));
+var cur = Scratch.data.itemAt("starters", 1 + Math.floor(Math.random() * count));
+var out = [];
+for (var k = 0; k < n; k++) {
+  out.push(cur);
+  var succ = Scratch.data.mapGet("chain", cur);
+  if (succ === "") {
+    cur = Scratch.data.itemAt("starters", 1 + Math.floor(Math.random() * count));
+  } else {
+    var arr = succ.split(" ");
+    cur = arr[Math.floor(Math.random() * arr.length)];
+  }
+}
+out[0] = String(out[0]).charAt(0).toUpperCase() + String(out[0]).slice(1);
+return out.join(" ");`
+    ]
+};
+
+const FAMILIES = [TEXT, GRIDS, PIXELS, SOUND, CANVAS, LIFE, GRID, IMAGE, SCOPE, SPECTRUM, MARKOV];
 
 /**
  * Build a fully-compiled example library ready for installCustomLibrary.

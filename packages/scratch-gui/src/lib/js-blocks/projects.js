@@ -370,6 +370,23 @@ const PROJECTS = [
             hat.setNext(reset.id);
             reset.setNext(forever.id);
         }
+    },
+    {
+        id: 'silly-sentences',
+        name: 'Silly Sentences',
+        family: 'Markov',
+        blurb: 'A Markov chain babbles endless silly sentences from a built-in corpus.',
+        build (libId, b) {
+            const hat = b.block('event_whenflagclicked', {topLevel: true, x: 40, y: 40});
+            const forever = b.block('control_forever', {parent: hat.id});
+            const say = b.block('looks_sayforsecs', {parent: forever.id});
+            const sentence = b.block(`${libId}_ex1`, {parent: say.id}); // a silly sentence
+            const secs = b.num(say.id, 3);
+            say.input('MESSAGE', sentence.id, null);
+            say.input('SECS', secs, secs);
+            forever.input('SUBSTACK', say.id, null);
+            hat.setNext(forever.id);
+        }
     }
 ];
 
