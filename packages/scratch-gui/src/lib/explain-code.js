@@ -1,5 +1,5 @@
 import {openCodeExplanation, setCodeExplanationResult} from '../reducers/code-explanation';
-import {isLoaded, getLlmInference, generate, showLoadModal} from './ai-model-manager';
+import {isLoaded, getLlmInference, generate, showLoadModal, formatPrompt, cleanResponse} from './ai-model-manager';
 
 /**
  * Build context info string for the prompt.
@@ -109,8 +109,8 @@ const explainCode = async function (vm, targetName, isStage, targets, dispatch) 
         // eslint-disable-next-line no-console
         console.log('[explain-code] prompt:\n', prompt);
 
-        const result = await generateFn(prompt);
-        dispatch(setCodeExplanationResult('done', result.trim()));
+        const result = await generateFn(formatPrompt(prompt));
+        dispatch(setCodeExplanationResult('done', cleanResponse(result)));
     } catch (err) {
         dispatch(setCodeExplanationResult('error', `Error: ${err.message}`));
     }

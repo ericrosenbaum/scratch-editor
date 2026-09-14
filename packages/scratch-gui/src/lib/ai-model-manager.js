@@ -10,15 +10,72 @@
  */
 
 /**
- * URL of the hosted model file.
- * Set this to your Cloudflare R2 (or other public CDN) URL once you have uploaded
- * the Gemma 3n model file.  If null, the auto-download button will not appear
- * and users must load the file from their computer.
- * Example: 'https://pub-xxxxxxxxxxxx.r2.dev/gemma-3n-E2B-it-litert-preview.bin'
+ * Hosted model file: Gemma 4 E2B, the web build published by Google's LiteRT
+ * community on Hugging Face (~2 GB).  Must match the value in the On-Device AI
+ * extension (scratch3_ConstrainedAI) so both share one OPFS cache.
+ *
+ * NOTE: the Gemma 4 *web* builds are text-only — they ship without the vision
+ * and audio encoders.  (The full gemma-4-E2B-it.litertlm has them, but the
+ * MediaPipe web runtime refuses to load it: "could not find gpu_artisan .bin
+ * file".)  Callers that need image input must check MODEL_SUPPORTS_VISION.
  */
-const MODEL_URL = 'https://storage.googleapis.com/gemma-3n/gemma-3n-E2B-it-int4-Web.litertlm';
+const MODEL_URL = 'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.litertlm';
+const MODEL_SIZE_LABEL = '~2 GB';
+const MODEL_SUPPORTS_VISION = false;
+const TEXT_ONLY_MESSAGE = 'The Gemma 4 web model is text-only';
 
-const OPFS_FILENAME = 'gemma-model.bin';
+/**
+ * OPFS filename — must match the On-Device AI extension.  Renamed from
+ * 'gemma-model.bin' (Gemma 3n) so a stale Gemma 3n cache is never mistaken for
+ * Gemma 4; old files are removed by removeLegacyCache().
+ */
+const OPFS_FILENAME = 'gemma-4-model.bin';
+const LEGACY_OPFS_FILENAMES = ['gemma-model.bin'];
+
+/** MediaPipe GenAI WASM runtime — keep in sync with the tasks-genai version in package.json. */
+const WASM_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai@0.10.29/wasm';
+
+/** Gemma 4 chat-template delimiters (Gemma 3/3n used <start_of_turn>/<end_of_turn>). */
+const TURN_START = '<|turn>';
+const TURN_END = '<turn|>';
+
+/**
+ * Wrap a plain prompt in the Gemma 4 chat template.  Without the turn tokens
+ * the model returns nothing (or rambles) instead of answering.
+ * @param {string} userText - the user turn
+ * @param {string} [systemText] - optional system instruction
+ * @returns {string} formatted prompt ending with an open model turn
+ */
+const formatPrompt = (userText, systemText) => {
+    let p = '';
+    if (systemText) p += `${TURN_START}system\n${systemText}${TURN_END}\n`;
+    p += `${TURN_START}user\n${userText}${TURN_END}\n${TURN_START}model\n`;
+    return p;
+};
+
+/**
+ * Same as formatPrompt but for a multimodal part list (strings and
+ * {imageSource}/{audioSource} objects) as accepted by generateResponse.
+ * @param {Array} parts - content of the user turn
+ * @returns {Array} parts wrapped in Gemma 4 turn delimiters
+ */
+const formatPromptParts = parts => [
+    `${TURN_START}user\n`,
+    ...parts,
+    `${TURN_END}\n${TURN_START}model\n`
+];
+
+/**
+ * Normalise a raw model response: stringify and drop anything after a turn delimiter.
+ * @param {string} raw - value returned by generateResponse
+ * @returns {string} cleaned text
+ */
+const cleanResponse = raw => {
+    let text = typeof raw === 'string' ? raw : String(raw);
+    const end = text.indexOf(TURN_END);
+    if (end !== -1) text = text.slice(0, end);
+    return text.trim();
+};
 
 let _llmInference = null;
 let _modelLoaded = false;
@@ -34,14 +91,12 @@ const loadModel = async url => {
     _isLoading = true;
     try {
         const {FilesetResolver, LlmInference} = require('@mediapipe/tasks-genai');
-        const filesetResolver = await FilesetResolver.forGenAiTasks(
-            'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai@0.10.26/wasm'
-        );
+        const filesetResolver = await FilesetResolver.forGenAiTasks(WASM_CDN);
+        // No maxNumImages / supportAudio: the Gemma 4 web build has no vision
+        // or audio encoders (see MODEL_URL note above).
         _llmInference = await LlmInference.createFromOptions(filesetResolver, {
             baseOptions: {modelAssetPath: url},
-            maxTokens: 4096,
-            maxNumImages: 1,
-            supportAudio: true
+            maxTokens: 4096
         });
         _modelLoaded = true;
     } finally {
@@ -70,6 +125,21 @@ const checkOpfsCache = async () => {
         return URL.createObjectURL(file);
     } catch {
         return null; // file doesn't exist yet
+    }
+};
+
+/**
+ * Delete cached model files left behind by earlier versions (Gemma 3n).
+ * They are several GB and no longer loadable here.
+ */
+const removeLegacyCache = async () => {
+    try {
+        const root = await navigator.storage.getDirectory();
+        for (const name of LEGACY_OPFS_FILENAMES) {
+            await root.removeEntry(name).catch(() => {});
+        }
+    } catch {
+        // OPFS unavailable — nothing to clean up
     }
 };
 
@@ -168,6 +238,8 @@ const showLoadModal = () => {
 };
 
 const _doShowLoadModal = async () => {
+    await removeLegacyCache();
+
     // 1. Try OPFS cache first
     const cachedUrl = await checkOpfsCache();
     if (cachedUrl) {
@@ -247,7 +319,7 @@ const _doShowLoadModal = async () => {
         descText.style.lineHeight = '1.5';
         descText.style.color = '#575e75';
         descText.innerHTML =
-            `Downloading Google's <b>Gemma 3n</b> AI model (~3 GB).<br>
+            `Downloading Google's <b>Gemma 4</b> AI model (${MODEL_SIZE_LABEL}).<br>
              This only happens once — it will be cached for future sessions.`;
         content.appendChild(descText);
 
@@ -356,4 +428,15 @@ const _doShowLoadModal = async () => {
     });
 };
 
-export {isLoaded, getLlmInference, loadModel, generate, showLoadModal};
+export {
+    isLoaded,
+    getLlmInference,
+    loadModel,
+    generate,
+    showLoadModal,
+    formatPrompt,
+    formatPromptParts,
+    cleanResponse,
+    MODEL_SUPPORTS_VISION,
+    TEXT_ONLY_MESSAGE
+};

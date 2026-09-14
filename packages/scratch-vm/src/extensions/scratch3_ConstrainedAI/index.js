@@ -11,17 +11,64 @@ const defaultLists = require("./default-lists");
 const log = require('../../util/log');
 
 /**
- * URL of the hosted model file.  Set to match the value in ai-model-manager.js
- * once you have uploaded the Gemma 3n model to a public CDN (e.g. Cloudflare R2).
+ * Hosted model file: Gemma 4 E2B, the web build published by Google's LiteRT
+ * community on Hugging Face (~2 GB).  Must match the value in
+ * ai-model-manager.js so the extension and the GUI share one OPFS cache.
  * When null the auto-download button is hidden and users must load from a file.
+ *
+ * NOTE: the Gemma 4 *web* builds are text-only — they ship without the vision
+ * and audio encoders.  (The full gemma-4-E2B-it.litertlm has them, but the
+ * MediaPipe web runtime refuses to load it: "could not find gpu_artisan .bin
+ * file".)  The image and speech blocks are therefore disabled below.
  */
-const MODEL_URL = null;
+const MODEL_URL = 'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.litertlm';
+const MODEL_PAGE_URL = 'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm';
+const MODEL_SIZE_LABEL = '~2 GB';
+const MODEL_SUPPORTS_VISION = false;
+const MODEL_SUPPORTS_AUDIO = false;
+const TEXT_ONLY_MESSAGE = 'The Gemma 4 web model is text-only';
 
 /**
  * OPFS filename — must match the value used in ai-model-manager.js so both
  * the extension and the GUI model manager share the same on-disk cache.
+ * Renamed from 'gemma-model.bin' (Gemma 3n) so a stale Gemma 3n cache is never
+ * mistaken for Gemma 4; old files are removed by _removeLegacyCache().
  */
-const OPFS_FILENAME = 'gemma-model.bin';
+const OPFS_FILENAME = 'gemma-4-model.bin';
+const LEGACY_OPFS_FILENAMES = ['gemma-model.bin'];
+
+/** MediaPipe GenAI WASM runtime — keep in sync with the tasks-genai version in package.json. */
+const WASM_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai@0.10.29/wasm';
+
+/** Gemma 4 chat-template delimiters (Gemma 3/3n used <start_of_turn>/<end_of_turn>). */
+const TURN_START = '<|turn>';
+const TURN_END = '<turn|>';
+
+/**
+ * Wrap a plain prompt in the Gemma 4 chat template.  Without the turn tokens
+ * the model tends to ramble or loop instead of answering.
+ * @param {string} userText - the user turn
+ * @param {string} [systemText] - optional system instruction
+ * @returns {string} formatted prompt ending with an open model turn
+ */
+const formatPrompt = (userText, systemText) => {
+    let p = '';
+    if (systemText) p += `${TURN_START}system\n${systemText}${TURN_END}\n`;
+    p += `${TURN_START}user\n${userText}${TURN_END}\n${TURN_START}model\n`;
+    return p;
+};
+
+/**
+ * Normalise a raw model response: stringify and drop anything after a turn delimiter.
+ * @param {string} raw - value returned by generateResponse
+ * @returns {string} cleaned text
+ */
+const cleanResponse = raw => {
+    let text = typeof raw === 'string' ? raw : String(raw);
+    const end = text.indexOf(TURN_END);
+    if (end !== -1) text = text.slice(0, end);
+    return text.trim();
+};
 
 class Scratch3ConstrainedAIBlocks {
     constructor(runtime) {
@@ -110,40 +157,42 @@ class Scratch3ConstrainedAIBlocks {
                 //     blockType: BlockType.REPORTER,
                 // },
                 // '---',
-                // Vision Chat
-                {
-                    opcode: "askAboutStage",
-                    text: "ask AI [QUESTION] about stage",
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        QUESTION: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "What do you see?"
-                        }
-                    }
-                },
-                {
-                    opcode: "getStageAnswer",
-                    text: "AI Answer about stage",
-                    blockType: BlockType.REPORTER,
-                },
-                '---',
-                // Speech
-                {
-                    opcode: 'startListening',
-                    text: 'start listening',
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'stopListening',
-                    text: 'stop listening',
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'getSpeechResult',
-                    text: 'speech',
-                    blockType: BlockType.REPORTER
-                }
+                // Vision Chat — disabled: the Gemma 4 web model is text-only
+                // (no vision encoder).  Re-enable if a multimodal web build ships.
+                // {
+                //     opcode: "askAboutStage",
+                //     text: "ask AI [QUESTION] about stage",
+                //     blockType: BlockType.COMMAND,
+                //     arguments: {
+                //         QUESTION: {
+                //             type: ArgumentType.STRING,
+                //             defaultValue: "What do you see?"
+                //         }
+                //     }
+                // },
+                // {
+                //     opcode: "getStageAnswer",
+                //     text: "AI Answer about stage",
+                //     blockType: BlockType.REPORTER,
+                // },
+                // '---',
+                // Speech — disabled: the Gemma 4 web model is text-only
+                // (no audio encoder).  Re-enable if a multimodal web build ships.
+                // {
+                //     opcode: 'startListening',
+                //     text: 'start listening',
+                //     blockType: BlockType.COMMAND
+                // },
+                // {
+                //     opcode: 'stopListening',
+                //     text: 'stop listening',
+                //     blockType: BlockType.COMMAND
+                // },
+                // {
+                //     opcode: 'getSpeechResult',
+                //     text: 'speech',
+                //     blockType: BlockType.REPORTER
+                // }
             ],
             menus: {
                 responseListMenu: {
@@ -235,15 +284,13 @@ class Scratch3ConstrainedAIBlocks {
             const FilesetResolver = genai.FilesetResolver;
             const LlmInference = genai.LlmInference;
 
-            const filesetResolver = await FilesetResolver.forGenAiTasks(
-                'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai@0.10.26/wasm'
-            );
+            const filesetResolver = await FilesetResolver.forGenAiTasks(WASM_CDN);
 
+            // No maxNumImages / supportAudio: the Gemma 4 web build has no
+            // vision or audio encoders (see MODEL_URL note above).
             this.llmInference = await LlmInference.createFromOptions(filesetResolver, {
-                baseOptions: { modelAssetPath: args.URL },
-                maxTokens: 4096,
-                maxNumImages: 1,
-                supportAudio: true
+                baseOptions: {modelAssetPath: args.URL},
+                maxTokens: 4096
             });
 
             this.modelLoaded = true;
@@ -269,6 +316,21 @@ class Scratch3ConstrainedAIBlocks {
             return URL.createObjectURL(file);
         } catch {
             return null;
+        }
+    }
+
+    /**
+     * Delete cached model files left behind by earlier versions of this
+     * extension (Gemma 3n).  They are several GB and no longer loadable here.
+     */
+    async _removeLegacyCache() {
+        try {
+            const root = await navigator.storage.getDirectory();
+            for (const name of LEGACY_OPFS_FILENAMES) {
+                await root.removeEntry(name).catch(() => {});
+            }
+        } catch {
+            // OPFS unavailable — nothing to clean up
         }
     }
 
@@ -345,6 +407,8 @@ class Scratch3ConstrainedAIBlocks {
     // -------------------------------------------------------------------------
 
     async showLoadModal() {
+        await this._removeLegacyCache();
+
         // 1. Check OPFS cache — load silently if found
         const cachedUrl = await this._checkOpfsCache();
         if (cachedUrl) {
@@ -421,15 +485,15 @@ class Scratch3ConstrainedAIBlocks {
             text.style.lineHeight = '1.5';
             text.style.color = '#575e75';
             text.innerHTML = MODEL_URL
-                ? `This extension runs Google's <b>Gemma 3n</b> AI model directly on your computer.<br><br>
-                   You can download it automatically below (~1.7 GB), or load a file you've already downloaded.`
-                : `This extension runs Google's <b>Gemma 3n</b> AI model directly on your computer.<br><br>
-                   To use it, you must first download the model file (approx 1.7 GB) from the official website.`;
+                ? `This extension runs Google's <b>Gemma 4</b> AI model directly on your computer.<br><br>
+                   Download it automatically below (${MODEL_SIZE_LABEL}), or load a file you've already downloaded.`
+                : `This extension runs Google's <b>Gemma 4</b> AI model directly on your computer.<br><br>
+                   To use it, you must first download the model file (${MODEL_SIZE_LABEL}) from the official website.`;
             content.appendChild(text);
 
             if (!MODEL_URL) {
                 const linkBtn = document.createElement('a');
-                linkBtn.href = 'https://deepmind.google/models/gemma/gemma-3n/';
+                linkBtn.href = MODEL_PAGE_URL;
                 linkBtn.target = '_blank';
                 linkBtn.innerText = 'Open Gemma Download Page ↗';
                 Object.assign(linkBtn.style, {
@@ -517,7 +581,7 @@ class Scratch3ConstrainedAIBlocks {
             var downloadBtn = null;
             if (MODEL_URL) {
                 downloadBtn = document.createElement('button');
-                downloadBtn.innerText = 'Download automatically (~1.7 GB)';
+                downloadBtn.innerText = `Download automatically (${MODEL_SIZE_LABEL})`;
                 Object.assign(downloadBtn.style, {
                     backgroundColor: '#4c97ff',
                     color: 'white',
@@ -669,10 +733,10 @@ class Scratch3ConstrainedAIBlocks {
         
         try {
             const question = Cast.toString(args.QUESTION);
-            const prompt = 'Your response is always as short as possible. ' + question;
+            const prompt = formatPrompt(`Your response is always as short as possible. ${question}`);
             console.log('[Constrained AI] Asking general:', question);
             const rawResponse = await this.generateWithSpinner(prompt);
-            this.generalAnswer = (typeof rawResponse === 'string' ? rawResponse : String(rawResponse)).trim();
+            this.generalAnswer = cleanResponse(rawResponse);
             console.log('[Constrained AI] General Answer:', this.generalAnswer);
         } catch (e) {
             console.error('[Constrained AI] General ask failed:', e);
@@ -696,7 +760,7 @@ class Scratch3ConstrainedAIBlocks {
         // omit empty items
         responses = responses.filter(item => item.trim().length > 0);
 
-        const prompt = `Task: Select the best option from the list that answers the question. Reply with ONLY the exact text of the selected option.
+        const prompt = formatPrompt(`Task: Select the best option from the list that answers the question. Reply with ONLY the exact text of the selected option.
 
 Example:
 Question: "What color is the sky?"
@@ -709,13 +773,13 @@ Answer: Blue
 Question: "${input}"
 Options:
 ${responses.map(r => '- ' + r).join('\n')}
-Answer:`;
+Answer:`);
 
         try {
             console.log('[Constrained AI] Full Input Prompt:\n', prompt);
             const rawResponse = await this.generateWithSpinner(prompt);
             console.log('[Constrained AI] Full Raw Output:\n', rawResponse);
-            const responseText = (typeof rawResponse === 'string' ? rawResponse : String(rawResponse)).trim();
+            const responseText = cleanResponse(rawResponse);
             console.log('Raw LLM response:', responseText);
 
             // Use the actual list items for validation
@@ -756,6 +820,10 @@ Answer:`;
             this.stageDescription = 'Model not loaded';
             return;
         }
+        if (!MODEL_SUPPORTS_VISION) {
+            this.stageDescription = TEXT_ONLY_MESSAGE;
+            return;
+        }
         
         try {
             const canvas = this.runtime.renderer.canvas;
@@ -768,9 +836,11 @@ Answer:`;
             const prompt = 'Describe this image in one short sentence.';
             
             console.log('[Constrained AI] Generating description for stage image...');
-            const response = await this.generateWithSpinner([prompt, imageInput]);
+            const response = await this.generateWithSpinner([
+                `${TURN_START}user\n`, imageInput, `${prompt}${TURN_END}\n${TURN_START}model\n`
+            ]);
             
-            this.stageDescription = (typeof response === 'string' ? response : String(response)).trim();
+            this.stageDescription = cleanResponse(response);
             console.log('[Constrained AI] Description:', this.stageDescription);
         } catch (e) {
             console.error('[Constrained AI] Description generation failed:', e);
@@ -787,6 +857,10 @@ Answer:`;
             this.stageAnswer = 'Model not loaded';
             return;
         }
+        if (!MODEL_SUPPORTS_VISION) {
+            this.stageAnswer = TEXT_ONLY_MESSAGE;
+            return;
+        }
         
         try {
             const canvas = this.runtime.renderer.canvas;
@@ -801,9 +875,11 @@ Answer:`;
             
             console.log('[Constrained AI] Asking about stage:', question);
             // Pass the prompt and image as an array for multimodal inference
-            const response = await this.generateWithSpinner([prompt, imageInput]);
+            const response = await this.generateWithSpinner([
+                `${TURN_START}user\n`, imageInput, `${prompt}${TURN_END}\n${TURN_START}model\n`
+            ]);
             
-            this.stageAnswer = (typeof response === 'string' ? response : String(response)).trim();
+            this.stageAnswer = cleanResponse(response);
             console.log('[Constrained AI] Answer:', this.stageAnswer);
         } catch (e) {
             console.error('[Constrained AI] Ask about stage failed:', e);
@@ -840,6 +916,10 @@ Answer:`;
 
     async startListening() {
         if (!this.modelLoaded) {
+            return;
+        }
+        if (!MODEL_SUPPORTS_AUDIO) {
+            this.speechResult = TEXT_ONLY_MESSAGE;
             return;
         }
 
@@ -916,11 +996,12 @@ Answer:`;
                     const prompt = 'Transcribe the audio accurately. Output only the transcription.';
                     
                     const response = await this.generateWithSpinner([
-                        prompt,
-                        { audioSource: audioBuffer }
+                        `${TURN_START}user\n`,
+                        {audioSource: audioBuffer},
+                        `${prompt}${TURN_END}\n${TURN_START}model\n`
                     ]);
 
-                    this.speechResult = (typeof response === 'string' ? response : String(response)).trim();
+                    this.speechResult = cleanResponse(response);
                     console.log('[On-Device AI] Speech Result:', this.speechResult);
 
                 } catch (e) {

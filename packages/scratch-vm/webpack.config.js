@@ -9,8 +9,19 @@ const common = {
     rootPath: path.resolve(__dirname)
 };
 
+// @mediapipe/tasks-genai (On-Device AI extension) ships a self-contained bundle
+// (no require()) with one worker-only dynamic `import(url)` that webpack can't
+// resolve statically ("Critical dependency: the request of a dependency is an
+// expression"). Skip parsing so the native import() is left untouched.
+const noParseMediaPipe = {
+    module: {
+        noParse: /[\\/]@mediapipe[\\/]tasks-genai[\\/]genai_bundle\.(cjs|mjs)$/
+    }
+};
+
 const nodeBuilder = new ScratchWebpackConfigBuilder(common)
     .setTarget('node')
+    .merge(noParseMediaPipe)
     .merge({
         entry: {
             'extension-worker': path.join(__dirname, 'src/extension-support/extension-worker.js')
@@ -24,6 +35,7 @@ const nodeBuilder = new ScratchWebpackConfigBuilder(common)
 
 const webBuilder = new ScratchWebpackConfigBuilder(common)
     .setTarget('browserslist')
+    .merge(noParseMediaPipe)
     .merge({
         entry: {
             'extension-worker': path.join(__dirname, 'src/extension-support/extension-worker.js')
