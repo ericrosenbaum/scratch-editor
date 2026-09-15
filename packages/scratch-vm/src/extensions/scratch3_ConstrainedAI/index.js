@@ -11,63 +11,55 @@ const defaultLists = require("./default-lists");
 const log = require('../../util/log');
 
 /**
- * Hosted model file: Gemma 4 E2B, the web build published by Google's LiteRT
- * community on Hugging Face (~2 GB).  Must match the value in
- * ai-model-manager.js so the extension and the GUI share one OPFS cache.
- * When null the auto-download button is hidden and users must load from a file.
+ * On-device model: Gemma 4 E2B — text, image and audio in, text out — run in
+ * the browser by transformers.js on WebGPU.  The ONNX weights (q4f16, ~3.4 GB)
+ * are downloaded from Hugging Face on first use and kept by the browser in
+ * Cache Storage ("transformers-cache"), so later sessions load without a
+ * download.
  *
- * NOTE: the Gemma 4 *web* builds are text-only — they ship without the vision
- * and audio encoders.  (The full gemma-4-E2B-it.litertlm has them, but the
- * MediaPipe web runtime refuses to load it: "could not find gpu_artisan .bin
- * file".)  The image and speech blocks are therefore disabled below.
+ * transformers.js itself is fetched at runtime from jsDelivr rather than
+ * bundled: it is ~1 MB plus the ONNX Runtime WebGPU/WASM binaries it pulls from
+ * the same CDN, and keeping it out of the scratch-vm bundle avoids webpack chunk
+ * loading through the GUI.  (The previous MediaPipe runtime fetched its WASM
+ * from jsDelivr the same way.)
  */
-const MODEL_URL = 'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.litertlm';
-const MODEL_PAGE_URL = 'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm';
-const MODEL_SIZE_LABEL = '~2 GB';
-const MODEL_SUPPORTS_VISION = false;
-const MODEL_SUPPORTS_AUDIO = false;
-const TEXT_ONLY_MESSAGE = 'The Gemma 4 web model is text-only';
+// dist/transformers.min.js is the self-contained browser build; the *.web.* files
+// expect a bundler to resolve their bare "onnxruntime-web/webgpu" import.
+const TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/dist/transformers.min.js';
+const MODEL_ID = 'onnx-community/gemma-4-E2B-it-ONNX';
+const MODEL_DTYPE = 'q4f16';
+const MODEL_PAGE_URL = `https://huggingface.co/${MODEL_ID}`;
+const MODEL_SIZE_LABEL = '~3.4 GB';
+/** Cache Storage bucket transformers.js writes model files to. */
+const TRANSFORMERS_CACHE_NAME = 'transformers-cache';
+/** The largest model file — present in the cache only once the download completed. */
+const MODEL_CACHE_MARKER = `${MODEL_ID}/resolve/main/onnx/decoder_model_merged_${MODEL_DTYPE}.onnx_data`;
+/** Gemma 4's audio encoder expects 16 kHz mono samples. */
+const AUDIO_SAMPLE_RATE = 16000;
+/** Default cap on generated tokens: answers are meant to be short and the model is small. */
+const DEFAULT_MAX_NEW_TOKENS = 128;
 
 /**
- * OPFS filename — must match the value used in ai-model-manager.js so both
- * the extension and the GUI model manager share the same on-disk cache.
- * Renamed from 'gemma-model.bin' (Gemma 3n) so a stale Gemma 3n cache is never
- * mistaken for Gemma 4; old files are removed by _removeLegacyCache().
+ * OPFS files written by earlier versions of this extension (MediaPipe with
+ * Gemma 3n / Gemma 4 web builds).  They are 2–3 GB each and unused now, so they
+ * are removed on startup.
  */
-const OPFS_FILENAME = 'gemma-4-model.bin';
-const LEGACY_OPFS_FILENAMES = ['gemma-model.bin'];
+const LEGACY_OPFS_FILENAMES = ['gemma-model.bin', 'gemma-4-model.bin'];
 
-/** MediaPipe GenAI WASM runtime — keep in sync with the tasks-genai version in package.json. */
-const WASM_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai@0.10.29/wasm';
-
-/** Gemma 4 chat-template delimiters (Gemma 3/3n used <start_of_turn>/<end_of_turn>). */
-const TURN_START = '<|turn>';
-const TURN_END = '<turn|>';
-
+let transformersPromise = null;
 /**
- * Wrap a plain prompt in the Gemma 4 chat template.  Without the turn tokens
- * the model tends to ramble or loop instead of answering.
- * @param {string} userText - the user turn
- * @param {string} [systemText] - optional system instruction
- * @returns {string} formatted prompt ending with an open model turn
+ * Load transformers.js from the CDN once (shared by all instances).  The native
+ * dynamic import must be left alone by webpack — hence webpackIgnore.
+ * @returns {Promise<object>} the transformers.js module namespace
  */
-const formatPrompt = (userText, systemText) => {
-    let p = '';
-    if (systemText) p += `${TURN_START}system\n${systemText}${TURN_END}\n`;
-    p += `${TURN_START}user\n${userText}${TURN_END}\n${TURN_START}model\n`;
-    return p;
-};
-
-/**
- * Normalise a raw model response: stringify and drop anything after a turn delimiter.
- * @param {string} raw - value returned by generateResponse
- * @returns {string} cleaned text
- */
-const cleanResponse = raw => {
-    let text = typeof raw === 'string' ? raw : String(raw);
-    const end = text.indexOf(TURN_END);
-    if (end !== -1) text = text.slice(0, end);
-    return text.trim();
+const loadTransformers = () => {
+    if (!transformersPromise) {
+        transformersPromise = import(/* webpackIgnore: true */ TRANSFORMERS_URL).catch(err => {
+            transformersPromise = null;
+            throw err;
+        });
+    }
+    return transformersPromise;
 };
 
 class Scratch3ConstrainedAIBlocks {
@@ -81,9 +73,14 @@ class Scratch3ConstrainedAIBlocks {
         this.stageAnswer = '';
         this.speechResult = '';
              
-        this.llmInference = null;
+        this.transformers = null; // transformers.js module namespace
+        this.processor = null;
+        this.model = null;
         this.modelLoaded = false;
         this.isLoading = false;
+        this._activeLoad = null; // in-flight loadModel() promise
+        this._loadPromise = null; // in-flight ensureModelLoaded() promise
+        this._progressListeners = new Set();
         
         this.mediaRecorder = null;
         this.audioChunks = [];
@@ -99,9 +96,10 @@ class Scratch3ConstrainedAIBlocks {
         this.ensureDefaultLists();
         this.runtime.on('PROJECT_LOADED', this.ensureDefaultLists.bind(this));
 
-        // Show the startup modal to load the model (or silently load from OPFS cache)
+        // Load the model at startup: silently when the browser has it cached,
+        // otherwise via the download modal.
         if (typeof document !== 'undefined') {
-            this.showLoadModal().catch(() => {}); // catch handles user cancellation
+            this.ensureModelLoaded().catch(() => {}); // catch handles user cancellation
         }
     }
 
@@ -157,42 +155,40 @@ class Scratch3ConstrainedAIBlocks {
                 //     blockType: BlockType.REPORTER,
                 // },
                 // '---',
-                // Vision Chat — disabled: the Gemma 4 web model is text-only
-                // (no vision encoder).  Re-enable if a multimodal web build ships.
-                // {
-                //     opcode: "askAboutStage",
-                //     text: "ask AI [QUESTION] about stage",
-                //     blockType: BlockType.COMMAND,
-                //     arguments: {
-                //         QUESTION: {
-                //             type: ArgumentType.STRING,
-                //             defaultValue: "What do you see?"
-                //         }
-                //     }
-                // },
-                // {
-                //     opcode: "getStageAnswer",
-                //     text: "AI Answer about stage",
-                //     blockType: BlockType.REPORTER,
-                // },
-                // '---',
-                // Speech — disabled: the Gemma 4 web model is text-only
-                // (no audio encoder).  Re-enable if a multimodal web build ships.
-                // {
-                //     opcode: 'startListening',
-                //     text: 'start listening',
-                //     blockType: BlockType.COMMAND
-                // },
-                // {
-                //     opcode: 'stopListening',
-                //     text: 'stop listening',
-                //     blockType: BlockType.COMMAND
-                // },
-                // {
-                //     opcode: 'getSpeechResult',
-                //     text: 'speech',
-                //     blockType: BlockType.REPORTER
-                // }
+                // Vision Chat
+                {
+                    opcode: "askAboutStage",
+                    text: "ask AI [QUESTION] about stage",
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        QUESTION: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "What do you see?"
+                        }
+                    }
+                },
+                {
+                    opcode: "getStageAnswer",
+                    text: "AI Answer about stage",
+                    blockType: BlockType.REPORTER,
+                },
+                '---',
+                // Speech
+                {
+                    opcode: 'startListening',
+                    text: 'start listening',
+                    blockType: BlockType.COMMAND
+                },
+                {
+                    opcode: 'stopListening',
+                    text: 'stop listening',
+                    blockType: BlockType.COMMAND
+                },
+                {
+                    opcode: 'getSpeechResult',
+                    text: 'speech',
+                    blockType: BlockType.REPORTER
+                }
             ],
             menus: {
                 responseListMenu: {
@@ -275,56 +271,103 @@ class Scratch3ConstrainedAIBlocks {
         }
     }
 
-    async loadModel(args) {
-        if (this.modelLoaded || this.isLoading) return Promise.resolve();
-        this.isLoading = true;
+    // -------------------------------------------------------------------------
+    // Model loading
+    // -------------------------------------------------------------------------
 
-        try {
-            const genai = require('@mediapipe/tasks-genai');
-            const FilesetResolver = genai.FilesetResolver;
-            const LlmInference = genai.LlmInference;
-
-            const filesetResolver = await FilesetResolver.forGenAiTasks(WASM_CDN);
-
-            // No maxNumImages / supportAudio: the Gemma 4 web build has no
-            // vision or audio encoders (see MODEL_URL note above).
-            this.llmInference = await LlmInference.createFromOptions(filesetResolver, {
-                baseOptions: {modelAssetPath: args.URL},
-                maxTokens: 4096
+    /**
+     * Resolve once the model is ready.  Loads it on first call: silently (with
+     * a toast) when the browser already has the weights cached, otherwise via a
+     * modal that asks the user to start the download.  Concurrent callers share
+     * one load.  Rejects if the user dismisses the modal or loading fails.
+     * @returns {Promise<void>}
+     */
+    ensureModelLoaded () {
+        if (this.modelLoaded) return Promise.resolve();
+        if (!this._loadPromise) {
+            this._loadPromise = this.showLoadModal().finally(() => {
+                this._loadPromise = null;
             });
-
-            this.modelLoaded = true;
-            this.isLoading = false;
-        } catch (e) {
-            console.error('Failed to load LLM:', e);
-            this.isLoading = false;
-            throw e;
         }
+        return this._loadPromise;
     }
 
-    // -------------------------------------------------------------------------
-    // OPFS helpers (mirrors ai-model-manager.js — same OPFS_FILENAME means the
-    // extension and the GUI model manager share the same on-disk cache)
-    // -------------------------------------------------------------------------
+    /**
+     * Download (if needed) and initialise the model.  A second call while a
+     * load is in flight joins it (its progress callback is attached too).
+     * @param {function(object)} [onProgress] - transformers.js progress callback
+     * @returns {Promise<void>}
+     */
+    loadModel (onProgress) {
+        if (onProgress) this._progressListeners.add(onProgress);
+        if (this.modelLoaded) return Promise.resolve();
+        if (!this._activeLoad) {
+            this._activeLoad = this._doLoadModel().finally(() => {
+                this._activeLoad = null;
+                this._progressListeners.clear();
+            });
+        }
+        return this._activeLoad;
+    }
 
-    async _checkOpfsCache() {
+    async _doLoadModel () {
+        this.isLoading = true;
         try {
-            const root = await navigator.storage.getDirectory();
-            const fh = await root.getFileHandle(OPFS_FILENAME);
-            const file = await fh.getFile();
-            if (file.size === 0) return null;
-            return URL.createObjectURL(file);
-        } catch {
-            return null;
+            if (typeof navigator === 'undefined' || !navigator.gpu) {
+                throw new Error('WebGPU is not available in this browser');
+            }
+            const tf = await loadTransformers();
+            tf.env.allowLocalModels = false;
+            const progressCallback = info => {
+                for (const listener of this._progressListeners) {
+                    try {
+                        listener(info);
+                    } catch {
+                        // a broken listener must not break loading
+                    }
+                }
+            };
+            const processor = await tf.AutoProcessor.from_pretrained(MODEL_ID, {
+                progress_callback: progressCallback
+            });
+            const model = await tf.Gemma4ForConditionalGeneration.from_pretrained(MODEL_ID, {
+                dtype: MODEL_DTYPE,
+                device: 'webgpu',
+                progress_callback: progressCallback
+            });
+            this.transformers = tf;
+            this.processor = processor;
+            this.model = model;
+            this.modelLoaded = true;
+        } catch (e) {
+            log.error('Failed to load Gemma 4:', e);
+            throw e;
+        } finally {
+            this.isLoading = false;
         }
     }
 
     /**
-     * Delete cached model files left behind by earlier versions of this
-     * extension (Gemma 3n).  They are several GB and no longer loadable here.
+     * @returns {Promise<boolean>} true when the model weights are already in the browser cache
      */
-    async _removeLegacyCache() {
+    async _isModelCached () {
         try {
+            if (typeof caches === 'undefined') return false;
+            const cache = await caches.open(TRANSFORMERS_CACHE_NAME);
+            const keys = await cache.keys();
+            return keys.some(request => request.url.includes(MODEL_CACHE_MARKER));
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Delete OPFS model files left behind by earlier versions of this
+     * extension.  They are several GB and no longer used.
+     */
+    async _removeLegacyCache () {
+        try {
+            if (typeof navigator === 'undefined' || !navigator.storage || !navigator.storage.getDirectory) return;
             const root = await navigator.storage.getDirectory();
             for (const name of LEGACY_OPFS_FILENAMES) {
                 await root.removeEntry(name).catch(() => {});
@@ -332,43 +375,6 @@ class Scratch3ConstrainedAIBlocks {
         } catch {
             // OPFS unavailable — nothing to clean up
         }
-    }
-
-    async _saveFileToOpfsCache(file) {
-        try {
-            const root = await navigator.storage.getDirectory();
-            const fh = await root.getFileHandle(OPFS_FILENAME, {create: true});
-            const writable = await fh.createWritable();
-            await writable.write(file);
-            await writable.close();
-        } catch (err) {
-            console.warn('Failed to cache model to OPFS:', err);
-        }
-    }
-
-    async _downloadModelToOpfs(url, onProgress) {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status} — ${response.statusText}`);
-        const total = parseInt(response.headers.get('content-length') || '0', 10);
-
-        const root = await navigator.storage.getDirectory();
-        const fh = await root.getFileHandle(OPFS_FILENAME, {create: true});
-        const writable = await fh.createWritable();
-        const reader = response.body.getReader();
-
-        let received = 0;
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-            const {done, value} = await reader.read();
-            if (done) break;
-            await writable.write(value);
-            received += value.length;
-            onProgress(received, total);
-        }
-        await writable.close();
-
-        const cached = await (await root.getFileHandle(OPFS_FILENAME)).getFile();
-        return URL.createObjectURL(cached);
     }
 
     _showToast(text) {
@@ -409,23 +415,22 @@ class Scratch3ConstrainedAIBlocks {
     async showLoadModal() {
         await this._removeLegacyCache();
 
-        // 1. Check OPFS cache — load silently if found
-        const cachedUrl = await this._checkOpfsCache();
-        if (cachedUrl) {
+        // 1. Weights already cached — load silently behind a toast
+        if (await this._isModelCached()) {
             const toast = this._showToast('Loading cached AI model…');
             try {
-                await this.loadModel({URL: cachedUrl});
+                await this.loadModel();
                 toast.setText('AI model ready!');
                 setTimeout(() => toast.dismiss(), 2000);
                 return;
             } catch (err) {
                 toast.dismiss();
-                console.warn('Cached model failed to load, showing modal:', err);
-                // Fall through to interactive modal
+                log.warn('Cached model failed to load, showing modal:', err);
+                // Fall through to the interactive modal
             }
         }
 
-        // 2. Show interactive modal
+        // 2. Interactive modal with a one-click download
         return new Promise((resolve, reject) => {
             // ---- Overlay ----
             const overlay = document.createElement('div');
@@ -470,7 +475,10 @@ class Scratch3ConstrainedAIBlocks {
                 cursor: 'pointer',
                 color: '#999'
             });
-            closeBtn.onclick = () => { removeModal(); reject(new Error('cancelled')); };
+            closeBtn.onclick = () => {
+                removeModal();
+                reject(new Error('cancelled'));
+            };
             content.appendChild(closeBtn);
 
             // ---- Heading ----
@@ -484,28 +492,26 @@ class Scratch3ConstrainedAIBlocks {
             const text = document.createElement('p');
             text.style.lineHeight = '1.5';
             text.style.color = '#575e75';
-            text.innerHTML = MODEL_URL
-                ? `This extension runs Google's <b>Gemma 4</b> AI model directly on your computer.<br><br>
-                   Download it automatically below (${MODEL_SIZE_LABEL}), or load a file you've already downloaded.`
-                : `This extension runs Google's <b>Gemma 4</b> AI model directly on your computer.<br><br>
-                   To use it, you must first download the model file (${MODEL_SIZE_LABEL}) from the official website.`;
+            text.innerHTML =
+                `This extension runs Google's <b>Gemma 4</b> AI model directly on your computer,
+                 so it can answer questions, look at the stage and listen to you.<br><br>
+                 The model is a one-time download of ${MODEL_SIZE_LABEL}. Your browser keeps it for next time.`;
             content.appendChild(text);
 
-            if (!MODEL_URL) {
-                const linkBtn = document.createElement('a');
-                linkBtn.href = MODEL_PAGE_URL;
-                linkBtn.target = '_blank';
-                linkBtn.innerText = 'Open Gemma Download Page ↗';
-                Object.assign(linkBtn.style, {
-                    display: 'inline-block',
-                    margin: '10px 0 20px 0',
-                    color: '#4c97ff',
-                    textDecoration: 'none',
-                    fontWeight: 'bold'
-                });
-                content.appendChild(linkBtn);
-                content.appendChild(document.createElement('br'));
-            }
+            const link = document.createElement('a');
+            link.href = MODEL_PAGE_URL;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.innerText = 'About this model ↗';
+            Object.assign(link.style, {
+                display: 'inline-block',
+                margin: '0 0 16px 0',
+                color: '#4c97ff',
+                textDecoration: 'none',
+                fontSize: '13px'
+            });
+            content.appendChild(link);
+            content.appendChild(document.createElement('br'));
 
             // ---- Spinner ----
             const spinner = document.createElement('div');
@@ -528,7 +534,7 @@ class Scratch3ConstrainedAIBlocks {
                 document.head.appendChild(styleEl);
             }
 
-            // ---- Progress bar (download only) ----
+            // ---- Progress bar ----
             const progressWrap = document.createElement('div');
             Object.assign(progressWrap.style, {
                 display: 'none',
@@ -556,134 +562,78 @@ class Scratch3ConstrainedAIBlocks {
                 fontSize: '14px'
             });
 
-            const setProgress = (received, total) => {
-                const mb = n => `${(n / 1e6).toFixed(0)} MB`;
-                if (total > 0) {
-                    const pct = Math.round((received / total) * 100);
+            const mb = n => `${(n / 1e6).toFixed(0)} MB`;
+            let sawTotalProgress = false;
+            // transformers.js progress events: an aggregate 'progress_total' (preferred)
+            // plus per-file 'initiate' / 'download' / 'progress' / 'done', then 'ready'.
+            const onProgress = info => {
+                if (!info) return;
+                if (info.status === 'progress_total') {
+                    sawTotalProgress = true;
+                    const pct = Math.round(info.progress || 0);
                     progressBar.style.width = `${pct}%`;
-                    statusDiv.innerText = `Downloading… ${mb(received)} / ${mb(total)} (${pct}%)`;
-                } else {
-                    statusDiv.innerText = `Downloading… ${(received / 1e6).toFixed(0)} MB received`;
-                }
-            };
-
-            const setButtonsDisabled = disabled => {
-                if (downloadBtn) {
-                    downloadBtn.disabled = disabled;
-                    downloadBtn.style.opacity = disabled ? '0.5' : '1';
-                }
-                fileBtn.disabled = disabled;
-                fileBtn.style.opacity = disabled ? '0.5' : '1';
-            };
-
-            // ---- Auto-download button ----
-            // eslint-disable-next-line no-var
-            var downloadBtn = null;
-            if (MODEL_URL) {
-                downloadBtn = document.createElement('button');
-                downloadBtn.innerText = `Download automatically (${MODEL_SIZE_LABEL})`;
-                Object.assign(downloadBtn.style, {
-                    backgroundColor: '#4c97ff',
-                    color: 'white',
-                    border: 'none',
-                    padding: '12px 24px',
-                    fontSize: '16px',
-                    borderRadius: '25px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    display: 'block',
-                    margin: '10px auto 10px auto',
-                    transition: '0.2s'
-                });
-                downloadBtn.onmouseover = () => { downloadBtn.style.transform = 'scale(1.05)'; };
-                downloadBtn.onmouseout = () => { downloadBtn.style.transform = 'scale(1.0)'; };
-                downloadBtn.onclick = async () => {
-                    setButtonsDisabled(true);
-                    progressWrap.style.display = 'block';
-                    statusDiv.style.color = '#855cd6';
-                    statusDiv.innerText = 'Starting download…';
-                    try {
-                        const url = await this._downloadModelToOpfs(MODEL_URL, setProgress);
-                        statusDiv.innerText = 'Loading model into memory…';
+                    if (pct >= 100) {
                         spinner.style.display = 'block';
-                        await this.loadModel({URL: url});
-                        spinner.style.display = 'none';
-                        statusDiv.style.color = 'green';
-                        statusDiv.innerText = 'Model downloaded and ready!';
-                        setTimeout(() => { removeModal(); resolve(); }, 1500);
-                    } catch (err) {
-                        spinner.style.display = 'none';
-                        progressWrap.style.display = 'none';
-                        statusDiv.style.color = 'red';
-                        statusDiv.innerText = `Download failed: ${err.message}`;
-                        setButtonsDisabled(false);
+                        statusDiv.innerText = 'Loading model into memory… (this can take a minute)';
+                    } else {
+                        statusDiv.innerText = `Downloading… ${mb(info.loaded)} / ${mb(info.total)} (${pct}%)`;
                     }
-                };
-                content.appendChild(downloadBtn);
+                } else if (info.status === 'progress' && !sawTotalProgress) {
+                    const pct = Math.round(info.progress || 0);
+                    progressBar.style.width = `${pct}%`;
+                    statusDiv.innerText = `Downloading ${info.file}… (${pct}%)`;
+                }
+            };
 
-                const orDiv = document.createElement('div');
-                orDiv.style.color = '#bbb';
-                orDiv.style.margin = '4px 0';
-                orDiv.style.fontSize = '13px';
-                orDiv.innerText = 'or';
-                content.appendChild(orDiv);
-            }
-
-            // ---- File-picker button ----
-            // eslint-disable-next-line no-var
-            var fileBtn = document.createElement('button');
-            const fileBtnIsPrimary = !MODEL_URL;
-            fileBtn.innerText = MODEL_URL ? 'Load from my computer' : 'Load model file from my computer';
-            Object.assign(fileBtn.style, {
-                backgroundColor: fileBtnIsPrimary ? '#4c97ff' : 'transparent',
-                color: fileBtnIsPrimary ? 'white' : '#4c97ff',
-                border: fileBtnIsPrimary ? 'none' : '2px solid #4c97ff',
-                padding: fileBtnIsPrimary ? '12px 24px' : '8px 18px',
-                fontSize: fileBtnIsPrimary ? '16px' : '14px',
+            // ---- Download button ----
+            const downloadBtn = document.createElement('button');
+            downloadBtn.innerText = `Download and set up (${MODEL_SIZE_LABEL})`;
+            Object.assign(downloadBtn.style, {
+                backgroundColor: '#4c97ff',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                fontSize: '16px',
                 borderRadius: '25px',
                 cursor: 'pointer',
                 fontWeight: 'bold',
+                display: 'block',
+                margin: '10px auto 10px auto',
                 transition: '0.2s'
             });
-            fileBtn.onmouseover = () => { fileBtn.style.transform = 'scale(1.05)'; };
-            fileBtn.onmouseout = () => { fileBtn.style.transform = 'scale(1.0)'; };
-            content.appendChild(fileBtn);
+            downloadBtn.onmouseover = () => {
+                downloadBtn.style.transform = 'scale(1.05)';
+            };
+            downloadBtn.onmouseout = () => {
+                downloadBtn.style.transform = 'scale(1.0)';
+            };
+            downloadBtn.onclick = async () => {
+                downloadBtn.disabled = true;
+                downloadBtn.style.opacity = '0.5';
+                progressWrap.style.display = 'block';
+                statusDiv.style.color = '#855cd6';
+                statusDiv.innerText = 'Starting download…';
+                try {
+                    await this.loadModel(onProgress);
+                    spinner.style.display = 'none';
+                    statusDiv.style.color = 'green';
+                    statusDiv.innerText = 'Model ready!';
+                    setTimeout(() => { removeModal(); resolve(); }, 1500);
+                } catch (err) {
+                    spinner.style.display = 'none';
+                    progressWrap.style.display = 'none';
+                    statusDiv.style.color = 'red';
+                    statusDiv.innerText = `Setup failed: ${err.message}`;
+                    downloadBtn.disabled = false;
+                    downloadBtn.style.opacity = '1';
+                    downloadBtn.innerText = 'Try again';
+                }
+            };
+            content.appendChild(downloadBtn);
 
             content.appendChild(progressWrap);
             content.appendChild(statusDiv);
             content.appendChild(spinner);
-
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.bin,.task,.litertlm';
-            fileInput.style.display = 'none';
-            fileBtn.onclick = () => fileInput.click();
-
-            fileInput.onchange = async e => {
-                const file = e.target.files[0];
-                if (!file) return;
-                setButtonsDisabled(true);
-                spinner.style.display = 'block';
-                statusDiv.style.color = '#855cd6';
-                statusDiv.innerText = `Loading ${file.name}… (This may take a moment)`;
-                try {
-                    await this.loadModel({URL: URL.createObjectURL(file)});
-                    // Cache in background — don't block resolve
-                    this._saveFileToOpfsCache(file);
-                    spinner.style.display = 'none';
-                    statusDiv.style.color = 'green';
-                    statusDiv.innerText = 'Model loaded! Saving to cache for next time…';
-                    setTimeout(() => { removeModal(); resolve(); }, 1500);
-                } catch (err) {
-                    spinner.style.display = 'none';
-                    statusDiv.style.color = 'red';
-                    statusDiv.innerText = `Error loading model: ${err.message}`;
-                    setButtonsDisabled(false);
-                    fileBtn.innerText = 'Try again';
-                }
-            };
-
-            content.appendChild(fileInput);
             overlay.appendChild(content);
             document.body.appendChild(overlay);
         });
@@ -714,18 +664,113 @@ class Scratch3ConstrainedAIBlocks {
         this.speechResult = '';
     }
 
-    async generateWithSpinner(promptOrArgs) {
-        if (!this.llmInference) throw new Error('Model not loaded');
-        
+    // -------------------------------------------------------------------------
+    // Generation
+    // -------------------------------------------------------------------------
+
+    /**
+     * Generate a reply from Gemma 4, optionally grounded in an image and/or an
+     * audio clip.  Emits EXT_ON_DEVICE_AI_THINKING around the call so the GUI
+     * can show its spinner.
+     * @param {object} request - what to generate
+     * @param {string} request.text - the user's prompt
+     * @param {HTMLCanvasElement|Blob|string|object} [request.image] - a canvas (WebGL is fine), image
+     *   Blob/URL, or a transformers.js RawImage the prompt refers to
+     * @param {Blob|Float32Array} [request.audio] - recorded audio (any decodable Blob) or 16 kHz mono samples
+     * @param {number} [request.maxNewTokens] - cap on generated tokens
+     * @returns {Promise<string>} the model's reply, trimmed
+     */
+    async generate ({text, image = null, audio = null, maxNewTokens = DEFAULT_MAX_NEW_TOKENS}) {
+        if (!this.modelLoaded) throw new Error('Model not loaded');
+        if (this.runtime) this.runtime.emit('EXT_ON_DEVICE_AI_THINKING', true);
         try {
-            if (this.runtime) this.runtime.emit('EXT_ON_DEVICE_AI_THINKING', true);
-            const response = await this.llmInference.generateResponse(promptOrArgs);
+            const content = [];
+            if (image) content.push({type: 'image'});
+            if (audio) content.push({type: 'audio'});
+            content.push({type: 'text', text: Cast.toString(text)});
+            const prompt = this.processor.apply_chat_template([{role: 'user', content}], {
+                enable_thinking: false,
+                add_generation_prompt: true
+            });
+            const rawImage = image ? await this._toRawImage(image) : null;
+            const samples = audio ? await this._toAudioSamples(audio) : null;
+            const inputs = await this.processor(prompt, rawImage, samples, {add_special_tokens: false});
+            const outputs = await this.model.generate(Object.assign({}, inputs, {
+                max_new_tokens: maxNewTokens,
+                do_sample: false
+            }));
+            const promptLength = inputs.input_ids.dims.at(-1);
+            const decoded = this.processor.batch_decode(
+                outputs.slice(null, [promptLength, null]),
+                {skip_special_tokens: true}
+            );
+            return (decoded[0] || '').trim();
+        } finally {
             if (this.runtime) this.runtime.emit('EXT_ON_DEVICE_AI_THINKING', false);
-            return response;
-        } catch (e) {
-            if (this.runtime) this.runtime.emit('EXT_ON_DEVICE_AI_THINKING', false);
-            throw e;
         }
+    }
+
+    /**
+     * Convert an image input into a transformers.js RawImage.
+     * @param {HTMLCanvasElement|Blob|string|object} image - see generate()
+     * @returns {Promise<object>|object} RawImage (or a promise of one)
+     */
+    _toRawImage (image) {
+        const {RawImage} = this.transformers;
+        if (image instanceof RawImage) return image;
+        if (typeof image === 'string') return RawImage.fromURL(image);
+        if (typeof Blob !== 'undefined' && image instanceof Blob) return RawImage.fromBlob(image);
+        // RawImage.fromCanvas needs a 2D context, which a WebGL canvas (the stage)
+        // cannot provide — copy the pixels into a 2D canvas first.
+        const copy = document.createElement('canvas');
+        copy.width = image.width;
+        copy.height = image.height;
+        copy.getContext('2d').drawImage(image, 0, 0);
+        return RawImage.fromCanvas(copy);
+    }
+
+    /**
+     * Decode recorded audio into the 16 kHz mono samples the audio encoder expects.
+     * @param {Blob|Float32Array} audio - see generate()
+     * @returns {Promise<Float32Array>} samples
+     */
+    async _toAudioSamples (audio) {
+        if (audio instanceof Float32Array) return audio;
+        const url = URL.createObjectURL(audio);
+        try {
+            return await this.transformers.read_audio(url, AUDIO_SAMPLE_RATE);
+        } finally {
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    /**
+     * Snapshot the stage into a 2D canvas the model can read.
+     * @returns {HTMLCanvasElement|null} the snapshot, or null when there is no renderer
+     */
+    captureStageImage () {
+        const renderer = this.runtime && this.runtime.renderer;
+        const canvas = renderer && renderer.canvas;
+        if (!canvas) return null;
+        renderer.draw(); // fresh frame: the WebGL drawing buffer is not preserved between frames
+        const copy = document.createElement('canvas');
+        copy.width = canvas.width;
+        copy.height = canvas.height;
+        copy.getContext('2d').drawImage(canvas, 0, 0);
+        return copy;
+    }
+
+    /**
+     * Transcribe a recorded audio clip.
+     * @param {Blob} blob - e.g. MediaRecorder output
+     * @returns {Promise<string>} the transcription
+     */
+    transcribeBlob (blob) {
+        return this.generate({
+            text: 'Transcribe the audio accurately. Output only the transcription.',
+            audio: blob,
+            maxNewTokens: 128
+        });
     }
 
     async askGeneral(args) {
@@ -733,10 +778,10 @@ class Scratch3ConstrainedAIBlocks {
         
         try {
             const question = Cast.toString(args.QUESTION);
-            const prompt = formatPrompt(`Your response is always as short as possible. ${question}`);
             console.log('[Constrained AI] Asking general:', question);
-            const rawResponse = await this.generateWithSpinner(prompt);
-            this.generalAnswer = cleanResponse(rawResponse);
+            this.generalAnswer = await this.generate({
+                text: `Your response is always as short as possible. ${question}`
+            });
             console.log('[Constrained AI] General Answer:', this.generalAnswer);
         } catch (e) {
             console.error('[Constrained AI] General ask failed:', e);
@@ -760,7 +805,7 @@ class Scratch3ConstrainedAIBlocks {
         // omit empty items
         responses = responses.filter(item => item.trim().length > 0);
 
-        const prompt = formatPrompt(`Task: Select the best option from the list that answers the question. Reply with ONLY the exact text of the selected option.
+        const prompt = `Task: Select the best option from the list that answers the question. Reply with ONLY the exact text of the selected option.
 
 Example:
 Question: "What color is the sky?"
@@ -773,14 +818,12 @@ Answer: Blue
 Question: "${input}"
 Options:
 ${responses.map(r => '- ' + r).join('\n')}
-Answer:`);
+Answer:`;
 
         try {
             console.log('[Constrained AI] Full Input Prompt:\n', prompt);
-            const rawResponse = await this.generateWithSpinner(prompt);
-            console.log('[Constrained AI] Full Raw Output:\n', rawResponse);
-            const responseText = cleanResponse(rawResponse);
-            console.log('Raw LLM response:', responseText);
+            const responseText = await this.generate({text: prompt, maxNewTokens: 48});
+            console.log('[Constrained AI] Full Raw Output:\n', responseText);
 
             // Use the actual list items for validation
             if (responses.some(option => option === responseText)) {
@@ -820,31 +863,23 @@ Answer:`);
             this.stageDescription = 'Model not loaded';
             return;
         }
-        if (!MODEL_SUPPORTS_VISION) {
-            this.stageDescription = TEXT_ONLY_MESSAGE;
-            return;
-        }
-        
+
         try {
-            const canvas = this.runtime.renderer.canvas;
-            if (!canvas) {
+            const image = this.captureStageImage();
+            if (!image) {
                 this.stageDescription = 'No stage canvas found';
                 return;
             }
-
-            const imageInput = { imageSource: canvas };
-            const prompt = 'Describe this image in one short sentence.';
-            
             console.log('[Constrained AI] Generating description for stage image...');
-            const response = await this.generateWithSpinner([
-                `${TURN_START}user\n`, imageInput, `${prompt}${TURN_END}\n${TURN_START}model\n`
-            ]);
-            
-            this.stageDescription = cleanResponse(response);
+            this.stageDescription = await this.generate({
+                text: 'Describe this image in one short sentence.',
+                image,
+                maxNewTokens: 64
+            });
             console.log('[Constrained AI] Description:', this.stageDescription);
         } catch (e) {
             console.error('[Constrained AI] Description generation failed:', e);
-            this.stageDescription = 'Error: ' + e.message;
+            this.stageDescription = `Error: ${e.message}`;
         }
     }
 
@@ -857,33 +892,23 @@ Answer:`);
             this.stageAnswer = 'Model not loaded';
             return;
         }
-        if (!MODEL_SUPPORTS_VISION) {
-            this.stageAnswer = TEXT_ONLY_MESSAGE;
-            return;
-        }
-        
+
         try {
-            const canvas = this.runtime.renderer.canvas;
-            if (!canvas) {
+            const image = this.captureStageImage();
+            if (!image) {
                 this.stageAnswer = 'No stage canvas found';
                 return;
             }
-
-            const imageInput = { imageSource: canvas };
             const question = Cast.toString(args.QUESTION);
-            const prompt = 'Your response is always as short as possible. ' + question;
-            
             console.log('[Constrained AI] Asking about stage:', question);
-            // Pass the prompt and image as an array for multimodal inference
-            const response = await this.generateWithSpinner([
-                `${TURN_START}user\n`, imageInput, `${prompt}${TURN_END}\n${TURN_START}model\n`
-            ]);
-            
-            this.stageAnswer = cleanResponse(response);
+            this.stageAnswer = await this.generate({
+                text: `Your response is always as short as possible. ${question}`,
+                image
+            });
             console.log('[Constrained AI] Answer:', this.stageAnswer);
         } catch (e) {
             console.error('[Constrained AI] Ask about stage failed:', e);
-            this.stageAnswer = 'Error: ' + e.message;
+            this.stageAnswer = `Error: ${e.message}`;
         }
     }
 
@@ -916,10 +941,6 @@ Answer:`);
 
     async startListening() {
         if (!this.modelLoaded) {
-            return;
-        }
-        if (!MODEL_SUPPORTS_AUDIO) {
-            this.speechResult = TEXT_ONLY_MESSAGE;
             return;
         }
 
@@ -984,24 +1005,10 @@ Answer:`);
                         this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
                     }
 
-                    // Process Audio
-                    const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-                    const arrayBuffer = await audioBlob.arrayBuffer();
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                    
-                    // Transcribe
+                    // Transcribe the recording
+                    const audioBlob = new Blob(this.audioChunks, {type: 'audio/webm'});
                     console.log('[On-Device AI] Transcribing audio...');
-
-                    const prompt = 'Transcribe the audio accurately. Output only the transcription.';
-                    
-                    const response = await this.generateWithSpinner([
-                        `${TURN_START}user\n`,
-                        {audioSource: audioBuffer},
-                        `${prompt}${TURN_END}\n${TURN_START}model\n`
-                    ]);
-
-                    this.speechResult = cleanResponse(response);
+                    this.speechResult = await this.transcribeBlob(audioBlob);
                     console.log('[On-Device AI] Speech Result:', this.speechResult);
 
                 } catch (e) {

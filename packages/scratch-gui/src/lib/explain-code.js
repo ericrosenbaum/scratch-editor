@@ -1,5 +1,5 @@
 import {openCodeExplanation, setCodeExplanationResult} from '../reducers/code-explanation';
-import {isLoaded, getLlmInference, generate, showLoadModal, formatPrompt, cleanResponse} from './ai-model-manager';
+import {ensureLoaded} from './ai-model-manager';
 
 /**
  * Build context info string for the prompt.
@@ -44,42 +44,6 @@ const buildPrompt = function (targetName, isStage, contextInfo, blocksText) {
 };
 
 /**
- * Resolve which generate function to use, loading the model if needed.
- * Prefers the extension's already-loaded model; falls back to the manager.
- * Shows the load modal if no model is available yet.
- *
- * @param {object} aiExt - vm.runtime._AIBlocksExtension (may be null)
- * @returns {Promise<Function|null>} async generate function, or null if user cancelled
- */
-const resolveGenerateFn = async aiExt => {
-    // 1. Extension has the model ready — use its generate (includes thinking spinner)
-    if (aiExt && aiExt.modelLoaded) {
-        return prompt => aiExt.generateWithSpinner(prompt);
-    }
-
-    // 2. Manager already loaded the model independently
-    if (isLoaded()) {
-        return prompt => generate(prompt);
-    }
-
-    // 3. No model loaded anywhere — show the load modal and wait
-    try {
-        await showLoadModal();
-    } catch (e) {
-        return null; // user cancelled
-    }
-
-    // Sync newly loaded model to the extension so AI blocks also work
-    if (aiExt && !aiExt.modelLoaded) {
-        aiExt.llmInference = getLlmInference();
-        aiExt.modelLoaded = true;
-        aiExt.isLoading = false;
-    }
-
-    return prompt => generate(prompt);
-};
-
-/**
  * Explain the code for a sprite or stage using the on-device AI.
  * Works with or without the On-Device AI extension loaded.
  *
@@ -90,10 +54,12 @@ const resolveGenerateFn = async aiExt => {
  * @param {Function} dispatch - Redux dispatch
  */
 const explainCode = async function (vm, targetName, isStage, targets, dispatch) {
-    const aiExt = vm.runtime._AIBlocksExtension;
-
-    const generateFn = await resolveGenerateFn(aiExt);
-    if (!generateFn) return; // user cancelled the load modal
+    let ext;
+    try {
+        ext = await ensureLoaded(vm);
+    } catch (e) {
+        return; // user cancelled the load modal
+    }
 
     dispatch(openCodeExplanation(targetName));
 
@@ -109,8 +75,8 @@ const explainCode = async function (vm, targetName, isStage, targets, dispatch) 
         // eslint-disable-next-line no-console
         console.log('[explain-code] prompt:\n', prompt);
 
-        const result = await generateFn(formatPrompt(prompt));
-        dispatch(setCodeExplanationResult('done', cleanResponse(result)));
+        const result = await ext.generate({text: prompt, maxNewTokens: 200});
+        dispatch(setCodeExplanationResult('done', result));
     } catch (err) {
         dispatch(setCodeExplanationResult('error', `Error: ${err.message}`));
     }

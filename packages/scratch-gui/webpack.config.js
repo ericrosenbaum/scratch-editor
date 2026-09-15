@@ -36,13 +36,6 @@ const baseConfig = new ScratchWebpackConfigBuilder(
     })
     .setTarget('browserslist')
     .merge({
-        module: {
-            // @mediapipe/tasks-genai ships a self-contained bundle (no require()) that
-            // contains one worker-only dynamic `import(url)`. webpack can't resolve it
-            // statically and warns "Critical dependency: the request of a dependency is
-            // an expression". Skip parsing so the native import() is left untouched.
-            noParse: /[\\/]@mediapipe[\\/]tasks-genai[\\/]genai_bundle\.(cjs|mjs)$/
-        },
         output: {
             assetModuleFilename: 'static/assets/[name].[hash][ext][query]',
             library: {

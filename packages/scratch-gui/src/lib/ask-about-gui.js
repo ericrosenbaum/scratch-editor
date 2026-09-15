@@ -1,13 +1,5 @@
 import html2canvas from 'html2canvas';
-import {
-    isLoaded,
-    getLlmInference,
-    showLoadModal,
-    formatPromptParts,
-    cleanResponse,
-    MODEL_SUPPORTS_VISION,
-    TEXT_ONLY_MESSAGE
-} from './ai-model-manager';
+import {isLoaded, ensureLoaded, generate} from './ai-model-manager';
 
 /**
  * Capture the full GUI as a canvas, compositing the WebGL stage on top.
@@ -256,15 +248,10 @@ const askAboutGui = vm => {
         }
         input.style.borderColor = '#d9e3f0';
 
-        if (!MODEL_SUPPORTS_VISION) {
-            showError(`${TEXT_ONLY_MESSAGE}, so it can't look at a screenshot of the editor.`);
-            return;
-        }
-
-        if (!isLoaded()) {
+        if (!isLoaded(vm)) {
             setLoading('Loading AI model…');
             try {
-                await showLoadModal();
+                await ensureLoaded(vm);
             } catch (e) {
                 removeOverlay();
                 return;
@@ -293,9 +280,8 @@ const askAboutGui = vm => {
                 'Answer based on what you see in the screenshot. ' +
                 'Be very concise — answer in 2 to 3 sentences at most. ' +
                 question;
-            const llm = getLlmInference();
-            const response = await llm.generateResponse(formatPromptParts([prompt, {imageSource: guiCanvas}]));
-            showResult(cleanResponse(response));
+            const response = await generate(vm, {text: prompt, image: guiCanvas, maxNewTokens: 160});
+            showResult(response);
         } catch (err) {
             showError(`Error: ${err.message}`);
         }
