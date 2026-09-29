@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <path fill="none" stroke="#575E75" stroke-width="2.4" stroke-linecap="round" d="M8 10.5V7.9a4 4 0 0 1 8 0v2.6"/>
+    <!-- Body with the keyhole cut out, so the icon reads on any background. -->
+    <path fill="#575E75" fill-rule="evenodd"
+        d="M7 10h10a2.5 2.5 0 0 1 2.5 2.5V18a2.5 2.5 0 0 1-2.5 2.5H7A2.5 2.5 0 0 1 4.5 18v-5.5A2.5 2.5 0 0 1 7 10Z
+           M11.2 15.9a1.7 1.7 0 1 1 1.6 0l.55 2.6h-2.7Z"/>
+</svg>

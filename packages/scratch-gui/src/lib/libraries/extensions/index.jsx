@@ -7,6 +7,15 @@ import musicInsetIconURL from './music/music-small.svg';
 import penIconURL from './pen/pen.png';
 import penInsetIconURL from './pen/pen-small.svg';
 
+import penTextIconURL from './penText/penText.png';
+import penTextInsetIconURL from './penText/penText-small.svg';
+
+import stretchIconURL from './stretch/stretch.svg';
+import stretchInsetIconURL from './stretch/stretch-small.svg';
+
+import soundRemixIconURL from './soundRemix/soundRemix.svg';
+import soundRemixInsetIconURL from './soundRemix/soundRemix-small.svg';
+
 import videoSensingIconURL from './videoSensing/video-sensing.png';
 import videoSensingInsetIconURL from './videoSensing/video-sensing-small.svg';
 
@@ -49,7 +58,90 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
+import handSensingIconURL from './handSensing/handSensing.png';
+import handSensingInsetIconURL from './handSensing/handSensing-small.svg';
+
 export default [
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Hand Sensing"
+                description="Name for the 'Hand Sensing' extension"
+                id="gui.extension.handSensing.name"
+            />
+        ),
+        extensionId: 'handSensing',
+        iconURL: handSensingIconURL,
+        insetIconURL: handSensingInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Sense hands with the camera."
+                description="Description for the 'Hand Sensing' extension"
+                id="gui.extension.handSensing.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Pen Text"
+                description="Name for the 'Pen Text' extension"
+                id="gui.extension.penText.name"
+            />
+        ),
+        extensionId: 'penText',
+        iconURL: penTextIconURL,
+        insetIconURL: penTextInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Write text with pen strokes."
+                description="Description for the 'Pen Text' extension"
+                id="gui.extension.penText.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Sound Remix"
+                description="Name for the 'Sound Remix' extension"
+                id="gui.extension.soundRemix.name"
+            />
+        ),
+        extensionId: 'soundRemix',
+        iconURL: soundRemixIconURL,
+        insetIconURL: soundRemixInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Start and stop sounds at any point."
+                description="Description for the 'Sound Remix' extension"
+                id="gui.extension.soundRemix.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Stretch"
+                description="Name for the 'Stretch' extension"
+                id="gui.extension.stretch.name"
+            />
+        ),
+        extensionId: 'stretch',
+        iconURL: stretchIconURL,
+        insetIconURL: stretchInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Stretch and squish sprites."
+                description="Description for the 'Stretch' extension"
+                id="gui.extension.stretch.description"
+            />
+        ),
+        featured: true
+    },
     {
         name: (
             <FormattedMessage

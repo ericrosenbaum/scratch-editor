@@ -31,6 +31,7 @@ import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
+import ExtensionHelpModal from '../../containers/extension-help-modal.jsx';
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
 import {resolveStageSize} from '../../lib/screen-utils';
@@ -145,6 +146,7 @@ const GUIComponent = props => {
         costumeLibraryVisible,
         costumesTabVisible,
         debugModalVisible,
+        extensionHelpModalVisible,
         onDebugModalClose,
         onTutorialSelect,
         enableCommunity,
@@ -301,6 +303,9 @@ const GUIComponent = props => {
                             hideTutorialProjects={hideTutorialProjects}
                             onTutorialSelect={onTutorialSelect}
                         />
+                    ) : null}
+                    {extensionHelpModalVisible ? (
+                        <ExtensionHelpModal />
                     ) : null}
                     {cardsVisible ? (
                         <Cards />
@@ -608,6 +613,7 @@ GUIComponent.propTypes = {
     costumeLibraryVisible: PropTypes.bool,
     costumesTabVisible: PropTypes.bool,
     debugModalVisible: PropTypes.bool,
+    extensionHelpModalVisible: PropTypes.bool,
     hasActiveMembership: PropTypes.bool,
     onDebugModalClose: PropTypes.func,
     onTutorialSelect: PropTypes.func,

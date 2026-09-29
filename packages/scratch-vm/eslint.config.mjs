@@ -15,7 +15,10 @@ export default eslintConfigScratch.defineConfig(
         }
     },
     {
-        files: ['src/extension-support/extension-worker.js'],
+        files: [
+            'src/extension-support/extension-worker.js',
+            'src/extensions/scratch3_hand_sensing/hand-sensing-worker.js'
+        ],
         languageOptions: {
             globals: globals.worker
         }

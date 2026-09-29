@@ -1,0 +1,106 @@
+@import "../../css/colors.css";
+
+/* The sparkles from the extension's icon, scattered around the help modal's
+   banner, which is what they are positioned against. */
+.sparkle-a,
+.sparkle-b,
+.sparkle-c {
+    position: absolute;
+    pointer-events: none;
+}
+
+.sparkle-a {
+    width: 1.375rem;
+    top: 0.75rem;
+}
+
+.sparkle-b {
+    width: 0.875rem;
+    bottom: 1.125rem;
+}
+
+.sparkle-c {
+    width: 1.125rem;
+    bottom: 2.75rem;
+}
+
+[dir="ltr"] .sparkle-a {
+    left: 0.875rem;
+}
+
+[dir="ltr"] .sparkle-b {
+    right: 2.25rem;
+}
+
+[dir="ltr"] .sparkle-c {
+    right: 5.5rem;
+}
+
+[dir="rtl"] .sparkle-a {
+    right: 0.875rem;
+}
+
+[dir="rtl"] .sparkle-b {
+    left: 2.25rem;
+}
+
+[dir="rtl"] .sparkle-c {
+    left: 5.5rem;
+}
+
+.camera-views {
+    display: flex;
+    gap: 1rem;
+    /* Pins the pictures to the bottom so both cards end level. */
+    margin-top: auto;
+}
+
+.camera-view {
+    position: relative;
+    flex: 1;
+    /* Keeps the pictures from ballooning once the cards stack. */
+    max-width: 11.25rem;
+}
+
+.camera-view-image {
+    width: 100%;
+    display: block;
+}
+
+.badge-bad,
+.badge-good {
+    position: absolute;
+    top: -0.5rem;
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* A ring in the tip card's own colour keeps the badge off the hand behind it. */
+    box-shadow: 0 0 0 2px #FFF5DB;
+}
+
+[dir="ltr"] .badge-bad,
+[dir="ltr"] .badge-good {
+    right: -0.5rem;
+}
+
+[dir="rtl"] .badge-bad,
+[dir="rtl"] .badge-good {
+    left: -0.5rem;
+}
+
+.badge-bad {
+    background: $red-primary;
+}
+
+.badge-good {
+    background: $pen-primary;
+}
+
+.badge-mark {
+    width: 1rem;
+    height: 1rem;
+    display: block;
+}

@@ -108,6 +108,13 @@ class RenderedTarget extends Target {
         this.size = 100;
 
         /**
+         * Horizontal and vertical stretch of rendered target, as percents
+         * applied on top of `size`.
+         * @type {Array.<number>}
+         */
+        this.stretch = [100, 100];
+
+        /**
          * Currently selected costume index.
          * @type {number}
          */
@@ -292,7 +299,9 @@ class RenderedTarget extends Target {
     _getRenderedDirectionAndScale () {
         // Default: no changes to `this.direction` or `this.scale`.
         let finalDirection = this.direction;
-        let finalScale = [this.size, this.size];
+        const width = this.size * this.stretch[0] / 100;
+        const height = this.size * this.stretch[1] / 100;
+        let finalScale = [width, height];
         if (this.rotationStyle === RenderedTarget.ROTATION_STYLE_NONE) {
             // Force rendered direction to be 90.
             finalDirection = 90;
@@ -300,7 +309,7 @@ class RenderedTarget extends Target {
             // Force rendered direction to be 90, and flip drawable if needed.
             finalDirection = 90;
             const scaleFlip = (this.direction < 0) ? -1 : 1;
-            finalScale = [scaleFlip * this.size, this.size];
+            finalScale = [scaleFlip * width, height];
         }
         return {direction: finalDirection, scale: finalScale};
     }
@@ -350,6 +359,30 @@ class RenderedTarget extends Target {
         this.visible = !!visible;
         if (this.renderer) {
             this.renderer.updateDrawableVisible(this.drawableID, this.visible);
+            if (this.visible) {
+                this.emit(RenderedTarget.EVENT_TARGET_VISUAL_CHANGE, this);
+                this.runtime.requestRedraw();
+            }
+        }
+        this.runtime.requestTargetsUpdate(this);
+    }
+
+    /**
+     * Set horizontal and vertical stretch, as percentages applied on top of size.
+     * @param {!number} width Horizontal stretch, as a percent.
+     * @param {!number} height Vertical stretch, as a percent.
+     */
+    setStretch (width, height) {
+        if (this.isStage) {
+            return;
+        }
+        if (!isFinite(width) || !isFinite(height)) {
+            return;
+        }
+        this.stretch = [width, height];
+        if (this.renderer) {
+            const {direction, scale} = this._getRenderedDirectionAndScale();
+            this.renderer.updateDrawableDirectionScale(this.drawableID, direction, scale);
             if (this.visible) {
                 this.emit(RenderedTarget.EVENT_TARGET_VISUAL_CHANGE, this);
                 this.runtime.requestRedraw();
@@ -992,6 +1025,7 @@ class RenderedTarget extends Target {
         newClone.draggable = this.draggable;
         newClone.visible = this.visible;
         newClone.size = this.size;
+        newClone.stretch = this.stretch.slice();
         newClone.currentCostume = this.currentCostume;
         newClone.rotationStyle = this.rotationStyle;
         newClone.effects = Clone.simple(this.effects);

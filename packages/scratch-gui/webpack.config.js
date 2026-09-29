@@ -26,6 +26,14 @@ const cssModuleExceptions = [
     /[\\/]driver\.js[\\/].*\.css$/ // driver.js CSS
 ];
 
+// MediaPipe ships tasks-vision as a prebuilt, self-contained bundle with no static
+// requires. Its one dynamic import() is a module-worker fallback for loading the WASM
+// loader script, and the URL is only known at runtime. Parsing it buys nothing: webpack
+// can't resolve that expression, so it warns and emits an empty context module that
+// throws if it's ever reached. Skipping the parse drops both and leaves the native
+// import() intact, which is what that fallback actually needs.
+const mediapipeBundle = /@mediapipe[\\/]tasks-vision[\\/]vision_bundle\.(cjs|mjs|js)$/;
+
 const baseConfig = new ScratchWebpackConfigBuilder(
     {
         rootPath: path.resolve(__dirname),
@@ -45,6 +53,9 @@ const baseConfig = new ScratchWebpackConfigBuilder(
             // Do not clean the JS files before building as we have two outputs to the same
             // dist directory (the regular and the standalone version)
             clean: false
+        },
+        module: {
+            noParse: mediapipeBundle
         },
         resolve: {
             fallback: {
@@ -68,7 +79,7 @@ const baseConfig = new ScratchWebpackConfigBuilder(
         }
     })
     .addModuleRule({
-        test: /\.(svg|png|wav|mp3|gif|jpg)$/,
+        test: /\.(svg|png|wav|mp3|gif|jpg|webm)$/,
         resourceQuery: /^$/, // reject any query string
         type: 'asset' // let webpack decide on the best type of asset
     })
@@ -101,6 +112,11 @@ const baseConfig = new ScratchWebpackConfigBuilder(
                 noErrorOnMissing: true
             },
             {
+                context: '../../node_modules/@scratch/scratch-vm/dist/web',
+                from: 'hand-sensing-worker.{js,js.map}',
+                noErrorOnMissing: true
+            },
+            {
                 context: '../../node_modules/@scratch/scratch-storage/dist/web',
                 from: 'chunks/fetch-worker.*.{js,js.map}',
                 noErrorOnMissing: true
@@ -113,6 +129,17 @@ const baseConfig = new ScratchWebpackConfigBuilder(
             {
                 from: '../../node_modules/@mediapipe/face_detection',
                 to: 'chunks/mediapipe/face_detection'
+            },
+            {
+                // Ship only the plain and no-SIMD runtimes: FilesetResolver chooses
+                // between those two and never requests the ES module variant.
+                from: '../../node_modules/@mediapipe/tasks-vision/wasm',
+                to: 'chunks/mediapipe/tasks-vision/wasm',
+                globOptions: {ignore: ['**/*_module_internal.*']}
+            },
+            {
+                from: 'static/mediapipe/hand_landmarker.task',
+                to: 'chunks/mediapipe/tasks-vision/hand_landmarker.task'
             }
         ]
     }));

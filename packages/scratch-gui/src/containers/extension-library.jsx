@@ -43,6 +43,7 @@ class ExtensionLibrary extends React.PureComponent {
             } else {
                 this.props.vm.extensionManager.loadExtensionURL(url).then(() => {
                     this.props.onCategorySelected(id);
+                    if (this.props.onExtensionAdded) this.props.onExtensionAdded(id);
                 });
             }
         }
@@ -69,6 +70,7 @@ class ExtensionLibrary extends React.PureComponent {
 ExtensionLibrary.propTypes = {
     intl: intlShape.isRequired,
     onCategorySelected: PropTypes.func,
+    onExtensionAdded: PropTypes.func,
     onRequestClose: PropTypes.func,
     visible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired

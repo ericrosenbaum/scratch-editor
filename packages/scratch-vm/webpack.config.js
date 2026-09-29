@@ -9,8 +9,21 @@ const common = {
     rootPath: path.resolve(__dirname)
 };
 
+// MediaPipe ships tasks-vision as a prebuilt, self-contained bundle with no static
+// requires. Its one dynamic import() is a module-worker fallback for loading the WASM
+// loader script, and the URL is only known at runtime. Parsing it buys nothing: webpack
+// can't resolve that expression, so it warns and emits an empty context module that
+// throws if it's ever reached. Skipping the parse drops both and leaves the native
+// import() intact, which is what that fallback actually needs.
+const skipMediapipeParse = {
+    module: {
+        noParse: /@mediapipe[\\/]tasks-vision[\\/]vision_bundle\.(cjs|mjs|js)$/
+    }
+};
+
 const nodeBuilder = new ScratchWebpackConfigBuilder(common)
     .setTarget('node')
+    .merge(skipMediapipeParse)
     .merge({
         entry: {
             'extension-worker': path.join(__dirname, 'src/extension-support/extension-worker.js')
@@ -24,9 +37,11 @@ const nodeBuilder = new ScratchWebpackConfigBuilder(common)
 
 const webBuilder = new ScratchWebpackConfigBuilder(common)
     .setTarget('browserslist')
+    .merge(skipMediapipeParse)
     .merge({
         entry: {
-            'extension-worker': path.join(__dirname, 'src/extension-support/extension-worker.js')
+            'extension-worker': path.join(__dirname, 'src/extension-support/extension-worker.js'),
+            'hand-sensing-worker': path.join(__dirname, 'src/extensions/scratch3_hand_sensing/hand-sensing-worker.js')
         },
         resolve: {
             fallback: {

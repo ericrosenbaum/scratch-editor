@@ -1,0 +1,17 @@
+.note {
+    /* Runs under the cards, across the whole of the modal's content grid. */
+    grid-column: 1 / -1;
+    margin: 0;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.note-icon {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
+    display: block;
+}

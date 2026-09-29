@@ -124,6 +124,7 @@
   },
   "dependencies": {
     "@mediapipe/face_detection": "0.4.1646425229",
+    "@mediapipe/tasks-vision": "1.0.1",
     "@microbit/microbit-universal-hex": "0.2.2",
     "@radix-ui/react-context-menu": "2.3.4",
     "@scratch/scratch-paint": "15.2.0",

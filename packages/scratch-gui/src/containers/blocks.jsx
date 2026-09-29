@@ -19,6 +19,8 @@ import {BLOCKS_DEFAULT_SCALE, STAGE_DISPLAY_SIZES} from '../lib/layout-constants
 import DropAreaHOC from '../lib/drop-area-hoc.jsx';
 import DragConstants from '../lib/drag-constants';
 import defineDynamicBlock from '../lib/define-dynamic-block';
+import {setCategoryHelpCallback} from '../lib/category-help-label';
+import {extensionHasHelp} from '../lib/extension-help';
 import {DEFAULT_MODE, getColorsForMode, colorModeMap} from '../lib/settings/color-mode';
 import {CAT_BLOCKS_THEME} from '../lib/settings/theme';
 import {
@@ -33,6 +35,7 @@ import {activateColorPicker} from '../reducers/color-picker';
 import {closeExtensionLibrary, openSoundRecorder, openConnectionModal} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
+import {openExtensionHelp} from '../reducers/extension-help';
 import {updateMetrics} from '../reducers/workspace-metrics';
 import {isTimeTravel2020} from '../reducers/time-travel';
 
@@ -62,6 +65,7 @@ class Blocks extends React.Component {
             'attachVM',
             'detachVM',
             'getToolboxXML',
+            'handleCategoryHelpClick',
             'handleCategorySelected',
             'handleConnectionModalStart',
             'handleDrop',
@@ -90,6 +94,7 @@ class Blocks extends React.Component {
             this.handlePromptStart
         );
         this.ScratchBlocks.StatusIndicatorLabel.statusButtonCallback = this.handleConnectionModalStart;
+        setCategoryHelpCallback(this.handleCategoryHelpClick);
         this.ScratchBlocks.recordSoundCallback = this.handleOpenSoundRecorder;
 
         this.state = {
@@ -102,6 +107,7 @@ class Blocks extends React.Component {
         this.ScratchBlocks = VMScratchBlocks(this.props.vm, this.props.useCatBlocks);
         this.ScratchBlocks.dialog.setPrompt(this.handlePromptStart);
         this.ScratchBlocks.StatusIndicatorLabel.statusButtonCallback = this.handleConnectionModalStart;
+        setCategoryHelpCallback(this.handleCategoryHelpClick);
         this.ScratchBlocks.recordSoundCallback = this.handleOpenSoundRecorder;
 
         this.ScratchBlocks.FieldColourSlider.activateEyedropper_ = this.props.onActivateColorPicker;
@@ -628,6 +634,9 @@ class Blocks extends React.Component {
         p.prompt.showCloudOption = (optVarType === this.ScratchBlocks.SCALAR_VARIABLE_TYPE) && this.props.canUseCloud;
         this.setState(p);
     }
+    handleCategoryHelpClick (extensionId) {
+        this.props.onOpenExtensionHelp(extensionId);
+    }
     handleConnectionModalStart (extensionId) {
         this.props.onOpenConnectionModal(extensionId);
     }
@@ -681,6 +690,7 @@ class Blocks extends React.Component {
             isVisible,
             onActivateColorPicker,
             onOpenConnectionModal,
+            onOpenExtensionHelp,
             onOpenSoundRecorder,
             updateToolboxState,
             onActivateCustomProcedures,
@@ -719,6 +729,7 @@ class Blocks extends React.Component {
                     <ExtensionLibrary
                         vm={vm}
                         onCategorySelected={this.handleCategorySelected}
+                        onExtensionAdded={onOpenExtensionHelp}
                         onRequestClose={onRequestCloseExtensionLibrary}
                     />
                 ) : null}
@@ -748,6 +759,7 @@ Blocks.propTypes = {
     onActivateColorPicker: PropTypes.func,
     onActivateCustomProcedures: PropTypes.func,
     onOpenConnectionModal: PropTypes.func,
+    onOpenExtensionHelp: PropTypes.func,
     onOpenSoundRecorder: PropTypes.func,
     onRequestCloseCustomProcedures: PropTypes.func,
     onRequestCloseExtensionLibrary: PropTypes.func,
@@ -819,6 +831,9 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     onActivateColorPicker: callback => dispatch(activateColorPicker(callback)),
     onActivateCustomProcedures: (data, callback) => dispatch(activateCustomProcedures(data, callback)),
+    onOpenExtensionHelp: extensionId => {
+        if (extensionHasHelp(extensionId)) dispatch(openExtensionHelp(extensionId));
+    },
     onOpenConnectionModal: id => {
         dispatch(setConnectionModalExtensionId(id));
         dispatch(openConnectionModal());

@@ -1,0 +1,16 @@
+/* Fills the space it is given until the blocks have been measured; the
+   component then sets an explicit size that fits them. */
+.example-blocks {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Let whatever is behind the blocks show through the workspace. */
+.example-blocks :global(.blocklySvg) {
+    background-color: transparent;
+}
+
+.example-blocks :global(.blocklyMainBackground) {
+    fill: transparent;
+    stroke: none;
+}

@@ -14,6 +14,7 @@ const builtinExtensions = {
     coreExample: () => require('../blocks/scratch3_core_example'),
     // These are the non-core built-in extensions.
     pen: () => require('../extensions/scratch3_pen'),
+    penText: () => require('../extensions/scratch3_pen_text'),
     wedo2: () => require('../extensions/scratch3_wedo2'),
     music: () => require('../extensions/scratch3_music'),
     microbit: () => require('../extensions/scratch3_microbit'),
@@ -24,7 +25,10 @@ const builtinExtensions = {
     makeymakey: () => require('../extensions/scratch3_makeymakey'),
     boost: () => require('../extensions/scratch3_boost'),
     gdxfor: () => require('../extensions/scratch3_gdx_for'),
-    faceSensing: () => require('../extensions/scratch3_face_sensing')
+    faceSensing: () => require('../extensions/scratch3_face_sensing'),
+    handSensing: () => require('../extensions/scratch3_hand_sensing'),
+    soundRemix: () => require('../extensions/scratch3_sound_remix'),
+    stretch: () => require('../extensions/scratch3_stretch')
 };
 
 /**

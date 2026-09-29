@@ -1,0 +1,99 @@
+@import "../../css/colors.css";
+
+.modal-content {
+    width: 41.5rem;
+    max-width: 90vw;
+    /* The overlay does not scroll, so if the modal ever outgrows the screen
+       it scrolls itself rather than running off the bottom. 12.5rem is the
+       top and bottom margin the shared modal sets. */
+    max-height: calc(100vh - 12.5rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* On a short screen, trade the shared modal's tall top margin for room, so
+   the whole modal shows without scrolling down to a 640px-tall editor. */
+@media (max-height: 47.5rem) {
+    .modal-content {
+        margin: 2rem auto;
+        max-height: calc(100vh - 4rem);
+    }
+}
+
+.body {
+    background: $ui-white;
+    display: flex;
+    flex-direction: column;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: $text-primary;
+}
+
+/* Carries the modal header's purple down past the title, so the title and the
+   introduction read as one banner. */
+.hero {
+    position: relative;
+    overflow: hidden;
+    background: $looks-secondary;
+    color: $ui-white;
+    padding: 0.5rem 2rem 1.5rem;
+    display: flex;
+    /* The text wraps under the preview when it can no longer sit beside it,
+       rather than being squeezed into a ribbon. */
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+/* A soft, darker disc rising behind the corner gives the flat purple some
+   depth. Anchored below the top so the header never cuts its curve off. */
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 1.5rem;
+    width: 20rem;
+    height: 20rem;
+    border-radius: 50%;
+    background: $looks-secondary-dark;
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+[dir="ltr"] .hero::before {
+    right: -7rem;
+}
+
+[dir="rtl"] .hero::before {
+    left: -7rem;
+}
+
+.intro-preview {
+    position: relative;
+    flex: none;
+    width: 13rem;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 0.625rem;
+    box-shadow:
+        0 0 0 4px $ui-white-transparent,
+        0 0.75rem 1.5rem $ui-black-transparent;
+    display: block;
+}
+
+.intro-text {
+    position: relative;
+    flex: 1 1 13rem;
+    margin: 0;
+    font-size: 1.125rem;
+    line-height: 1.5;
+    font-weight: bold;
+}
+
+.content {
+    padding: 1.25rem 2rem;
+    display: grid;
+    /* Cards sit side by side while they fit. Example blocks render at a
+       fixed pixel size, so the cards stack instead of shrinking below the
+       width that fits them. */
+    grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
+    gap: 1.25rem;
+}

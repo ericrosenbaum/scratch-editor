@@ -1,3 +1,5 @@
+import {registerCategoryHelpLabelInflater} from './category-help-label';
+
 /**
  * Connect scratch blocks with the vm
  * @param {VirtualMachine} vm - The scratch vm
@@ -5,6 +7,8 @@
  */
 export default function (vm) {
     const ScratchBlocks = require('scratch-blocks');
+
+    registerCategoryHelpLabelInflater(ScratchBlocks);
 
     const jsonForMenuBlock = function (name, menuOptionsFn, category, start) {
         return {
